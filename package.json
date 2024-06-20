@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --config ./rollup.config.js",
     "prestart": "npm run build",
-    "start": "npx http-server ."
+    "start": "npx http-server .",
+    "watch": "npx concurrently \"npm run build -- --watch\" \"npm run start\""
   },
   "keywords": [],
   "author": "",
