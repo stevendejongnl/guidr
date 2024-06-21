@@ -6,6 +6,13 @@ on:
       - '*'
 
 jobs:
+  dummy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dummy step
+        run: echo "This is a dummy step to ensure the workflow contains at least one job with no dependencies"
+
   test:
     runs-on: ubuntu-latest
 
