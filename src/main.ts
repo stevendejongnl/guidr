@@ -1,2 +1,3 @@
-export * from './app.js'
-export * from './components/main.js'
+export { SchedulrApp } from './components/app.js'
+export { SchedulrHeader } from './components/layout/header.js'
+export { SchedulrTask } from './components/schedules/task.js'

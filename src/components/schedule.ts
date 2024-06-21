@@ -1,5 +1,5 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
 
 interface Task {
   date: string;
@@ -15,24 +15,24 @@ export class SchedulrSchedule extends LitElement {
   tasks: Task[] = []
 
   static override styles = css`
-    .completed {
-      text-decoration: line-through;
-    }
+  .completed {
+    text-decoration: line-through;
+  }
   `
 
   override render() {
     return html`
-      <ul>
-        ${this.tasks.map(
-          (task, index) => html`
-            <li class="${task.completed ? 'completed' : ''}">
-              <input type="checkbox" ?checked="${task.completed}" @change="${() => this.toggleTask(index)}" />
-              ${task.date} ${task.time}: ${task.title}<br>
-              ${task.note}
-            </li>
-          `
-        )}
-      </ul>
+    <ul>
+    ${this.tasks.map(
+      (task, index) => html`
+      <li class="${task.completed ? 'completed' : ''}">
+      <input type="checkbox" ?checked="${task.completed}" @change="${() => this.toggleTask(index)}" />
+      ${task.date} ${task.time}: ${task.title}<br>
+      ${task.note}
+      </li>
+      `
+    )}
+    </ul>
     `
   }
 

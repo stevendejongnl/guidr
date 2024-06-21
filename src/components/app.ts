@@ -1,5 +1,5 @@
-import { LitElement, html } from "lit"
-import { customElement, state } from "lit/decorators.js"
+import { LitElement, html } from 'lit'
+import { customElement, state } from 'lit/decorators.js'
 
 @customElement('schedulr-app')
 export class SchedulrApp extends LitElement {
@@ -14,6 +14,7 @@ export class SchedulrApp extends LitElement {
     return html`
       <schedulr-header></schedulr-header>
       <schedulr-schedule-list></schedulr-schedule-list>
+      <schedulr-task></schedulr-task>
       <schedulr-schedule .tasks=${this.tasks}></schedulr-schedule>
     `
   }

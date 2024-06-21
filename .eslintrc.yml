@@ -1,0 +1,68 @@
+env:
+  browser: true
+  es2020: true
+
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
+
+overrides: 
+  - files: [ "*.test.ts" ]
+    rules:
+      "@typescript-eslint/no-non-null-assertion":
+        - off
+      no-restricted-imports:
+        - off
+
+parser: '@typescript-eslint/parser'
+
+parserOptions:
+  ecmaVersion: latest
+  sourceType: module
+  warnOnUnsupportedTypeScriptVersion: false
+  project:
+    - './tsconfig.json'
+
+plugins:
+  - '@typescript-eslint'
+
+settings:
+  "import/resolver":
+    node:
+      extensions:
+        - ".js"
+
+rules:
+  indent:
+    - error
+    - 2
+    - flatTernaryExpressions: false
+      SwitchCase: 1
+      ignoredNodes:
+      - "TemplateLiteral *"
+      - PropertyDefinition[decorators]
+      - TSUnionType
+      - FunctionExpression[params]:has(Identifier[decorators])
+  "@typescript-eslint/no-non-null-assertion":
+    - error
+  "@typescript-eslint/no-explicit-any":
+    - off
+  "@typescript-eslint/await-thenable":
+    - error
+  object-curly-spacing:
+    - error
+    - always
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - error
+    - single
+  semi:
+    - error
+    - never
+  space-before-function-paren:
+    - error
+    - anonymous: never
+      named: never
+      asyncArrow: always
