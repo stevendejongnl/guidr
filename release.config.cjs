@@ -81,7 +81,7 @@ for (const rule of rules) {
  */
 module.exports = {
   branches: [
-    { name: 'master' },
+    { name: 'main' },
     { name: 'next' },
   ],
   repositoryUrl: 'git@github.com:stevendejongnl/MadeBySteven.git',
