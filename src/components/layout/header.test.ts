@@ -16,6 +16,6 @@ describe('schedulr-header', () => {
   })
 
   it('should show a heading text', () => {
-    expect(header.shadowRoot?.textcontent).to.be.equal('Schedulr')
+    expect(header.shadowRoot?.textContent).to.be.equal('Schedulr')
   })
 })
