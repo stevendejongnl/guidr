@@ -5,12 +5,12 @@
       "./src/**/*"
     ],
     "compilerOptions": {
-      "plugins": [
-        /* See https://github.com/nonara/ts-patch */
-        { "transform": "typescript-transform-paths" },                            /* Transform paths in output .js files */
-        { "transform": "typescript-transform-paths", "afterDeclarations": true }  /* Transform paths in output .d.ts files */
-      ],
-  
+      // "plugins": [
+      //   /* See https://github.com/nonara/ts-patch */
+      //   { "transform": "typescript-transform-paths" },                            /* Transform paths in output .js files */
+      //   { "transform": "typescript-transform-paths", "afterDeclarations": true }  /* Transform paths in output .d.ts files */
+      // ],
+
       /* Projects */
       "incremental": true,                                 /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
       // "composite": true,                                /* Enable constraints that allow a TypeScript project to be used with project references. */
@@ -115,4 +115,3 @@
       "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
     }
   }
-  

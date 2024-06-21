@@ -5,11 +5,13 @@
   "main": "src/main.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc -b",
     "build": "rollup --config ./rollup.config.js",
     "prestart": "npm run build",
     "start": "npx http-server .",
-    "watch": "npx concurrently \"npm run build -- --watch\" \"npm run start\""
+    "watch": "npx concurrently \"npm run build -- --watch\" \"npm run start\"",
+    "pretest": "npm run compile && npm run build",
+    "test": "npx web-test-runner"
   },
   "keywords": [],
   "author": "",
@@ -18,10 +20,20 @@
     "lit": "^3.1.4"
   },
   "devDependencies": {
+    "@open-wc/testing": "^3.2.2",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-swc": "^0.3.1",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/mocha": "^10.0.6",
+    "@web/test-runner": "^0.18.2",
+    "@web/test-runner-junit-reporter": "^0.7.1",
+    "@web/test-runner-playwright": "^0.11.0",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "mocha": "^10.4.0",
     "rollup": "^4.18.0",
+    "semantic-release": "^24.0.0",
     "tslib": "^2.6.3",
     "typescript": "^5.5.2"
   }

@@ -1,0 +1,16 @@
+services:
+  schedulr:
+    image: schedulr
+    build: .
+    command: npx http-server --port 8080 .
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./index.html:/app/index.html
+      - ./dist:/app/dist
+    networks:
+      - schedulr
+
+networks:
+  schedulr:
+    driver: bridge

@@ -1,2 +1,3 @@
-export * from './header.js'
+export * from './layout/main.js'
+export * from './schedules/main.js'
 export * from './schedule.js'

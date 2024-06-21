@@ -1,2 +1,2 @@
-export * from 'app.js'
-export * from 'components/main.js'
+export * from './app.js'
+export * from './components/main.js'

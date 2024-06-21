@@ -4,6 +4,8 @@ import { customElement, property } from 'lit/decorators.js';
 interface Task {
   date: string;
   time: string;
+  title: string;
+  note: string;
   completed: boolean;
 }
 
@@ -25,7 +27,8 @@ export class SchedulrSchedule extends LitElement {
           (task, index) => html`
             <li class="${task.completed ? 'completed' : ''}">
               <input type="checkbox" ?checked="${task.completed}" @change="${() => this.toggleTask(index)}" />
-              ${task.date} ${task.time}
+              ${task.date} ${task.time}: ${task.title}<br>
+              ${task.note}
             </li>
           `
         )}
