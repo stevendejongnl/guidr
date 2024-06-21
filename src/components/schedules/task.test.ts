@@ -15,13 +15,18 @@ describe('schedulr-task', () => {
     expect(task).to.be.instanceOf(SchedulrTask)
   })
 
-  it('should render task-title', async () => {
-    const title = task.shadowRoot?.querySelector('task-title')
-    expect(title).to.be.equal('2021-09-01 10:00:00: Task 1')
+  it('should have a checkbox', async () => {
+    const checkbox = task.shadowRoot?.querySelector('input[type="checkbox"]')
+    expect(checkbox).to.exist
+  })
+
+  it('should have a task-title', async () => {
+    const title = task.shadowRoot?.querySelector('schedulr-task-title')
+    expect(title?.textContent?.trim()).to.be.equal('2021-09-01 10:00:00: Task 1')
   })
 
   it('should render task-note', async () => {
-    const note = task.shadowRoot?.querySelector('task-note')
-    expect(note).to.be.equal('Task 1 note')
+    const note = task.shadowRoot?.querySelector('schedulr-task-note')
+    expect(note?.textContent?.trim()).to.be.equal('Task 1 note')
   })
 })
