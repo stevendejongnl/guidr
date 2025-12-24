@@ -18,6 +18,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@react-native-community/cli": "^20.0.2",
+    "@react-native-community/cli-platform-android": "^20.0.2",
+    "@react-native/babel-preset": "^0.83.1",
+    "@react-native/metro-config": "^0.83.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-native": "^5.4.3",
