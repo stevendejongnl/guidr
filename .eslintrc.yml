@@ -1,17 +1,18 @@
 env:
-  browser: true
+  node: true
   es2020: true
+  jest: true
 
 extends:
   - eslint:recommended
   - plugin:@typescript-eslint/recommended
+  - plugin:react/recommended
+  - plugin:react-hooks/recommended
 
-overrides: 
-  - files: [ "*.test.ts" ]
+overrides:
+  - files: [ "*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx" ]
     rules:
       "@typescript-eslint/no-non-null-assertion":
-        - off
-      no-restricted-imports:
         - off
 
 parser: '@typescript-eslint/parser'
@@ -19,18 +20,20 @@ parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: latest
   sourceType: module
+  ecmaFeatures:
+    jsx: true
   warnOnUnsupportedTypeScriptVersion: false
   project:
     - './tsconfig.json'
 
 plugins:
   - '@typescript-eslint'
+  - react
+  - react-hooks
 
 settings:
-  "import/resolver":
-    node:
-      extensions:
-        - ".js"
+  react:
+    version: detect
 
 rules:
   indent:
@@ -66,3 +69,9 @@ rules:
     - anonymous: never
       named: never
       asyncArrow: always
+  react/react-in-jsx-scope:
+    - off
+  react-hooks/rules-of-hooks:
+    - error
+  react-hooks/exhaustive-deps:
+    - warn
