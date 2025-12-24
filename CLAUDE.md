@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Guidr** is a step-by-step guide execution app for Android and iOS. The app helps users execute multi-step processes with precise timing - from recipes to workout routines, lab protocols, and study sessions. Built with Domain-Driven Design principles and Test-Driven Development using bare React Native (not Expo) with TypeScript.
 
-**Current Status**: Core domain logic complete (171 tests passing). Server URL configuration screen implemented. Android native directories initialized. Ready for feature development (Android build blocked by known Gradle 9.0 compatibility issue - see below).
+**Current Status**: Core domain logic complete (171 tests passing). Server URL configuration screen implemented. Android native directories initialized and build working with Gradle 8.13. Ready for feature development.
 
 ## Commands
 
@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Start Metro bundler
 npm start
 
-# Run on Android (currently blocked - see Android Build Issue below)
+# Run on Android
 npm run android
 
 # Run on iOS (macOS only)
@@ -217,7 +217,7 @@ GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
 - **Lint**: ESLint on all TypeScript/TSX files
 - **Test**: Run full Jest suite
 - **Typecheck**: Verify TypeScript compilation
-- **Android Build**: Temporarily removed (will be re-added once Gradle 9.0 compatibility issue is resolved)
+- **Android Build**: Builds debug APK and uploads as artifact
 
 All checks must pass before merging.
 
@@ -268,46 +268,23 @@ All checks must pass before merging.
 - No mention of Claude/AI assistants in commits
 - Push after completing each phase
 
-### Android Build Issue (Known Issue - December 2024)
+### Android Build Configuration
 
-**Problem**: React Native 0.83.1 ships with Gradle 9.0.0, which has new security restrictions that block CMake from calling `java.lang.System` methods. This prevents the Android APK from building.
+**Build Setup**:
+- **Gradle**: 8.13 (stable, tested with React Native 0.83.1)
+- **Android Gradle Plugin**: Managed by React Native 0.83.1
+- **Build Tools**: 36.0.0
+- **NDK**: 27.1.12297006
+- **Kotlin**: 2.1.20
+- **Target SDK**: 36
+- **Package**: com.guidr
+- **Java Version**: 17 (required for Gradle 8.13)
 
-**What's Working**:
-- ✅ Android directory fully configured (`android/`)
-- ✅ Package name: `com.guidr`
-- ✅ All React Native config files created (index.js, app.json, metro.config.js, babel.config.js, react-native.config.js)
-- ✅ Metro bundler works
-- ✅ Android SDK configured (`android/local.properties`)
-- ✅ Build wrapper script (`build-android.sh`) ready
-- ✅ Emulator can be started
+**Why Gradle 8.13?**:
+The project uses Gradle 8.13 instead of Gradle 9.0 (which ships with React Native 0.83.1) because Gradle 9.0 introduced breaking changes with CMake native builds that prevent successful APK compilation. Gradle 8.13 is stable, fully compatible with React Native's build system, and widely tested.
 
-**What's Blocked**:
-- ❌ Building Android APK (`./gradlew assembleDebug` fails at CMake step)
-- ❌ Running app on emulator/device
-
-**Error**:
-```
-Execution failed for task ':app:configureCMakeDebug[arm64-v8a]'.
-> WARNING: A restricted method in java.lang.System has been called
-```
-
-**Workaround Options**:
-1. **Wait for React Native patch** (recommended) - React Native 0.83.2+ should address Gradle 9 compatibility
-2. **Focus on domain logic development** - Tests and business logic work perfectly
-3. **Downgrade React Native** (not recommended) - May break other dependencies
-
-**Environment Requirements**:
-- The build script (`build-android.sh`) unsets `NPM_CONFIG_PREFIX` which was causing npx failures
-- Android SDK path: `/home/stevendejong/Android/Sdk`
-- Emulator and adb commands available via PATH (configured in `~/.zshrc`)
-
-**When Fixed**:
-Once React Native releases a Gradle 9-compatible version, the build should work immediately using:
-```bash
-./build-android.sh
-# or
-npx react-native run-android
-```
+**Java Version Note**:
+The build script (`build-android.sh`) sets `JAVA_HOME=/usr/lib/jvm/java-17-openjdk` because Gradle 8.13 requires Java 17 and does not support Java 25+. On systems with Java 25 as the default, the build will automatically use Java 17.
 
 ## Next Steps
 
