@@ -41,7 +41,7 @@ describe('ServerSetupScreen', () => {
     const input = getByPlaceholderText('https://api.example.com')
     fireEvent.changeText(input, 'https://api.test.com')
 
-    expect(input.props.value).toBe('https://api.test.com')
+    expect(input.props['value']).toBe('https://api.test.com')
   })
 
   it('should show error for empty URL on submit', async () => {
@@ -152,8 +152,8 @@ describe('ServerSetupScreen', () => {
     await waitFor(() => {
       const savingButton = queryByText('Saving...')
       expect(savingButton).toBeTruthy()
-      if (savingButton) {
-        expect(savingButton.parent?.props.accessibilityState.disabled).toBe(true)
+      if (savingButton && savingButton.parent) {
+        expect(savingButton.parent.props['accessibilityState'].disabled).toBe(true)
       }
     })
 
