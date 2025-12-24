@@ -1,5 +1,5 @@
 interface InjectionDependency {
-  doSomething(): void;
+  doSomething(): void
 }
 
 export const REAL = 'REAL'

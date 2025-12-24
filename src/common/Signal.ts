@@ -1,27 +1,40 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 export class Signal<T> {
   private key: string
   private value: T
   private subscribers: ((value: T) => void)[]
+  private initialized: boolean
 
   constructor(key: string, initialValue: T) {
-    this.key = `Schedulr_${key}`
+    this.key = `Guidr_${key}`
     this.subscribers = []
-    const storedValue = localStorage.getItem(this.key)
+    this.value = initialValue
+    this.initialized = false
+  }
+
+  async initialize(): Promise<void> {
+    if (this.initialized) {
+      return
+    }
+
+    const storedValue = await AsyncStorage.getItem(this.key)
     if (storedValue !== null) {
       this.value = JSON.parse(storedValue)
     } else {
-      this.value = initialValue
-      localStorage.setItem(this.key, JSON.stringify(this.value))
+      await AsyncStorage.setItem(this.key, JSON.stringify(this.value))
     }
+
+    this.initialized = true
   }
 
   get(): T {
     return this.value
   }
 
-  set(newValue: T): void {
+  async set(newValue: T): Promise<void> {
     this.value = newValue
-    localStorage.setItem(this.key, JSON.stringify(this.value))
+    await AsyncStorage.setItem(this.key, JSON.stringify(this.value))
     this.notifySubscribers()
   }
 
