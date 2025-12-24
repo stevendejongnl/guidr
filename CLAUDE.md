@@ -4,183 +4,273 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Guidr** (currently named "schedulr" in code) is a step-by-step guide execution app for Android and iOS. The app helps users execute multi-step processes with precise timing, such as recipes, workout routines, lab protocols, and study sessions. Built with Domain-Driven Design principles and Test-Driven Development.
+**Guidr** is a step-by-step guide execution app for Android and iOS. The app helps users execute multi-step processes with precise timing - from recipes to workout routines, lab protocols, and study sessions. Built with Domain-Driven Design principles and Test-Driven Development using bare React Native (not Expo) with TypeScript.
 
-**Current Status**: Early development - web components prototype being built with Lit. The frontend architecture is being established before React Native integration.
+**Current Status**: Core domain logic complete (171 tests passing). Server URL configuration screen implemented. Ready for feature development.
 
 ## Commands
 
-### Build and Development
+### React Native Development
 ```bash
-# Clean build artifacts
-npm run clean
+# Start Metro bundler
+npm start
 
-# Compile TypeScript
-npm run compile
+# Run on Android
+npm run android
 
-# Build bundle (Rollup)
-npm run build
+# Run on iOS (macOS only)
+npm run ios
 
-# Build and start dev server
-npm run start
-
-# Watch mode (build + dev server)
-npm run watch
+# Build Android APK
+cd android && ./gradlew assembleDebug
 ```
 
-### Testing
+### Testing and Quality
 ```bash
-# Run all tests (compiles, builds, then runs web-test-runner)
+# Run all tests (Jest)
 npm test
 
-# Test in specific browsers
-BROWSERS=chromium npm test
-BROWSERS=chromium,firefox npm test
-```
+# Run tests in watch mode
+npm run test:watch
 
-### Linting
-```bash
-# Run ESLint on TypeScript files
+# Run tests with coverage
+npm run test:coverage
+
+# Lint TypeScript/TSX files
 npm run lint
+
+# Auto-fix lint issues
+npm run lint:fix
+
+# Type check without emitting
+npm run typecheck
 ```
 
 ## Architecture
 
 ### Tech Stack
-- **Frontend Framework**: Lit (Web Components) with TypeScript
-- **Build Tool**: Rollup with SWC for bundling and minification
-- **Testing**: @web/test-runner with Playwright (Chromium, Firefox, WebKit)
-- **Linting**: ESLint with TypeScript support
-- **Module System**: ES Modules (type: "module" in package.json)
+- **Framework**: React Native (bare workflow) with TypeScript
+- **State Management**: React hooks, AsyncStorage for persistence
+- **Testing**: Jest + React Native Testing Library + ts-jest
+- **Navigation**: React Navigation (planned)
+- **Architecture**: Domain-Driven Design (DDD)
+- **Development Approach**: Test-Driven Development (TDD)
 
-### Code Organization
+### Domain-Driven Design Structure
 
 ```
 src/
-├── main.ts                          # Entry point - exports all components
-├── components/
-│   ├── app.ts                       # Root <schedulr-app> component
-│   ├── layout/
-│   │   └── header.ts                # Header component
-│   ├── schedules/
-│   │   ├── schedule-list.ts         # List view for schedules
-│   │   ├── task.ts                  # Individual task component
-│   │   └── add-task.ts              # Task creation component
-│   └── schedule.ts                  # Schedule execution view
-└── common/
-    ├── signal.ts                    # Reactive state management with localStorage persistence
-    └── dependency-injection.ts      # DI container for testing and modularity
+├── common/
+│   ├── DependencyInjection.ts    # Simple DI container
+│   └── Signal.ts                 # Reactive state with AsyncStorage persistence
+├── domain/
+│   ├── entities/                 # Core business objects
+│   │   ├── Category.ts          # Hierarchical guide organization
+│   │   ├── Guide.ts             # Guide metadata and step references
+│   │   ├── Step.ts              # Individual timed actions
+│   │   └── Session.ts           # State machine for guide execution
+│   ├── repositories/            # Data access interfaces
+│   │   ├── ICategoryRepository.ts
+│   │   ├── IGuideRepository.ts
+│   │   ├── IStepRepository.ts
+│   │   └── ISessionRepository.ts
+│   └── services/                # Business logic orchestration
+│       ├── CategoryService.ts   # Category CRUD and hierarchy management
+│       ├── GuideService.ts      # Guide CRUD and step association
+│       └── SessionService.ts    # Session state machine and step validation
+├── infrastructure/
+│   └── storage/
+│       └── ServerConfigStorage.ts  # AsyncStorage wrapper for server URL
+└── presentation/
+    ├── screens/
+    │   ├── ServerSetupScreen.tsx   # One-time server configuration
+    │   └── HomeScreen.tsx          # Placeholder home screen
+    ├── navigation/
+    │   └── AppNavigator.tsx        # Route logic (setup vs home)
+    └── App.tsx                     # Main app entry point
 ```
 
-### Key Architectural Patterns
+### Domain Concepts
 
-**1. Lit Web Components**
-- All UI components extend `LitElement`
-- Use `@customElement` decorator to register custom elements
-- Use `@property` and `@state` decorators for reactive properties
-- Templates use `html` tagged template literals
-- Styles use `css` tagged template literals
+**Entities** (with comprehensive tests):
+- **Category**: Hierarchical organization (parent-child relationships)
+- **Guide**: Contains ordered steps, belongs to a category
+- **Step**: Has order, title, description, duration in seconds
+- **Session**: State machine (NotStarted → InProgress ⇄ Paused → Completed/Cancelled)
 
-**2. Signal-based State Management**
-- Custom `Signal<T>` class in `src/common/signal.ts`
-- Provides reactive state with localStorage persistence
-- Supports subscribe/unsubscribe pattern
-- All signals prefixed with `Schedulr_` in localStorage
+**Services** (with mocked repository tests):
+- Use dependency injection
+- Generate UUIDs for new entities
+- Orchestrate entity operations and repository calls
+- Enforce business rules (e.g., steps must belong to guide)
 
-**3. Dependency Injection**
-- Simple DI container in `src/common/dependency-injection.ts`
-- Used for swapping real/fake implementations in tests
-- Pattern: `register(name, dependency)` and `resolve(name)`
+**Repository Interfaces**:
+- Define contracts for data access
+- Implementations pending (will use API client)
 
-**4. Domain-Driven Design**
-- README mentions DDD principles but implementation is early stage
-- Future architecture will include: domain entities, repositories, services, presentation layers
+### Session State Machine
 
-### Build Pipeline
+```
+NotStarted ──start()──> InProgress
+                          ├──pause()──> Paused
+                          │             └──resume()──> InProgress
+                          ├──complete()──> Completed
+                          └──cancel()──> Cancelled
 
-1. **TypeScript Compilation**: `tsc -b` compiles TS to JS in `dist/` with source maps
-2. **Rollup Bundling**: Bundles from `src/main.ts` → `dist/bundle.js`
-   - Resolves node modules (@rollup/plugin-node-resolve)
-   - Handles TypeScript (@rollup/plugin-typescript)
-   - Minifies with SWC (@rollup/plugin-swc, target: esnext)
-   - Output format: IIFE (for browser)
-3. **Testing**: web-test-runner runs compiled tests (`dist/**/*.test.js`) in real browsers
-
-### Testing Strategy
-
-- Test files: `*.test.ts` co-located with source files
-- Framework: @open-wc/testing (provides Mocha + Chai + test helpers)
-- Test runner: @web/test-runner with Playwright
-- Tests run in compiled form from `dist/` directory
-- Test-specific ESLint rules disable `no-non-null-assertion` and `no-restricted-imports`
-
-### TypeScript Configuration
-
-- **Strict mode enabled**: All strict flags on
-- **Target**: ESNext with DOM libs
-- **Module system**: NodeNext (ES Modules)
-- **Base URL**: `./src` (for absolute imports)
-- **Decorators**: Experimental decorators enabled (for Lit)
-- **Class fields**: `useDefineForClassFields: false` (required for Lit compatibility)
-- **Output**: `dist/` with source maps and declaration files
-
-### Code Style (ESLint)
-
-- **Indentation**: 2 spaces
-- **Quotes**: Single quotes
-- **Semicolons**: Never
-- **Spacing**: Object curly spacing required
-- **Linebreak**: Unix (LF)
-- **Special rules**:
-  - No non-null assertions (`!`) except in tests
-  - `@typescript-eslint/no-explicit-any` disabled
-  - Space before function parens: never for named/anonymous, always for async arrows
-
-### Running Tests
-
-Tests must be compiled and bundled before running:
-```bash
-npm run pretest  # Compiles and builds
-npm test         # Runs web-test-runner
+Active states (can moveToStep): InProgress, Paused
+Terminal states: Completed, Cancelled
 ```
 
-To run a single test file, you would need to modify the `files` glob in `web-test-runner.config.js` or use file filtering options.
+## Testing
 
-### Development Workflow
+### Testing Stack
+- **Test Runner**: Jest with ts-jest preset
+- **React Native Testing**: @testing-library/react-native
+- **Mocking**: jest.mock(), React Native components mocked in `__mocks__/`
+- **Coverage**: 171 tests passing (entities, services, storage, screens)
 
-1. **Local development**:
-   ```bash
-   npm run watch  # Starts concurrent build watcher and http-server
-   ```
-   - Open `http://localhost:8080/index.html`
-   - Edit files in `src/`
-   - Rollup rebuilds on changes
+### TDD Workflow (RED-GREEN-REFACTOR)
+1. **RED**: Write failing test first
+2. **GREEN**: Implement minimal code to pass
+3. **REFACTOR**: Improve code while keeping tests green
+4. **Verify**: `npm test && npm run lint && npm run typecheck`
 
-2. **Testing changes**:
-   ```bash
-   npm test  # Runs full test suite
-   ```
+### Test Categories
+- **Entity Tests**: Business logic, validation, state management
+- **Service Tests**: Mocked repositories, business rules, error handling
+- **Storage Tests**: Mocked AsyncStorage, validation
+- **Screen Tests**: Mocked dependencies, user interactions, loading states
 
-3. **Before committing**:
-   ```bash
-   npm run lint  # Check code style
-   npm test      # Verify tests pass
-   ```
+### Example Test Pattern (Service with Mocked Repository)
+```typescript
+describe('GuideService', () => {
+  let guideService: GuideService
+  let mockGuideRepository: jest.Mocked<IGuideRepository>
+  let mockStepRepository: jest.Mocked<IStepRepository>
 
-### Important Notes
+  beforeEach(() => {
+    mockGuideRepository = {
+      findById: jest.fn(),
+      save: jest.fn(),
+      // ...
+    }
+    mockStepRepository = { /* ... */ }
+    guideService = new GuideService(mockGuideRepository, mockStepRepository)
+  })
 
-- The project is currently called "schedulr" in code but "Guidr" in documentation (README)
-- Web Components are being used for the prototype; React Native integration is planned
-- The app is being built for personal use on Android and iOS (no store deployment planned)
-- Husky is configured for git hooks
-- Semantic release is configured in `release.config.cjs`
-- Uses `http-server` for local development (no complex dev server needed)
+  it('should create guide with generated ID', async () => {
+    const guide = await guideService.createGuide('cat-1', 'Title')
+    expect(guide.id).toBeDefined()
+    expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+  })
+})
+```
 
-### Domain Concepts (from README)
+## First-Time Setup
 
-- **Category**: Hierarchical organization unit for guides
-- **Guide**: A procedure or recipe with multiple steps
-- **Step**: A timed action within a guide
-- **Session**: An active guide execution instance
+### Server URL Configuration
+On first launch, users see **ServerSetupScreen** to enter their Guidr server URL:
+- Validates URL format (HTTP/HTTPS only)
+- Stores in AsyncStorage via ServerConfigStorage
+- Shows errors for invalid URLs
+- Redirects to HomeScreen after successful save
 
-The domain model implementation is not yet present in the codebase but will follow clean architecture principles with strict layer separation.
+AppNavigator checks for server URL on mount and routes accordingly.
+
+## Code Style and Conventions
+
+### TypeScript
+- **Strict mode**: All strict flags enabled
+- **No implicit any**: All types must be explicit
+- **Path aliases**: Use `@domain/`, `@infrastructure/`, `@presentation/`, `@common/`
+- **React Native JSX**: Configured in tsconfig.json
+
+### React Native Components
+- **Functional components**: Always use `React.FC`
+- **Hooks**: useState, useEffect (follow rules of hooks)
+- **StyleSheet**: Use StyleSheet.create() for all styles
+- **Accessibility**: Always set accessibilityState for buttons
+
+### Entity Design
+- **Readonly identity fields**: `readonly id: string`
+- **Private mutable fields**: `private _name: string` with getters
+- **Validation in constructor**: Throw errors for invalid state
+- **Update methods**: Validate input, update _updatedAt timestamp
+- **Immutable getters**: Return copies for arrays (e.g., `get stepIds()` returns `[...this._stepIds]`)
+
+### Service Design
+- **Dependency injection**: Accept repositories in constructor
+- **UUID generation**: Use `react-native-uuid` for IDs
+- **Error messages**: Clear, actionable (e.g., "Category with id cat-1 not found")
+- **Async operations**: All repository calls are async
+
+## CI/CD
+
+GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
+- **Lint**: ESLint on all TypeScript/TSX files
+- **Test**: Run full Jest suite
+- **Typecheck**: Verify TypeScript compilation
+- **Android Build**: Assemble debug APK with JDK 17
+
+All checks must pass before merging.
+
+## Development Guidelines
+
+### Before Implementing Features
+1. Read relevant entity/service files to understand existing patterns
+2. Write tests first (TDD)
+3. Implement minimal code to pass tests
+4. Verify: `npm test && npm run lint && npm run typecheck`
+
+### When Adding New Entities
+1. Create entity class with validation
+2. Write comprehensive entity tests
+3. Create repository interface
+4. Create service with dependency injection
+5. Write service tests with mocked repository
+6. Follow existing patterns (Category, Guide, Step, Session)
+
+### When Adding New Screens
+1. Create screen component with TypeScript
+2. Write screen tests using React Native Testing Library
+3. Mock dependencies (services, storage)
+4. Test user interactions, loading states, error handling
+5. Add to AppNavigator
+
+### Avoid Over-Engineering
+- Don't add features not explicitly requested
+- Don't add error handling for impossible scenarios
+- Don't create abstractions for one-time operations
+- Keep it simple: three similar lines > premature abstraction
+
+## Common Issues and Solutions
+
+### Jest + React Native Testing
+- React Native modules must be mocked (`__mocks__/react-native.js`)
+- Use ts-jest preset, not react-native preset (Babel issues)
+- JSX transform: `jsx: 'react'` in jest.config.js
+- AsyncStorage must be mocked in tests
+
+### TypeScript Strict Mode
+- Use bracket notation for test props: `props['value']` instead of `props.value`
+- All entity constructor params must be validated
+- No optional params without explicit `undefined` type
+
+### Git Workflow
+- Commits: Clear, descriptive messages
+- No mention of Claude/AI assistants in commits
+- Push after completing each phase
+
+## Next Steps
+
+**Planned Features** (not yet implemented):
+- Repository implementations (API client)
+- Category/Guide/Step CRUD screens
+- Session execution screen with timer
+- Notifications for step completion
+- Offline sync with backend
+
+**Backend Requirements** (not yet implemented):
+- REST API for CRUD operations
+- Guide/Step/Session persistence
+- User authentication (optional)
