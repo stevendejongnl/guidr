@@ -32,6 +32,7 @@ jobs:
             -sdk iphonesimulator \
             -configuration Debug \
             -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation)' \
+            -derivedDataPath ./build \
             build \
             CODE_SIGNING_ALLOWED=NO
 
