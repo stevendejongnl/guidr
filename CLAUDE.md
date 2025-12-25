@@ -11,11 +11,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### React Native Development
+
+**Environment Setup (Required for npm run android)**:
+React Native requires specific environment variables to run correctly:
+- `JAVA_HOME`: Must point to Java 17 (Java 25+ not supported)
+- `ANDROID_HOME`: Must point to Android SDK location
+
+**Option 1 - Using direnv (recommended)**:
+The `.envrc` file automatically sets these variables. Allow it with:
+```bash
+direnv allow
+```
+
+**Option 2 - Using the wrapper script**:
+```bash
+./run-android.sh  # Sets environment and runs npm run android
+```
+
+**Option 3 - Manual export**:
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+export ANDROID_HOME=~/Android/Sdk
+npm run android
+```
+
 ```bash
 # Start Metro bundler
 npm start
 
-# Run on Android
+# Run on Android (ensure environment is set, see above)
 npm run android
 
 # Run on iOS (macOS only)
@@ -262,6 +286,12 @@ All checks must pass before merging.
 - Use bracket notation for test props: `props['value']` instead of `props.value`
 - All entity constructor params must be validated
 - No optional params without explicit `undefined` type
+
+### npm run android Hangs or Fails
+If `npm run android` hangs without output or fails:
+- **Cause**: React Native CLI requires Java 17-20 (not Java 25+) and `ANDROID_HOME` set
+- **Solution**: Use direnv (`.envrc`), the wrapper script (`./run-android.sh`), or manually export environment variables
+- **Diagnosis**: Run `npx react-native doctor` to check environment issues
 
 ### Git Workflow
 - Commits: Clear, descriptive messages

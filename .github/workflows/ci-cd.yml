@@ -67,11 +67,8 @@ jobs:
 
       - name: Build Android APK
         run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+          chmod +x android/gradlew
+          android/gradlew assembleDebug --no-daemon --stacktrace -p android
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
