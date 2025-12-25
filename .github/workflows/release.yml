@@ -1,0 +1,167 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: macos-15
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java for Android
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      - name: Run semantic-release (dry-run to get version)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx semantic-release --dry-run > release-output.txt 2>&1 || true
+
+          # Extract next version from semantic-release output
+          if grep -q "The next release version is" release-output.txt; then
+            NEXT_VERSION=$(grep "The next release version is" release-output.txt | sed 's/.*The next release version is //' | tr -d '[:space:]')
+            echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+            echo "SHOULD_RELEASE=true" >> $GITHUB_ENV
+            echo "Next version will be: $NEXT_VERSION"
+          else
+            echo "SHOULD_RELEASE=false" >> $GITHUB_ENV
+            echo "No release needed - no relevant commits since last release"
+          fi
+
+      - name: Build iOS IPA
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          cd ios
+
+          # Build archive for device
+          xcodebuild \
+            -workspace guidr.xcworkspace \
+            -scheme guidr \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath ./build/guidr.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+          # Create unsigned IPA
+          mkdir -p ./build/Payload
+          cp -r ./build/guidr.xcarchive/Products/Applications/guidr.app ./build/Payload/
+          cd ./build
+          zip -r guidr-unsigned.ipa Payload
+
+          # Get IPA size
+          IPA_SIZE=$(stat -f%z guidr-unsigned.ipa)
+          echo "IPA_SIZE=$IPA_SIZE" >> $GITHUB_ENV
+
+          echo "Built IPA: $(pwd)/guidr-unsigned.ipa (${IPA_SIZE} bytes)"
+
+      - name: Build Android APK
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          chmod +x android/gradlew
+          android/gradlew assembleRelease --no-daemon --stacktrace -p android
+
+          # Get APK size
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          if [ -f "$APK_PATH" ]; then
+            APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH")
+            echo "APK_SIZE=$APK_SIZE" >> $GITHUB_ENV
+            echo "Built APK: $APK_PATH (${APK_SIZE} bytes)"
+          else
+            echo "Warning: APK not found at expected path"
+            ls -la android/app/build/outputs/apk/release/ || true
+          fi
+
+      - name: Generate AltStore source JSON
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          cat > altstore-source.json << EOF
+          {
+            "name": "Guidr",
+            "identifier": "com.guidr.source",
+            "subtitle": "Step-by-step guide execution app",
+            "description": "Guidr helps you execute multi-step processes with precise timing - from recipes to workout routines, lab protocols, and study sessions.",
+            "iconURL": "https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/icon.png",
+            "headerURL": "https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/header.png",
+            "website": "https://github.com/${{ github.repository }}",
+            "tintColor": "#007AFF",
+            "apps": [
+              {
+                "name": "Guidr",
+                "bundleIdentifier": "com.guidr",
+                "developerName": "Guidr Team",
+                "subtitle": "Guide execution with precise timing",
+                "localizedDescription": "Execute multi-step processes with precision. Perfect for recipes, workouts, lab protocols, and study sessions. Built with React Native.",
+                "iconURL": "https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/app-icon.png",
+                "tintColor": "#007AFF",
+                "category": "productivity",
+                "screenshots": [],
+                "versions": [
+                  {
+                    "version": "${{ env.NEXT_VERSION }}",
+                    "date": "$(date -u +%Y-%m-%d)",
+                    "localizedDescription": "See CHANGELOG.md for details",
+                    "downloadURL": "https://github.com/${{ github.repository }}/releases/download/v${{ env.NEXT_VERSION }}/guidr-unsigned.ipa",
+                    "size": ${{ env.IPA_SIZE }},
+                    "minOSVersion": "13.0",
+                    "maxOSVersion": "18.0"
+                  }
+                ],
+                "appPermissions": {
+                  "entitlements": [],
+                  "privacy": {}
+                }
+              }
+            ],
+            "news": []
+          }
+          EOF
+
+      - name: Run semantic-release
+        if: env.SHOULD_RELEASE == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: No release needed
+        if: env.SHOULD_RELEASE == 'false'
+        run: |
+          echo "ℹ️  No release will be created"
+          echo "Reason: No relevant commits since last release"
+          echo ""
+          echo "To trigger a release, use conventional commit messages:"
+          echo "  feat: for new features (minor version bump)"
+          echo "  fix: for bug fixes (patch version bump)"
+          echo "  BREAKING CHANGE: for breaking changes (major version bump)"
