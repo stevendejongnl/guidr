@@ -50,6 +50,11 @@ ios/.xcode.env.local
 # macOS
 .DS_Store
 
+# Python test server
+test-server/venv/
+test-server/__pycache__/
+test-server/*.pyc
+
 # Misc
 .env.local
 .env.development.local

@@ -1,31 +1,57 @@
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, View, StyleSheet } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
+import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { ServerSetupScreen } from '../screens/ServerSetupScreen'
+import { LoginScreen } from '../screens/LoginScreen'
 import { HomeScreen } from '../screens/HomeScreen'
 
 export const AppNavigator: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [hasServerUrl, setHasServerUrl] = useState(false)
-  const storage = new ServerConfigStorage()
+  const [hasAuthToken, setHasAuthToken] = useState(false)
+  const [serverUrl, setServerUrl] = useState<string | null>(null)
+
+  const serverStorage = new ServerConfigStorage()
+  const authStorage = new AuthStorage()
 
   useEffect(() => {
-    checkServerConfig()
+    checkConfiguration()
   }, [])
 
-  const checkServerConfig = async () => {
+  const checkConfiguration = async () => {
     try {
-      const hasUrl = await storage.hasServerUrl()
+      const hasUrl = await serverStorage.hasServerUrl()
       setHasServerUrl(hasUrl)
+
+      if (hasUrl) {
+        const url = await serverStorage.getServerUrl()
+        setServerUrl(url)
+
+        const hasToken = await authStorage.hasAuthToken()
+        setHasAuthToken(hasToken)
+      }
     } catch (error) {
-      console.error('Failed to check server config:', error)
+      console.error('Failed to check configuration:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSetupComplete = () => {
+  const handleServerSetupComplete = async () => {
+    const url = await serverStorage.getServerUrl()
+    setServerUrl(url)
     setHasServerUrl(true)
+  }
+
+  const handleLoginComplete = () => {
+    setHasAuthToken(true)
+  }
+
+  const handleLogout = async () => {
+    await authStorage.clearAll()
+    setHasAuthToken(false)
   }
 
   if (loading) {
@@ -37,10 +63,21 @@ export const AppNavigator: React.FC = () => {
   }
 
   if (!hasServerUrl) {
-    return <ServerSetupScreen storage={storage} onComplete={handleSetupComplete} />
+    return <ServerSetupScreen storage={serverStorage} onComplete={handleServerSetupComplete} />
   }
 
-  return <HomeScreen />
+  if (!hasAuthToken && serverUrl) {
+    const authClient = new AuthClient(serverUrl)
+    return (
+      <LoginScreen
+        authStorage={authStorage}
+        authClient={authClient}
+        onComplete={handleLoginComplete}
+      />
+    )
+  }
+
+  return <HomeScreen onLogout={handleLogout} />
 }
 
 const styles = StyleSheet.create({
