@@ -1,0 +1,103 @@
+name: Initialize iOS Directory
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  contents: write  # Allow pushing commits
+
+jobs:
+  initialize-ios:
+    name: Initialize iOS Directory
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check if iOS directory already exists
+        run: |
+          if [ -d "ios" ]; then
+            echo "iOS directory already exists. Exiting."
+            exit 1
+          fi
+
+      - name: Create temporary React Native project
+        run: |
+          cd /tmp
+          npx @react-native-community/cli@latest init GuidrTemp --skip-install --version 0.83.1
+
+      - name: Copy iOS directory to project
+        run: |
+          cp -r /tmp/GuidrTemp/ios ./ios
+
+      - name: Update bundle identifier and app name
+        run: |
+          # Update bundle identifier from org.reactjs.native.example.GuidrTemp to com.guidr
+          find ios -type f \( -name "*.pbxproj" -o -name "*.plist" -o -name "*.m" -o -name "*.h" -o -name "*.xcscheme" \) \
+            -exec sed -i '' 's/org\.reactjs\.native\.example\.GuidrTemp/com.guidr/g' {} +
+
+          # Replace GuidrTemp with guidr (lowercase for technical names)
+          find ios -type f \( -name "*.pbxproj" -o -name "*.xcscheme" -o -name "Podfile" \) \
+            -exec sed -i '' 's/GuidrTemp/guidr/g' {} +
+
+          # Replace GuidrTemp with Guidr (capitalized for display names)
+          find ios -type f \( -name "*.plist" -o -name "*.m" -o -name "*.h" \) \
+            -exec sed -i '' 's/GuidrTemp/Guidr/g' {} +
+
+          # Rename Xcode project
+          if [ -d "ios/GuidrTemp.xcodeproj" ]; then
+            mv ios/GuidrTemp.xcodeproj ios/guidr.xcodeproj
+          fi
+
+          # Rename app directory
+          if [ -d "ios/GuidrTemp" ]; then
+            mv ios/GuidrTemp ios/guidr
+          fi
+
+          # Rename tests directory
+          if [ -d "ios/GuidrTempTests" ]; then
+            mv ios/GuidrTempTests ios/guidrTests
+          fi
+
+          # Update any remaining references in podfile
+          if [ -f "ios/Podfile" ]; then
+            sed -i '' "s/'GuidrTemp'/'guidr'/g" ios/Podfile
+          fi
+
+      - name: Ensure scheme is shared
+        run: |
+          # Create xcshareddata directory if it doesn't exist
+          mkdir -p ios/guidr.xcodeproj/xcshareddata/xcschemes
+
+          # Check if scheme exists in user data and copy to shared
+          if [ -d "ios/guidr.xcodeproj/xcuserdata" ]; then
+            find ios/guidr.xcodeproj/xcuserdata -name "*.xcscheme" -exec cp {} ios/guidr.xcodeproj/xcshareddata/xcschemes/ \;
+          fi
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      - name: Verify build works
+        run: |
+          cd ios
+          xcodebuild \
+            -workspace guidr.xcworkspace \
+            -scheme guidr \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Commit and push iOS directory
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ios/
+          git commit -m "Initialize iOS native directory with React Native 0.83.1"
+          git push
