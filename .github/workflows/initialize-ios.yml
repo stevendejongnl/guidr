@@ -73,51 +73,23 @@ jobs:
           mkdir -p ios/guidr.xcodeproj/xcshareddata/xcschemes
 
           # Find and rename scheme files
-          find ios/guidr.xcodeproj -name "GuidrTemp.xcscheme" | while read scheme; do
-            dirname=$(dirname "$scheme")
-            mv "$scheme" "$dirname/guidr.xcscheme"
+          find ios/guidr.xcodeproj -name "GuidrTemp.xcscheme" -type f | while read scheme; do
+            dir=$(dirname "$scheme")
+            mv "$scheme" "$dir/guidr.xcscheme"
           done
 
-          # Copy schemes to shared location
+          # Copy any schemes to shared location
           if [ -d "ios/guidr.xcodeproj/xcuserdata" ]; then
-            find ios/guidr.xcodeproj/xcuserdata -name "*.xcscheme" -exec cp {} ios/guidr.xcodeproj/xcshareddata/xcschemes/ \;
-          fi
-
-          # Also check xcshareddata directly
-          if [ ! -f "ios/guidr.xcodeproj/xcshareddata/xcschemes/guidr.xcscheme" ]; then
-            # Create a basic scheme file if none exists
-            cat > ios/guidr.xcodeproj/xcshareddata/xcschemes/guidr.xcscheme << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<Scheme
-   LastUpgradeVersion = "1540"
-   version = "1.7">
-   <BuildAction
-      parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
-      <BuildActionEntries>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "guidr.app"
-               BlueprintName = "guidr"
-               ReferencedContainer = "container:guidr.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-      </BuildActionEntries>
-   </BuildAction>
-</Scheme>
-EOF
+            find ios/guidr.xcodeproj/xcuserdata -name "*.xcscheme" -type f -exec cp {} ios/guidr.xcodeproj/xcshareddata/xcschemes/ \;
           fi
 
           # List schemes for debugging
           echo "Available schemes:"
-          xcodebuild -project ios/guidr.xcodeproj -list || true
+          xcodebuild -project ios/guidr.xcodeproj -list || echo "Could not list schemes"
+
+          # List what we have in shared schemes
+          echo "Shared schemes:"
+          ls -la ios/guidr.xcodeproj/xcshareddata/xcschemes/ || echo "No shared schemes directory"
 
       - name: Install CocoaPods dependencies
         run: |
