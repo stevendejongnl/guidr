@@ -31,13 +31,40 @@ if [ -z "$GITHUB_TOKEN" ]; then
 fi
 
 echo "Using curl with GITHUB_TOKEN..."
-curl -X POST \
+RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer $GITHUB_TOKEN" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/actions/workflows/$WORKFLOW_FILE/dispatches" \
-  -d "{\"ref\":\"$REF\"}"
+  -d "{\"ref\":\"$REF\"}")
 
-echo ""
-echo "✓ Workflow triggered successfully via API"
-echo "View at: https://github.com/$REPO_OWNER/$REPO_NAME/actions/workflows/$WORKFLOW_FILE"
+HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" -eq 204 ]; then
+    echo ""
+    echo "✓ Workflow triggered successfully via API"
+    echo "View at: https://github.com/$REPO_OWNER/$REPO_NAME/actions/workflows/$WORKFLOW_FILE"
+elif [ "$HTTP_CODE" -eq 403 ]; then
+    echo ""
+    echo "✗ Error: Token doesn't have 'workflow' scope"
+    echo ""
+    echo "To fix:"
+    echo "1. Go to: https://github.com/settings/tokens"
+    echo "2. Edit your token and enable 'workflow' scope"
+    echo "3. Regenerate the token and update GITHUB_TOKEN"
+    echo ""
+    echo "Or just trigger manually at:"
+    echo "https://github.com/$REPO_OWNER/$REPO_NAME/actions/workflows/$WORKFLOW_FILE"
+    exit 1
+elif [ "$HTTP_CODE" -eq 401 ]; then
+    echo ""
+    echo "✗ Error: Invalid or expired token"
+    echo "Response: $BODY"
+    exit 1
+else
+    echo ""
+    echo "✗ Error: Unexpected response (HTTP $HTTP_CODE)"
+    echo "Response: $BODY"
+    exit 1
+fi
