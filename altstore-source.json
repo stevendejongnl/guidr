@@ -1,0 +1,39 @@
+{
+  "name": "Guidr",
+  "identifier": "com.guidr.source",
+  "subtitle": "Step-by-step guide execution app",
+  "description": "Guidr helps you execute multi-step processes with precise timing - from recipes to workout routines, lab protocols, and study sessions.",
+  "iconURL": "https://raw.githubusercontent.com/stevendejongnl/guidr/main/.github/assets/icon.png",
+  "headerURL": "https://raw.githubusercontent.com/stevendejongnl/guidr/main/.github/assets/header.png",
+  "website": "https://github.com/stevendejongnl/guidr",
+  "tintColor": "#007AFF",
+  "apps": [
+    {
+      "name": "Guidr",
+      "bundleIdentifier": "com.guidr",
+      "developerName": "Guidr Team",
+      "subtitle": "Guide execution with precise timing",
+      "localizedDescription": "Execute multi-step processes with precision. Perfect for recipes, workouts, lab protocols, and study sessions. Built with React Native.",
+      "iconURL": "https://raw.githubusercontent.com/stevendejongnl/guidr/main/.github/assets/app-icon.png",
+      "tintColor": "#007AFF",
+      "category": "productivity",
+      "screenshots": [],
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2025-12-25",
+          "localizedDescription": "See CHANGELOG.md for details",
+          "downloadURL": "https://github.com/stevendejongnl/guidr/releases/download/v1.0.0/guidr-unsigned.ipa",
+          "size": 3938694,
+          "minOSVersion": "13.0",
+          "maxOSVersion": "18.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {}
+      }
+    }
+  ],
+  "news": []
+}
