@@ -35,36 +35,41 @@ jobs:
 
       - name: Update bundle identifier and app name
         run: |
+          # Rename directories first (before updating file contents)
+          if [ -d "ios/GuidrTemp.xcodeproj" ]; then
+            mv ios/GuidrTemp.xcodeproj ios/guidr.xcodeproj
+          fi
+
+          if [ -d "ios/GuidrTemp" ]; then
+            mv ios/GuidrTemp ios/guidr
+          fi
+
+          if [ -d "ios/GuidrTempTests" ]; then
+            mv ios/GuidrTempTests ios/guidrTests
+          fi
+
           # Update bundle identifier from org.reactjs.native.example.GuidrTemp to com.guidr
           find ios -type f \( -name "*.pbxproj" -o -name "*.plist" -o -name "*.m" -o -name "*.h" -o -name "*.xcscheme" \) \
             -exec sed -i '' 's/org\.reactjs\.native\.example\.GuidrTemp/com.guidr/g' {} +
 
-          # Replace GuidrTemp with guidr (lowercase for technical names)
-          find ios -type f \( -name "*.pbxproj" -o -name "*.xcscheme" -o -name "Podfile" \) \
+          # Replace GuidrTemp with guidr (lowercase for technical names) in project files
+          find ios -type f \( -name "*.pbxproj" -o -name "*.xcscheme" \) \
             -exec sed -i '' 's/GuidrTemp/guidr/g' {} +
 
           # Replace GuidrTemp with Guidr (capitalized for display names)
           find ios -type f \( -name "*.plist" -o -name "*.m" -o -name "*.h" \) \
             -exec sed -i '' 's/GuidrTemp/Guidr/g' {} +
 
-          # Rename Xcode project
-          if [ -d "ios/GuidrTemp.xcodeproj" ]; then
-            mv ios/GuidrTemp.xcodeproj ios/guidr.xcodeproj
-          fi
-
-          # Rename app directory
-          if [ -d "ios/GuidrTemp" ]; then
-            mv ios/GuidrTemp ios/guidr
-          fi
-
-          # Rename tests directory
-          if [ -d "ios/GuidrTempTests" ]; then
-            mv ios/GuidrTempTests ios/guidrTests
-          fi
-
-          # Update any remaining references in podfile
+          # Update Podfile comprehensively
           if [ -f "ios/Podfile" ]; then
+            sed -i '' 's/GuidrTemp/guidr/g' ios/Podfile
             sed -i '' "s/'GuidrTemp'/'guidr'/g" ios/Podfile
+            sed -i '' 's/"GuidrTemp"/"guidr"/g' ios/Podfile
+
+            # Show Podfile for debugging
+            echo "=== Podfile contents after updates ==="
+            cat ios/Podfile
+            echo "=== End of Podfile ==="
           fi
 
       - name: Ensure scheme is shared
@@ -94,7 +99,18 @@ jobs:
       - name: Install CocoaPods dependencies
         run: |
           cd ios
-          pod install
+          echo "=== Installing CocoaPods dependencies ==="
+          echo "Current directory: $(pwd)"
+          echo "Files in directory:"
+          ls -la
+
+          # Install pods with verbose output
+          pod install --verbose || {
+            echo "=== Pod install failed, showing diagnostic info ==="
+            echo "Podfile.lock contents (if exists):"
+            cat Podfile.lock || echo "No Podfile.lock found"
+            exit 1
+          }
 
       - name: Verify build works
         run: |
