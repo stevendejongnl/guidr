@@ -56,6 +56,27 @@ emulator -list-avds    # list available emulators
 adb devices
 ```
 
+**iOS Development Commands** (macOS only):
+```bash
+# Run on iOS simulator
+npm run ios
+
+# Install CocoaPods dependencies
+cd ios && pod install
+
+# Open Xcode workspace
+open ios/guidr.xcworkspace
+
+# List available simulators
+xcrun simctl list devices available
+
+# Boot specific simulator
+xcrun simctl boot "iPhone 15"
+
+# Build iOS simulator locally
+./build-ios-simulator.sh
+```
+
 ### Testing and Quality
 ```bash
 # Run all tests (Jest)
@@ -242,6 +263,7 @@ GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
 - **Test**: Run full Jest suite
 - **Typecheck**: Verify TypeScript compilation
 - **Android Build**: Builds debug APK and uploads as artifact
+- **iOS Build**: Builds simulator .app and uploads as artifact (requires ios/ directory)
 
 All checks must pass before merging.
 
@@ -315,6 +337,54 @@ The project uses Gradle 8.13 instead of Gradle 9.0 (which ships with React Nativ
 
 **Java Version Note**:
 The build script (`build-android.sh`) sets `JAVA_HOME=/usr/lib/jvm/java-17-openjdk` because Gradle 8.13 requires Java 17 and does not support Java 25+. On systems with Java 25 as the default, the build will automatically use Java 17.
+
+### iOS Build Configuration
+
+**Build Setup**:
+- **Xcode**: 15+ (tested with GitHub Actions macos-15 runner)
+- **CocoaPods**: Latest stable (managed by React Native)
+- **Target**: iOS 13+ minimum (React Native 0.83.1 requirement)
+- **Bundle Identifier**: com.guidr
+- **Build Type**: Simulator build (Debug configuration)
+- **Signing**: None required (CODE_SIGNING_ALLOWED=NO)
+
+**Why Simulator Build?**
+The project uses iOS simulator builds in CI/CD to avoid requiring an Apple Developer account ($99/year). Simulator builds are sufficient for:
+- Verifying code compiles successfully
+- Running automated tests
+- Type checking and lint validation
+- Local development and testing
+
+**Local iOS Development**:
+```bash
+# Run on iOS simulator (macOS only)
+npm run ios
+
+# Install/update CocoaPods dependencies
+cd ios && pod install
+
+# Open Xcode workspace for development
+open ios/guidr.xcworkspace
+```
+
+**CI/CD iOS Build**:
+- Uses macos-15 runner (GitHub Actions)
+- Direct xcodebuild commands (no signing)
+- Builds for iOS Simulator (iPhone 15)
+- Produces .app artifact (7-day retention)
+
+**Upgrading to Device Builds** (Future):
+When you're ready to distribute to physical devices:
+1. Enroll in Apple Developer Program ($99/year)
+2. Create development certificates and provisioning profiles
+3. Update CI/CD workflow to build for device (`-sdk iphoneos`)
+4. Add certificate/profile management to workflow
+5. Change output from .app to .ipa
+
+**Cost Considerations**:
+- iOS builds use macOS runners: ~$0.96 per build (12 minutes @ $0.08/min)
+- Android builds use ubuntu runners: ~$0.04 per build (5 minutes @ $0.008/min)
+- Consider using path filters to skip unnecessary builds
 
 ## Next Steps
 
