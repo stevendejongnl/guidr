@@ -96,6 +96,11 @@ jobs:
           echo "Shared schemes:"
           ls -la ios/guidr.xcodeproj/xcshareddata/xcschemes/ || echo "No shared schemes directory"
 
+      - name: Install npm dependencies
+        run: |
+          echo "=== Installing npm dependencies ==="
+          npm ci
+
       - name: Install CocoaPods dependencies
         run: |
           cd ios
