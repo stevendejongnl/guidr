@@ -125,7 +125,7 @@ jobs:
             -scheme guidr \
             -sdk iphonesimulator \
             -configuration Debug \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation)' \
             build \
             CODE_SIGNING_ALLOWED=NO
 
