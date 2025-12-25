@@ -69,13 +69,55 @@ jobs:
 
       - name: Ensure scheme is shared
         run: |
-          # Create xcshareddata directory if it doesn't exist
+          # Create xcshareddata directory
           mkdir -p ios/guidr.xcodeproj/xcshareddata/xcschemes
 
-          # Check if scheme exists in user data and copy to shared
+          # Find and rename scheme files
+          find ios/guidr.xcodeproj -name "GuidrTemp.xcscheme" | while read scheme; do
+            dirname=$(dirname "$scheme")
+            mv "$scheme" "$dirname/guidr.xcscheme"
+          done
+
+          # Copy schemes to shared location
           if [ -d "ios/guidr.xcodeproj/xcuserdata" ]; then
             find ios/guidr.xcodeproj/xcuserdata -name "*.xcscheme" -exec cp {} ios/guidr.xcodeproj/xcshareddata/xcschemes/ \;
           fi
+
+          # Also check xcshareddata directly
+          if [ ! -f "ios/guidr.xcodeproj/xcshareddata/xcschemes/guidr.xcscheme" ]; then
+            # Create a basic scheme file if none exists
+            cat > ios/guidr.xcodeproj/xcshareddata/xcschemes/guidr.xcscheme << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1540"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
+               BuildableName = "guidr.app"
+               BlueprintName = "guidr"
+               ReferencedContainer = "container:guidr.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+</Scheme>
+EOF
+          fi
+
+          # List schemes for debugging
+          echo "Available schemes:"
+          xcodebuild -project ios/guidr.xcodeproj -list || true
 
       - name: Install CocoaPods dependencies
         run: |
