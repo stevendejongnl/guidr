@@ -381,11 +381,6 @@ When you're ready to distribute to physical devices:
 4. Add certificate/profile management to workflow
 5. Change output from .app to .ipa
 
-**Cost Considerations**:
-- iOS builds use macOS runners: ~$0.96 per build (12 minutes @ $0.08/min)
-- Android builds use ubuntu runners: ~$0.04 per build (5 minutes @ $0.008/min)
-- Consider using path filters to skip unnecessary builds
-
 ### TestFlight Distribution
 
 **Deployment Setup**:
@@ -466,11 +461,9 @@ External testers (public beta):
 2. Install TestFlight app from App Store
 3. Open invite link → Install Guidr
 
-**Cost Analysis**:
-- **TestFlight build**: ~15 minutes = $1.20 per build (macOS runner)
-- **Simulator build** (PR checks): ~2 minutes = $0.16 per build
-- **Android build** (PRs): ~5 minutes Ubuntu = $0.04 per build
-- **Monthly estimate** (20 PRs, 4 releases): ~$13/month (within GitHub free tier)
+**GitHub Actions Cost**:
+- ✅ **FREE** - Public repositories have unlimited GitHub Actions minutes
+- All builds (TestFlight, simulator, Android) cost nothing
 
 **Local TestFlight Build** (optional, requires Mac):
 ```bash

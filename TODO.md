@@ -203,37 +203,16 @@ These are configured and will run automatically:
 
 ---
 
-## Cost Information (Updated)
+## GitHub Actions Cost
 
-### GitHub Actions Costs
+✅ **Completely FREE** - This is a public repository with unlimited GitHub Actions minutes
 
-**If your repository is PUBLIC** (recommended):
-- ✅ **Completely FREE** - unlimited minutes for public repos
-- No costs for any builds (simulator, Android, or TestFlight)
+All builds cost nothing:
+- TestFlight builds: FREE
+- Simulator builds: FREE
+- Android builds: FREE
 
-**If your repository is PRIVATE**:
-- **Free Tier**: 2,000 minutes/month
-- **macOS runners**: Count as 10x (10 minutes per 1 actual minute)
-- **Ubuntu runners**: Count as 1x
-
-**Monthly estimate (private repo)**:
-- TestFlight build: 15 actual minutes = 150 counted minutes
-- Simulator build: 2 actual minutes = 20 counted minutes
-- Android build: 5 actual minutes = 5 counted minutes
-
-**Free allowance (private repo)**:
-- With 2,000 free minutes/month you can do:
-  - ~13 TestFlight builds/month FREE
-  - ~100 simulator builds/month FREE
-  - ~400 Android builds/month FREE
-- Typical usage (20 PRs, 4 releases): ~580 minutes/month
-- **Result**: Completely within free tier, $0 cost
-
-**Apple Developer Program**:
-- $99/year (already paid) ✅
-- No additional costs for TestFlight distribution
-- Up to 10,000 external testers (free)
-- Unlimited internal testers (free)
+**Apple Developer Program**: $99/year (already paid) - enables TestFlight and App Store distribution
 
 ---
 
