@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     marginBottom: 8,
+    color: '#333',
   },
   inputError: {
     borderColor: '#f44336',
