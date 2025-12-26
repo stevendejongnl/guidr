@@ -15,7 +15,7 @@ jobs:
   release:
     name: Semantic Release
     runs-on: macos-15
-    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@v4
         with:

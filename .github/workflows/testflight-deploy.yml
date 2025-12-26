@@ -1,10 +1,10 @@
 name: TestFlight Deployment
 
 on:
-  # Trigger on version tags created by semantic-release
-  push:
-    tags:
-      - 'v*'
+  # Trigger after Release workflow completes successfully
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
   # Allow manual trigger
   workflow_dispatch:
     inputs:
@@ -21,10 +21,23 @@ jobs:
   testflight-build:
     name: Build and Deploy to TestFlight
     runs-on: macos-15
+    # Only run if manual trigger OR Release workflow succeeded and created a release
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       contains(github.event.workflow_run.head_commit.message, 'chore(release):'))
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Fetch tags and checkout latest
+        if: github.event_name == 'workflow_run'
+        run: |
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          git checkout $LATEST_TAG
+          echo "Checked out tag: $LATEST_TAG"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
