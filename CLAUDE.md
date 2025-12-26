@@ -386,6 +386,194 @@ When you're ready to distribute to physical devices:
 - Android builds use ubuntu runners: ~$0.04 per build (5 minutes @ $0.008/min)
 - Consider using path filters to skip unnecessary builds
 
+### TestFlight Distribution
+
+**Deployment Setup**:
+- **TestFlight Workflow**: `.github/workflows/testflight-deploy.yml`
+- **Signing**: Automatic with App Store Connect API
+- **Build Type**: App Store distribution (signed IPA for device)
+- **Upload Method**: App Store Connect API (no 2FA required)
+- **Trigger**: Automatic on version tags (v*) or manual via workflow_dispatch
+
+**Prerequisites** (one-time setup completed):
+1. Apple Developer Program membership ($99/year) ✓
+2. App ID registered for `com.guidr` with App Groups and Keychain Sharing
+3. App created in App Store Connect (name: "Guidr", SKU: "guidr-ios")
+4. App Store Connect API key with App Manager role
+5. GitHub Secrets configured:
+   - `APPLE_TEAM_ID`: Apple Team ID (10 characters)
+   - `APP_STORE_CONNECT_API_KEY_ID`: API Key ID
+   - `APP_STORE_CONNECT_ISSUER_ID`: API Issuer ID (UUID)
+   - `APP_STORE_CONNECT_API_KEY_CONTENT`: Complete .p8 file content
+
+**Triggering TestFlight Builds**:
+
+Automatic deployment on releases:
+```bash
+# Semantic-release creates version tag automatically
+git commit -m "feat: add new feature"
+git push origin main
+# Release workflow runs → creates tag → triggers TestFlight deployment
+```
+
+Manual deployment via GitHub Actions UI:
+```bash
+# Go to: Actions → TestFlight Deployment → Run workflow
+# Options:
+#   - Branch: main (or any branch)
+#   - skip_testflight: false (upload) or true (build only)
+```
+
+Manual trigger via CLI:
+```bash
+# Create and push version tag
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+**Build Process**:
+1. Checkout code and install dependencies (Node, CocoaPods)
+2. Create API key file from GitHub Secret
+3. Auto-increment build number (timestamp: YYYYMMDDHHmmss)
+4. Build iOS archive with code signing:
+   - SDK: iphoneos (device)
+   - Configuration: Release
+   - Code Sign Style: Automatic
+   - Team ID: From GitHub Secret
+   - Provisioning: Auto-fetched from Apple
+5. Export signed IPA using ExportOptions.plist
+6. Upload to TestFlight using `xcrun altool`
+7. Upload IPA as GitHub artifact (30-day retention)
+8. Cleanup API key file
+
+**TestFlight Review Process**:
+1. Build uploads to App Store Connect automatically
+2. Apple processes the build (10-15 minutes typical)
+3. Build appears in App Store Connect → TestFlight tab
+4. Build available for **internal testing** immediately (up to 100 testers)
+5. For **external testing**: Submit for Apple review (1-2 business days)
+6. After approval: External testers can install (up to 10,000 testers)
+
+**Installing TestFlight Builds**:
+
+Internal testers (Apple Developer team members):
+1. Install TestFlight app from App Store
+2. Accept invite email from App Store Connect
+3. Open TestFlight app → see Guidr → Install
+
+External testers (public beta):
+1. Receive public link or email invite
+2. Install TestFlight app from App Store
+3. Open invite link → Install Guidr
+
+**Cost Analysis**:
+- **TestFlight build**: ~15 minutes = $1.20 per build (macOS runner)
+- **Simulator build** (PR checks): ~2 minutes = $0.16 per build
+- **Android build** (PRs): ~5 minutes Ubuntu = $0.04 per build
+- **Monthly estimate** (20 PRs, 4 releases): ~$13/month (within GitHub free tier)
+
+**Local TestFlight Build** (optional, requires Mac):
+```bash
+cd ios
+
+# Build archive
+xcodebuild \
+  -workspace guidr.xcworkspace \
+  -scheme guidr \
+  -sdk iphoneos \
+  -configuration Release \
+  -archivePath ./build/guidr.xcarchive \
+  archive
+
+# Export IPA
+xcodebuild \
+  -exportArchive \
+  -archivePath ./build/guidr.xcarchive \
+  -exportPath ./build \
+  -exportOptionsPlist ./ExportOptions.plist
+
+# Upload to TestFlight
+xcrun altool \
+  --upload-app \
+  --type ios \
+  --file ./build/guidr.ipa \
+  --apiKey YOUR_KEY_ID \
+  --apiIssuer YOUR_ISSUER_ID
+```
+
+**Troubleshooting Common Issues**:
+
+**Problem**: "No signing certificate found"
+- **Solution**: Verify `APPLE_TEAM_ID` secret is correct (10 characters)
+- Check App ID exists at https://developer.apple.com/account/resources/identifiers
+- Ensure automatic signing is enabled in workflow
+
+**Problem**: "Profile doesn't include app-groups entitlement"
+- **Solution**: Edit App ID in developer portal
+- Enable "App Groups" capability
+- Configure App Group: `group.com.guidr`
+- Xcode will auto-generate new provisioning profile on next build
+
+**Problem**: "Upload to TestFlight failed with authentication error"
+- **Solution**: Verify API key content includes BEGIN/END lines
+- Check Key ID and Issuer ID are correct
+- Ensure API key has "App Manager" or "Admin" role
+- Verify key hasn't been revoked in App Store Connect
+
+**Problem**: "Build succeeded but not appearing in TestFlight"
+- **Solution**: Wait 10-15 minutes for Apple's processing
+- Check App Store Connect → Activity tab for build status
+- Look for error emails from Apple about invalid builds
+- Common issue: Missing required icons or incompatible binary
+
+**Problem**: "Version number already uploaded"
+- **Solution**: Build number must be unique (workflow auto-increments with timestamp)
+- If uploading manually, increment CFBundleVersion in Info.plist
+- Check existing builds in App Store Connect → TestFlight → Builds
+
+**Workflow Architecture**:
+```
+Pull Request → Lint/Test/Typecheck → Simulator Build (fast, cheap, PR validation)
+
+Main Branch Push → Semantic Release (determines if release needed)
+                                  ↓
+                    Yes → Build unsigned IPA (AltStore users)
+                       ↓
+                    Create version tag (v1.0.0)
+                       ↓
+                    Trigger TestFlight Workflow
+                       ↓
+                    Build signed IPA → Upload to TestFlight
+                                    ↓
+                              App Store Connect → Internal Testing
+                                               ↓
+                                    Submit for External Testing Review
+                                               ↓
+                                         Public Beta (10K testers)
+```
+
+**Maintaining Both Distribution Channels**:
+The project supports two iOS distribution methods:
+1. **TestFlight** (signed): Official Apple beta testing, requires Developer Program
+2. **AltStore** (unsigned): Sideloading for users without Developer Program
+
+Both are built automatically:
+- Release workflow: Unsigned IPA for AltStore
+- TestFlight workflow: Signed IPA for TestFlight
+
+**Version Management**:
+- **Version** (CFBundleShortVersionString): Managed by semantic-release (package.json)
+- **Build Number** (CFBundleVersion): Auto-incremented with timestamp in TestFlight workflow
+- Format: `1.0.0 (20251226153045)` - version (build)
+
+**Future: App Store Submission** (not yet implemented):
+Once TestFlight testing is complete and ready for public release:
+1. Prepare App Store listing (screenshots, description, keywords)
+2. Submit for App Store review in App Store Connect
+3. Review typically takes 1-3 business days
+4. After approval: App available on App Store
+5. Can still use TestFlight for beta testing new versions
+
 ## Next Steps
 
 **Planned Features** (not yet implemented):

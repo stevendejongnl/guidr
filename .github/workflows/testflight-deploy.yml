@@ -1,0 +1,115 @@
+name: TestFlight Deployment
+
+on:
+  # Trigger on version tags created by semantic-release
+  push:
+    tags:
+      - 'v*'
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      skip_testflight:
+        description: 'Skip TestFlight upload (build only)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  testflight-build:
+    name: Build and Deploy to TestFlight
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      # Create API key file from secret
+      - name: Create App Store Connect API Key
+        run: |
+          mkdir -p ~/private_keys
+          echo "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" > ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+
+      # Auto-increment build number with timestamp
+      - name: Increment build number
+        run: |
+          BUILD_NUM=$(date +%Y%m%d%H%M%S)
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUM" ios/guidr/Info.plist
+          echo "Build number set to: $BUILD_NUM"
+          echo "BUILD_NUMBER=$BUILD_NUM" >> $GITHUB_ENV
+
+      # Build archive with signing
+      - name: Build iOS archive
+        run: |
+          cd ios
+          xcodebuild \
+            -workspace guidr.xcworkspace \
+            -scheme guidr \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath ./build/guidr.xcarchive \
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+            CODE_SIGN_STYLE=Automatic \
+            archive
+
+      # Export signed IPA
+      - name: Export IPA
+        run: |
+          cd ios
+          xcodebuild \
+            -exportArchive \
+            -archivePath ./build/guidr.xcarchive \
+            -exportPath ./build \
+            -exportOptionsPlist ./ExportOptions.plist \
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}"
+
+      # Get version info
+      - name: Get version information
+        id: version
+        run: |
+          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "IPA_PATH=$(pwd)/ios/build/guidr.ipa" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION, Build: $BUILD_NUMBER"
+
+      # Upload to TestFlight
+      - name: Upload to TestFlight
+        if: ${{ github.event.inputs.skip_testflight != 'true' }}
+        run: |
+          xcrun altool \
+            --upload-app \
+            --type ios \
+            --file "${{ steps.version.outputs.IPA_PATH }}" \
+            --apiKey "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
+            --apiIssuer "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
+
+      # Upload IPA as artifact (for debugging/archiving)
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: guidr-testflight-v${{ steps.version.outputs.VERSION }}-build${{ env.BUILD_NUMBER }}
+          path: ios/build/guidr.ipa
+          retention-days: 30
+
+      # Cleanup API key
+      - name: Cleanup API key
+        if: always()
+        run: rm -f ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8

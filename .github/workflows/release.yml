@@ -185,6 +185,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
+      # Trigger TestFlight deployment after release
+      - name: Trigger TestFlight deployment
+        if: env.SHOULD_RELEASE == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'testflight-deploy.yml',
+              ref: 'main'
+            })
+
       - name: No release needed
         if: env.SHOULD_RELEASE == 'false'
         run: |
