@@ -63,29 +63,47 @@ jobs:
         run: |
           cd ios
 
-          # Build archive for device
+          # Build archive without signing
           xcodebuild \
             -workspace guidr.xcworkspace \
             -scheme guidr \
             -sdk iphoneos \
             -configuration Release \
             -archivePath ./build/guidr.xcarchive \
+            -allowProvisioningUpdates \
             archive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
 
-          # Create unsigned IPA
-          mkdir -p ./build/Payload
-          cp -r ./build/guidr.xcarchive/Products/Applications/guidr.app ./build/Payload/
-          cd ./build
-          zip -r guidr-unsigned.ipa Payload
+          # Export unsigned IPA with proper structure
+          xcodebuild \
+            -exportArchive \
+            -archivePath ./build/guidr.xcarchive \
+            -exportPath ./build \
+            -exportOptionsPlist ./ExportOptions.plist \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            -allowProvisioningUpdates || {
+              # Fallback: manual IPA creation if export fails
+              echo "Export failed, creating IPA manually..."
+              mkdir -p ./build/Payload
+              cp -r ./build/guidr.xcarchive/Products/Applications/guidr.app ./build/Payload/
+              cd ./build
+              zip -r guidr-unsigned.ipa Payload
+            }
+
+          # Rename if export succeeded
+          if [ -f ./build/guidr.ipa ]; then
+            mv ./build/guidr.ipa ./build/guidr-unsigned.ipa
+          fi
 
           # Get IPA size
-          IPA_SIZE=$(stat -f%z guidr-unsigned.ipa)
+          IPA_SIZE=$(stat -f%z ./build/guidr-unsigned.ipa)
           echo "IPA_SIZE=$IPA_SIZE" >> $GITHUB_ENV
 
-          echo "Built IPA: $(pwd)/guidr-unsigned.ipa (${IPA_SIZE} bytes)"
+          echo "Built IPA: $(pwd)/build/guidr-unsigned.ipa (${IPA_SIZE} bytes)"
 
       - name: Build Android APK
         if: env.SHOULD_RELEASE == 'true'
@@ -113,35 +131,39 @@ jobs:
             "identifier": "com.guidr.source",
             "subtitle": "Step-by-step guide execution app",
             "description": "Guidr helps you execute multi-step processes with precise timing - from recipes to workout routines, lab protocols, and study sessions.",
-            "iconURL": "https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/icon.png",
-            "headerURL": "https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/header.png",
             "website": "https://github.com/${{ github.repository }}",
             "tintColor": "#007AFF",
             "apps": [
               {
                 "name": "Guidr",
                 "bundleIdentifier": "com.guidr",
-                "developerName": "Guidr Team",
+                "developerName": "Guidr Project",
                 "subtitle": "Guide execution with precise timing",
                 "localizedDescription": "Execute multi-step processes with precision. Perfect for recipes, workouts, lab protocols, and study sessions. Built with React Native.",
-                "iconURL": "https://raw.githubusercontent.com/${{ github.repository }}/main/.github/assets/app-icon.png",
                 "tintColor": "#007AFF",
                 "category": "productivity",
-                "screenshots": [],
                 "versions": [
                   {
                     "version": "${{ env.NEXT_VERSION }}",
                     "date": "$(date -u +%Y-%m-%d)",
-                    "localizedDescription": "See CHANGELOG.md for details",
+                    "localizedDescription": "See CHANGELOG.md for release notes",
                     "downloadURL": "https://github.com/${{ github.repository }}/releases/download/v${{ env.NEXT_VERSION }}/guidr-unsigned.ipa",
                     "size": ${{ env.IPA_SIZE }},
-                    "minOSVersion": "13.0",
-                    "maxOSVersion": "18.0"
+                    "minOSVersion": "15.1"
                   }
                 ],
                 "appPermissions": {
-                  "entitlements": [],
-                  "privacy": {}
+                  "entitlements": [
+                    {
+                      "name": "keychain-access-groups"
+                    },
+                    {
+                      "name": "com.apple.security.application-groups"
+                    }
+                  ],
+                  "privacy": {
+                    "NSLocationWhenInUseUsageDescription": "Not used - placeholder for future features"
+                  }
                 }
               }
             ],
