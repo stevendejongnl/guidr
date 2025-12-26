@@ -12,7 +12,6 @@
 - [ ] Bundle ID: Select "Explicit" → Enter `com.guidr`
 - [ ] Capabilities:
   - [ ] Enable "App Groups"
-  - [ ] Enable "Keychain Sharing"
 - [ ] Click "Continue" → "Register"
 
 ### 2. Configure App Groups

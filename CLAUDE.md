@@ -392,7 +392,7 @@ When you're ready to distribute to physical devices:
 
 **Prerequisites** (one-time setup completed):
 1. Apple Developer Program membership ($99/year) ✓
-2. App ID registered for `com.guidr` with App Groups and Keychain Sharing
+2. App ID registered for `com.guidr` with App Groups capability
 3. App created in App Store Connect (name: "Guidr", SKU: "guidr-ios")
 4. App Store Connect API key with App Manager role
 5. GitHub Secrets configured:
