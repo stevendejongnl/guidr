@@ -1,0 +1,85 @@
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guidr-test-server
+  labels:
+    app: guidr-test-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: guidr-test-server
+  template:
+    metadata:
+      labels:
+        app: guidr-test-server
+    spec:
+      containers:
+      - name: test-server
+        image: ghcr.io/stevendejongnl/guidr-test-server:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: guidr-test-server
+  labels:
+    app: guidr-test-server
+spec:
+  type: ClusterIP
+  selector:
+    app: guidr-test-server
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: guidr-test-server
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: guidr.madebysteven.nl
+    http:
+      paths:
+      - path: /testing-server(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: guidr-test-server
+            port:
+              number: 80

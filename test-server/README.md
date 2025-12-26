@@ -318,6 +318,64 @@ docker pull ghcr.io/stevendejongnl/guidr-test-server:1
 
 ## Production Deployment
 
+### Using Kubernetes
+
+The test-server includes Kubernetes manifests for production deployment with Nginx Ingress.
+
+**Quick Deploy**:
+```bash
+# Using the simple manifest (default namespace)
+kubectl apply -f kubernetes-simple.yaml
+
+# Or with dedicated namespace
+kubectl apply -f kubernetes.yaml
+```
+
+**Features**:
+- 2 replicas for high availability
+- Health checks (liveness & readiness probes)
+- Resource limits (128Mi-256Mi memory, 100m-500m CPU)
+- Path-based routing: `guidr.madebysteven.nl/testing-server`
+- Nginx Ingress with URL rewriting
+
+**Check deployment**:
+```bash
+# Check pods
+kubectl get pods -n guidr  # or kubectl get pods for default namespace
+
+# Check service
+kubectl get svc -n guidr
+
+# Check ingress
+kubectl get ingress -n guidr
+
+# View logs
+kubectl logs -f deployment/guidr-test-server -n guidr
+```
+
+**Access the server**:
+- URL: https://guidr.madebysteven.nl/testing-server
+- Health check: https://guidr.madebysteven.nl/testing-server/
+- API docs: https://guidr.madebysteven.nl/testing-server/docs
+
+**Update to new version**:
+```bash
+# Update image to specific version
+kubectl set image deployment/guidr-test-server test-server=ghcr.io/stevendejongnl/guidr-test-server:1.5.0 -n guidr
+
+# Or restart to pull latest
+kubectl rollout restart deployment/guidr-test-server -n guidr
+```
+
+**Scale replicas**:
+```bash
+# Scale up
+kubectl scale deployment/guidr-test-server --replicas=3 -n guidr
+
+# Scale down
+kubectl scale deployment/guidr-test-server --replicas=1 -n guidr
+```
+
 ### Using Docker Run
 
 ```bash
