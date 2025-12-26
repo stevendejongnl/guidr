@@ -6,16 +6,16 @@ on:
 
 jobs:
   lint:
-    uses: ./.github/workflows/job-lint.yml
+    uses: ./.github/workflows/jobs/job-lint.yml
 
   test:
-    uses: ./.github/workflows/job-test.yml
+    uses: ./.github/workflows/jobs/job-test.yml
 
   typecheck:
-    uses: ./.github/workflows/job-typecheck.yml
+    uses: ./.github/workflows/jobs/job-typecheck.yml
 
   android-build:
-    uses: ./.github/workflows/job-android-build.yml
+    uses: ./.github/workflows/jobs/job-android-build.yml
 
   ios-build:
-    uses: ./.github/workflows/job-ios-build.yml
+    uses: ./.github/workflows/jobs/job-ios-build.yml
