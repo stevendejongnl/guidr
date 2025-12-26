@@ -16,11 +16,11 @@
       "category": "productivity",
       "versions": [
         {
-          "version": "1.2.0",
+          "version": "1.2.1",
           "date": "2025-12-26",
           "localizedDescription": "See CHANGELOG.md for release notes",
-          "downloadURL": "https://github.com/stevendejongnl/guidr/releases/download/v1.2.0/guidr-unsigned.ipa",
-          "size": 3938037,
+          "downloadURL": "https://github.com/stevendejongnl/guidr/releases/download/v1.2.1/guidr-unsigned.ipa",
+          "size": 3990659,
           "minOSVersion": "15.1"
         }
       ],
