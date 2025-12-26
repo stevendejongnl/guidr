@@ -8,6 +8,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Current Status**: Core domain logic complete (171 tests passing). Server URL configuration screen implemented. Android native directories initialized and build working with Gradle 8.13. Ready for feature development.
 
+## Prerequisites
+
+### Node.js and npm
+- **Node.js**: 24.12.0 LTS or newer (v24.11.0+ required)
+- **npm**: 11.6.2 or newer (v11.6.0+ required)
+- **Installation**: Use [nvm](https://github.com/nvm-sh/nvm) or download from [nodejs.org](https://nodejs.org/)
+
+To install with nvm:
+```bash
+nvm install 24
+nvm use 24
+```
+
+The project includes `.nvmrc` file - if you use nvm, run `nvm use` in project root to automatically switch to the correct version.
+
 ## Commands
 
 ### React Native Development

@@ -35,7 +35,18 @@ Guidr helps you execute multi-step processes with precise timing. Create guides 
 🚧 **In Development** - Core domain logic and architecture being built.
 
 ## Development
+
+### Prerequisites
+- **Node.js**: 24.12.0 LTS or newer (required)
+- **npm**: 11.6.2 or newer (bundled with Node.js)
+- **For Android**: Java 17, Android SDK
+- **For iOS**: macOS with Xcode 15+
+
+### Getting Started
 ```bash
+# Check Node.js version
+node --version  # Should be 24.12.0 or newer
+
 # Install dependencies
 npm install
 
