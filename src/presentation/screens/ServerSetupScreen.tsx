@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
+import { VersionDisplay } from '../components/VersionDisplay'
 
 interface ServerSetupScreenProps {
   storage: ServerConfigStorage
@@ -83,6 +84,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
           )}
         </TouchableOpacity>
       </View>
+      <VersionDisplay />
     </View>
   )
 }

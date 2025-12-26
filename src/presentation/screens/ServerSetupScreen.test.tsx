@@ -184,4 +184,12 @@ describe('ServerSetupScreen', () => {
 
     expect(queryByText('Please enter a server URL')).toBeNull()
   })
+
+  it('should render version display', () => {
+    const { getByTestId } = render(
+      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+    )
+
+    expect(getByTestId('version-display')).toBeTruthy()
+  })
 })

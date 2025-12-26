@@ -55,6 +55,14 @@ export const AppNavigator: React.FC = () => {
     setHasAuthToken(false)
   }
 
+  const handleChangeServer = async () => {
+    await authStorage.clearAll()
+    await serverStorage.clearServerUrl()
+    setHasAuthToken(false)
+    setHasServerUrl(false)
+    setServerUrl(null)
+  }
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -74,6 +82,7 @@ export const AppNavigator: React.FC = () => {
         authStorage={authStorage}
         authClient={authClient}
         onComplete={handleLoginComplete}
+        onChangeServer={handleChangeServer}
       />
     )
   }

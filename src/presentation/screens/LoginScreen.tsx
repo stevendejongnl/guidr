@@ -9,17 +9,20 @@ import {
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
+import { VersionDisplay } from '../components/VersionDisplay'
 
 interface LoginScreenProps {
   authStorage: AuthStorage
   authClient: AuthClient
   onComplete: () => void
+  onChangeServer: () => void
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   authStorage,
   authClient,
   onComplete,
+  onChangeServer,
 }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -76,6 +79,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   }
 
+  const handleChangeServer = () => {
+    setError('')
+    onChangeServer()
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -119,7 +127,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <Text style={styles.buttonText}>Login</Text>
           )}
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.changeServerLink}
+          onPress={handleChangeServer}
+        >
+          <Text style={styles.changeServerText}>Change Server</Text>
+        </TouchableOpacity>
       </View>
+      <VersionDisplay />
     </View>
   )
 }
@@ -183,5 +199,14 @@ const styles = StyleSheet.create({
   },
   activityIndicator: {
     marginRight: 8,
+  },
+  changeServerLink: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  changeServerText: {
+    color: '#2196f3',
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 })
