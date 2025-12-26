@@ -80,7 +80,7 @@ instead of Step[]. Update all calls to use async/await."
 
 ### Documentation (No Release)
 ```bash
-git commit -m "docs: add AltStore installation guide"
+git commit -m "docs: add TestFlight installation guide"
 ```
 
 ## Automated Release Process
@@ -93,9 +93,9 @@ When you push to `main`:
    - `fix` → Patch (0.1.0 → 0.1.1)
    - `BREAKING CHANGE` → Major (0.1.0 → 1.0.0)
 3. **Generates CHANGELOG.md** from commit messages
-4. **Builds iOS IPA** for distribution
-5. **Creates GitHub Release** with IPA and source JSON
-6. **Updates AltStore source** automatically
+4. **Builds Android APK** for distribution
+5. **Creates GitHub Release** with APK
+6. **Triggers TestFlight workflow** for iOS distribution
 7. **Commits version changes** back to repo
 
 ## Pre-commit Checklist

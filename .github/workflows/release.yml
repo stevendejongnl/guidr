@@ -67,52 +67,6 @@ jobs:
             echo "No release needed - no relevant commits since last release"
           fi
 
-      - name: Build iOS IPA
-        if: env.SHOULD_RELEASE == 'true'
-        run: |
-          cd ios
-
-          # Build archive without signing
-          xcodebuild \
-            -workspace guidr.xcworkspace \
-            -scheme guidr \
-            -sdk iphoneos \
-            -configuration Release \
-            -archivePath ./build/guidr.xcarchive \
-            -allowProvisioningUpdates \
-            archive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO
-
-          # Export unsigned IPA with proper structure
-          xcodebuild \
-            -exportArchive \
-            -archivePath ./build/guidr.xcarchive \
-            -exportPath ./build \
-            -exportOptionsPlist ./ExportOptions.plist \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            -allowProvisioningUpdates || {
-              # Fallback: manual IPA creation if export fails
-              echo "Export failed, creating IPA manually..."
-              mkdir -p ./build/Payload
-              cp -r ./build/guidr.xcarchive/Products/Applications/guidr.app ./build/Payload/
-              (cd ./build && zip -r guidr-unsigned.ipa Payload)
-            }
-
-          # Rename if export succeeded
-          if [ -f ./build/guidr.ipa ]; then
-            mv ./build/guidr.ipa ./build/guidr-unsigned.ipa
-          fi
-
-          # Get IPA size
-          IPA_SIZE=$(stat -f%z ./build/guidr-unsigned.ipa)
-          echo "IPA_SIZE=$IPA_SIZE" >> $GITHUB_ENV
-
-          echo "Built IPA: $(pwd)/build/guidr-unsigned.ipa (${IPA_SIZE} bytes)"
-
       - name: Build Android APK
         if: env.SHOULD_RELEASE == 'true'
         run: |
@@ -129,55 +83,6 @@ jobs:
             echo "Warning: APK not found at expected path"
             ls -la android/app/build/outputs/apk/release/ || true
           fi
-
-      - name: Generate AltStore source JSON
-        if: env.SHOULD_RELEASE == 'true'
-        run: |
-          cat > altstore-source.json << EOF
-          {
-            "name": "Guidr",
-            "identifier": "com.guidr.source",
-            "subtitle": "Step-by-step guide execution app",
-            "description": "Guidr helps you execute multi-step processes with precise timing - from recipes to workout routines, lab protocols, and study sessions.",
-            "website": "https://github.com/${{ github.repository }}",
-            "tintColor": "#007AFF",
-            "apps": [
-              {
-                "name": "Guidr",
-                "bundleIdentifier": "com.guidr",
-                "developerName": "Guidr Project",
-                "subtitle": "Guide execution with precise timing",
-                "localizedDescription": "Execute multi-step processes with precision. Perfect for recipes, workouts, lab protocols, and study sessions. Built with React Native.",
-                "tintColor": "#007AFF",
-                "category": "productivity",
-                "versions": [
-                  {
-                    "version": "${{ env.NEXT_VERSION }}",
-                    "date": "$(date -u +%Y-%m-%d)",
-                    "localizedDescription": "See CHANGELOG.md for release notes",
-                    "downloadURL": "https://github.com/${{ github.repository }}/releases/download/v${{ env.NEXT_VERSION }}/guidr-unsigned.ipa",
-                    "size": ${{ env.IPA_SIZE }},
-                    "minOSVersion": "15.1"
-                  }
-                ],
-                "appPermissions": {
-                  "entitlements": [
-                    {
-                      "name": "keychain-access-groups"
-                    },
-                    {
-                      "name": "com.apple.security.application-groups"
-                    }
-                  ],
-                  "privacy": {
-                    "NSLocationWhenInUseUsageDescription": "Not used - placeholder for future features"
-                  }
-                }
-              }
-            ],
-            "news": []
-          }
-          EOF
 
       - name: Run semantic-release
         if: env.SHOULD_RELEASE == 'true'

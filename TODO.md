@@ -1,244 +1,331 @@
-# Guidr - Manual Setup TODO List
+# Guidr - Application Completion Roadmap
 
-## Apple Developer Program Setup
+This document tracks the remaining work to complete the Guidr application. The core domain logic and deployment infrastructure are complete. This roadmap focuses on implementing the remaining features to create a fully functional guide execution app.
 
-### 1. Register App ID in Apple Developer Portal
-**URL**: https://developer.apple.com/account/resources/identifiers
+## Current Status
 
-- [x] Click "+" to create new identifier
-- [x] Select "App IDs" → Continue
-- [x] Type: Select "App"
-- [x] Description: Enter "Guidr - Step-by-step guide execution"
-- [x] Bundle ID: Select "Explicit" → Enter `com.guidr`
-- [x] Capabilities:
-  - [x] Enable "App Groups"
-- [x] Click "Continue" → "Register"
+✅ **Completed:**
+- Domain layer (Category, Guide, Step, Session entities + services) - 172 tests passing
+- Authentication flow (login screen, token storage, logout)
+- Server configuration screen
+- TestFlight deployment pipeline
+- Android and iOS builds working
 
-### 2. Configure App Groups
-**URL**: https://developer.apple.com/account/resources/identifiers (same page)
-
-- [x] Find your `com.guidr` App ID in the list
-- [x] Click to edit it
-- [x] Under "App Groups", click "Configure"
-- [x] Click "+" to create new App Group
-- [x] Identifier: Enter `group.com.guidr`
-- [x] Description: Enter "Guidr App Group"
-- [x] Click "Continue" → "Register"
-- [x] Go back to App ID configuration
-- [x] Under "App Groups", select the `group.com.guidr` you just created
-- [x] Click "Save"
-
-### 3. Get Your Apple Team ID
-**URL**: https://developer.apple.com/account (Membership section)
-
-- [x] Go to https://developer.apple.com/account
-- [x] Click "Membership" in the left sidebar
-- [x] Find and copy your **Team ID** (10 alphanumeric characters)
-- [x] Save this value - you'll need it for GitHub Secrets
-- [x] Format example: `A1B2C3D4E5`
-
-### 4. Create App in App Store Connect
-**URL**: https://appstoreconnect.apple.com
-
-- [x] Log in to App Store Connect
-- [x] Click "My Apps"
-- [x] Click the "+" button
-- [x] Select "New App"
-- [x] Platforms: Check "iOS"
-- [x] Name: Enter "Guidr"
-- [x] Primary Language: Select "English (U.S.)"
-- [x] Bundle ID: Select `com.guidr` from dropdown
-- [x] SKU: Enter `guidr-ios` (or any unique identifier)
-- [x] User Access: Select "Full Access"
-- [x] Click "Create"
-
-### 5. Create App Store Connect API Key
-**URL**: https://appstoreconnect.apple.com/access/integrations/api
-
-- [x] Go to "Users and Access" (top navigation)
-- [x] Click "Integrations" tab
-- [x] Click "App Store Connect API" section
-- [x] Click "+" (Generate API Key button)
-- [x] Name: Enter "GitHub Actions CI/CD"
-- [x] Access: Select "App Manager" role
-- [x] Click "Generate"
-- [x] **IMPORTANT**: Click "Download API Key" (you can ONLY do this ONCE!)
-- [x] File downloads as: `AuthKey_XXXXXXXXXX.p8`
-- [x] **Copy and save these values**:
-  - [x] **Key ID**: Displayed on the page (10 characters, e.g., `AB1CD2EF34`)
-  - [x] **Issuer ID**: Displayed at top of page (UUID format, e.g., `12345678-abcd-1234-abcd-123456789012`)
-  - [x] **API Key Content**: Open the `.p8` file in text editor, copy entire contents including:
-    ```
-    -----BEGIN PRIVATE KEY-----
-    [content]
-    -----END PRIVATE KEY-----
-    ```
-
-### 6. Configure GitHub Secrets
-**URL**: https://github.com/stevendejongnl/guidr/settings/secrets/actions
-
-- [x] Go to your GitHub repository
-- [x] Click "Settings" tab
-- [x] Click "Secrets and variables" → "Actions" in left sidebar
-- [x] Click "New repository secret" button for each of the following:
-
-#### Secret 1: APPLE_TEAM_ID
-- [x] Name: `APPLE_TEAM_ID`
-- [x] Value: Your 10-character Team ID from Step 3
-- [x] Example: `A1B2C3D4E5`
-- [x] Click "Add secret"
-
-#### Secret 2: APP_STORE_CONNECT_API_KEY_ID
-- [x] Click "New repository secret"
-- [x] Name: `APP_STORE_CONNECT_API_KEY_ID`
-- [x] Value: The Key ID from Step 5 (10 characters)
-- [x] Example: `AB1CD2EF34`
-- [x] Click "Add secret"
-
-#### Secret 3: APP_STORE_CONNECT_ISSUER_ID
-- [x] Click "New repository secret"
-- [x] Name: `APP_STORE_CONNECT_ISSUER_ID`
-- [x] Value: The Issuer ID from Step 5 (UUID format)
-- [x] Example: `12345678-abcd-1234-abcd-123456789012`
-- [x] Click "Add secret"
-
-#### Secret 4: APP_STORE_CONNECT_API_KEY_CONTENT
-- [x] Click "New repository secret"
-- [x] Name: `APP_STORE_CONNECT_API_KEY_CONTENT`
-- [x] Value: The COMPLETE contents of the `.p8` file from Step 5
-- [x] Must include the BEGIN and END lines:
-  ```
-  -----BEGIN PRIVATE KEY-----
-  [multiple lines of base64 encoded content]
-  -----END PRIVATE KEY-----
-  ```
-- [x] Click "Add secret"
-
-#### Verify Secrets
-- [x] Confirm all 4 secrets appear in the list:
-  - `APPLE_TEAM_ID`
-  - `APP_STORE_CONNECT_API_KEY_ID`
-  - `APP_STORE_CONNECT_ISSUER_ID`
-  - `APP_STORE_CONNECT_API_KEY_CONTENT`
+❌ **Missing:**
+- Backend API server
+- Repository implementations (API integration)
+- All core feature screens (Category/Guide/Step CRUD, Session execution)
 
 ---
 
-## Testing TestFlight Workflow
+## Prerequisites: Backend API Server
 
-### Test 1: Build Only (No Upload)
-- [ ] Go to GitHub Actions: https://github.com/stevendejongnl/guidr/actions
-- [ ] Click "TestFlight Deployment" workflow in left sidebar
-- [ ] Click "Run workflow" dropdown (top right)
-- [ ] Select branch: `main`
-- [ ] Set "Skip TestFlight upload": `true` ✓
-- [ ] Click "Run workflow" button
-- [ ] Wait for workflow to complete (~15 minutes)
-- [ ] Verify workflow succeeded (green checkmark)
-- [ ] Check that signed IPA artifact was uploaded
-- [ ] Download artifact and verify it's a signed IPA (not unsigned)
+**IMPORTANT**: The backend API must be implemented before the frontend features can work. The app expects a REST API with the following endpoints:
 
-### Test 2: Full TestFlight Upload
-- [ ] Go to GitHub Actions: https://github.com/stevendejongnl/guidr/actions
-- [ ] Click "TestFlight Deployment" workflow
-- [ ] Click "Run workflow" dropdown
-- [ ] Select branch: `main`
-- [ ] Set "Skip TestFlight upload": `false` (unchecked)
-- [ ] Click "Run workflow" button
-- [ ] Wait for workflow to complete (~15 minutes)
-- [ ] Verify workflow succeeded
-- [ ] Log in to App Store Connect: https://appstoreconnect.apple.com
-- [ ] Go to "My Apps" → "Guidr"
-- [ ] Click "TestFlight" tab at top
-- [ ] Wait 10-15 minutes for Apple processing
-- [ ] Verify build appears in "iOS Builds" section
-- [ ] Build status should change from "Processing" to "Ready to Submit" or "Testing"
+### Authentication Endpoints
+- ✅ `POST /login` - Already supported by AuthClient
+  - Request: `{ email: string, password: string }`
+  - Response: `{ token: string, email: string }`
 
-### Test 3: Install on Device via TestFlight
-- [ ] On your iPhone/iPad, install TestFlight app from App Store
-- [ ] Open App Store Connect: https://appstoreconnect.apple.com
-- [ ] Go to "My Apps" → "Guidr" → "TestFlight"
-- [ ] Click "Internal Testing" section (left sidebar)
-- [ ] Click "+" to add yourself as internal tester
-- [ ] Select your Apple ID email
-- [ ] Click "Add"
-- [ ] Check your email for TestFlight invite
-- [ ] Open invite email on your device
-- [ ] Tap "View in TestFlight" button
-- [ ] TestFlight app opens showing Guidr
-- [ ] Tap "Install" button
-- [ ] Wait for download and installation
-- [ ] Open Guidr app from home screen
-- [ ] Verify app launches successfully
-- [ ] Test basic functionality (navigate to server setup screen)
+### Category Endpoints
+- [ ] `GET /categories` - List all categories
+- [ ] `GET /categories/:id` - Get category by ID
+- [ ] `POST /categories` - Create category
+  - Request: `{ name: string, description: string, parentId?: string }`
+- [ ] `PUT /categories/:id` - Update category
+  - Request: `{ name?: string, description?: string }`
+- [ ] `DELETE /categories/:id` - Delete category
 
----
+### Guide Endpoints
+- [ ] `GET /guides` - List all guides
+- [ ] `GET /guides/:id` - Get guide by ID (include steps)
+- [ ] `GET /categories/:categoryId/guides` - List guides in category
+- [ ] `POST /guides` - Create guide
+  - Request: `{ categoryId: string, title: string, description: string }`
+- [ ] `PUT /guides/:id` - Update guide
+  - Request: `{ title?: string, description?: string }`
+- [ ] `DELETE /guides/:id` - Delete guide
 
-## Automatic Workflow Configuration (Already Done)
+### Step Endpoints
+- [ ] `GET /guides/:guideId/steps` - List steps for a guide
+- [ ] `GET /steps/:id` - Get step by ID
+- [ ] `POST /steps` - Create step
+  - Request: `{ guideId: string, order: number, title: string, description: string, durationSeconds: number }`
+- [ ] `PUT /steps/:id` - Update step
+  - Request: `{ order?: number, title?: string, description?: string, durationSeconds?: number }`
+- [ ] `DELETE /steps/:id` - Delete step
 
-These are configured and will run automatically:
+### Session Endpoints
+- [ ] `GET /sessions` - List all sessions
+- [ ] `GET /sessions/:id` - Get session by ID
+- [ ] `POST /sessions` - Create session
+  - Request: `{ guideId: string }`
+- [ ] `PUT /sessions/:id` - Update session state
+  - Request: `{ state?: string, currentStepId?: string, completedStepIds?: string[] }`
+- [ ] `DELETE /sessions/:id` - Delete session
 
-✅ **On Pull Requests**:
-- Lint, test, typecheck
-- Simulator build (fast validation)
-- Android build
-
-✅ **On Main Branch Push**:
-- Semantic-release checks for release
-- If release needed:
-  - Creates version tag
-  - Builds unsigned IPA (AltStore)
-  - Builds Android APK
-  - Triggers TestFlight workflow
-
-✅ **On Version Tags** (created by semantic-release):
-- TestFlight workflow runs automatically
-- Builds signed IPA
-- Uploads to TestFlight
-- No manual intervention needed
-
-✅ **Manual Trigger** (when needed):
-- TestFlight Deployment workflow can be triggered manually
-- Useful for testing or one-off builds
+**All endpoints (except `/login`) must accept `Authorization: Bearer <token>` header.**
 
 ---
 
-## GitHub Actions Cost
+## Phase 1: API Integration
 
-✅ **Completely FREE** - This is a public repository with unlimited GitHub Actions minutes
+### 1.1 Base HTTP Client
+- [ ] Create `src/infrastructure/api/BaseHttpClient.ts`
+  - Fetch-based HTTP client with auth token injection
+  - Read token from AuthStorage
+  - Add `Authorization: Bearer <token>` header to all requests
+  - Handle 401 (redirect to login)
+  - Timeout handling (30s default)
+  - Follow pattern from AuthClient.ts
 
-All builds cost nothing:
-- TestFlight builds: FREE
-- Simulator builds: FREE
-- Android builds: FREE
+### 1.2 API Clients
+- [ ] Create `src/infrastructure/api/CategoryClient.ts`
+  - CRUD methods: `getAll()`, `getById()`, `create()`, `update()`, `delete()`
+  - Follow AuthClient pattern
+- [ ] Create `src/infrastructure/api/GuideClient.ts`
+  - CRUD methods + `getByCategory()`
+- [ ] Create `src/infrastructure/api/StepClient.ts`
+  - CRUD methods + `getByGuide()`
+- [ ] Create `src/infrastructure/api/SessionClient.ts`
+  - CRUD methods + `updateState()`
 
-**Apple Developer Program**: $99/year (already paid) - enables TestFlight and App Store distribution
+### 1.3 Repository Implementations
+- [ ] Create `src/infrastructure/repositories/CategoryRepository.ts`
+  - Implement ICategoryRepository interface
+  - Use CategoryClient for API calls
+  - Map API responses to domain entities
+- [ ] Create `src/infrastructure/repositories/GuideRepository.ts`
+  - Implement IGuideRepository interface
+- [ ] Create `src/infrastructure/repositories/StepRepository.ts`
+  - Implement IStepRepository interface
+- [ ] Create `src/infrastructure/repositories/SessionRepository.ts`
+  - Implement ISessionRepository interface
+
+### 1.4 Dependency Injection Setup
+- [ ] Update `src/common/DependencyInjection.ts`
+  - Register repository implementations
+  - Register services with real repositories (not mocks)
+  - Provide global access pattern for screens
 
 ---
 
-## Troubleshooting Resources
+## Phase 2: CRUD Screens
 
-If you encounter issues, check:
-- [ ] CLAUDE.md - Full TestFlight documentation with troubleshooting section
-- [ ] GitHub Actions logs for detailed error messages
-- [ ] App Store Connect → Activity tab for build processing status
-- [ ] Email from Apple for any build rejection reasons
+### 2.1 Category Management
+- [ ] Create `src/presentation/screens/CategoryListScreen.tsx`
+  - Display list of categories
+  - Show category hierarchy (parent-child)
+  - Add "Create Category" button
+  - Tap category → navigate to CategoryDetailScreen
+  - Pull-to-refresh
+  - Loading/error states
+- [ ] Create `src/presentation/screens/CategoryDetailScreen.tsx`
+  - Display category name and description
+  - List guides in this category
+  - "Edit Category" button
+  - "Delete Category" button (with confirmation)
+  - Tap guide → navigate to GuideDetailScreen
+- [ ] Create `src/presentation/screens/CategoryFormScreen.tsx`
+  - Form for create/edit category
+  - Fields: name, description, parent category (optional)
+  - Validation (name required, description required)
+  - Save button
 
-Common issues and solutions are documented in CLAUDE.md lines 504-532.
+### 2.2 Guide Management
+- [ ] Create `src/presentation/screens/GuideListScreen.tsx`
+  - Display all guides (across all categories)
+  - Filter by category dropdown
+  - Search by title
+  - "Create Guide" button
+  - Tap guide → navigate to GuideDetailScreen
+  - Pull-to-refresh
+- [ ] Create `src/presentation/screens/GuideDetailScreen.tsx`
+  - Display guide title, description
+  - Display category name
+  - List all steps (ordered)
+  - Show step: order, title, duration
+  - "Edit Guide" button
+  - "Delete Guide" button
+  - "Start Guide" button → create session → navigate to SessionExecutionScreen
+  - "Manage Steps" button → navigate to StepListScreen
+- [ ] Create `src/presentation/screens/GuideFormScreen.tsx`
+  - Form for create/edit guide
+  - Fields: title, description, category (dropdown)
+  - Validation
+
+### 2.3 Step Management
+- [ ] Create `src/presentation/screens/StepListScreen.tsx`
+  - Display steps for a guide (editable list)
+  - Reorder steps (drag-and-drop or up/down buttons)
+  - Edit step inline or navigate to form
+  - Delete step button
+  - "Add Step" button
+- [ ] Create `src/presentation/screens/StepFormScreen.tsx`
+  - Form for create/edit step
+  - Fields: title, description, duration (seconds or minutes:seconds)
+  - Validation (title required, duration > 0)
+
+### 2.4 Navigation Updates
+- [ ] Update `src/presentation/navigation/AppNavigator.tsx`
+  - Add all new screens to stack navigator
+  - Configure navigation params (IDs, edit mode, etc.)
+  - Update HomeScreen to navigate to CategoryListScreen
+
+---
+
+## Phase 3: Session Execution (Core Feature)
+
+### 3.1 Session Execution Screen
+- [ ] Create `src/presentation/screens/SessionExecutionScreen.tsx`
+  - **Layout:**
+    - Current step title (large, prominent)
+    - Current step description
+    - Countdown timer (MM:SS format, large font)
+    - Progress indicator (e.g., "Step 3 of 10")
+  - **Controls:**
+    - Start button (when NotStarted)
+    - Pause button (when InProgress)
+    - Resume button (when Paused)
+    - Previous Step button (if not first step)
+    - Next Step button (if not last step)
+    - Complete button (when on last step)
+    - Cancel button (with confirmation)
+  - **Timer Logic:**
+    - Use React hooks (useState, useEffect) for countdown
+    - Update every second
+    - Visual/audio alert when step completes
+    - Auto-advance to next step option (configurable)
+  - **State Management:**
+    - Use SessionService for state transitions
+    - Update session state in backend (PUT /sessions/:id)
+    - Handle errors gracefully
+
+### 3.2 Session History
+- [ ] Create `src/presentation/screens/SessionHistoryScreen.tsx`
+  - List all sessions (past and active)
+  - Show: guide title, state, start time, end time
+  - Filter by state (InProgress, Completed, Cancelled)
+  - Tap session → navigate to SessionDetailScreen or SessionExecutionScreen (if in progress)
+  - Delete session button
+
+### 3.3 Session Detail Screen (Optional)
+- [ ] Create `src/presentation/screens/SessionDetailScreen.tsx`
+  - View completed session details
+  - Show all steps with completion times
+  - Total duration
+  - Completion percentage
+
+---
+
+## Phase 4: Polish & Testing
+
+### 4.1 Consistent UI/UX
+- [ ] Add consistent loading spinners across all screens
+- [ ] Add consistent error messages (e.g., "Failed to load categories. Try again.")
+- [ ] Add empty state messages (e.g., "No guides yet. Create one!")
+- [ ] Add confirmation dialogs for destructive actions (delete, cancel)
+- [ ] Ensure all buttons have proper disabled states
+- [ ] Add accessibility labels (accessibilityLabel, accessibilityHint)
+
+### 4.2 Error Handling
+- [ ] Handle network errors gracefully (show retry button)
+- [ ] Handle 401 errors (redirect to login, clear token)
+- [ ] Handle 404 errors (show "Not found" message)
+- [ ] Handle validation errors from backend (display field-specific errors)
+- [ ] Add offline detection (show banner when offline)
+
+### 4.3 Manual Testing Checklist
+- [ ] Test full category CRUD flow (create, edit, delete, hierarchy)
+- [ ] Test full guide CRUD flow (create, edit, delete, category assignment)
+- [ ] Test full step CRUD flow (create, edit, delete, reordering)
+- [ ] Test session execution flow:
+  - [ ] Start guide
+  - [ ] Pause and resume
+  - [ ] Move to previous/next step
+  - [ ] Complete session
+  - [ ] Cancel session
+- [ ] Test authentication flow:
+  - [ ] Login
+  - [ ] Logout
+  - [ ] Token expiration (401 handling)
+- [ ] Test edge cases:
+  - [ ] Empty lists (no categories, guides, steps)
+  - [ ] Network errors
+  - [ ] Offline mode
+- [ ] Test on both Android and iOS
+
+### 4.4 Automated Testing
+- [ ] Write integration tests for repository implementations
+- [ ] Write screen tests for new components (React Native Testing Library)
+- [ ] Update existing tests if needed
+
+---
+
+## Phase 5: Optional Future Enhancements
+
+These are not required for a functional MVP but would improve the user experience:
+
+### 5.1 Notifications
+- [ ] Add push notifications for step completion
+- [ ] Add local notifications (iOS/Android background timers)
+- [ ] Allow users to customize notification sounds
+
+### 5.2 Offline Support
+- [ ] Cache guides and categories locally (AsyncStorage or SQLite)
+- [ ] Queue mutations for sync when online
+- [ ] Show sync status indicator
+
+### 5.3 Guide Sharing
+- [ ] Export guide as JSON
+- [ ] Import guide from JSON
+- [ ] Share guide link (deep linking)
+
+### 5.4 Analytics & Progress Tracking
+- [ ] Track session completion rate
+- [ ] Track average session duration
+- [ ] Show user statistics screen
+
+### 5.5 Advanced Features
+- [ ] Guide templates (pre-built guides)
+- [ ] Step notes/comments during execution
+- [ ] Custom step durations (user can adjust during session)
+- [ ] Multi-user support (teams, shared guides)
 
 ---
 
 ## Completion Checklist
 
-Before considering setup complete:
-- [ ] All Apple Developer Portal steps completed (Steps 1-5)
-- [ ] All GitHub Secrets configured (Step 6)
-- [ ] Test 1 passed: Build-only workflow succeeded
-- [ ] Test 2 passed: Upload to TestFlight succeeded
-- [ ] Test 3 passed: App installed and launched on device
-- [ ] App Store Connect shows build in TestFlight
-- [ ] You can install Guidr from TestFlight on your device
-- [ ] App launches and basic functionality works
+Before considering the app complete:
+- [ ] Backend API fully implemented and tested
+- [ ] All repository implementations working
+- [ ] All CRUD screens implemented and tested
+- [ ] Session execution screen working with real-time timer
+- [ ] Navigation flows tested end-to-end
+- [ ] Error handling consistent across all screens
+- [ ] App tested on both Android and iOS devices
+- [ ] No critical bugs or crashes
+- [ ] User can create guides, add steps, and execute sessions successfully
 
-**Estimated time**: 2-3 hours total
+---
 
-**Once complete**: All future builds will happen automatically when you push code to main!
+## Estimated Effort
+
+**Phase 1 (API Integration)**: 1-2 days
+**Phase 2 (CRUD Screens)**: 2-3 days
+**Phase 3 (Session Execution)**: 2-3 days
+**Phase 4 (Polish & Testing)**: 1-2 days
+
+**Total**: ~1-2 weeks for a fully functional application
+
+**Backend Development**: 2-3 days (if starting from scratch)
+
+---
+
+## Resources
+
+- **Domain Architecture**: See `CLAUDE.md` sections on Domain-Driven Design
+- **Testing Patterns**: See existing tests in `src/domain/__tests__/`
+- **API Client Pattern**: See `src/infrastructure/api/AuthClient.ts`
+- **Screen Pattern**: See `src/presentation/screens/LoginScreen.tsx`
+- **Navigation**: See `src/presentation/navigation/AppNavigator.tsx`

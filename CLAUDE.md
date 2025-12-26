@@ -545,9 +545,7 @@ Pull Request → Lint/Test/Typecheck → Simulator Build (fast, cheap, PR valida
 
 Main Branch Push → Semantic Release (determines if release needed)
                                   ↓
-                    Yes → Build unsigned IPA (AltStore users)
-                       ↓
-                    Create version tag (v1.0.0)
+                    Yes → Create version tag (v1.0.0)
                        ↓
                     Trigger TestFlight Workflow
                        ↓
@@ -559,15 +557,6 @@ Main Branch Push → Semantic Release (determines if release needed)
                                                ↓
                                          Public Beta (10K testers)
 ```
-
-**Maintaining Both Distribution Channels**:
-The project supports two iOS distribution methods:
-1. **TestFlight** (signed): Official Apple beta testing, requires Developer Program
-2. **AltStore** (unsigned): Sideloading for users without Developer Program
-
-Both are built automatically:
-- Release workflow: Unsigned IPA for AltStore
-- TestFlight workflow: Signed IPA for TestFlight
 
 **Version Management**:
 - **Version** (CFBundleShortVersionString): Managed by semantic-release (package.json)
