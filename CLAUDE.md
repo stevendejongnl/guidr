@@ -113,6 +113,38 @@ npm run lint:fix
 npm run typecheck
 ```
 
+### Test Server
+
+A FastAPI-based test server is included for local development and testing. The test-server version is synchronized with the main app version for compatibility.
+
+**Quick Start with Docker (Recommended)**:
+```bash
+docker pull ghcr.io/stevendejongnl/guidr-test-server:latest
+docker run -p 8000:8000 ghcr.io/stevendejongnl/guidr-test-server:latest
+```
+
+**Local Development with Poetry**:
+```bash
+cd test-server
+poetry install
+poetry run guidr-server
+```
+
+**Using Makefile**:
+```bash
+cd test-server
+make install  # Install dependencies
+make run      # Run server
+make help     # Show all commands
+```
+
+**Connecting from App**:
+- Android emulator: `http://10.0.2.2:8000`
+- iOS simulator: `http://localhost:8000`
+- Physical device: `http://<your-computer-ip>:8000`
+
+See [test-server/README.md](test-server/README.md) for detailed documentation.
+
 ## Architecture
 
 ### Tech Stack

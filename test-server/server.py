@@ -4,9 +4,11 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+import os
 import uvicorn
 
-app = FastAPI(title="Guidr Test Server", version="1.0.0")
+VERSION = os.getenv("GUIDR_VERSION", "0.1.0")
+app = FastAPI(title="Guidr Test Server", version=VERSION)
 
 # CORS middleware for React Native
 app.add_middleware(
@@ -152,7 +154,7 @@ init_example_data()
 def read_root():
     return {
         "name": "Guidr Test Server",
-        "version": "1.0.0",
+        "version": VERSION,
         "status": "running",
         "endpoints": {
             "login": "/login",
@@ -329,11 +331,15 @@ def delete_session(session_id: str):
     del sessions[session_id]
     return None
 
-if __name__ == "__main__":
+def main():
     print("\n" + "="*60)
     print("Guidr Test Server Starting")
     print("="*60)
+    print(f"Version: {VERSION}")
     print("Server will be available at: http://localhost:8000")
     print("API documentation: http://localhost:8000/docs")
     print("="*60 + "\n")
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+if __name__ == "__main__":
+    main()

@@ -48,7 +48,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "echo ${nextRelease.version} > .version && chmod +x scripts/update-ios-version.sh scripts/update-android-version.sh && ./scripts/update-ios-version.sh ${nextRelease.version} && ./scripts/update-android-version.sh ${nextRelease.version}"
+        "prepareCmd": "echo ${nextRelease.version} > .version && chmod +x scripts/update-ios-version.sh scripts/update-android-version.sh scripts/update-test-server-version.sh && ./scripts/update-ios-version.sh ${nextRelease.version} && ./scripts/update-android-version.sh ${nextRelease.version} && ./scripts/update-test-server-version.sh ${nextRelease.version}"
       }
     ],
     [
@@ -70,7 +70,8 @@
           "package.json",
           "package-lock.json",
           "ios/guidr.xcodeproj/project.pbxproj",
-          "android/app/build.gradle"
+          "android/app/build.gradle",
+          "test-server/pyproject.toml"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }

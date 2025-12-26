@@ -1,0 +1,126 @@
+name: Docker Publish
+
+on:
+  # Trigger after Release workflow completes successfully
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to tag (e.g., 1.2.3)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write  # Required for GHCR
+
+jobs:
+  docker-build-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    # Only run if Release workflow succeeded or manual trigger
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fetch tags and get version
+        id: version
+        run: |
+          git fetch --tags
+
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # Manual trigger: use input or package.json
+            if [ -n "${{ inputs.version }}" ]; then
+              VERSION="${{ inputs.version }}"
+            else
+              VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+            fi
+          else
+            # Workflow run trigger: get latest tag
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0")
+
+            # Check if tag was created in the last 5 minutes (indicates new release)
+            TAG_DATE=$(git log -1 --format=%ct $LATEST_TAG 2>/dev/null || echo "0")
+            CURRENT_DATE=$(date +%s)
+            AGE=$((CURRENT_DATE - TAG_DATE))
+
+            if [ $AGE -gt 300 ]; then
+              echo "Latest tag $LATEST_TAG is $AGE seconds old - no new release created"
+              echo "should_build=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            # Strip 'v' prefix if present
+            VERSION=${LATEST_TAG#v}
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "should_build=true" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Set up Docker Buildx
+        if: steps.version.outputs.should_build == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.version.outputs.should_build == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        if: steps.version.outputs.should_build == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/guidr-test-server
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.version.outputs.VERSION }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.VERSION }}
+            type=semver,pattern={{major}},value=${{ steps.version.outputs.VERSION }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        if: steps.version.outputs.should_build == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./test-server
+          file: ./test-server/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GUIDR_VERSION=${{ steps.version.outputs.VERSION }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image published
+        if: steps.version.outputs.should_build == 'true'
+        run: |
+          echo "✅ Docker image published successfully!"
+          echo ""
+          echo "Image tags created:"
+          echo "${{ steps.meta.outputs.tags }}"
+          echo ""
+          echo "Pull command:"
+          echo "  docker pull ghcr.io/${{ github.repository_owner }}/guidr-test-server:${{ steps.version.outputs.VERSION }}"
+          echo "  docker pull ghcr.io/${{ github.repository_owner }}/guidr-test-server:latest"
+          echo ""
+          echo "Run command:"
+          echo "  docker run -p 8000:8000 ghcr.io/${{ github.repository_owner }}/guidr-test-server:latest"
+
+      - name: No build needed
+        if: steps.version.outputs.should_build == 'false'
+        run: |
+          echo "ℹ️  No Docker build needed"
+          echo "Reason: No new release created"

@@ -1,0 +1,3 @@
+ - [./fits1024x1024.jpg](Center login when keyboard is open.)
+ - [./fits1024x1024 (1).jpg](Still no text as placeholders.)
+ - [./fits1024x1024 (2).jpg](Guidrtemp and powered by react native on splash screen.)
