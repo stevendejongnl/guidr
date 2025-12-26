@@ -5,69 +5,69 @@
 ### 1. Register App ID in Apple Developer Portal
 **URL**: https://developer.apple.com/account/resources/identifiers
 
-- [ ] Click "+" to create new identifier
-- [ ] Select "App IDs" → Continue
-- [ ] Type: Select "App"
-- [ ] Description: Enter "Guidr - Step-by-step guide execution"
-- [ ] Bundle ID: Select "Explicit" → Enter `com.guidr`
-- [ ] Capabilities:
-  - [ ] Enable "App Groups"
-- [ ] Click "Continue" → "Register"
+- [x] Click "+" to create new identifier
+- [x] Select "App IDs" → Continue
+- [x] Type: Select "App"
+- [x] Description: Enter "Guidr - Step-by-step guide execution"
+- [x] Bundle ID: Select "Explicit" → Enter `com.guidr`
+- [x] Capabilities:
+  - [x] Enable "App Groups"
+- [x] Click "Continue" → "Register"
 
 ### 2. Configure App Groups
 **URL**: https://developer.apple.com/account/resources/identifiers (same page)
 
-- [ ] Find your `com.guidr` App ID in the list
-- [ ] Click to edit it
-- [ ] Under "App Groups", click "Configure"
-- [ ] Click "+" to create new App Group
-- [ ] Identifier: Enter `group.com.guidr`
-- [ ] Description: Enter "Guidr App Group"
-- [ ] Click "Continue" → "Register"
-- [ ] Go back to App ID configuration
-- [ ] Under "App Groups", select the `group.com.guidr` you just created
-- [ ] Click "Save"
+- [x] Find your `com.guidr` App ID in the list
+- [x] Click to edit it
+- [x] Under "App Groups", click "Configure"
+- [x] Click "+" to create new App Group
+- [x] Identifier: Enter `group.com.guidr`
+- [x] Description: Enter "Guidr App Group"
+- [x] Click "Continue" → "Register"
+- [x] Go back to App ID configuration
+- [x] Under "App Groups", select the `group.com.guidr` you just created
+- [x] Click "Save"
 
 ### 3. Get Your Apple Team ID
 **URL**: https://developer.apple.com/account (Membership section)
 
-- [ ] Go to https://developer.apple.com/account
-- [ ] Click "Membership" in the left sidebar
-- [ ] Find and copy your **Team ID** (10 alphanumeric characters)
-- [ ] Save this value - you'll need it for GitHub Secrets
-- [ ] Format example: `A1B2C3D4E5`
+- [x] Go to https://developer.apple.com/account
+- [x] Click "Membership" in the left sidebar
+- [x] Find and copy your **Team ID** (10 alphanumeric characters)
+- [x] Save this value - you'll need it for GitHub Secrets
+- [x] Format example: `A1B2C3D4E5`
 
 ### 4. Create App in App Store Connect
 **URL**: https://appstoreconnect.apple.com
 
-- [ ] Log in to App Store Connect
-- [ ] Click "My Apps"
-- [ ] Click the "+" button
-- [ ] Select "New App"
-- [ ] Platforms: Check "iOS"
-- [ ] Name: Enter "Guidr"
-- [ ] Primary Language: Select "English (U.S.)"
-- [ ] Bundle ID: Select `com.guidr` from dropdown
-- [ ] SKU: Enter `guidr-ios` (or any unique identifier)
-- [ ] User Access: Select "Full Access"
-- [ ] Click "Create"
+- [x] Log in to App Store Connect
+- [x] Click "My Apps"
+- [x] Click the "+" button
+- [x] Select "New App"
+- [x] Platforms: Check "iOS"
+- [x] Name: Enter "Guidr"
+- [x] Primary Language: Select "English (U.S.)"
+- [x] Bundle ID: Select `com.guidr` from dropdown
+- [x] SKU: Enter `guidr-ios` (or any unique identifier)
+- [x] User Access: Select "Full Access"
+- [x] Click "Create"
 
 ### 5. Create App Store Connect API Key
 **URL**: https://appstoreconnect.apple.com/access/integrations/api
 
-- [ ] Go to "Users and Access" (top navigation)
-- [ ] Click "Integrations" tab
-- [ ] Click "App Store Connect API" section
-- [ ] Click "+" (Generate API Key button)
-- [ ] Name: Enter "GitHub Actions CI/CD"
-- [ ] Access: Select "App Manager" role
-- [ ] Click "Generate"
-- [ ] **IMPORTANT**: Click "Download API Key" (you can ONLY do this ONCE!)
-- [ ] File downloads as: `AuthKey_XXXXXXXXXX.p8`
-- [ ] **Copy and save these values**:
-  - [ ] **Key ID**: Displayed on the page (10 characters, e.g., `AB1CD2EF34`)
-  - [ ] **Issuer ID**: Displayed at top of page (UUID format, e.g., `12345678-abcd-1234-abcd-123456789012`)
-  - [ ] **API Key Content**: Open the `.p8` file in text editor, copy entire contents including:
+- [x] Go to "Users and Access" (top navigation)
+- [x] Click "Integrations" tab
+- [x] Click "App Store Connect API" section
+- [x] Click "+" (Generate API Key button)
+- [x] Name: Enter "GitHub Actions CI/CD"
+- [x] Access: Select "App Manager" role
+- [x] Click "Generate"
+- [x] **IMPORTANT**: Click "Download API Key" (you can ONLY do this ONCE!)
+- [x] File downloads as: `AuthKey_XXXXXXXXXX.p8`
+- [x] **Copy and save these values**:
+  - [x] **Key ID**: Displayed on the page (10 characters, e.g., `AB1CD2EF34`)
+  - [x] **Issuer ID**: Displayed at top of page (UUID format, e.g., `12345678-abcd-1234-abcd-123456789012`)
+  - [x] **API Key Content**: Open the `.p8` file in text editor, copy entire contents including:
     ```
     -----BEGIN PRIVATE KEY-----
     [content]
@@ -77,45 +77,45 @@
 ### 6. Configure GitHub Secrets
 **URL**: https://github.com/stevendejongnl/guidr/settings/secrets/actions
 
-- [ ] Go to your GitHub repository
-- [ ] Click "Settings" tab
-- [ ] Click "Secrets and variables" → "Actions" in left sidebar
-- [ ] Click "New repository secret" button for each of the following:
+- [x] Go to your GitHub repository
+- [x] Click "Settings" tab
+- [x] Click "Secrets and variables" → "Actions" in left sidebar
+- [x] Click "New repository secret" button for each of the following:
 
 #### Secret 1: APPLE_TEAM_ID
-- [ ] Name: `APPLE_TEAM_ID`
-- [ ] Value: Your 10-character Team ID from Step 3
-- [ ] Example: `A1B2C3D4E5`
-- [ ] Click "Add secret"
+- [x] Name: `APPLE_TEAM_ID`
+- [x] Value: Your 10-character Team ID from Step 3
+- [x] Example: `A1B2C3D4E5`
+- [x] Click "Add secret"
 
 #### Secret 2: APP_STORE_CONNECT_API_KEY_ID
-- [ ] Click "New repository secret"
-- [ ] Name: `APP_STORE_CONNECT_API_KEY_ID`
-- [ ] Value: The Key ID from Step 5 (10 characters)
-- [ ] Example: `AB1CD2EF34`
-- [ ] Click "Add secret"
+- [x] Click "New repository secret"
+- [x] Name: `APP_STORE_CONNECT_API_KEY_ID`
+- [x] Value: The Key ID from Step 5 (10 characters)
+- [x] Example: `AB1CD2EF34`
+- [x] Click "Add secret"
 
 #### Secret 3: APP_STORE_CONNECT_ISSUER_ID
-- [ ] Click "New repository secret"
-- [ ] Name: `APP_STORE_CONNECT_ISSUER_ID`
-- [ ] Value: The Issuer ID from Step 5 (UUID format)
-- [ ] Example: `12345678-abcd-1234-abcd-123456789012`
-- [ ] Click "Add secret"
+- [x] Click "New repository secret"
+- [x] Name: `APP_STORE_CONNECT_ISSUER_ID`
+- [x] Value: The Issuer ID from Step 5 (UUID format)
+- [x] Example: `12345678-abcd-1234-abcd-123456789012`
+- [x] Click "Add secret"
 
 #### Secret 4: APP_STORE_CONNECT_API_KEY_CONTENT
-- [ ] Click "New repository secret"
-- [ ] Name: `APP_STORE_CONNECT_API_KEY_CONTENT`
-- [ ] Value: The COMPLETE contents of the `.p8` file from Step 5
-- [ ] Must include the BEGIN and END lines:
+- [x] Click "New repository secret"
+- [x] Name: `APP_STORE_CONNECT_API_KEY_CONTENT`
+- [x] Value: The COMPLETE contents of the `.p8` file from Step 5
+- [x] Must include the BEGIN and END lines:
   ```
   -----BEGIN PRIVATE KEY-----
   [multiple lines of base64 encoded content]
   -----END PRIVATE KEY-----
   ```
-- [ ] Click "Add secret"
+- [x] Click "Add secret"
 
 #### Verify Secrets
-- [ ] Confirm all 4 secrets appear in the list:
+- [x] Confirm all 4 secrets appear in the list:
   - `APPLE_TEAM_ID`
   - `APP_STORE_CONNECT_API_KEY_ID`
   - `APP_STORE_CONNECT_ISSUER_ID`
