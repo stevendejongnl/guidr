@@ -17,27 +17,28 @@ export const AppNavigator: React.FC = () => {
   const authStorage = new AuthStorage()
 
   useEffect(() => {
-    checkConfiguration()
-  }, [])
+    const checkConfiguration = async () => {
+      try {
+        const hasUrl = await serverStorage.hasServerUrl()
+        setHasServerUrl(hasUrl)
 
-  const checkConfiguration = async () => {
-    try {
-      const hasUrl = await serverStorage.hasServerUrl()
-      setHasServerUrl(hasUrl)
+        if (hasUrl) {
+          const url = await serverStorage.getServerUrl()
+          setServerUrl(url)
 
-      if (hasUrl) {
-        const url = await serverStorage.getServerUrl()
-        setServerUrl(url)
-
-        const hasToken = await authStorage.hasAuthToken()
-        setHasAuthToken(hasToken)
+          const hasToken = await authStorage.hasAuthToken()
+          setHasAuthToken(hasToken)
+        }
+      } catch (error) {
+        console.error('Failed to check configuration:', error)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Failed to check configuration:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    checkConfiguration()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleServerSetupComplete = async () => {
     const url = await serverStorage.getServerUrl()

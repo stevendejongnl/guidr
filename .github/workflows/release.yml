@@ -41,6 +41,15 @@ jobs:
           cd ios
           pod install
 
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run typecheck
+        run: npm run typecheck
+
       - name: Run semantic-release (dry-run to get version)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
