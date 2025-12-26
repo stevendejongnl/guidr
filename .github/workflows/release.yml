@@ -90,8 +90,7 @@ jobs:
               echo "Export failed, creating IPA manually..."
               mkdir -p ./build/Payload
               cp -r ./build/guidr.xcarchive/Products/Applications/guidr.app ./build/Payload/
-              cd ./build
-              zip -r guidr-unsigned.ipa Payload
+              (cd ./build && zip -r guidr-unsigned.ipa Payload)
             }
 
           # Rename if export succeeded
