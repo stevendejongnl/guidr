@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
@@ -50,7 +52,10 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.content}>
         <Text style={styles.title}>Server Configuration</Text>
         <Text style={styles.description}>Enter your Guidr server URL to get started.</Text>
@@ -58,6 +63,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
         <TextInput
           style={[styles.input, error ? styles.inputError : null]}
           placeholder="https://api.example.com"
+          placeholderTextColor="#999"
           value={url}
           onChangeText={handleUrlChange}
           autoCapitalize="none"
@@ -85,7 +91,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
         </TouchableOpacity>
       </View>
       <VersionDisplay />
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
