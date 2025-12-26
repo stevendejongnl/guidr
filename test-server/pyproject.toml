@@ -10,7 +10,7 @@ packages = [{include = "server.py"}]
 python = "^3.12"
 fastapi = "0.115.6"
 uvicorn = {extras = ["standard"], version = "0.34.0"}
-pydantic = "2.10.6"
+pydantic = {extras = ["email"], version = "2.10.6"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
