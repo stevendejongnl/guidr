@@ -146,6 +146,8 @@ jobs:
           github.event.inputs.skip_testflight != 'true'
         run: |
           bundle exec fastlane pilot upload \
+            --api_key_id "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
+            --api_key_issuer_id "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" \
             --api_key_path "$APP_STORE_CONNECT_API_KEY_PATH" \
             --ipa "${{ steps.version.outputs.IPA_PATH }}" \
             --skip_waiting_for_build_processing true \
