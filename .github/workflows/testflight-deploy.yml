@@ -127,8 +127,7 @@ jobs:
           cat > ~/.ssh/config <<EOF
           Host gitaccess.madebysteven.nl
             ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h
-            StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
+            StrictHostKeyChecking accept-new
           EOF
           chmod 600 ~/.ssh/config
 
@@ -137,6 +136,25 @@ jobs:
           export CF_ACCESS_CLIENT_SECRET="${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
 
           echo "SSH configured for Cloudflare Access tunnel"
+
+      # Populate SSH known_hosts for Cloudflare Access tunnel
+      - name: Populate SSH known_hosts
+        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        run: |
+          # Use cloudflared ProxyCommand to scan host key through the tunnel
+          ssh-keyscan -H gitaccess.madebysteven.nl >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          # Verify known_hosts was populated
+          if [ -s ~/.ssh/known_hosts ]; then
+            echo "SSH known_hosts populated successfully"
+            cat ~/.ssh/known_hosts
+          else
+            echo "Warning: ssh-keyscan did not populate known_hosts"
+            echo "Falling back to StrictHostKeyChecking accept-new"
+          fi
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       # Download/create certificates with Fastlane Match
       - name: Setup certificates with Fastlane Match
