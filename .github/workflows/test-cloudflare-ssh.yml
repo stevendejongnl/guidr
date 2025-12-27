@@ -80,9 +80,8 @@ jobs:
             exit 1
           fi
           echo ""
-          echo "Testing cloudflared access login (validates token with Cloudflare)..."
-          # Try to use cloudflared with the token
-          timeout 10 /usr/local/bin/cloudflared access login gitaccess.madebysteven.nl 2>&1 || echo "Token validation completed with exit code $?"
+          echo "Note: Service token validation happens during SSH tunnel establishment"
+          echo "If SSH shows 'websocket: bad handshake', the token is invalid/expired/not authorized"
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
