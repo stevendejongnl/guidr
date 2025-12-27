@@ -4,9 +4,11 @@ import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 
 interface HomeScreenProps {
   onLogout: () => void
+  onOpenDebug: () => void
+  debugMode: boolean
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, debugMode }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const authStorage = new AuthStorage()
 
@@ -34,6 +36,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
       <Text style={styles.description}>
         The app is ready. Guide management features coming soon.
       </Text>
+
+      {debugMode && (
+        <TouchableOpacity
+          style={styles.debugButton}
+          onPress={onOpenDebug}
+          accessibilityLabel="Open debug tools"
+        >
+          <Text style={styles.debugButtonText}>⚙ Debug Tools</Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
         <Text style={styles.logoutButtonText}>Logout</Text>
@@ -66,6 +78,18 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'center',
     marginBottom: 32,
+  },
+  debugButton: {
+    backgroundColor: '#757575',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   logoutButton: {
     backgroundColor: '#f44336',

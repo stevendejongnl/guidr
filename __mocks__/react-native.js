@@ -5,6 +5,7 @@ module.exports = {
   TouchableOpacity: 'TouchableOpacity',
   ActivityIndicator: 'ActivityIndicator',
   KeyboardAvoidingView: 'KeyboardAvoidingView',
+  ScrollView: 'ScrollView',
   Platform: {
     OS: 'ios',
     select: (obj) => obj.ios,

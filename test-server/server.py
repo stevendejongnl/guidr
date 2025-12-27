@@ -28,6 +28,10 @@ class LoginResponse(BaseModel):
     token: str
     email: str
 
+# Configuration Models
+class ServerConfigResponse(BaseModel):
+    debugMode: bool
+
 # Test credentials for authentication
 TEST_CREDENTIALS = {
     "test@example.com": "password123",
@@ -157,6 +161,7 @@ def read_root():
         "version": VERSION,
         "status": "running",
         "endpoints": {
+            "config": "/config",
             "login": "/login",
             "categories": "/categories",
             "guides": "/guides",
@@ -164,6 +169,17 @@ def read_root():
             "sessions": "/sessions"
         }
     }
+
+# Configuration endpoints
+@app.get("/config", response_model=ServerConfigResponse)
+def get_server_config():
+    """
+    Get server configuration including debug mode flag.
+
+    Debug mode is always enabled for the test server to allow developers
+    to access debug screens with cache clearing and diagnostics.
+    """
+    return ServerConfigResponse(debugMode=True)
 
 # Authentication endpoints
 @app.post("/login", response_model=LoginResponse)
