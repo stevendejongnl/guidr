@@ -81,7 +81,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
           mkdir -p $HOME/private_keys
-          echo "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" > $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          KEY_PATH="$HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8"
+          echo "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" > "$KEY_PATH"
+          echo "APP_STORE_CONNECT_API_KEY_PATH=$KEY_PATH" >> $GITHUB_ENV
 
       # Auto-increment build number with timestamp
       - name: Increment build number
@@ -142,10 +144,6 @@ jobs:
         if: |
           (github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true') &&
           github.event.inputs.skip_testflight != 'true'
-        env:
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_PATH: $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
         run: |
           bundle exec fastlane pilot upload \
             --api_key_path "$APP_STORE_CONNECT_API_KEY_PATH" \
