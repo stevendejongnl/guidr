@@ -76,14 +76,27 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true  # Automatically runs bundle install and caches gems
 
-      # Create API key file from secret
+      # Create API key files from secrets
       - name: Create App Store Connect API Key
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
           mkdir -p $HOME/private_keys
-          KEY_PATH="$HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8"
-          echo "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" > "$KEY_PATH"
-          echo "APP_STORE_CONNECT_API_KEY_PATH=$KEY_PATH" >> $GITHUB_ENV
+
+          # Create .p8 file for xcodebuild
+          P8_PATH="$HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8"
+          echo "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" > "$P8_PATH"
+
+          # Create JSON file for Fastlane pilot
+          JSON_PATH="$HOME/private_keys/api_key.json"
+          cat > "$JSON_PATH" << EOF
+          {
+            "key_id": "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}",
+            "issuer_id": "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}",
+            "key_filepath": "$P8_PATH"
+          }
+          EOF
+
+          echo "APP_STORE_CONNECT_API_KEY_JSON_PATH=$JSON_PATH" >> $GITHUB_ENV
 
       # Auto-increment build number with timestamp
       - name: Increment build number
@@ -146,9 +159,7 @@ jobs:
           github.event.inputs.skip_testflight != 'true'
         run: |
           bundle exec fastlane pilot upload \
-            --api_key_id "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
-            --api_key_issuer_id "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" \
-            --api_key_path "$APP_STORE_CONNECT_API_KEY_PATH" \
+            --api-key-path "$APP_STORE_CONNECT_API_KEY_JSON_PATH" \
             --ipa "${{ steps.version.outputs.IPA_PATH }}" \
             --skip_waiting_for_build_processing true \
             --distribute_external false \
@@ -164,7 +175,9 @@ jobs:
           path: ios/build/guidr.ipa
           retention-days: 30
 
-      # Cleanup API key
+      # Cleanup API key files
       - name: Cleanup API key
         if: always() && (github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true')
-        run: rm -f $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+        run: |
+          rm -f $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          rm -f $HOME/private_keys/api_key.json
