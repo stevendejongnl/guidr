@@ -1,3 +1,9 @@
+## [1.8.3](https://github.com/stevendejongnl/guidr/compare/v1.8.2...v1.8.3) (2025-12-27)
+
+### Bug Fixes
+
+* persist Cloudflare Access credentials across workflow steps ([dfa710a](https://github.com/stevendejongnl/guidr/commit/dfa710ab93f1546955e54ac2703806aae66cc43e))
+
 ## [1.8.2](https://github.com/stevendejongnl/guidr/compare/v1.8.1...v1.8.2) (2025-12-27)
 
 ### Bug Fixes
