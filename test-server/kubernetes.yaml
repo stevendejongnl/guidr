@@ -16,7 +16,6 @@ metadata:
   namespace: guidr
   labels:
     app: guidr-test-server
-    version: "1.5.0"
 spec:
   replicas: 2
   selector:
@@ -26,7 +25,6 @@ spec:
     metadata:
       labels:
         app: guidr-test-server
-        version: "1.5.0"
     spec:
       containers:
       - name: test-server
@@ -36,9 +34,10 @@ spec:
         - name: http
           containerPort: 8000
           protocol: TCP
-        env:
-        - name: GUIDR_VERSION
-          value: "1.5.0"
+        # env: section removed - container will use ENV from Docker image
+        # The image is built with GUIDR_VERSION baked in via:
+        #   docker build --build-arg GUIDR_VERSION=<git-tag-version>
+        # This ensures version automatically matches the image tag
         resources:
           requests:
             memory: "128Mi"
