@@ -137,21 +137,28 @@ jobs:
 
           echo "SSH configured for Cloudflare Access tunnel"
 
-      # Populate SSH known_hosts for Cloudflare Access tunnel
-      - name: Populate SSH known_hosts
+      # Test Cloudflare Access connection and populate known_hosts
+      - name: Test Cloudflare Access and populate known_hosts
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
-          # Connect through cloudflared ProxyCommand to populate known_hosts
-          # StrictHostKeyChecking=accept-new will accept and save the host key
-          ssh -o "BatchMode yes" -o "ConnectTimeout 10" git@gitaccess.madebysteven.nl exit 2>/dev/null || true
+          echo "Testing cloudflared authentication..."
+          echo "CF_ACCESS_CLIENT_ID is set: ${CF_ACCESS_CLIENT_ID:+yes}"
+          echo "CF_ACCESS_CLIENT_SECRET is set: ${CF_ACCESS_CLIENT_SECRET:+yes}"
 
-          # Verify known_hosts was populated
+          # Test direct cloudflared connection
+          echo "Testing direct cloudflared connection..."
+          /usr/local/bin/cloudflared access ssh --hostname gitaccess.madebysteven.nl echo "Cloudflared connected successfully" || echo "Direct cloudflared test failed"
+
+          # Try SSH connection with verbose output
+          echo "Testing SSH connection through ProxyCommand..."
+          ssh -v -o "BatchMode yes" -o "ConnectTimeout 10" git@gitaccess.madebysteven.nl exit 2>&1 | head -20 || true
+
+          # Verify known_hosts
           if grep -q "gitaccess.madebysteven.nl" ~/.ssh/known_hosts 2>/dev/null; then
-            echo "SSH known_hosts populated successfully for gitaccess.madebysteven.nl"
+            echo "✓ SSH known_hosts populated successfully"
             grep "gitaccess.madebysteven.nl" ~/.ssh/known_hosts
           else
-            echo "Host key not in known_hosts yet"
-            echo "StrictHostKeyChecking accept-new will handle it on first Fastlane Match connection"
+            echo "⚠ Host key not yet in known_hosts (will be accepted on first Fastlane Match connection)"
           fi
 
       # Download/create certificates with Fastlane Match
