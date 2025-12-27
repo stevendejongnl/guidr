@@ -1,3 +1,9 @@
+## [1.8.1](https://github.com/stevendejongnl/guidr/compare/v1.8.0...v1.8.1) (2025-12-27)
+
+### Bug Fixes
+
+* resolve Fastlane Match SSH authentication through Cloudflare Access ([59fed99](https://github.com/stevendejongnl/guidr/commit/59fed996b6fba50eba7d596e7a2c288f87a4b029))
+
 ## [1.8.0](https://github.com/stevendejongnl/guidr/compare/v1.7.1...v1.8.0) (2025-12-27)
 
 ### Features
