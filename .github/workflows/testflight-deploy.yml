@@ -69,6 +69,13 @@ jobs:
           cd ios
           pod install
 
+      - name: Setup Ruby and Bundler
+        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true  # Automatically runs bundle install and caches gems
+
       # Create API key file from secret
       - name: Create App Store Connect API Key
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
@@ -130,18 +137,23 @@ jobs:
           echo "IPA_PATH=$(pwd)/ios/build/guidr.ipa" >> $GITHUB_OUTPUT
           echo "Version: $VERSION, Build: $BUILD_NUMBER"
 
-      # Upload to TestFlight
-      - name: Upload to TestFlight
+      # Upload to TestFlight with Fastlane pilot
+      - name: Upload to TestFlight and assign to group
         if: |
           (github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true') &&
           github.event.inputs.skip_testflight != 'true'
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
         run: |
-          xcrun altool \
-            --upload-app \
-            --type ios \
-            --file "${{ steps.version.outputs.IPA_PATH }}" \
-            --apiKey "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
-            --apiIssuer "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
+          bundle exec fastlane pilot upload \
+            --api_key_path "$APP_STORE_CONNECT_API_KEY_PATH" \
+            --ipa "${{ steps.version.outputs.IPA_PATH }}" \
+            --skip_waiting_for_build_processing true \
+            --distribute_external false \
+            --groups "main" \
+            --changelog "Automated build from CI/CD pipeline"
 
       # Upload IPA as artifact (for debugging/archiving)
       - name: Upload IPA artifact

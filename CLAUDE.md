@@ -473,8 +473,42 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+**Fastlane Automation**:
+The workflow uses Fastlane pilot for upload and distribution:
+- Automatic upload to TestFlight (replaces xcrun altool)
+- Auto-assignment to "main" TestFlight group
+- Skips waiting for Apple processing (faster CI/CD)
+- Internal distribution only (no external review required)
+
+**Local Fastlane usage** (optional):
+```bash
+# Install Fastlane dependencies
+bundle install
+
+# Upload existing IPA to TestFlight
+bundle exec fastlane pilot upload \
+  --api_key_path ~/private_keys/AuthKey_YOUR_KEY_ID.p8 \
+  --ipa ./ios/build/guidr.ipa \
+  --groups "main"
+
+# List available TestFlight groups
+bundle exec fastlane pilot list
+```
+
+**TestFlight Group Setup**:
+- Builds are automatically assigned to the "main" group
+- Create group in App Store Connect: TestFlight → Internal Testing → Create Group
+- Group name must be exactly "main" (case-sensitive)
+- Testers added to "main" group receive new builds automatically
+
+**Encryption Export Compliance**:
+- App declares `ITSAppUsesNonExemptEncryption = false` in Info.plist
+- Only uses standard HTTPS encryption (no custom cryptography)
+- No manual compliance prompts during TestFlight upload
+- Complies with U.S. Export Administration Regulations (EAR)
+
 **Build Process**:
-1. Checkout code and install dependencies (Node, CocoaPods)
+1. Checkout code and install dependencies (Node, CocoaPods, Ruby/Fastlane)
 2. Create API key file from GitHub Secret
 3. Auto-increment build number (timestamp: YYYYMMDDHHmmss)
 4. Build iOS archive with code signing:
@@ -484,7 +518,7 @@ git push origin v1.0.0
    - Team ID: From GitHub Secret
    - Provisioning: Auto-fetched from Apple
 5. Export signed IPA using ExportOptions.plist
-6. Upload to TestFlight using `xcrun altool`
+6. Upload to TestFlight using Fastlane pilot and assign to "main" group
 7. Upload IPA as GitHub artifact (30-day retention)
 8. Cleanup API key file
 
@@ -570,6 +604,26 @@ xcrun altool \
 - **Solution**: Build number must be unique (workflow auto-increments with timestamp)
 - If uploading manually, increment CFBundleVersion in Info.plist
 - Check existing builds in App Store Connect → TestFlight → Builds
+
+**Problem**: "Encryption export compliance" prompt after TestFlight upload
+- **Solution**: Verify `ITSAppUsesNonExemptEncryption` key exists in ios/guidr/Info.plist
+- Check value is `<false/>` (boolean false)
+- If missing, add manually: `/usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/guidr/Info.plist`
+
+**Problem**: "Group 'main' not found" error during pilot upload
+- **Solution**: Create TestFlight group in App Store Connect first
+- Go to: App Store Connect → Apps → Guidr → TestFlight → Internal Testing
+- Click "+" → Create Group → Name: "main" (exactly, case-sensitive)
+- Add team members to the group
+- Re-run workflow after group creation
+
+**Problem**: Fastlane pilot upload fails with "Invalid credentials"
+- **Solution**: Verify GitHub Secrets are correct:
+  - `APP_STORE_CONNECT_API_KEY_ID`: Should be 10 characters
+  - `APP_STORE_CONNECT_ISSUER_ID`: Should be UUID format
+  - `APP_STORE_CONNECT_API_KEY_CONTENT`: Must include BEGIN/END PRIVATE KEY lines
+- Check API key hasn't been revoked in App Store Connect
+- Ensure API key has "App Manager" or "Developer" role
 
 **Workflow Architecture**:
 ```
