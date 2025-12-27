@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/stevendejongnl/guidr/compare/v1.7.1...v1.8.0) (2025-12-27)
+
+### Features
+
+* configure Cloudflare Access for SSH certificate repository access ([790468b](https://github.com/stevendejongnl/guidr/commit/790468bda39c31149af16a1bf7ac1c642bc72178))
+
 ## [1.7.1](https://github.com/stevendejongnl/guidr/compare/v1.7.0...v1.7.1) (2025-12-27)
 
 ### Bug Fixes
