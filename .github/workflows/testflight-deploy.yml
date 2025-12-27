@@ -103,6 +103,17 @@ jobs:
           echo "APP_STORE_CONNECT_API_KEY_KEY_ID=${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" >> $GITHUB_ENV
           echo "APP_STORE_CONNECT_API_KEY_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" >> $GITHUB_ENV
 
+      # Setup SSH for Fastlane Match certificate repository access
+      - name: Setup SSH for Fastlane Match
+        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MATCH_GIT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          chmod 700 ~/.ssh
+          ssh-keyscan -H git.madebysteven.nl >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
       # Download/create certificates with Fastlane Match
       - name: Setup certificates with Fastlane Match
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
@@ -111,7 +122,6 @@ jobs:
           bundle exec fastlane match appstore --readonly
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
 
       # Auto-increment build number with timestamp
       - name: Increment build number

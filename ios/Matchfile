@@ -1,4 +1,4 @@
-git_url("https://git.madebysteven.nl/stevendejong/guidr-certificates")
+git_url("git@git.madebysteven.nl:stevendejong/guidr-certificates.git")
 
 storage_mode("git")
 

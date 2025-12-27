@@ -437,6 +437,13 @@ When you're ready to distribute to physical devices:
 - **Upload Method**: App Store Connect API (no 2FA required)
 - **Trigger**: Automatic on version tags (v*) or manual via workflow_dispatch
 
+**Certificate Management**:
+- Uses Fastlane Match for automated certificate sync
+- Certificates stored in private Git repository (git.madebysteven.nl)
+- Authentication: SSH key (GitHub Secret: MATCH_GIT_SSH_PRIVATE_KEY)
+- Encryption: MATCH_PASSWORD protects certificates at rest
+- Workflow automatically downloads certificates before build
+
 **Prerequisites** (one-time setup completed):
 1. Apple Developer Program membership ($99/year) ✓
 2. App ID registered for `com.guidr` with App Groups capability
@@ -447,6 +454,8 @@ When you're ready to distribute to physical devices:
    - `APP_STORE_CONNECT_API_KEY_ID`: API Key ID
    - `APP_STORE_CONNECT_ISSUER_ID`: API Issuer ID (UUID)
    - `APP_STORE_CONNECT_API_KEY_CONTENT`: Complete .p8 file content
+   - `MATCH_GIT_SSH_PRIVATE_KEY`: SSH private key for certificate repository access
+   - `MATCH_PASSWORD`: Password for encrypted certificate storage
 
 **Triggering TestFlight Builds**:
 
