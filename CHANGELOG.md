@@ -1,3 +1,9 @@
+## [1.8.4](https://github.com/stevendejongnl/guidr/compare/v1.8.3...v1.8.4) (2025-12-27)
+
+### Bug Fixes
+
+* add verbose logging for Cloudflare Access SSH connection ([0a8be06](https://github.com/stevendejongnl/guidr/commit/0a8be06554b2f668111b6a5dded6f83fc7f7638a))
+
 ## [1.8.3](https://github.com/stevendejongnl/guidr/compare/v1.8.2...v1.8.3) (2025-12-27)
 
 ### Bug Fixes
