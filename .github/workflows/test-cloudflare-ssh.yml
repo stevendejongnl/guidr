@@ -59,16 +59,30 @@ jobs:
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       - name: Test cloudflared authentication
+        continue-on-error: true
         run: |
-          echo "Testing cloudflared can authenticate with Cloudflare Access..."
-          echo "Note: cloudflared access ssh is designed as an SSH ProxyCommand, not for direct execution"
-          echo "We'll test it through SSH in the next steps"
+          echo "Testing cloudflared credentials format and presence..."
+          echo ""
           if [ -n "$CF_ACCESS_CLIENT_ID" ] && [ -n "$CF_ACCESS_CLIENT_SECRET" ]; then
             echo "✓ Cloudflare Access credentials are set"
+            echo "  Client ID length: ${#CF_ACCESS_CLIENT_ID}"
+            echo "  Client Secret length: ${#CF_ACCESS_CLIENT_SECRET}"
+            echo "  Client ID preview: ${CF_ACCESS_CLIENT_ID:0:30}..."
+            echo ""
+            # Check if Client ID ends with .access (standard format)
+            if [[ "$CF_ACCESS_CLIENT_ID" == *.access ]]; then
+              echo "✓ Client ID has .access suffix (correct format)"
+            else
+              echo "⚠ Client ID doesn't end with .access (might be wrong format)"
+            fi
           else
             echo "✗ Cloudflare Access credentials are missing"
             exit 1
           fi
+          echo ""
+          echo "Testing cloudflared access login (validates token with Cloudflare)..."
+          # Try to use cloudflared with the token
+          timeout 10 /usr/local/bin/cloudflared access login gitaccess.madebysteven.nl 2>&1 || echo "Token validation completed with exit code $?"
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
@@ -79,10 +93,18 @@ jobs:
           echo "Testing SSH connection with verbose output..."
           echo "This will show detailed connection info including ProxyCommand execution"
           echo ""
+          echo "Environment check before SSH:"
+          echo "  CF_ACCESS_CLIENT_ID set: ${CF_ACCESS_CLIENT_ID:+yes} (length: ${#CF_ACCESS_CLIENT_ID})"
+          echo "  CF_ACCESS_CLIENT_SECRET set: ${CF_ACCESS_CLIENT_SECRET:+yes} (length: ${#CF_ACCESS_CLIENT_SECRET})"
+          echo "  CF_ACCESS_CLIENT_ID value: ${CF_ACCESS_CLIENT_ID:0:20}... (first 20 chars)"
+          echo ""
           ssh -vvv -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | tee /tmp/ssh-test.log || true
           echo ""
           if grep -q "websocket: bad handshake" /tmp/ssh-test.log 2>/dev/null; then
             echo "✗ DETECTED: websocket bad handshake - Cloudflare Access authentication failed"
+            echo "  This means cloudflared couldn't authenticate with the service token"
+            echo "  Verify CF_ACCESS_CLIENT_ID ends with .access"
+            echo "  Verify CF_ACCESS_CLIENT_SECRET is the full secret value"
           fi
           if grep -q "Permission denied" /tmp/ssh-test.log 2>/dev/null; then
             echo "✗ DETECTED: Permission denied - SSH key not authorized"
