@@ -131,9 +131,9 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-          # Set up Cloudflare Access authentication
-          export CF_ACCESS_CLIENT_ID="${{ secrets.CF_ACCESS_CLIENT_ID }}"
-          export CF_ACCESS_CLIENT_SECRET="${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
+          # Set up Cloudflare Access authentication (persist for all subsequent steps)
+          echo "CF_ACCESS_CLIENT_ID=${{ secrets.CF_ACCESS_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "CF_ACCESS_CLIENT_SECRET=${{ secrets.CF_ACCESS_CLIENT_SECRET }}" >> $GITHUB_ENV
 
           echo "SSH configured for Cloudflare Access tunnel"
 
@@ -153,9 +153,6 @@ jobs:
             echo "Host key not in known_hosts yet"
             echo "StrictHostKeyChecking accept-new will handle it on first Fastlane Match connection"
           fi
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       # Download/create certificates with Fastlane Match
       - name: Setup certificates with Fastlane Match
@@ -165,8 +162,6 @@ jobs:
           bundle exec fastlane match appstore --readonly
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       # Auto-increment build number with timestamp
       - name: Increment build number
