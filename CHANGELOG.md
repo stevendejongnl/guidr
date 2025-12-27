@@ -1,3 +1,9 @@
+## [1.8.5](https://github.com/stevendejongnl/guidr/compare/v1.8.4...v1.8.5) (2025-12-27)
+
+### Bug Fixes
+
+* pass Cloudflare Access credentials to Fastlane Match step ([d5e7ada](https://github.com/stevendejongnl/guidr/commit/d5e7ada63eb905ae3e818ead08d35bbbfa6cb16f))
+
 ## [1.8.4](https://github.com/stevendejongnl/guidr/compare/v1.8.3...v1.8.4) (2025-12-27)
 
 ### Bug Fixes
