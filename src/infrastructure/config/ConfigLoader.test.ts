@@ -1,13 +1,13 @@
 import RNFS from 'react-native-fs'
-import * as TOML from '@iarna/toml'
+import { parse } from 'smol-toml'
 import { ConfigLoader } from './ConfigLoader'
 
 jest.mock('react-native-fs')
-jest.mock('@iarna/toml')
+jest.mock('smol-toml')
 
 describe('ConfigLoader', () => {
   const mockRNFS = RNFS as jest.Mocked<typeof RNFS>
-  const mockTOML = TOML as jest.Mocked<typeof TOML>
+  const mockParse = parse as jest.MockedFunction<typeof parse>
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -28,7 +28,7 @@ describe('ConfigLoader', () => {
       }
 
       mockRNFS.readFile.mockResolvedValue(mockTomlContent)
-      mockTOML.parse.mockReturnValue(mockParsedConfig)
+      mockParse.mockReturnValue(mockParsedConfig)
 
       const config = await ConfigLoader.loadConfig()
 
@@ -36,7 +36,7 @@ describe('ConfigLoader', () => {
         '/mock/bundle/path/default-configuration.toml',
         'utf8'
       )
-      expect(mockTOML.parse).toHaveBeenCalledWith(mockTomlContent)
+      expect(mockParse).toHaveBeenCalledWith(mockTomlContent)
       expect(config).toEqual(mockParsedConfig)
     })
 
@@ -49,13 +49,13 @@ describe('ConfigLoader', () => {
       }
 
       mockRNFS.readFile.mockResolvedValue(mockTomlContent)
-      mockTOML.parse.mockReturnValue(mockParsedConfig)
+      mockParse.mockReturnValue(mockParsedConfig)
 
       await ConfigLoader.loadConfig()
       await ConfigLoader.loadConfig()
 
       expect(mockRNFS.readFile).toHaveBeenCalledTimes(1)
-      expect(mockTOML.parse).toHaveBeenCalledTimes(1)
+      expect(mockParse).toHaveBeenCalledTimes(1)
     })
 
     it('should throw error when file cannot be read', async () => {
@@ -70,7 +70,7 @@ describe('ConfigLoader', () => {
       const mockTomlContent = 'invalid toml content'
 
       mockRNFS.readFile.mockResolvedValue(mockTomlContent)
-      mockTOML.parse.mockImplementation(() => {
+      mockParse.mockImplementation(() => {
         throw new Error('Parse error')
       })
 
@@ -90,7 +90,7 @@ describe('ConfigLoader', () => {
       }
 
       mockRNFS.readFile.mockResolvedValue(mockTomlContent)
-      mockTOML.parse.mockReturnValue(mockParsedConfig)
+      mockParse.mockReturnValue(mockParsedConfig)
 
       const url = await ConfigLoader.getServerUrl()
 
@@ -108,7 +108,7 @@ describe('ConfigLoader', () => {
       }
 
       mockRNFS.readFile.mockResolvedValue(mockTomlContent)
-      mockTOML.parse.mockReturnValue(mockParsedConfig)
+      mockParse.mockReturnValue(mockParsedConfig)
 
       await ConfigLoader.loadConfig()
       ConfigLoader.clearCache()

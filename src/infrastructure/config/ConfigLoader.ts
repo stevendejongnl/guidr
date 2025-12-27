@@ -1,5 +1,5 @@
 import RNFS from 'react-native-fs'
-import * as TOML from '@iarna/toml'
+import { parse } from 'smol-toml'
 
 interface ServerConfig {
   url: string
@@ -21,7 +21,7 @@ export class ConfigLoader {
     try {
       const configPath = `${RNFS.MainBundlePath}/${this.CONFIG_FILE}`
       const configContent = await RNFS.readFile(configPath, 'utf8')
-      const parsed = TOML.parse(configContent)
+      const parsed = parse(configContent)
       this.config = parsed as unknown as AppConfig
       return this.config
     } catch (error) {
