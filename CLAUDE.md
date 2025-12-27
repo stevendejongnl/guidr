@@ -439,10 +439,11 @@ When you're ready to distribute to physical devices:
 
 **Certificate Management**:
 - Uses Fastlane Match for automated certificate sync
-- Certificates stored in private Git repository (git.madebysteven.nl)
-- Authentication: SSH key (GitHub Secret: MATCH_GIT_SSH_PRIVATE_KEY)
+- Certificates stored in private Git repository (gitaccess.madebysteven.nl)
+- Authentication: SSH key with Cloudflare Access tunneling
+- Access: cloudflared CLI with service token authentication
 - Encryption: MATCH_PASSWORD protects certificates at rest
-- Workflow automatically downloads certificates before build
+- Workflow automatically installs cloudflared and downloads certificates before build
 
 **Prerequisites** (one-time setup completed):
 1. Apple Developer Program membership ($99/year) ✓
@@ -456,6 +457,8 @@ When you're ready to distribute to physical devices:
    - `APP_STORE_CONNECT_API_KEY_CONTENT`: Complete .p8 file content
    - `MATCH_GIT_SSH_PRIVATE_KEY`: SSH private key for certificate repository access
    - `MATCH_PASSWORD`: Password for encrypted certificate storage
+   - `CF_ACCESS_CLIENT_ID`: Cloudflare Access service token client ID
+   - `CF_ACCESS_CLIENT_SECRET`: Cloudflare Access service token secret
 
 **Triggering TestFlight Builds**:
 
