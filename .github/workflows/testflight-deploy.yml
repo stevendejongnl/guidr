@@ -141,16 +141,17 @@ jobs:
       - name: Populate SSH known_hosts
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
-          # Use cloudflared ProxyCommand to scan host key through the tunnel
-          ssh-keyscan -H gitaccess.madebysteven.nl >> ~/.ssh/known_hosts 2>/dev/null || true
+          # Connect through cloudflared ProxyCommand to populate known_hosts
+          # StrictHostKeyChecking=accept-new will accept and save the host key
+          ssh -o "BatchMode yes" -o "ConnectTimeout 10" git@gitaccess.madebysteven.nl exit 2>/dev/null || true
 
           # Verify known_hosts was populated
-          if [ -s ~/.ssh/known_hosts ]; then
-            echo "SSH known_hosts populated successfully"
-            cat ~/.ssh/known_hosts
+          if grep -q "gitaccess.madebysteven.nl" ~/.ssh/known_hosts 2>/dev/null; then
+            echo "SSH known_hosts populated successfully for gitaccess.madebysteven.nl"
+            grep "gitaccess.madebysteven.nl" ~/.ssh/known_hosts
           else
-            echo "Warning: ssh-keyscan did not populate known_hosts"
-            echo "Falling back to StrictHostKeyChecking accept-new"
+            echo "Host key not in known_hosts yet"
+            echo "StrictHostKeyChecking accept-new will handle it on first Fastlane Match connection"
           fi
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
