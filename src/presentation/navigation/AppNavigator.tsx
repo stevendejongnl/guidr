@@ -19,6 +19,8 @@ export const AppNavigator: React.FC = () => {
   useEffect(() => {
     const checkConfiguration = async () => {
       try {
+        await serverStorage.initializeDefaultServerUrl()
+
         const hasUrl = await serverStorage.hasServerUrl()
         setHasServerUrl(hasUrl)
 

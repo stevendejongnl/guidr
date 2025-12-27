@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { ConfigLoader } from '../config/ConfigLoader'
 
 const SERVER_URL_KEY = 'Guidr_ServerUrl'
 
@@ -35,5 +36,17 @@ export class ServerConfigStorage {
 
   async clearServerUrl(): Promise<void> {
     await AsyncStorage.removeItem(SERVER_URL_KEY)
+  }
+
+  async initializeDefaultServerUrl(): Promise<void> {
+    const hasUrl = await this.hasServerUrl()
+    if (!hasUrl) {
+      const defaultUrl = await ConfigLoader.getServerUrl()
+      await AsyncStorage.setItem(SERVER_URL_KEY, defaultUrl)
+    }
+  }
+
+  async getDefaultServerUrl(): Promise<string> {
+    return await ConfigLoader.getServerUrl()
   }
 }

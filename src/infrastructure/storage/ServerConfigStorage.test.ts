@@ -1,15 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ServerConfigStorage } from './ServerConfigStorage'
+import { ConfigLoader } from '../config/ConfigLoader'
 
 jest.mock('@react-native-async-storage/async-storage')
+jest.mock('../config/ConfigLoader')
 
 describe('ServerConfigStorage', () => {
   let storage: ServerConfigStorage
   const mockAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>
+  const mockConfigLoader = ConfigLoader as jest.Mocked<typeof ConfigLoader>
 
   beforeEach(() => {
     storage = new ServerConfigStorage()
     jest.clearAllMocks()
+    mockConfigLoader.getServerUrl.mockResolvedValue('https://guidr.madebysteven.nl/testing-server')
   })
 
   describe('getServerUrl', () => {
@@ -111,6 +115,38 @@ describe('ServerConfigStorage', () => {
       await storage.clearServerUrl()
 
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_ServerUrl')
+    })
+  })
+
+  describe('initializeDefaultServerUrl', () => {
+    it('should set default URL from config when no URL is stored', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue(null)
+
+      await storage.initializeDefaultServerUrl()
+
+      expect(mockConfigLoader.getServerUrl).toHaveBeenCalled()
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        'Guidr_ServerUrl',
+        'https://guidr.madebysteven.nl/testing-server'
+      )
+    })
+
+    it('should not override existing URL', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue('https://custom.server.com')
+
+      await storage.initializeDefaultServerUrl()
+
+      expect(mockConfigLoader.getServerUrl).not.toHaveBeenCalled()
+      expect(mockAsyncStorage.setItem).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getDefaultServerUrl', () => {
+    it('should return default server URL from config', async () => {
+      const result = await storage.getDefaultServerUrl()
+
+      expect(mockConfigLoader.getServerUrl).toHaveBeenCalled()
+      expect(result).toBe('https://guidr.madebysteven.nl/testing-server')
     })
   })
 })
