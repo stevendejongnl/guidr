@@ -1,0 +1,15 @@
+git_url("https://git.madebysteven.nl/stevendejong/guidr-certificates")
+
+storage_mode("git")
+
+type("appstore") # appstore, adhoc, development, or enterprise
+
+app_identifier(["com.guidr"])
+
+username("") # Your Apple Developer Portal username (not needed with API key)
+
+# Use App Store Connect API for authentication (no 2FA needed)
+# The workflow will set these environment variables:
+# - APP_STORE_CONNECT_API_KEY_PATH
+# - APP_STORE_CONNECT_API_KEY_KEY_ID
+# - APP_STORE_CONNECT_API_KEY_ISSUER_ID
