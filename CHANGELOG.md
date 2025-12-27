@@ -1,3 +1,9 @@
+## [1.8.2](https://github.com/stevendejongnl/guidr/compare/v1.8.1...v1.8.2) (2025-12-27)
+
+### Bug Fixes
+
+* use ssh instead of ssh-keyscan for Cloudflare Access tunnel ([d90c127](https://github.com/stevendejongnl/guidr/commit/d90c12749f951f9900298d6512a68d9289d928b6))
+
 ## [1.8.1](https://github.com/stevendejongnl/guidr/compare/v1.8.0...v1.8.1) (2025-12-27)
 
 ### Bug Fixes
