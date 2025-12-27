@@ -1,3 +1,9 @@
+## [1.7.1](https://github.com/stevendejongnl/guidr/compare/v1.7.0...v1.7.1) (2025-12-27)
+
+### Bug Fixes
+
+* switch Fastlane Match to SSH authentication to bypass Cloudflare ([1eeb083](https://github.com/stevendejongnl/guidr/commit/1eeb08321157ba66ce17d6fb803e55a884608a52))
+
 ## [1.7.0](https://github.com/stevendejongnl/guidr/compare/v1.6.4...v1.7.0) (2025-12-27)
 
 ### Features
