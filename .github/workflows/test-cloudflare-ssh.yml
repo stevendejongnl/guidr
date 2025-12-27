@@ -58,39 +58,64 @@ jobs:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
-      - name: Test cloudflared direct connection
+      - name: Test cloudflared authentication
         run: |
-          echo "Testing direct cloudflared connection..."
-          /usr/local/bin/cloudflared access ssh --hostname gitaccess.madebysteven.nl echo "Direct cloudflared connection successful" || echo "Direct cloudflared test failed with exit code $?"
+          echo "Testing cloudflared can authenticate with Cloudflare Access..."
+          echo "Note: cloudflared access ssh is designed as an SSH ProxyCommand, not for direct execution"
+          echo "We'll test it through SSH in the next steps"
+          if [ -n "$CF_ACCESS_CLIENT_ID" ] && [ -n "$CF_ACCESS_CLIENT_SECRET" ]; then
+            echo "✓ Cloudflare Access credentials are set"
+          else
+            echo "✗ Cloudflare Access credentials are missing"
+            exit 1
+          fi
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       - name: Test SSH connection with verbose output
+        continue-on-error: true
         run: |
           echo "Testing SSH connection with verbose output..."
-          ssh -vvv -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 || echo "SSH test failed with exit code $?"
+          echo "This will show detailed connection info including ProxyCommand execution"
+          echo ""
+          ssh -vvv -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | tee /tmp/ssh-test.log || true
+          echo ""
+          if grep -q "websocket: bad handshake" /tmp/ssh-test.log 2>/dev/null; then
+            echo "✗ DETECTED: websocket bad handshake - Cloudflare Access authentication failed"
+          fi
+          if grep -q "Permission denied" /tmp/ssh-test.log 2>/dev/null; then
+            echo "✗ DETECTED: Permission denied - SSH key not authorized"
+          fi
+          if grep -q "Connection timed out" /tmp/ssh-test.log 2>/dev/null; then
+            echo "✗ DETECTED: Connection timeout - Cloudflare Access may be blocking"
+          fi
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       - name: Test git ls-remote
+        continue-on-error: true
         run: |
           echo "Testing git ls-remote..."
-          git ls-remote git@gitaccess.madebysteven.nl:stevendejong/guidr-certificates.git 2>&1 || echo "Git ls-remote failed with exit code $?"
+          if git ls-remote git@gitaccess.madebysteven.nl:stevendejong/guidr-certificates.git 2>&1; then
+            echo "✓ Git ls-remote successful!"
+          else
+            echo "✗ Git ls-remote failed with exit code $?"
+          fi
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       - name: Test git clone
+        continue-on-error: true
         run: |
           echo "Testing git clone..."
-          git clone git@gitaccess.madebysteven.nl:stevendejong/guidr-certificates.git /tmp/test-clone 2>&1 || echo "Git clone failed with exit code $?"
-          if [ -d /tmp/test-clone ]; then
+          if git clone git@gitaccess.madebysteven.nl:stevendejong/guidr-certificates.git /tmp/test-clone 2>&1; then
             echo "✓ Clone successful!"
             ls -la /tmp/test-clone
           else
-            echo "✗ Clone failed - directory not created"
+            echo "✗ Clone failed with exit code $?"
           fi
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}

@@ -363,9 +363,15 @@ If `npm run android` hangs without output or fails:
 - **Diagnosis**: Run `npx react-native doctor` to check environment issues
 
 ### Git Workflow
-- Commits: Clear, descriptive messages
-- No mention of Claude/AI assistants in commits
-- Push after completing each phase
+- **Commits**: Clear, descriptive messages
+- **No AI mentions**: Never mention Claude/AI assistants in commits
+- **Before pushing**: Always check if behind with `git pull --rebase origin main` before `git push origin main`
+- **Commit prefixes**: Use semantic commit prefixes
+  - `feat:` - New features (triggers release)
+  - `fix:` - Bug fixes (triggers release)
+  - `test:` - Test changes (no release)
+  - `chore:` - Maintenance tasks (no release)
+  - `docs:` - Documentation only (no release)
 
 ### Android Build Configuration
 
