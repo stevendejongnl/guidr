@@ -12,11 +12,11 @@ import { DebugScreen } from '../screens/DebugScreen'
 
 export const AppNavigator: React.FC = () => {
   const [loading, setLoading] = useState(true)
-  const [hasServerUrl, setHasServerUrl] = useState(false)
   const [hasAuthToken, setHasAuthToken] = useState(false)
   const [serverUrl, setServerUrl] = useState<string | null>(null)
   const [serverConfig, setServerConfig] = useState<{ debugMode: boolean } | null>(null)
   const [showDebugScreen, setShowDebugScreen] = useState(false)
+  const [showServerSetup, setShowServerSetup] = useState(false)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -26,34 +26,29 @@ export const AppNavigator: React.FC = () => {
       try {
         await serverStorage.initializeDefaultServerUrl()
 
-        const hasUrl = await serverStorage.hasServerUrl()
-        setHasServerUrl(hasUrl)
+        const url = await serverStorage.getServerUrl()
+        setServerUrl(url)
 
-        if (hasUrl) {
-          const url = await serverStorage.getServerUrl()
-          setServerUrl(url)
-
-          // Fetch server config if not cached
-          if (!ServerConfigCache.hasConfig() && url) {
-            try {
-              const configClient = new ServerConfigClient(url)
-              const config = await configClient.getConfig()
-              ServerConfigCache.setConfig(config)
-              setServerConfig(config)
-            } catch (error) {
-              console.error('Failed to fetch server config:', error)
-              // Set default config on failure
-              const defaultConfig = { debugMode: false }
-              ServerConfigCache.setConfig(defaultConfig)
-              setServerConfig(defaultConfig)
-            }
-          } else {
-            setServerConfig(ServerConfigCache.getConfig())
+        // Fetch server config if not cached
+        if (!ServerConfigCache.hasConfig() && url) {
+          try {
+            const configClient = new ServerConfigClient(url)
+            const config = await configClient.getConfig()
+            ServerConfigCache.setConfig(config)
+            setServerConfig(config)
+          } catch (error) {
+            console.error('Failed to fetch server config:', error)
+            // Set default config on failure
+            const defaultConfig = { debugMode: false }
+            ServerConfigCache.setConfig(defaultConfig)
+            setServerConfig(defaultConfig)
           }
-
-          const hasToken = await authStorage.hasAuthToken()
-          setHasAuthToken(hasToken)
+        } else {
+          setServerConfig(ServerConfigCache.getConfig())
         }
+
+        const hasToken = await authStorage.hasAuthToken()
+        setHasAuthToken(hasToken)
       } catch (error) {
         console.error('Failed to check configuration:', error)
       } finally {
@@ -68,7 +63,27 @@ export const AppNavigator: React.FC = () => {
   const handleServerSetupComplete = async () => {
     const url = await serverStorage.getServerUrl()
     setServerUrl(url)
-    setHasServerUrl(true)
+    setShowServerSetup(false)
+
+    // Clear server config cache and reload
+    ServerConfigCache.clearConfig()
+    if (url) {
+      try {
+        const configClient = new ServerConfigClient(url)
+        const config = await configClient.getConfig()
+        ServerConfigCache.setConfig(config)
+        setServerConfig(config)
+      } catch (error) {
+        console.error('Failed to fetch server config:', error)
+        const defaultConfig = { debugMode: false }
+        ServerConfigCache.setConfig(defaultConfig)
+        setServerConfig(defaultConfig)
+      }
+    }
+
+    // Clear auth since server changed
+    await authStorage.clearAll()
+    setHasAuthToken(false)
   }
 
   const handleLoginComplete = () => {
@@ -80,12 +95,8 @@ export const AppNavigator: React.FC = () => {
     setHasAuthToken(false)
   }
 
-  const handleChangeServer = async () => {
-    await authStorage.clearAll()
-    await serverStorage.clearServerUrl()
-    setHasAuthToken(false)
-    setHasServerUrl(false)
-    setServerUrl(null)
+  const handleChangeServer = () => {
+    setShowServerSetup(true)
   }
 
   if (loading) {
@@ -96,8 +107,14 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
-  if (!hasServerUrl) {
-    return <ServerSetupScreen storage={serverStorage} onComplete={handleServerSetupComplete} />
+  if (showServerSetup) {
+    return (
+      <ServerSetupScreen
+        storage={serverStorage}
+        onComplete={handleServerSetupComplete}
+        {...(serverUrl && { currentUrl: serverUrl })}
+      />
+    )
   }
 
   if (!hasAuthToken && serverUrl) {

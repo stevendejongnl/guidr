@@ -192,4 +192,25 @@ describe('ServerSetupScreen', () => {
 
     expect(getByTestId('version-display')).toBeTruthy()
   })
+
+  it('should pre-populate input with current URL when provided', () => {
+    const { getByDisplayValue } = render(
+      <ServerSetupScreen
+        storage={mockStorage}
+        onComplete={mockOnComplete}
+        currentUrl="https://existing.server.com"
+      />
+    )
+
+    expect(getByDisplayValue('https://existing.server.com')).toBeTruthy()
+  })
+
+  it('should start with empty input when currentUrl is not provided', () => {
+    const { getByPlaceholderText } = render(
+      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+    )
+
+    const input = getByPlaceholderText('https://api.example.com')
+    expect(input.props['value']).toBe('')
+  })
 })

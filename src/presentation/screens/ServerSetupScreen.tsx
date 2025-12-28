@@ -15,13 +15,15 @@ import { VersionDisplay } from '../components/VersionDisplay'
 interface ServerSetupScreenProps {
   storage: ServerConfigStorage
   onComplete: () => void
+  currentUrl?: string
 }
 
 export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
   storage,
   onComplete,
+  currentUrl,
 }) => {
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(currentUrl || '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
