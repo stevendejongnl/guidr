@@ -1,10 +1,9 @@
 name: TestFlight Deployment
 
 on:
-  # Trigger after Release workflow completes successfully
-  workflow_run:
-    workflows: ["Release"]
-    types: [completed]
+  # Trigger when a new release is created
+  repository_dispatch:
+    types: [release-created]
   # Allow manual trigger
   workflow_dispatch:
     inputs:
@@ -21,56 +20,47 @@ jobs:
   testflight-build:
     name: Build and Deploy to TestFlight
     runs-on: macos-15
-    # Only run if manual trigger OR Release workflow succeeded
+    # Only run if manual trigger or release-created event
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'repository_dispatch'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Fetch tags and checkout latest
-        if: github.event_name == 'workflow_run'
-        id: checkout_tag
+      - name: Get version
+        id: version_check
         run: |
-          git fetch --tags
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-
-          # Check if tag was created in the last 5 minutes (indicates new release)
-          TAG_DATE=$(git log -1 --format=%ct $LATEST_TAG)
-          CURRENT_DATE=$(date +%s)
-          AGE=$((CURRENT_DATE - TAG_DATE))
-
-          if [ $AGE -gt 300 ]; then
-            echo "Latest tag $LATEST_TAG is $AGE seconds old - no new release created"
-            echo "should_build=false" >> $GITHUB_OUTPUT
-            exit 0
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            VERSION="${{ github.event.client_payload.version }}"
+          else
+            # Manual trigger: extract from package.json
+            VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
           fi
 
-          git checkout $LATEST_TAG
-          echo "Checked out tag: $LATEST_TAG (created $AGE seconds ago)"
-          echo "should_build=true" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
 
       - name: Setup Node.js
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: npm ci
 
       - name: Install CocoaPods dependencies
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd ios
           pod install
 
       - name: Setup Ruby and Bundler
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
@@ -78,7 +68,7 @@ jobs:
 
       # Create API key files from secrets
       - name: Create App Store Connect API Key
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           mkdir -p $HOME/private_keys
 
@@ -105,7 +95,7 @@ jobs:
 
       # Install cloudflared for Cloudflare Tunnel
       - name: Install cloudflared
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz -o cloudflared.tgz
           tar -xzf cloudflared.tgz
@@ -115,7 +105,7 @@ jobs:
 
       # Setup SSH for Fastlane Match with cloudflared tunnel
       - name: Setup SSH for Fastlane Match
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.MATCH_GIT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
@@ -134,14 +124,14 @@ jobs:
 
       # Test SSH connection
       - name: Test SSH connection
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           echo "Testing SSH through cloudflared tunnel..."
           ssh -v -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | head -40 || true
 
       # Download/create certificates with Fastlane Match
       - name: Setup certificates with Fastlane Match
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd ios
           bundle exec fastlane match appstore --readonly
@@ -150,7 +140,7 @@ jobs:
 
       # Auto-increment build number with timestamp
       - name: Increment build number
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           BUILD_NUM=$(date +%Y%m%d%H%M%S)
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUM" ios/guidr/Info.plist
@@ -159,7 +149,7 @@ jobs:
 
       # Build archive with signing (using Match certificates)
       - name: Build iOS archive
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd ios
           xcodebuild \
@@ -172,7 +162,7 @@ jobs:
 
       # Export signed IPA (using Match certificates)
       - name: Export IPA
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd ios
           xcodebuild \
@@ -183,7 +173,7 @@ jobs:
 
       # Get version info
       - name: Get version information
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         id: version
         run: |
           VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
@@ -194,7 +184,7 @@ jobs:
       # Upload to TestFlight with Fastlane pilot
       - name: Upload to TestFlight and assign to group
         if: |
-          (github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true') &&
+          (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch') &&
           github.event.inputs.skip_testflight != 'true'
         run: |
           bundle exec fastlane pilot upload \
@@ -207,7 +197,7 @@ jobs:
 
       # Upload IPA as artifact (for debugging/archiving)
       - name: Upload IPA artifact
-        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: guidr-testflight-v${{ steps.version.outputs.VERSION }}-build${{ env.BUILD_NUMBER }}
@@ -216,7 +206,7 @@ jobs:
 
       # Cleanup API key files
       - name: Cleanup API key
-        if: always() && (github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true')
+        if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
         run: |
           rm -f $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
           rm -f $HOME/private_keys/api_key.json

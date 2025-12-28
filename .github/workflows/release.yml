@@ -89,6 +89,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
+      - name: Trigger downstream workflows
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          # Extract version from package.json
+          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          TAG="v${VERSION}"
+          COMMIT_SHA=$(git rev-parse HEAD)
+
+          # Dispatch repository event that will trigger both Docker and TestFlight workflows
+          gh api repos/${{ github.repository }}/dispatches \
+            --method POST \
+            --field event_type='release-created' \
+            --field client_payload[version]="$VERSION" \
+            --field client_payload[tag]="$TAG" \
+            --field client_payload[commit_sha]="$COMMIT_SHA"
+
+          echo "✅ Dispatched release-created event for version $VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: No release needed
         if: env.SHOULD_RELEASE == 'false'
         run: |
