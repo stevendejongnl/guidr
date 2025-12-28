@@ -103,7 +103,7 @@ jobs:
           echo "APP_STORE_CONNECT_API_KEY_KEY_ID=${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" >> $GITHUB_ENV
           echo "APP_STORE_CONNECT_API_KEY_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" >> $GITHUB_ENV
 
-      # Install cloudflared for Cloudflare Access SSH tunneling
+      # Install cloudflared for Cloudflare Tunnel SSH
       - name: Install cloudflared
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
@@ -114,7 +114,7 @@ jobs:
           sudo chmod +x /usr/local/bin/cloudflared
           cloudflared --version
 
-      # Setup SSH for Fastlane Match with Cloudflare Access
+      # Setup SSH for Fastlane Match with Cloudflare Tunnel
       - name: Setup SSH for Fastlane Match
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
@@ -123,7 +123,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           chmod 700 ~/.ssh
 
-          # Configure SSH to use cloudflared for Cloudflare Access
+          # Configure SSH to use cloudflared tunnel (no Access authentication)
           cat > ~/.ssh/config <<EOF
           Host gitaccess.madebysteven.nl
             ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h
@@ -131,32 +131,18 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-          # Set up Cloudflare Access authentication (persist for all subsequent steps)
-          echo "CF_ACCESS_CLIENT_ID=${{ secrets.CF_ACCESS_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "CF_ACCESS_CLIENT_SECRET=${{ secrets.CF_ACCESS_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "SSH configured for Cloudflare Tunnel"
 
-          echo "SSH configured for Cloudflare Access tunnel"
-
-      # Test Cloudflare Access connection and populate known_hosts
-      - name: Test Cloudflare Access and populate known_hosts
+      # Test SSH connection and populate known_hosts
+      - name: Test SSH connection
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
-          echo "Testing cloudflared authentication..."
-          echo "CF_ACCESS_CLIENT_ID is set: ${CF_ACCESS_CLIENT_ID:+yes}"
-          echo "CF_ACCESS_CLIENT_SECRET is set: ${CF_ACCESS_CLIENT_SECRET:+yes}"
-
-          # Test direct cloudflared connection
-          echo "Testing direct cloudflared connection..."
-          /usr/local/bin/cloudflared access ssh --hostname gitaccess.madebysteven.nl echo "Cloudflared connected successfully" || echo "Direct cloudflared test failed"
-
-          # Try SSH connection with verbose output
-          echo "Testing SSH connection through ProxyCommand..."
-          ssh -v -o "BatchMode yes" -o "ConnectTimeout 10" git@gitaccess.madebysteven.nl exit 2>&1 | head -20 || true
+          echo "Testing SSH connection through Cloudflare Tunnel..."
+          ssh -v -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | head -30 || true
 
           # Verify known_hosts
           if grep -q "gitaccess.madebysteven.nl" ~/.ssh/known_hosts 2>/dev/null; then
             echo "✓ SSH known_hosts populated successfully"
-            grep "gitaccess.madebysteven.nl" ~/.ssh/known_hosts
           else
             echo "⚠ Host key not yet in known_hosts (will be accepted on first Fastlane Match connection)"
           fi
@@ -169,8 +155,6 @@ jobs:
           bundle exec fastlane match appstore --readonly
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       # Auto-increment build number with timestamp
       - name: Increment build number
