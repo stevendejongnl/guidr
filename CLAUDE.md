@@ -1,679 +1,387 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Project guidance for Claude Code when working with this repository.
 
 ## Project Overview
 
-**Guidr** is a step-by-step guide execution app for Android and iOS. The app helps users execute multi-step processes with precise timing - from recipes to workout routines, lab protocols, and study sessions. Built with Domain-Driven Design principles and Test-Driven Development using bare React Native (not Expo) with TypeScript.
+**Guidr** - Step-by-step guide execution app for Android/iOS. Multi-step processes with precise timing (recipes, workouts, lab protocols). Built with Domain-Driven Design (DDD) and Test-Driven Development (TDD) using bare React Native + TypeScript.
 
-**Current Status**: Core domain logic complete (171 tests passing). Server URL configuration screen implemented. Android native directories initialized and build working with Gradle 8.13. Ready for feature development.
+**Status**: Core domain logic complete (171 tests passing). Server URL configuration screen implemented. Android native directories initialized with Gradle 8.13. Ready for feature development.
+
+**Tech Stack**: React Native 0.83.1 (bare workflow) | TypeScript (strict) | Jest + React Native Testing Library | AsyncStorage | React Navigation (planned)
 
 ## Prerequisites
 
-### Node.js and npm
-- **Node.js**: 24.12.0 LTS or newer (v24.11.0+ required)
-- **npm**: 11.6.2 or newer (v11.6.0+ required)
-- **Installation**: Use [nvm](https://github.com/nvm-sh/nvm) or download from [nodejs.org](https://nodejs.org/)
+- **Node.js**: 24.12.0+ LTS (use nvm: `nvm install 24 && nvm use 24` or `.nvmrc`)
+- **npm**: 11.6.2+
+- **Java**: 17 (Gradle 8.13 requirement, no Java 25+ support)
+- **Android SDK**: Required for Android builds
+- **Xcode**: 15+ (macOS only, for iOS)
 
-To install with nvm:
+## Quick Commands
+
+### Development
 ```bash
-nvm install 24
-nvm use 24
+npm start                    # Metro bundler
+npm run android             # Android (set JAVA_HOME + ANDROID_HOME first)
+./run-android.sh            # Android with auto-environment
+npm run ios                 # iOS simulator (macOS only)
 ```
 
-The project includes `.nvmrc` file - if you use nvm, run `nvm use` in project root to automatically switch to the correct version.
-
-## Commands
-
-### React Native Development
-
-**Environment Setup (Required for npm run android)**:
-React Native requires specific environment variables to run correctly:
-- `JAVA_HOME`: Must point to Java 17 (Java 25+ not supported)
-- `ANDROID_HOME`: Must point to Android SDK location
-
-**Option 1 - Using direnv (recommended)**:
-The `.envrc` file automatically sets these variables. Allow it with:
+### Environment Setup (Required for Android)
 ```bash
+# Option 1: direnv (recommended)
 direnv allow
-```
 
-**Option 2 - Using the wrapper script**:
-```bash
-./run-android.sh  # Sets environment and runs npm run android
-```
-
-**Option 3 - Manual export**:
-```bash
+# Option 2: Manual export
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 export ANDROID_HOME=~/Android/Sdk
-npm run android
 ```
 
+### Testing & Quality
 ```bash
-# Start Metro bundler
-npm start
-
-# Run on Android (ensure environment is set, see above)
-npm run android
-
-# Run on iOS (macOS only)
-npm run ios
-
-# Build Android APK (use wrapper script to handle environment)
-./build-android.sh
-
-# Start Android emulator
-emulator -avd Pixel_4  # or your AVD name
-emulator -list-avds    # list available emulators
-
-# Check connected devices
-adb devices
+npm test                    # Run all tests
+npm run test:watch          # Watch mode
+npm run test:coverage       # With coverage
+npm run lint                # Lint TypeScript
+npm run lint:fix            # Auto-fix lint issues
+npm run typecheck           # Type check only
 ```
 
-**iOS Development Commands** (macOS only):
+### Test Server (FastAPI)
 ```bash
-# Run on iOS simulator
-npm run ios
-
-# Install CocoaPods dependencies
-cd ios && pod install
-
-# Open Xcode workspace
-open ios/guidr.xcworkspace
-
-# List available simulators
-xcrun simctl list devices available
-
-# Boot specific simulator
-xcrun simctl boot "iPhone 15"
-
-# Build iOS simulator locally
-./build-ios-simulator.sh
-```
-
-### Testing and Quality
-```bash
-# Run all tests (Jest)
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-
-# Lint TypeScript/TSX files
-npm run lint
-
-# Auto-fix lint issues
-npm run lint:fix
-
-# Type check without emitting
-npm run typecheck
-```
-
-### Test Server
-
-A FastAPI-based test server is included for local development and testing. The test-server version is synchronized with the main app version for compatibility.
-
-**Quick Start with Docker (Recommended)**:
-```bash
+# Docker (recommended)
 docker pull ghcr.io/stevendejongnl/guidr-test-server:latest
 docker run -p 8000:8000 ghcr.io/stevendejongnl/guidr-test-server:latest
+
+# Poetry (local dev)
+cd test-server && poetry install && poetry run guidr-server
+
+# Connection URLs
+# Android emulator: http://10.0.2.2:8000
+# iOS simulator: http://localhost:8000
+# Physical device: http://<your-ip>:8000
 ```
 
-**Local Development with Poetry**:
+### Build Commands
 ```bash
-cd test-server
-poetry install
-poetry run guidr-server
+./build-android.sh          # Android APK (handles Java 17 setup)
+./build-ios-simulator.sh    # iOS simulator .app (macOS only)
+adb devices                 # Check connected Android devices
+emulator -list-avds         # List Android emulators
 ```
-
-**Using Makefile**:
-```bash
-cd test-server
-make install  # Install dependencies
-make run      # Run server
-make help     # Show all commands
-```
-
-**Connecting from App**:
-- Android emulator: `http://10.0.2.2:8000`
-- iOS simulator: `http://localhost:8000`
-- Physical device: `http://<your-computer-ip>:8000`
-
-See [test-server/README.md](test-server/README.md) for detailed documentation.
 
 ## Architecture
 
-### Tech Stack
-- **Framework**: React Native (bare workflow) with TypeScript
-- **State Management**: React hooks, AsyncStorage for persistence
-- **Testing**: Jest + React Native Testing Library + ts-jest
-- **Navigation**: React Navigation (planned)
-- **Architecture**: Domain-Driven Design (DDD)
-- **Development Approach**: Test-Driven Development (TDD)
-
-### Domain-Driven Design Structure
-
+### Project Structure
 ```
 src/
-├── common/
-│   ├── DependencyInjection.ts    # Simple DI container
-│   └── Signal.ts                 # Reactive state with AsyncStorage persistence
+├── common/                      # DI container, Signal (reactive state)
 ├── domain/
-│   ├── entities/                 # Core business objects
-│   │   ├── Category.ts          # Hierarchical guide organization
-│   │   ├── Guide.ts             # Guide metadata and step references
-│   │   ├── Step.ts              # Individual timed actions
-│   │   └── Session.ts           # State machine for guide execution
-│   ├── repositories/            # Data access interfaces
-│   │   ├── ICategoryRepository.ts
-│   │   ├── IGuideRepository.ts
-│   │   ├── IStepRepository.ts
-│   │   └── ISessionRepository.ts
-│   └── services/                # Business logic orchestration
-│       ├── CategoryService.ts   # Category CRUD and hierarchy management
-│       ├── GuideService.ts      # Guide CRUD and step association
-│       └── SessionService.ts    # Session state machine and step validation
-├── infrastructure/
-│   └── storage/
-│       └── ServerConfigStorage.ts  # AsyncStorage wrapper for server URL
+│   ├── entities/               # Category, Guide, Step, Session
+│   ├── repositories/           # Data access interfaces (pending impl)
+│   └── services/               # Business logic with DI
+├── infrastructure/storage/      # AsyncStorage wrappers
 └── presentation/
-    ├── screens/
-    │   ├── ServerSetupScreen.tsx   # One-time server configuration
-    │   └── HomeScreen.tsx          # Placeholder home screen
-    ├── navigation/
-    │   └── AppNavigator.tsx        # Route logic (setup vs home)
-    └── App.tsx                     # Main app entry point
+    ├── screens/                # UI screens
+    ├── navigation/             # React Navigation
+    └── App.tsx                 # Entry point
 ```
 
-### Domain Concepts
-
-**Entities** (with comprehensive tests):
-- **Category**: Hierarchical organization (parent-child relationships)
-- **Guide**: Contains ordered steps, belongs to a category
-- **Step**: Has order, title, description, duration in seconds
+### Domain Entities
+- **Category**: Hierarchical organization (parent-child)
+- **Guide**: Ordered steps, belongs to category
+- **Step**: Order, title, description, duration (seconds)
 - **Session**: State machine (NotStarted → InProgress ⇄ Paused → Completed/Cancelled)
 
-**Services** (with mocked repository tests):
-- Use dependency injection
-- Generate UUIDs for new entities
-- Orchestrate entity operations and repository calls
-- Enforce business rules (e.g., steps must belong to guide)
+### TDD Workflow
+1. **RED**: Write failing test
+2. **GREEN**: Minimal code to pass
+3. **REFACTOR**: Improve while tests stay green
+4. **VERIFY**: `npm test && npm run lint && npm run typecheck`
 
-**Repository Interfaces**:
-- Define contracts for data access
-- Implementations pending (will use API client)
+## CI/CD Pipeline
 
-### Session State Machine
+### Workflow Chain
 
 ```
-NotStarted ──start()──> InProgress
-                          ├──pause()──> Paused
-                          │             └──resume()──> InProgress
-                          ├──complete()──> Completed
-                          └──cancel()──> Cancelled
-
-Active states (can moveToStep): InProgress, Paused
-Terminal states: Completed, Cancelled
+┌─────────────────────────────────────────────────────────────┐
+│ Pull Request → main                                          │
+│                                                              │
+│ Triggers: .github/workflows/ci-cd.yml                       │
+│ Runs: lint, test, typecheck, Android build, iOS sim build   │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Push to main (PR merge or direct commit)                    │
+│                                                              │
+│ Triggers: .github/workflows/release.yml                     │
+│ 1. Runs lint + test + typecheck                             │
+│ 2. Semantic-release analyzes commits (dry-run)              │
+│ 3. If release needed:                                       │
+│    - Builds Android APK                                     │
+│    - Creates GitHub release with APK                        │
+│    - Updates version in package.json, iOS, Android          │
+│    - Updates CHANGELOG.md                                   │
+│    - Creates git tag (v1.2.3)                               │
+│    - Commits changes with [skip ci]                         │
+│ 4. If no release needed: Exits gracefully                   │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+              ┌─────────────┴─────────────┐
+              ↓                           ↓
+┌──────────────────────────┐  ┌──────────────────────────┐
+│ TestFlight Deployment    │  │ Docker Publish           │
+│                          │  │                          │
+│ Workflow:                │  │ Workflow:                │
+│ testflight-deploy.yml    │  │ docker-publish.yml       │
+│                          │  │                          │
+│ Triggers: After Release  │  │ Triggers: After Release  │
+│ workflow completes       │  │ workflow completes       │
+│                          │  │                          │
+│ 1. Check if new tag      │  │ 1. Check if new tag      │
+│ 2. Build signed iOS IPA  │  │ 2. Build Docker image    │
+│ 3. Upload to TestFlight  │  │ 3. Push to GHCR          │
+│ 4. Assign to "main" group│ │ 4. Tag: version + latest │
+└──────────────────────────┘  └──────────────────────────┘
 ```
 
-## Testing
+### Semantic Release Configuration
 
-### Testing Stack
-- **Test Runner**: Jest with ts-jest preset
-- **React Native Testing**: @testing-library/react-native
-- **Mocking**: jest.mock(), React Native components mocked in `__mocks__/`
-- **Coverage**: 171 tests passing (entities, services, storage, screens)
+**Commit Message Format** (Conventional Commits):
+```bash
+feat: add new feature          # Minor version bump (1.0.0 → 1.1.0)
+fix: fix bug                   # Patch version bump (1.0.0 → 1.0.1)
+perf: performance improvement  # Patch version bump
+refactor: code refactoring     # Patch version bump
+BREAKING CHANGE: ...           # Major version bump (1.0.0 → 2.0.0)
 
-### TDD Workflow (RED-GREEN-REFACTOR)
-1. **RED**: Write failing test first
-2. **GREEN**: Implement minimal code to pass
-3. **REFACTOR**: Improve code while keeping tests green
-4. **Verify**: `npm test && npm run lint && npm run typecheck`
+# No release triggered by:
+docs: documentation changes
+test: test changes
+chore: maintenance tasks
+style: code style changes
+```
 
-### Test Categories
-- **Entity Tests**: Business logic, validation, state management
-- **Service Tests**: Mocked repositories, business rules, error handling
-- **Storage Tests**: Mocked AsyncStorage, validation
-- **Screen Tests**: Mocked dependencies, user interactions, loading states
+**What Semantic-Release Does** (`.releaserc.json`):
+1. **@semantic-release/commit-analyzer**: Analyzes commits since last release
+2. **@semantic-release/release-notes-generator**: Generates CHANGELOG
+3. **@semantic-release/changelog**: Updates CHANGELOG.md
+4. **@semantic-release/exec**: Updates version in iOS/Android/test-server
+5. **@semantic-release/github**: Creates GitHub release + uploads Android APK
+6. **@semantic-release/git**: Commits version changes with `[skip ci]`
 
-### Example Test Pattern (Service with Mocked Repository)
+**Release Workflow Behavior**:
+- Runs on every push to main (unless commit has `[skip ci]`)
+- Dry-run first to determine if release needed
+- Skips build/release if no relevant commits
+- Only commits with release prefixes trigger releases
+
+### Manual Triggers
+
+All workflows support manual triggering via GitHub Actions UI:
+
+```bash
+# TestFlight deployment
+Actions → TestFlight Deployment → Run workflow
+Options: skip_testflight (true = build only, false = upload)
+
+# Docker publish
+Actions → Docker Publish → Run workflow
+Options: version (optional, defaults to package.json)
+
+# Release workflow
+Actions → Release → Run workflow
+(Forces release check on current branch)
+```
+
+### GitHub Secrets Required
+
+**App Store Connect** (TestFlight):
+- `APPLE_TEAM_ID`: 10-character Team ID
+- `APP_STORE_CONNECT_API_KEY_ID`: API Key ID
+- `APP_STORE_CONNECT_ISSUER_ID`: API Issuer ID (UUID)
+- `APP_STORE_CONNECT_API_KEY_CONTENT`: Complete .p8 file content
+
+**Fastlane Match** (Certificate management):
+- `MATCH_GIT_SSH_PRIVATE_KEY`: SSH key for certificate repo access
+- `MATCH_PASSWORD`: Encryption password for certificates
+- `CF_ACCESS_CLIENT_ID`: Cloudflare Access service token
+- `CF_ACCESS_CLIENT_SECRET`: Cloudflare Access secret
+
+**Auto-configured**:
+- `GITHUB_TOKEN`: Automatically provided by GitHub Actions
+
+## Code Conventions
+
+### TypeScript
+- **Strict mode**: All strict flags enabled, no implicit any
+- **Path aliases**: `@domain/`, `@infrastructure/`, `@presentation/`, `@common/`
+- **React Native JSX**: Configured in tsconfig.json
+
+### Entity Design Pattern
 ```typescript
-describe('GuideService', () => {
-  let guideService: GuideService
-  let mockGuideRepository: jest.Mocked<IGuideRepository>
-  let mockStepRepository: jest.Mocked<IStepRepository>
+class Entity {
+  readonly id: string              // Immutable identity
+  private _name: string            // Private mutable fields
+  private _updatedAt: Date
+
+  constructor(id: string, name: string) {
+    if (!name.trim()) throw new Error('Name required')
+    this.id = id
+    this._name = name
+    this._updatedAt = new Date()
+  }
+
+  get name(): string { return this._name }
+
+  updateName(name: string): void {
+    if (!name.trim()) throw new Error('Name required')
+    this._name = name
+    this._updatedAt = new Date()
+  }
+
+  get stepIds(): string[] { return [...this._stepIds] } // Immutable copy
+}
+```
+
+### Service Design Pattern
+```typescript
+class Service {
+  constructor(
+    private repository: IRepository,
+    private otherRepo: IOtherRepository
+  ) {}  // Dependency injection
+
+  async create(params: Params): Promise<Entity> {
+    const id = uuid.v4()  // Generate UUID
+    const entity = new Entity(id, params)
+    await this.repository.save(entity)
+    return entity
+  }
+}
+```
+
+### Test Pattern (Mocked Repositories)
+```typescript
+describe('Service', () => {
+  let service: Service
+  let mockRepo: jest.Mocked<IRepository>
 
   beforeEach(() => {
-    mockGuideRepository = {
-      findById: jest.fn(),
-      save: jest.fn(),
-      // ...
-    }
-    mockStepRepository = { /* ... */ }
-    guideService = new GuideService(mockGuideRepository, mockStepRepository)
+    mockRepo = { save: jest.fn(), findById: jest.fn() }
+    service = new Service(mockRepo)
   })
 
-  it('should create guide with generated ID', async () => {
-    const guide = await guideService.createGuide('cat-1', 'Title')
-    expect(guide.id).toBeDefined()
-    expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+  it('should create entity', async () => {
+    const entity = await service.create({ name: 'Test' })
+    expect(entity.id).toBeDefined()
+    expect(mockRepo.save).toHaveBeenCalledWith(entity)
   })
 })
 ```
 
-## First-Time Setup
-
-### Server URL Configuration
-On first launch, users see **ServerSetupScreen** to enter their Guidr server URL:
-- Validates URL format (HTTP/HTTPS only)
-- Stores in AsyncStorage via ServerConfigStorage
-- Shows errors for invalid URLs
-- Redirects to HomeScreen after successful save
-
-AppNavigator checks for server URL on mount and routes accordingly.
-
-## Code Style and Conventions
-
-### TypeScript
-- **Strict mode**: All strict flags enabled
-- **No implicit any**: All types must be explicit
-- **Path aliases**: Use `@domain/`, `@infrastructure/`, `@presentation/`, `@common/`
-- **React Native JSX**: Configured in tsconfig.json
-
-### React Native Components
-- **Functional components**: Always use `React.FC`
-- **Hooks**: useState, useEffect (follow rules of hooks)
-- **StyleSheet**: Use StyleSheet.create() for all styles
-- **Accessibility**: Always set accessibilityState for buttons
-
-### Entity Design
-- **Readonly identity fields**: `readonly id: string`
-- **Private mutable fields**: `private _name: string` with getters
-- **Validation in constructor**: Throw errors for invalid state
-- **Update methods**: Validate input, update _updatedAt timestamp
-- **Immutable getters**: Return copies for arrays (e.g., `get stepIds()` returns `[...this._stepIds]`)
-
-### Service Design
-- **Dependency injection**: Accept repositories in constructor
-- **UUID generation**: Use `react-native-uuid` for IDs
-- **Error messages**: Clear, actionable (e.g., "Category with id cat-1 not found")
-- **Async operations**: All repository calls are async
-
-## CI/CD
-
-GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
-- **Lint**: ESLint on all TypeScript/TSX files
-- **Test**: Run full Jest suite
-- **Typecheck**: Verify TypeScript compilation
-- **Android Build**: Builds debug APK and uploads as artifact
-- **iOS Build**: Builds simulator .app and uploads as artifact (requires ios/ directory)
-
-All checks must pass before merging.
-
-## Development Guidelines
-
-### Before Implementing Features
-1. Read relevant entity/service files to understand existing patterns
-2. Write tests first (TDD)
-3. Implement minimal code to pass tests
-4. Verify: `npm test && npm run lint && npm run typecheck`
-
-### When Adding New Entities
-1. Create entity class with validation
-2. Write comprehensive entity tests
-3. Create repository interface
-4. Create service with dependency injection
-5. Write service tests with mocked repository
-6. Follow existing patterns (Category, Guide, Step, Session)
-
-### When Adding New Screens
-1. Create screen component with TypeScript
-2. Write screen tests using React Native Testing Library
-3. Mock dependencies (services, storage)
-4. Test user interactions, loading states, error handling
-5. Add to AppNavigator
-
 ### Avoid Over-Engineering
-- Don't add features not explicitly requested
-- Don't add error handling for impossible scenarios
-- Don't create abstractions for one-time operations
-- Keep it simple: three similar lines > premature abstraction
+- ❌ Don't add unrequested features
+- ❌ Don't add error handling for impossible scenarios
+- ❌ Don't create abstractions for one-time operations
+- ❌ Don't add docstrings/comments to unchanged code
+- ✅ Keep it simple: three similar lines > premature abstraction
 
-## Common Issues and Solutions
+## Build Configuration
 
-### Jest + React Native Testing
-- React Native modules must be mocked (`__mocks__/react-native.js`)
-- Use ts-jest preset, not react-native preset (Babel issues)
-- JSX transform: `jsx: 'react'` in jest.config.js
-- AsyncStorage must be mocked in tests
-
-### TypeScript Strict Mode
-- Use bracket notation for test props: `props['value']` instead of `props.value`
-- All entity constructor params must be validated
-- No optional params without explicit `undefined` type
-
-### npm run android Hangs or Fails
-If `npm run android` hangs without output or fails:
-- **Cause**: React Native CLI requires Java 17-20 (not Java 25+) and `ANDROID_HOME` set
-- **Solution**: Use direnv (`.envrc`), the wrapper script (`./run-android.sh`), or manually export environment variables
-- **Diagnosis**: Run `npx react-native doctor` to check environment issues
-
-### Git Workflow
-- **Commits**: Clear, descriptive messages
-- **No AI mentions**: Never mention Claude/AI assistants in commits
-- **Before pushing**: Always check if behind with `git pull --rebase origin main` before `git push origin main`
-- **Commit prefixes**: Use semantic commit prefixes
-  - `feat:` - New features (triggers release)
-  - `fix:` - Bug fixes (triggers release)
-  - `test:` - Test changes (no release)
-  - `chore:` - Maintenance tasks (no release)
-  - `docs:` - Documentation only (no release)
-
-### Android Build Configuration
-
-**Build Setup**:
-- **Gradle**: 8.13 (stable, tested with React Native 0.83.1)
-- **Android Gradle Plugin**: Managed by React Native 0.83.1
+### Android
+- **Gradle**: 8.13 (not 9.0 - CMake incompatibility)
+- **Java**: 17 (required, no 25+ support)
 - **Build Tools**: 36.0.0
 - **NDK**: 27.1.12297006
 - **Kotlin**: 2.1.20
 - **Target SDK**: 36
 - **Package**: com.guidr
-- **Java Version**: 17 (required for Gradle 8.13)
 
-**Why Gradle 8.13?**:
-The project uses Gradle 8.13 instead of Gradle 9.0 (which ships with React Native 0.83.1) because Gradle 9.0 introduced breaking changes with CMake native builds that prevent successful APK compilation. Gradle 8.13 is stable, fully compatible with React Native's build system, and widely tested.
-
-**Java Version Note**:
-The build script (`build-android.sh`) sets `JAVA_HOME=/usr/lib/jvm/java-17-openjdk` because Gradle 8.13 requires Java 17 and does not support Java 25+. On systems with Java 25 as the default, the build will automatically use Java 17.
-
-### iOS Build Configuration
-
-**Build Setup**:
-- **Xcode**: 15+ (tested with GitHub Actions macos-15 runner)
-- **CocoaPods**: Latest stable (managed by React Native)
-- **Target**: iOS 13+ minimum (React Native 0.83.1 requirement)
-- **Bundle Identifier**: com.guidr
-- **Build Type**: Simulator build (Debug configuration)
-- **Signing**: None required (CODE_SIGNING_ALLOWED=NO)
-
-**Why Simulator Build?**
-The project uses iOS simulator builds in CI/CD to avoid requiring an Apple Developer account ($99/year). Simulator builds are sufficient for:
-- Verifying code compiles successfully
-- Running automated tests
-- Type checking and lint validation
-- Local development and testing
-
-**Local iOS Development**:
-```bash
-# Run on iOS simulator (macOS only)
-npm run ios
-
-# Install/update CocoaPods dependencies
-cd ios && pod install
-
-# Open Xcode workspace for development
-open ios/guidr.xcworkspace
-```
-
-**CI/CD iOS Build**:
-- Uses macos-15 runner (GitHub Actions)
-- Direct xcodebuild commands (no signing)
-- Builds for iOS Simulator (iPhone 15)
-- Produces .app artifact (7-day retention)
-
-**Upgrading to Device Builds** (Future):
-When you're ready to distribute to physical devices:
-1. Enroll in Apple Developer Program ($99/year)
-2. Create development certificates and provisioning profiles
-3. Update CI/CD workflow to build for device (`-sdk iphoneos`)
-4. Add certificate/profile management to workflow
-5. Change output from .app to .ipa
+### iOS
+- **Xcode**: 15+
+- **CocoaPods**: Latest (managed by React Native)
+- **Target**: iOS 13+ minimum
+- **Bundle ID**: com.guidr
+- **Signing**: Automatic with Fastlane Match
+- **Distribution**: TestFlight (internal testing)
 
 ### TestFlight Distribution
-
-**Deployment Setup**:
-- **TestFlight Workflow**: `.github/workflows/testflight-deploy.yml`
-- **Signing**: Automatic with App Store Connect API
-- **Build Type**: App Store distribution (signed IPA for device)
-- **Upload Method**: App Store Connect API (no 2FA required)
-- **Trigger**: Automatic on version tags (v*) or manual via workflow_dispatch
+- **Trigger**: Automatic after release, or manual
+- **Build**: Signed IPA with Match certificates
+- **Upload**: Fastlane pilot with App Store Connect API
+- **Group**: "main" (internal testers)
+- **Processing**: 10-15 minutes typical
+- **Export Compliance**: `ITSAppUsesNonExemptEncryption = false` (HTTPS only)
 
 **Certificate Management**:
-- Uses Fastlane Match for automated certificate sync
-- Certificates stored in private Git repository (gitaccess.madebysteven.nl)
-- Authentication: SSH key with Cloudflare Access tunneling
-- Access: cloudflared CLI with service token authentication
-- Encryption: MATCH_PASSWORD protects certificates at rest
-- Workflow automatically installs cloudflared and downloads certificates before build
+- Fastlane Match stores certs in private git repo (gitaccess.madebysteven.nl)
+- SSH access via cloudflared tunnel with service token auth
+- Certificates encrypted with `MATCH_PASSWORD`
+- Workflow auto-installs cloudflared and syncs certs before build
 
-**Prerequisites** (one-time setup completed):
-1. Apple Developer Program membership ($99/year) ✓
-2. App ID registered for `com.guidr` with App Groups capability
-3. App created in App Store Connect (name: "Guidr", SKU: "guidr-ios")
-4. App Store Connect API key with App Manager role
-5. GitHub Secrets configured:
-   - `APPLE_TEAM_ID`: Apple Team ID (10 characters)
-   - `APP_STORE_CONNECT_API_KEY_ID`: API Key ID
-   - `APP_STORE_CONNECT_ISSUER_ID`: API Issuer ID (UUID)
-   - `APP_STORE_CONNECT_API_KEY_CONTENT`: Complete .p8 file content
-   - `MATCH_GIT_SSH_PRIVATE_KEY`: SSH private key for certificate repository access
-   - `MATCH_PASSWORD`: Password for encrypted certificate storage
-   - `CF_ACCESS_CLIENT_ID`: Cloudflare Access service token client ID
-   - `CF_ACCESS_CLIENT_SECRET`: Cloudflare Access service token secret
+## Git Workflow
 
-**Triggering TestFlight Builds**:
-
-Automatic deployment on releases:
+### Commit Messages
 ```bash
-# Semantic-release creates version tag automatically
-git commit -m "feat: add new feature"
+# Use conventional commit prefixes (semantic-release)
+feat: add feature        # Triggers minor release
+fix: fix bug            # Triggers patch release
+perf: optimize          # Triggers patch release
+refactor: refactor      # Triggers patch release
+BREAKING CHANGE: ...    # Triggers major release
+
+# No release (still good to use)
+test: add tests
+chore: update deps
+docs: update docs
+style: format code
+```
+
+### Before Pushing
+```bash
+git pull --rebase origin main  # Check if behind
+npm test && npm run lint && npm run typecheck  # Verify quality
 git push origin main
-# Release workflow runs → creates tag → triggers TestFlight deployment
 ```
 
-Manual deployment via GitHub Actions UI:
-```bash
-# Go to: Actions → TestFlight Deployment → Run workflow
-# Options:
-#   - Branch: main (or any branch)
-#   - skip_testflight: false (upload) or true (build only)
-```
+### Rules
+- ✅ Clear, descriptive commit messages
+- ❌ Never mention Claude/AI assistants in commits
+- ✅ Always rebase before pushing to avoid conflicts
 
-Manual trigger via CLI:
-```bash
-# Create and push version tag
-git tag v1.0.0
-git push origin v1.0.0
-```
+## Common Issues
 
-**Fastlane Automation**:
-The workflow uses Fastlane pilot for upload and distribution:
-- Automatic upload to TestFlight (replaces xcrun altool)
-- Auto-assignment to "main" TestFlight group
-- Skips waiting for Apple processing (faster CI/CD)
-- Internal distribution only (no external review required)
+### Android Build Hangs
+**Problem**: `npm run android` hangs or fails
+**Cause**: Missing JAVA_HOME or ANDROID_HOME, or Java 25+ installed
+**Solution**: Use direnv, wrapper script, or manual export (see Commands section)
+**Diagnosis**: `npx react-native doctor`
 
-**Local Fastlane usage** (optional):
-```bash
-# Install Fastlane dependencies
-bundle install
-
-# Upload existing IPA to TestFlight
-bundle exec fastlane pilot upload \
-  --api_key_path ~/private_keys/AuthKey_YOUR_KEY_ID.p8 \
-  --ipa ./ios/build/guidr.ipa \
-  --groups "main"
-
-# List available TestFlight groups
-bundle exec fastlane pilot list
-```
-
-**TestFlight Group Setup**:
-- Builds are automatically assigned to the "main" group
-- Create group in App Store Connect: TestFlight → Internal Testing → Create Group
-- Group name must be exactly "main" (case-sensitive)
-- Testers added to "main" group receive new builds automatically
-
-**Encryption Export Compliance**:
-- App declares `ITSAppUsesNonExemptEncryption = false` in Info.plist
-- Only uses standard HTTPS encryption (no custom cryptography)
-- No manual compliance prompts during TestFlight upload
-- Complies with U.S. Export Administration Regulations (EAR)
-
-**Build Process**:
-1. Checkout code and install dependencies (Node, CocoaPods, Ruby/Fastlane)
-2. Create API key file from GitHub Secret
-3. Auto-increment build number (timestamp: YYYYMMDDHHmmss)
-4. Build iOS archive with code signing:
-   - SDK: iphoneos (device)
-   - Configuration: Release
-   - Code Sign Style: Automatic
-   - Team ID: From GitHub Secret
-   - Provisioning: Auto-fetched from Apple
-5. Export signed IPA using ExportOptions.plist
-6. Upload to TestFlight using Fastlane pilot and assign to "main" group
-7. Upload IPA as GitHub artifact (30-day retention)
-8. Cleanup API key file
-
-**TestFlight Review Process**:
-1. Build uploads to App Store Connect automatically
-2. Apple processes the build (10-15 minutes typical)
-3. Build appears in App Store Connect → TestFlight tab
-4. Build available for **internal testing** immediately (up to 100 testers)
-5. For **external testing**: Submit for Apple review (1-2 business days)
-6. After approval: External testers can install (up to 10,000 testers)
-
-**Installing TestFlight Builds**:
-
-Internal testers (Apple Developer team members):
-1. Install TestFlight app from App Store
-2. Accept invite email from App Store Connect
-3. Open TestFlight app → see Guidr → Install
-
-External testers (public beta):
-1. Receive public link or email invite
-2. Install TestFlight app from App Store
-3. Open invite link → Install Guidr
-
-**GitHub Actions Cost**:
-- ✅ **FREE** - Public repositories have unlimited GitHub Actions minutes
-- All builds (TestFlight, simulator, Android) cost nothing
-
-**Local TestFlight Build** (optional, requires Mac):
-```bash
-cd ios
-
-# Build archive
-xcodebuild \
-  -workspace guidr.xcworkspace \
-  -scheme guidr \
-  -sdk iphoneos \
-  -configuration Release \
-  -archivePath ./build/guidr.xcarchive \
-  archive
-
-# Export IPA
-xcodebuild \
-  -exportArchive \
-  -archivePath ./build/guidr.xcarchive \
-  -exportPath ./build \
-  -exportOptionsPlist ./ExportOptions.plist
-
-# Upload to TestFlight
-xcrun altool \
-  --upload-app \
-  --type ios \
-  --file ./build/guidr.ipa \
-  --apiKey YOUR_KEY_ID \
-  --apiIssuer YOUR_ISSUER_ID
-```
-
-**Troubleshooting Common Issues**:
-
-**Problem**: "No signing certificate found"
-- **Solution**: Verify `APPLE_TEAM_ID` secret is correct (10 characters)
-- Check App ID exists at https://developer.apple.com/account/resources/identifiers
-- Ensure automatic signing is enabled in workflow
-
-**Problem**: "Profile doesn't include app-groups entitlement"
-- **Solution**: Edit App ID in developer portal
-- Enable "App Groups" capability
-- Configure App Group: `group.com.guidr`
-- Xcode will auto-generate new provisioning profile on next build
-
-**Problem**: "Upload to TestFlight failed with authentication error"
-- **Solution**: Verify API key content includes BEGIN/END lines
-- Check Key ID and Issuer ID are correct
-- Ensure API key has "App Manager" or "Admin" role
-- Verify key hasn't been revoked in App Store Connect
-
-**Problem**: "Build succeeded but not appearing in TestFlight"
-- **Solution**: Wait 10-15 minutes for Apple's processing
-- Check App Store Connect → Activity tab for build status
-- Look for error emails from Apple about invalid builds
-- Common issue: Missing required icons or incompatible binary
-
-**Problem**: "Version number already uploaded"
-- **Solution**: Build number must be unique (workflow auto-increments with timestamp)
-- If uploading manually, increment CFBundleVersion in Info.plist
-- Check existing builds in App Store Connect → TestFlight → Builds
-
-**Problem**: "Encryption export compliance" prompt after TestFlight upload
-- **Solution**: Verify `ITSAppUsesNonExemptEncryption` key exists in ios/guidr/Info.plist
-- Check value is `<false/>` (boolean false)
-- If missing, add manually: `/usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/guidr/Info.plist`
-
-**Problem**: "Group 'main' not found" error during pilot upload
-- **Solution**: Create TestFlight group in App Store Connect first
-- Go to: App Store Connect → Apps → Guidr → TestFlight → Internal Testing
-- Click "+" → Create Group → Name: "main" (exactly, case-sensitive)
-- Add team members to the group
-- Re-run workflow after group creation
-
-**Problem**: Fastlane pilot upload fails with "Invalid credentials"
-- **Solution**: Verify GitHub Secrets are correct:
-  - `APP_STORE_CONNECT_API_KEY_ID`: Should be 10 characters
-  - `APP_STORE_CONNECT_ISSUER_ID`: Should be UUID format
-  - `APP_STORE_CONNECT_API_KEY_CONTENT`: Must include BEGIN/END PRIVATE KEY lines
+### TestFlight Upload Fails
+**Problem**: "Invalid credentials" during pilot upload
+**Solution**: Verify GitHub Secrets are correct:
+- API_KEY_ID: 10 chars
+- ISSUER_ID: UUID format
+- API_KEY_CONTENT: Must include BEGIN/END lines
 - Check API key hasn't been revoked in App Store Connect
-- Ensure API key has "App Manager" or "Developer" role
 
-**Workflow Architecture**:
-```
-Pull Request → Lint/Test/Typecheck → Simulator Build (fast, cheap, PR validation)
+**Problem**: "Group 'main' not found"
+**Solution**: Create TestFlight group in App Store Connect:
+- App Store Connect → Apps → Guidr → TestFlight → Internal Testing
+- Click "+" → Create Group → Name: "main" (exact, case-sensitive)
+- Add team members, re-run workflow
 
-Main Branch Push → Semantic Release (determines if release needed)
-                                  ↓
-                    Yes → Create version tag (v1.0.0)
-                       ↓
-                    Trigger TestFlight Workflow
-                       ↓
-                    Build signed IPA → Upload to TestFlight
-                                    ↓
-                              App Store Connect → Internal Testing
-                                               ↓
-                                    Submit for External Testing Review
-                                               ↓
-                                         Public Beta (10K testers)
-```
+**Problem**: Build succeeds but not in TestFlight
+**Solution**: Wait 10-15 minutes for Apple processing. Check App Store Connect → Activity tab.
 
-**Version Management**:
-- **Version** (CFBundleShortVersionString): Managed by semantic-release (package.json)
-- **Build Number** (CFBundleVersion): Auto-incremented with timestamp in TestFlight workflow
-- Format: `1.0.0 (20251226153045)` - version (build)
+### Test Failures
+**Problem**: Tests fail after changes
+**Solution**: Ensure mocks are up to date in `__mocks__/`. React Native modules must be mocked.
 
-**Future: App Store Submission** (not yet implemented):
-Once TestFlight testing is complete and ready for public release:
-1. Prepare App Store listing (screenshots, description, keywords)
-2. Submit for App Store review in App Store Connect
-3. Review typically takes 1-3 business days
-4. After approval: App available on App Store
-5. Can still use TestFlight for beta testing new versions
+**Problem**: Type errors in tests
+**Solution**: Use bracket notation `props['value']` instead of `props.value` for test props
 
 ## Next Steps
 
@@ -684,7 +392,7 @@ Once TestFlight testing is complete and ready for public release:
 - Notifications for step completion
 - Offline sync with backend
 
-**Backend Requirements** (not yet implemented):
+**Backend Requirements** (test-server provides mock implementation):
 - REST API for CRUD operations
 - Guide/Step/Session persistence
 - User authentication (optional)
