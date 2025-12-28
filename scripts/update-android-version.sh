@@ -22,7 +22,14 @@ fi
 echo "Updating Android version to $VERSION"
 
 # Extract current versionCode and increment it
-CURRENT_VERSION_CODE=$(grep -E '^\s*versionCode\s+[0-9]+' "$BUILD_GRADLE" | sed -E 's/.*versionCode\s+([0-9]+).*/\1/')
+CURRENT_VERSION_CODE=$(grep -E '^\s*versionCode\s+[0-9]+' "$BUILD_GRADLE" | sed -E 's/.*versionCode\s+([0-9]+).*/\1/' | tr -d '[:space:]')
+
+# Validate it's a number, default to 0 if not
+if ! [[ "$CURRENT_VERSION_CODE" =~ ^[0-9]+$ ]]; then
+  echo "Warning: Could not extract versionCode, defaulting to 0"
+  CURRENT_VERSION_CODE=0
+fi
+
 NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
 
 # Update versionCode
