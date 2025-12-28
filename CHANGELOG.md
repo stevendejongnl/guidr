@@ -1,3 +1,9 @@
+## [1.8.10](https://github.com/stevendejongnl/guidr/compare/v1.8.9...v1.8.10) (2025-12-28)
+
+### Bug Fixes
+
+* add Cloudflare Access credentials for cloudflared authentication ([bd89a3b](https://github.com/stevendejongnl/guidr/commit/bd89a3b7e9c6a5e4653b1ea5403dd44f698f8a75))
+
 ## [1.8.9](https://github.com/stevendejongnl/guidr/compare/v1.8.8...v1.8.9) (2025-12-28)
 
 ### Bug Fixes
