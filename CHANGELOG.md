@@ -1,3 +1,9 @@
+## [1.9.1](https://github.com/stevendejongnl/guidr/compare/v1.9.0...v1.9.1) (2025-12-28)
+
+### Bug Fixes
+
+* add error handling to logout function to prevent silent failures ([bbbb1c5](https://github.com/stevendejongnl/guidr/commit/bbbb1c59d8330c6657aeb682b3dbaf17e52b01d6))
+
 ## [1.9.0](https://github.com/stevendejongnl/guidr/compare/v1.8.13...v1.9.0) (2025-12-28)
 
 ### Features
