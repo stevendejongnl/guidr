@@ -91,8 +91,14 @@ export const AppNavigator: React.FC = () => {
   }
 
   const handleLogout = async () => {
-    await authStorage.clearAll()
-    setHasAuthToken(false)
+    try {
+      await authStorage.clearAll()
+      setHasAuthToken(false)
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // Still update state to log out user even if storage clear fails
+      setHasAuthToken(false)
+    }
   }
 
   const handleChangeServer = () => {
