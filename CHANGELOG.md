@@ -1,3 +1,13 @@
+## [1.8.8](https://github.com/stevendejongnl/guidr/compare/v1.8.7...v1.8.8) (2025-12-28)
+
+### Bug Fixes
+
+* prevent unnecessary workflow triggers when no release created ([37c5a76](https://github.com/stevendejongnl/guidr/commit/37c5a76017ddf528d1824f1e4c68bbb59359fe43))
+
+### Documentation
+
+* restructure and consolidate project documentation ([b0b3228](https://github.com/stevendejongnl/guidr/commit/b0b3228148166430e8df6996d70f932ff5200d0b))
+
 ## [1.8.7](https://github.com/stevendejongnl/guidr/compare/v1.8.6...v1.8.7) (2025-12-28)
 
 ### Bug Fixes
