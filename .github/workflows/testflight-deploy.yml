@@ -112,15 +112,15 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           chmod 700 ~/.ssh
 
-          # Try cloudflared access tcp for tunneling without Access authentication
+          # Use cloudflared access ssh for direct SSH tunneling
           cat > ~/.ssh/config <<EOF
           Host gitaccess.madebysteven.nl
-            ProxyCommand /usr/local/bin/cloudflared access tcp --hostname %h --url ssh://localhost:22
+            ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h
             StrictHostKeyChecking accept-new
           EOF
           chmod 600 ~/.ssh/config
 
-          echo "SSH configured with cloudflared tunnel (tcp mode)"
+          echo "SSH configured with cloudflared access ssh"
 
       # Test SSH connection
       - name: Test SSH connection
