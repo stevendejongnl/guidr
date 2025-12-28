@@ -103,7 +103,17 @@ jobs:
           echo "APP_STORE_CONNECT_API_KEY_KEY_ID=${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" >> $GITHUB_ENV
           echo "APP_STORE_CONNECT_API_KEY_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" >> $GITHUB_ENV
 
-      # Setup SSH for Fastlane Match
+      # Install cloudflared for Cloudflare Tunnel
+      - name: Install cloudflared
+        if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
+        run: |
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz -o cloudflared.tgz
+          tar -xzf cloudflared.tgz
+          sudo mv cloudflared /usr/local/bin/
+          sudo chmod +x /usr/local/bin/cloudflared
+          cloudflared --version
+
+      # Setup SSH for Fastlane Match with cloudflared tunnel
       - name: Setup SSH for Fastlane Match
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
@@ -112,17 +122,22 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           chmod 700 ~/.ssh
 
-          # Add host key to known_hosts (Cloudflare Tunnel routes automatically)
-          ssh-keyscan -H gitaccess.madebysteven.nl >> ~/.ssh/known_hosts 2>/dev/null || true
+          # Try cloudflared access tcp for tunneling without Access authentication
+          cat > ~/.ssh/config <<EOF
+          Host gitaccess.madebysteven.nl
+            ProxyCommand /usr/local/bin/cloudflared access tcp --hostname %h --url ssh://localhost:22
+            StrictHostKeyChecking accept-new
+          EOF
+          chmod 600 ~/.ssh/config
 
-          echo "SSH configured for direct connection through Cloudflare Tunnel"
+          echo "SSH configured with cloudflared tunnel (tcp mode)"
 
       # Test SSH connection
       - name: Test SSH connection
         if: github.event_name == 'workflow_dispatch' || steps.checkout_tag.outputs.should_build == 'true'
         run: |
-          echo "Testing direct SSH connection..."
-          ssh -v -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | head -30 || true
+          echo "Testing SSH through cloudflared tunnel..."
+          ssh -v -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | head -40 || true
 
       # Download/create certificates with Fastlane Match
       - name: Setup certificates with Fastlane Match
