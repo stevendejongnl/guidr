@@ -76,15 +76,13 @@ jobs:
           P8_PATH="$HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8"
           echo "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" > "$P8_PATH"
 
-          # Create JSON file for Fastlane pilot
+          # Create JSON file for Fastlane pilot with embedded key content
           JSON_PATH="$HOME/private_keys/api_key.json"
-          cat > "$JSON_PATH" << EOF
-          {
-            "key_id": "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}",
-            "issuer_id": "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}",
-            "key_filepath": "$P8_PATH"
-          }
-          EOF
+          jq -n \
+            --arg key_id "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
+            --arg issuer_id "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" \
+            --arg key "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" \
+            '{key_id: $key_id, issuer_id: $issuer_id, key: $key}' > "$JSON_PATH"
 
           echo "APP_STORE_CONNECT_API_KEY_JSON_PATH=$JSON_PATH" >> $GITHUB_ENV
 
