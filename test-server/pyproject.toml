@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "guidr-test-server"
-version = "1.8.10"
+version = "1.8.11"
 description = "Test server for Guidr mobile app development"
 authors = ["Guidr Team"]
 readme = "README.md"

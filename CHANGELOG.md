@@ -1,3 +1,9 @@
+## [1.8.11](https://github.com/stevendejongnl/guidr/compare/v1.8.10...v1.8.11) (2025-12-28)
+
+### Code Refactoring
+
+* simplify TestFlight deployment with automatic provisioning ([5297c69](https://github.com/stevendejongnl/guidr/commit/5297c6935e12300b44b54716f26a782d5d1e8907))
+
 ## [1.8.10](https://github.com/stevendejongnl/guidr/compare/v1.8.9...v1.8.10) (2025-12-28)
 
 ### Bug Fixes
