@@ -88,64 +88,6 @@ jobs:
 
           echo "APP_STORE_CONNECT_API_KEY_JSON_PATH=$JSON_PATH" >> $GITHUB_ENV
 
-          # Export API key environment variables for Fastlane Match
-          echo "APP_STORE_CONNECT_API_KEY_PATH=$P8_PATH" >> $GITHUB_ENV
-          echo "APP_STORE_CONNECT_API_KEY_KEY_ID=${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" >> $GITHUB_ENV
-          echo "APP_STORE_CONNECT_API_KEY_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" >> $GITHUB_ENV
-
-      # Install cloudflared for Cloudflare Tunnel
-      - name: Install cloudflared
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz -o cloudflared.tgz
-          tar -xzf cloudflared.tgz
-          sudo mv cloudflared /usr/local/bin/
-          sudo chmod +x /usr/local/bin/cloudflared
-          cloudflared --version
-
-      # Setup SSH for Fastlane Match with cloudflared tunnel
-      - name: Setup SSH for Fastlane Match
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.MATCH_GIT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          chmod 700 ~/.ssh
-
-          # Use cloudflared access ssh for direct SSH tunneling
-          cat > ~/.ssh/config <<EOF
-          Host gitaccess.madebysteven.nl
-            ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h
-            StrictHostKeyChecking accept-new
-          EOF
-          chmod 600 ~/.ssh/config
-
-          echo "SSH configured with cloudflared access ssh"
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-
-      # Test SSH connection
-      - name: Test SSH connection
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          echo "Testing SSH through cloudflared tunnel..."
-          ssh -v -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | head -40 || true
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-
-      # Download/create certificates with Fastlane Match
-      - name: Setup certificates with Fastlane Match
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          cd ios
-          bundle exec fastlane match appstore --readonly
-        env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-
       # Auto-increment build number with timestamp
       - name: Increment build number
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -155,7 +97,7 @@ jobs:
           echo "Build number set to: $BUILD_NUM"
           echo "BUILD_NUMBER=$BUILD_NUM" >> $GITHUB_ENV
 
-      # Build archive with signing (using Match certificates)
+      # Build archive with automatic signing
       - name: Build iOS archive
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
@@ -166,9 +108,15 @@ jobs:
             -sdk iphoneos \
             -configuration Release \
             -archivePath ./build/guidr.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8 \
+            -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
+            -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+            CODE_SIGN_STYLE=Automatic \
             archive
 
-      # Export signed IPA (using Match certificates)
+      # Export signed IPA
       - name: Export IPA
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
@@ -177,7 +125,12 @@ jobs:
             -exportArchive \
             -archivePath ./build/guidr.xcarchive \
             -exportPath ./build \
-            -exportOptionsPlist ./ExportOptions.plist
+            -exportOptionsPlist ./ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8 \
+            -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
+            -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}"
 
       # Get version info
       - name: Get version information

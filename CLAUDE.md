@@ -203,12 +203,6 @@ Actions → Release → Run workflow
 - `APP_STORE_CONNECT_ISSUER_ID`: API Issuer ID (UUID)
 - `APP_STORE_CONNECT_API_KEY_CONTENT`: Complete .p8 file content
 
-**Fastlane Match** (Certificate management):
-- `MATCH_GIT_SSH_PRIVATE_KEY`: SSH key for certificate repo access
-- `MATCH_PASSWORD`: Encryption password for certificates
-- `CF_ACCESS_CLIENT_ID`: Cloudflare Access service token
-- `CF_ACCESS_CLIENT_SECRET`: Cloudflare Access secret
-
 **Auto-configured**:
 - `GITHUB_TOKEN`: Automatically provided by GitHub Actions
 
@@ -304,22 +298,23 @@ describe('Service', () => {
 - **CocoaPods**: Latest (managed by React Native)
 - **Target**: iOS 13+ minimum
 - **Bundle ID**: com.guidr
-- **Signing**: Automatic with Fastlane Match
+- **Signing**: Automatic with xcodebuild `-allowProvisioningUpdates`
 - **Distribution**: TestFlight (internal testing)
 
 ### TestFlight Distribution
 - **Trigger**: Automatic after release, or manual
-- **Build**: Signed IPA with Match certificates
+- **Build**: Signed IPA with automatic provisioning
 - **Upload**: Fastlane pilot with App Store Connect API
 - **Group**: "main" (internal testers)
 - **Processing**: 10-15 minutes typical
 - **Export Compliance**: `ITSAppUsesNonExemptEncryption = false` (HTTPS only)
 
 **Certificate Management**:
-- Fastlane Match stores certs in private git repo (gitaccess.madebysteven.nl)
-- SSH access via cloudflared tunnel with service token auth
-- Certificates encrypted with `MATCH_PASSWORD`
-- Workflow auto-installs cloudflared and syncs certs before build
+- Certificates created automatically using xcodebuild `-allowProvisioningUpdates`
+- No git repository needed - certificates managed by Apple
+- xcodebuild authenticates with App Store Connect API key
+- Provisioning profiles downloaded/created automatically during build
+- Recommended approach for CI/CD by Apple
 
 ## Git Workflow
 
