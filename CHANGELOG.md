@@ -1,3 +1,9 @@
+## [1.8.9](https://github.com/stevendejongnl/guidr/compare/v1.8.8...v1.8.9) (2025-12-28)
+
+### Bug Fixes
+
+* use cloudflared access ssh instead of tcp to avoid port binding ([dde7387](https://github.com/stevendejongnl/guidr/commit/dde7387866e378ce779611404014aa31ed6b46d3))
+
 ## [1.8.8](https://github.com/stevendejongnl/guidr/compare/v1.8.7...v1.8.8) (2025-12-28)
 
 ### Bug Fixes
