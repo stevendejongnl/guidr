@@ -1,3 +1,9 @@
+## [1.8.12](https://github.com/stevendejongnl/guidr/compare/v1.8.11...v1.8.12) (2025-12-28)
+
+### Bug Fixes
+
+* use proper JSON format for Fastlane App Store Connect API key ([9d74238](https://github.com/stevendejongnl/guidr/commit/9d7423814d5ad5384c8ab76c34dfd0cf9d56bfb9))
+
 ## [1.8.11](https://github.com/stevendejongnl/guidr/compare/v1.8.10...v1.8.11) (2025-12-28)
 
 ### Code Refactoring
