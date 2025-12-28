@@ -1,3 +1,9 @@
+## [1.8.13](https://github.com/stevendejongnl/guidr/compare/v1.8.12...v1.8.13) (2025-12-28)
+
+### Bug Fixes
+
+* add semantic-release npm plugin and sync versions to 1.8.11 ([bde3ec4](https://github.com/stevendejongnl/guidr/commit/bde3ec45ea29192ebede5463acd9e10c577d4b23))
+
 ## [1.8.12](https://github.com/stevendejongnl/guidr/compare/v1.8.11...v1.8.12) (2025-12-28)
 
 ### Bug Fixes
