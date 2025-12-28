@@ -1,3 +1,9 @@
+## [1.8.7](https://github.com/stevendejongnl/guidr/compare/v1.8.6...v1.8.7) (2025-12-28)
+
+### Bug Fixes
+
+* remove cloudflared client, use direct SSH through tunnel ([aa10450](https://github.com/stevendejongnl/guidr/commit/aa10450bb5039bc4776585c856f6cff481d9df27))
+
 ## [1.8.6](https://github.com/stevendejongnl/guidr/compare/v1.8.5...v1.8.6) (2025-12-28)
 
 ### Bug Fixes
