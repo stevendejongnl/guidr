@@ -121,6 +121,9 @@ jobs:
           chmod 600 ~/.ssh/config
 
           echo "SSH configured with cloudflared access ssh"
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       # Test SSH connection
       - name: Test SSH connection
@@ -128,6 +131,9 @@ jobs:
         run: |
           echo "Testing SSH through cloudflared tunnel..."
           ssh -v -o "BatchMode yes" -o "ConnectTimeout 30" git@gitaccess.madebysteven.nl exit 2>&1 | head -40 || true
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       # Download/create certificates with Fastlane Match
       - name: Setup certificates with Fastlane Match
@@ -137,6 +143,8 @@ jobs:
           bundle exec fastlane match appstore --readonly
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       # Auto-increment build number with timestamp
       - name: Increment build number
