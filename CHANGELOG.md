@@ -1,3 +1,13 @@
+## [1.8.6](https://github.com/stevendejongnl/guidr/compare/v1.8.5...v1.8.6) (2025-12-28)
+
+### Bug Fixes
+
+* simplify SSH to use Cloudflare Tunnel without Access auth ([64e5dd8](https://github.com/stevendejongnl/guidr/commit/64e5dd85e85b232a5a9232306556816643375ebc))
+
+### Documentation
+
+* add git workflow guidelines and improve SSH test workflow ([2bae369](https://github.com/stevendejongnl/guidr/commit/2bae3698cf5f35141c44855f08d5f4d443bf9344))
+
 ## [1.8.5](https://github.com/stevendejongnl/guidr/compare/v1.8.4...v1.8.5) (2025-12-27)
 
 ### Bug Fixes
