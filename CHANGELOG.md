@@ -1,3 +1,13 @@
+## [1.9.0](https://github.com/stevendejongnl/guidr/compare/v1.8.13...v1.9.0) (2025-12-28)
+
+### Features
+
+* always navigate to login screen on app start ([6b00b94](https://github.com/stevendejongnl/guidr/commit/6b00b941a5bb4aaa000112dbf634342bbb4d8da9))
+
+### Bug Fixes
+
+* improve Android version extraction robustness in update script ([fa25915](https://github.com/stevendejongnl/guidr/commit/fa25915c584cba2ce4b2e803ec38b275fb37e9e0))
+
 ## [1.8.13](https://github.com/stevendejongnl/guidr/compare/v1.8.12...v1.8.13) (2025-12-28)
 
 ### Bug Fixes
