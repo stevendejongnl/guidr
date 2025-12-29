@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { VersionDisplay } from '../components/VersionDisplay'
 
 interface HomeScreenProps {
   onLogout: () => void
@@ -27,29 +28,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, d
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Guidr</Text>
-      {userEmail ? (
-        <Text style={styles.subtitle}>Welcome, {userEmail}</Text>
-      ) : (
-        <Text style={styles.subtitle}>Welcome!</Text>
-      )}
-      <Text style={styles.description}>
-        The app is ready. Guide management features coming soon.
-      </Text>
+      <View style={styles.content}>
+        <Text style={styles.title}>Guidr</Text>
+        {userEmail ? (
+          <Text style={styles.subtitle}>Welcome, {userEmail}</Text>
+        ) : (
+          <Text style={styles.subtitle}>Welcome!</Text>
+        )}
+        <Text style={styles.description}>
+          The app is ready. Guide management features coming soon.
+        </Text>
 
-      {debugMode && (
-        <TouchableOpacity
-          style={styles.debugButton}
-          onPress={onOpenDebug}
-          accessibilityLabel="Open debug tools"
-        >
-          <Text style={styles.debugButtonText}>⚙ Debug Tools</Text>
+        {debugMode && (
+          <TouchableOpacity
+            style={styles.debugButton}
+            onPress={onOpenDebug}
+            accessibilityLabel="Open debug tools"
+          >
+            <Text style={styles.debugButtonText}>⚙ Debug Tools</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
-      )}
-
-      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </TouchableOpacity>
+      </View>
+      <VersionDisplay />
     </View>
   )
 }

@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir poetry==1.8.2
 WORKDIR /app
 
 # Copy dependency files
-COPY pyproject.toml poetry.lock* ./
+COPY test-server/pyproject.toml test-server/poetry.lock* ./
 
 # Configure Poetry for Docker
 RUN poetry config virtualenvs.create false
@@ -25,7 +25,8 @@ COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY server.py .
+COPY test-server/server.py .
+# Copy config from root
 COPY default-configuration.toml .
 
 # Set version as build argument (injected during build)

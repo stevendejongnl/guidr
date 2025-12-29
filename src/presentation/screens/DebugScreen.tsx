@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { VersionDisplay } from '../components/VersionDisplay'
 
 interface DebugScreenProps {
   onBack: () => void
@@ -205,6 +206,7 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
         {error && <Text style={styles.errorText}>{error}</Text>}
         {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
       </ScrollView>
+      <VersionDisplay />
     </View>
   )
 }
