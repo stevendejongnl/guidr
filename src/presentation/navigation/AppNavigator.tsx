@@ -1,22 +1,30 @@
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, View, StyleSheet } from 'react-native'
+import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { ServerConfigClient } from '../../infrastructure/api/ServerConfigClient'
 import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
+import { isVersionSupported } from '../../common/VersionUtils'
 import { ServerSetupScreen } from '../screens/ServerSetupScreen'
 import { LoginScreen } from '../screens/LoginScreen'
 import { HomeScreen } from '../screens/HomeScreen'
 import { DebugScreen } from '../screens/DebugScreen'
+import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 
 export const AppNavigator: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [hasAuthToken, setHasAuthToken] = useState(false)
   const [serverUrl, setServerUrl] = useState<string | null>(null)
-  const [serverConfig, setServerConfig] = useState<{ debugMode: boolean } | null>(null)
+  const [serverConfig, setServerConfig] = useState<{
+    debugMode: boolean
+    minAppVersion?: string | null
+    maxAppVersion?: string | null
+  } | null>(null)
   const [showDebugScreen, setShowDebugScreen] = useState(false)
   const [showServerSetup, setShowServerSetup] = useState(false)
+  const [appVersion] = useState(() => DeviceInfo.getVersion())
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -119,6 +127,25 @@ export const AppNavigator: React.FC = () => {
         storage={serverStorage}
         onComplete={handleServerSetupComplete}
         {...(serverUrl && { currentUrl: serverUrl })}
+      />
+    )
+  }
+
+  // Check if app version is supported by the server
+  if (
+    serverConfig &&
+    !isVersionSupported(
+      appVersion,
+      serverConfig.minAppVersion,
+      serverConfig.maxAppVersion
+    )
+  ) {
+    return (
+      <AppOutdatedScreen
+        currentVersion={appVersion}
+        minVersion={serverConfig.minAppVersion}
+        maxVersion={serverConfig.maxAppVersion}
+        onChangeServer={handleChangeServer}
       />
     )
   }

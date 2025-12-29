@@ -33,7 +33,11 @@ export class ServerConfigClient {
         throw new Error('Invalid response from server')
       }
 
-      return { debugMode: data.debugMode }
+      return {
+        debugMode: data.debugMode,
+        minAppVersion: data.minAppVersion ?? null,
+        maxAppVersion: data.maxAppVersion ?? null,
+      }
     } catch (error) {
       if (error instanceof Error) {
         throw error

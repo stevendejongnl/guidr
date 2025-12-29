@@ -14,4 +14,8 @@ module.exports = {
     create: (styles) => styles,
     flatten: (style) => (Array.isArray(style) ? Object.assign({}, ...style) : style),
   },
+  Linking: {
+    canOpenURL: jest.fn(() => Promise.resolve(true)),
+    openURL: jest.fn(() => Promise.resolve()),
+  },
 }

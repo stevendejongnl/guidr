@@ -174,12 +174,22 @@ def read_root():
 @app.get("/config", response_model=ServerConfigResponse)
 def get_server_config():
     """
-    Get server configuration including debug mode flag.
+    Get server configuration including debug mode flag and app version requirements.
 
     Debug mode is always enabled for the test server to allow developers
     to access debug screens with cache clearing and diagnostics.
+
+    Version fields (minAppVersion, maxAppVersion) can be set via environment variables
+    to enforce app version requirements. When set, clients with versions outside
+    the range will be prompted to update.
     """
-    return ServerConfigResponse(debugMode=True)
+    min_version = os.getenv("MIN_APP_VERSION")
+    max_version = os.getenv("MAX_APP_VERSION")
+    return ServerConfigResponse(
+        debugMode=True,
+        minAppVersion=min_version,
+        maxAppVersion=max_version
+    )
 
 # Authentication endpoints
 @app.post("/login", response_model=LoginResponse)
