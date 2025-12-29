@@ -1,3 +1,4 @@
+import { Platform } from 'react-native'
 import RNFS from 'react-native-fs'
 import { parse } from 'smol-toml'
 
@@ -19,8 +20,17 @@ export class ConfigLoader {
     }
 
     try {
-      const configPath = `${RNFS.MainBundlePath}/${this.CONFIG_FILE}`
-      const configContent = await RNFS.readFile(configPath, 'utf8')
+      let configContent: string
+
+      if (Platform.OS === 'android') {
+        // Android: read from assets folder
+        configContent = await RNFS.readFileAssets(this.CONFIG_FILE, 'utf8')
+      } else {
+        // iOS: read from main bundle
+        const configPath = `${RNFS.MainBundlePath}/${this.CONFIG_FILE}`
+        configContent = await RNFS.readFile(configPath, 'utf8')
+      }
+
       const parsed = parse(configContent)
       this.config = parsed as unknown as AppConfig
       return this.config
