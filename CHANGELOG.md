@@ -1,3 +1,14 @@
+## [1.11.0](https://github.com/stevendejongnl/guidr/compare/v1.10.1...v1.11.0) (2025-12-29)
+
+### Features
+
+* add app outdated version screen with version range check ([1aae536](https://github.com/stevendejongnl/guidr/commit/1aae536b379b27e156dba46812959efa53c07cc7))
+* **test-server:** add version fields to /config endpoint ([500cea9](https://github.com/stevendejongnl/guidr/commit/500cea96202deff217d08cbfec11f5b0f97fb3e5))
+
+### Bug Fixes
+
+* resolve strict TypeScript errors for CI compliance ([2a13057](https://github.com/stevendejongnl/guidr/commit/2a13057f3c682ea2e7ed32a5800c41688b70ea3e))
+
 ## [1.10.1](https://github.com/stevendejongnl/guidr/compare/v1.10.0...v1.10.1) (2025-12-29)
 
 ### Bug Fixes
