@@ -10,7 +10,8 @@ import tomllib
 import uvicorn
 
 VERSION = os.getenv("GUIDR_VERSION", "0.1.0")
-app = FastAPI(title="Guidr Test Server", version=VERSION)
+ROOT_PATH = os.getenv("ROOT_PATH", "")
+app = FastAPI(title="Guidr Test Server", version=VERSION, root_path=ROOT_PATH)
 
 # CORS middleware for React Native
 app.add_middleware(

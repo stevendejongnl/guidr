@@ -34,10 +34,11 @@ spec:
         - name: http
           containerPort: 8000
           protocol: TCP
-        # env: section removed - container will use ENV from Docker image
-        # The image is built with GUIDR_VERSION baked in via:
-        #   docker build --build-arg GUIDR_VERSION=<git-tag-version>
-        # This ensures version automatically matches the image tag
+        env:
+        # ROOT_PATH tells FastAPI about the path prefix for OpenAPI docs
+        - name: ROOT_PATH
+          value: "/testing-server"
+        # GUIDR_VERSION is baked into the Docker image via build-arg
         resources:
           requests:
             memory: "128Mi"
