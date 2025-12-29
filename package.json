@@ -8,6 +8,7 @@
   },
   "scripts": {
     "android": "react-native run-android",
+    "android:watch": "node scripts/watch-android.js",
     "ios": "react-native run-ios",
     "preandroid": "node scripts/copy-config.js",
     "preios": "node scripts/copy-config.js",
