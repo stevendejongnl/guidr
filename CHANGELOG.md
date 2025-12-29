@@ -1,3 +1,9 @@
+## [1.10.1](https://github.com/stevendejongnl/guidr/compare/v1.10.0...v1.10.1) (2025-12-29)
+
+### Bug Fixes
+
+* add platform-specific config loading for Android and iOS ([3ff5adf](https://github.com/stevendejongnl/guidr/commit/3ff5adffcacd54837537b7ffa9be61e0487c8377))
+
 ## [1.10.0](https://github.com/stevendejongnl/guidr/compare/v1.9.1...v1.10.0) (2025-12-29)
 
 ### Features
