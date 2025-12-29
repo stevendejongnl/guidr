@@ -11,9 +11,17 @@ export function parseVersion(
     return null
   }
 
-  const major = parseInt(parts[0], 10)
-  const minor = parseInt(parts[1], 10)
-  const patch = parseInt(parts[2], 10)
+  const majorStr = parts[0]
+  const minorStr = parts[1]
+  const patchStr = parts[2]
+
+  if (majorStr === undefined || minorStr === undefined || patchStr === undefined) {
+    return null
+  }
+
+  const major = parseInt(majorStr, 10)
+  const minor = parseInt(minorStr, 10)
+  const patch = parseInt(patchStr, 10)
 
   if (isNaN(major) || isNaN(minor) || isNaN(patch)) {
     return null

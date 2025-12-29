@@ -1,5 +1,7 @@
 export interface ServerConfigResponse {
   debugMode: boolean
+  minAppVersion: string | null
+  maxAppVersion: string | null
 }
 
 export class ServerConfigClient {

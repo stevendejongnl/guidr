@@ -143,8 +143,8 @@ export const AppNavigator: React.FC = () => {
     return (
       <AppOutdatedScreen
         currentVersion={appVersion}
-        minVersion={serverConfig.minAppVersion}
-        maxVersion={serverConfig.maxAppVersion}
+        minVersion={serverConfig.minAppVersion ?? null}
+        maxVersion={serverConfig.maxAppVersion ?? null}
         onChangeServer={handleChangeServer}
       />
     )
