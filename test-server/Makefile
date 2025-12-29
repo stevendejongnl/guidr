@@ -23,13 +23,17 @@ typecheck:
 
 # Build Docker image
 docker-build:
+	cp ../default-configuration.toml .
 	docker build -t guidr-test-server:latest .
+	rm -f default-configuration.toml
 
 # Build Docker image with version
 docker-build-version:
 	@echo "Building Docker image with version..."
+	cp ../default-configuration.toml .
 	@VERSION=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
 	docker build -t guidr-test-server:$$VERSION --build-arg GUIDR_VERSION=$$VERSION .
+	rm -f default-configuration.toml
 
 # Run Docker container
 docker-run:

@@ -26,6 +26,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY server.py .
+COPY default-configuration.toml .
 
 # Set version as build argument (injected during build)
 ARG GUIDR_VERSION=0.1.0

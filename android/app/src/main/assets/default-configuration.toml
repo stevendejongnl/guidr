@@ -1,8 +1,0 @@
-# Guidr Default Configuration
-# This file contains default settings for the Guidr application
-
-[server]
-# Default server URL - automatically configured on first app launch
-url = "https://guidr.madebysteven.nl/testing-server"
-# Minimum app version required to use this server
-minAppVersion = "1.0.0"

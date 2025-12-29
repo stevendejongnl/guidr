@@ -186,19 +186,25 @@ def get_server_config():
 
     Version fields:
     - minAppVersion: Read from default-configuration.toml if present, can be overridden
-      via MIN_APP_VERSION environment variable
     - maxAppVersion: Always set to the current server version (VERSION env var or default)
 
     When set, clients with versions outside the range will be prompted to update.
     """
-    # Read minAppVersion from default-configuration.toml if not overridden by env var
-    min_version = os.getenv("MIN_APP_VERSION")
-    if min_version is None:
-        config_path = Path(__file__).parent.parent / "default-configuration.toml"
+    min_version = None
+
+    # Try multiple config paths: Docker container path, then local development path
+    config_paths = [
+        Path("/app/default-configuration.toml"),  # Docker container
+        Path(__file__).parent.parent / "default-configuration.toml",  # Local development
+        Path(__file__).parent / "default-configuration.toml",  # Same directory fallback
+    ]
+
+    for config_path in config_paths:
         if config_path.exists():
             with open(config_path, "rb") as f:
                 config = tomllib.load(f)
                 min_version = config.get("server", {}).get("minAppVersion")
+            break
 
     # maxAppVersion is always the current server version
     max_version = VERSION
