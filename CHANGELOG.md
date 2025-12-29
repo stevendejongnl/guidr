@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/stevendejongnl/guidr/compare/v1.11.0...v1.11.1) (2025-12-29)
+
+### Bug Fixes
+
+* add ROOT_PATH for FastAPI OpenAPI docs behind reverse proxy ([b0962dd](https://github.com/stevendejongnl/guidr/commit/b0962dd6793b714bb7addd27dbe8b384955bcb22))
+* use altool instead of fastlane pilot for TestFlight uploads ([04e0a5c](https://github.com/stevendejongnl/guidr/commit/04e0a5cad17b8408d6bfb0bdb7a5fc8f12c0392b))
+
 ## [1.11.0](https://github.com/stevendejongnl/guidr/compare/v1.10.1...v1.11.0) (2025-12-29)
 
 ### Features
