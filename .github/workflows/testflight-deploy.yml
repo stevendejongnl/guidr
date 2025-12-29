@@ -140,19 +140,17 @@ jobs:
           echo "IPA_PATH=$(pwd)/ios/build/guidr.ipa" >> $GITHUB_OUTPUT
           echo "Version: $VERSION, Build: $BUILD_NUMBER"
 
-      # Upload to TestFlight with Fastlane pilot
-      - name: Upload to TestFlight and assign to group
+      # Upload to TestFlight using altool (more reliable than pilot for uploads)
+      - name: Upload to TestFlight
         if: |
           (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch') &&
           github.event.inputs.skip_testflight != 'true'
         run: |
-          bundle exec fastlane pilot upload \
-            --api-key-path "$APP_STORE_CONNECT_API_KEY_JSON_PATH" \
-            --ipa "${{ steps.version.outputs.IPA_PATH }}" \
-            --skip_waiting_for_build_processing true \
-            --distribute_external false \
-            --groups "main" \
-            --changelog "Automated build from CI/CD pipeline"
+          xcrun altool --upload-app \
+            --type ios \
+            --file "${{ steps.version.outputs.IPA_PATH }}" \
+            --apiKey "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
+            --apiIssuer "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
 
       # Upload IPA as artifact (for debugging/archiving)
       - name: Upload IPA artifact
