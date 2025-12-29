@@ -1,3 +1,9 @@
+## [1.10.0](https://github.com/stevendejongnl/guidr/compare/v1.9.1...v1.10.0) (2025-12-29)
+
+### Features
+
+* add Jest setup file to suppress expected console warnings during tests ([c956604](https://github.com/stevendejongnl/guidr/commit/c9566047a6b1b4544cc0e5f05ae9586424a7571b))
+
 ## [1.9.1](https://github.com/stevendejongnl/guidr/compare/v1.9.0...v1.9.1) (2025-12-28)
 
 ### Bug Fixes
