@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
+import { colors, spacing, typography } from '../theme'
 
 export const VersionDisplay: React.FC = () => {
   const [version, setVersion] = useState<string>('0.0.0')
@@ -33,11 +34,11 @@ export const VersionDisplay: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    bottom: spacing.xl,
+    right: spacing.xl,
   },
   text: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: typography.sizeXs,
+    color: colors.textMuted,
   },
 })

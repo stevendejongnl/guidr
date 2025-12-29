@@ -8,6 +8,7 @@ import {
   Linking,
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
 
 interface AppOutdatedScreenProps {
   currentVersion: string
@@ -49,8 +50,8 @@ export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <View style={commonStyles.container}>
+      <View style={commonStyles.contentCentered}>
         <Text style={styles.icon}>⚠️</Text>
         <Text style={styles.title}>Update Required</Text>
         <Text style={styles.description}>
@@ -63,15 +64,15 @@ export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
           onPress={handleUpdatePress}
           accessibilityLabel={getUpdateButtonText()}
         >
-          <Text style={styles.updateButtonText}>{getUpdateButtonText()}</Text>
+          <Text style={commonStyles.buttonText}>{getUpdateButtonText()}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.changeServerButton}
+          style={commonStyles.buttonOutline}
           onPress={onChangeServer}
           accessibilityLabel="Change server"
         >
-          <Text style={styles.changeServerButtonText}>Change Server</Text>
+          <Text style={commonStyles.buttonTextMuted}>Change Server</Text>
         </TouchableOpacity>
       </View>
       <VersionDisplay />
@@ -80,70 +81,38 @@ export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 400,
-    alignItems: 'center',
-  },
   icon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
+    fontSize: typography.sizeXxl,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
     textAlign: 'center',
   },
   description: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: typography.sizeMd,
+    color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     lineHeight: 24,
   },
   versionInfo: {
-    fontSize: 14,
-    color: '#999',
+    fontSize: typography.sizeSm,
+    color: colors.textMuted,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xxxl,
   },
   updateButton: {
-    backgroundColor: '#2196f3',
-    borderRadius: 8,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
     paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingHorizontal: spacing.xxxl,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  updateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  changeServerButton: {
-    backgroundColor: 'transparent',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#999',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    width: '100%',
-    alignItems: 'center',
-  },
-  changeServerButtonText: {
-    color: '#666',
-    fontSize: 16,
-    fontWeight: '600',
+    marginBottom: spacing.md,
   },
 })
 

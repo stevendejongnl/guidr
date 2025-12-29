@@ -4,13 +4,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { commonStyles, colors } from '../theme'
 
 interface ServerSetupScreenProps {
   storage: ServerConfigStorage
@@ -55,17 +55,17 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={commonStyles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.content}>
-        <Text style={styles.title}>Server Configuration</Text>
-        <Text style={styles.description}>Enter your Guidr server URL to get started.</Text>
+      <View style={commonStyles.content}>
+        <Text style={commonStyles.title}>Server Configuration</Text>
+        <Text style={commonStyles.description}>Enter your Guidr server URL to get started.</Text>
 
         <TextInput
-          style={[styles.input, error ? styles.inputError : null]}
+          style={[commonStyles.input, error ? commonStyles.inputError : null]}
           placeholder="https://api.example.com"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.textMuted}
           value={url}
           onChangeText={handleUrlChange}
           autoCapitalize="none"
@@ -74,21 +74,21 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
           editable={!loading}
         />
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
-          style={[styles.button, loading ? styles.buttonDisabled : null]}
+          style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
           onPress={handleSave}
           disabled={loading}
           accessibilityState={{ disabled: loading }}
         >
           {loading ? (
             <>
-              <ActivityIndicator color="#fff" size="small" style={styles.activityIndicator} />
-              <Text style={styles.buttonText}>Saving...</Text>
+              <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
+              <Text style={commonStyles.buttonText}>Saving...</Text>
             </>
           ) : (
-            <Text style={styles.buttonText}>Save Server URL</Text>
+            <Text style={commonStyles.buttonText}>Save Server URL</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -97,63 +97,3 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 400,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 24,
-    color: '#666',
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#333',
-  },
-  inputError: {
-    borderColor: '#f44336',
-  },
-  errorText: {
-    color: '#f44336',
-    fontSize: 14,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: '#2196f3',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    backgroundColor: '#90caf9',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  activityIndicator: {
-    marginRight: 8,
-  },
-})

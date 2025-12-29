@@ -12,6 +12,7 @@ import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
 
 interface DebugScreenProps {
   onBack: () => void
@@ -126,7 +127,7 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.containerTop}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={onBack}
@@ -135,13 +136,13 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
         >
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Debug Tools</Text>
+        <Text style={commonStyles.title}>Debug Tools</Text>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         {/* Version Info Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Version Information</Text>
+        <View style={commonStyles.section}>
+          <Text style={commonStyles.sectionTitle}>Version Information</Text>
           <Text style={styles.infoText}>App: v{appVersion} ({appBuildNumber})</Text>
           <Text style={styles.infoText}>
             Server: {serverVersion || 'Not connected'}
@@ -149,8 +150,8 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
         </View>
 
         {/* Stored Configuration Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Stored Configuration</Text>
+        <View style={commonStyles.section}>
+          <Text style={commonStyles.sectionTitle}>Stored Configuration</Text>
           <Text style={styles.infoText}>
             Server URL: {storedServerUrl || 'None'}
           </Text>
@@ -163,20 +164,20 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
         </View>
 
         {/* Connection Test Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Connection Test</Text>
+        <View style={commonStyles.section}>
+          <Text style={commonStyles.sectionTitle}>Connection Test</Text>
           <TouchableOpacity
             style={[styles.button, loading ? styles.buttonDisabled : null]}
             onPress={handleConnectionTest}
             disabled={loading}
             accessibilityLabel="Test server connection"
           >
-            <Text style={styles.buttonText}>Test Connection</Text>
+            <Text style={commonStyles.buttonText}>Test Connection</Text>
           </TouchableOpacity>
           {pingResult && (
             <Text style={[
               styles.infoText,
-              pingResult.startsWith('✓') ? styles.successText : styles.warningText
+              pingResult.startsWith('✓') ? commonStyles.successText : commonStyles.warningText
             ]}>
               {pingResult}
             </Text>
@@ -184,9 +185,9 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
         </View>
 
         {/* Clear Cache Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cache Management</Text>
-          <Text style={styles.warningText}>
+        <View style={commonStyles.section}>
+          <Text style={commonStyles.sectionTitle}>Cache Management</Text>
+          <Text style={commonStyles.warningText}>
             Warning: This will clear all app data including server URL and authentication.
           </Text>
           <TouchableOpacity
@@ -195,16 +196,16 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
             disabled={loading}
             accessibilityLabel="Clear all cache"
           >
-            <Text style={styles.buttonText}>Clear All Cache</Text>
+            <Text style={commonStyles.buttonText}>Clear All Cache</Text>
           </TouchableOpacity>
         </View>
 
         {loading && (
-          <ActivityIndicator size="large" color="#2196f3" style={styles.loader} />
+          <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
         )}
 
         {error && <Text style={styles.errorText}>{error}</Text>}
-        {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
+        {successMessage && <Text style={commonStyles.successText}>{successMessage}</Text>}
       </ScrollView>
       <VersionDisplay />
     </View>
@@ -212,94 +213,58 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     paddingTop: 50,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
+    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
   },
   backButton: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   backButtonText: {
-    color: '#2196f3',
-    fontSize: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    color: colors.primary,
+    fontSize: typography.sizeMd,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
-  },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    padding: spacing.lg,
   },
   infoText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
+    fontSize: typography.sizeSm,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
   button: {
-    backgroundColor: '#2196f3',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    marginTop: 8,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    marginTop: spacing.sm,
     alignItems: 'center',
   },
   dangerButton: {
-    backgroundColor: '#f44336',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    marginTop: 8,
+    backgroundColor: colors.danger,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    marginTop: spacing.sm,
     alignItems: 'center',
   },
   buttonDisabled: {
     opacity: 0.5,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   loader: {
-    marginVertical: 16,
+    marginVertical: spacing.lg,
   },
   errorText: {
-    color: '#f44336',
-    fontSize: 14,
-    marginTop: 16,
+    color: colors.danger,
+    fontSize: typography.sizeSm,
+    marginTop: spacing.lg,
     textAlign: 'center',
-  },
-  successText: {
-    color: '#4caf50',
-    fontSize: 14,
-    marginTop: 8,
-  },
-  warningText: {
-    color: '#ff9800',
-    fontSize: 14,
-    marginBottom: 8,
   },
 })

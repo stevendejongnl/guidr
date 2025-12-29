@@ -4,12 +4,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { commonStyles, colors } from '../theme'
 
 interface LoginScreenProps {
   authStorage: AuthStorage
@@ -85,14 +85,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Guidr</Text>
-        <Text style={styles.description}>Sign in to continue</Text>
+    <View style={commonStyles.container}>
+      <View style={commonStyles.content}>
+        <Text style={commonStyles.title}>Welcome to Guidr</Text>
+        <Text style={commonStyles.description}>Sign in to continue</Text>
 
         <TextInput
-          style={[styles.input, error ? styles.inputError : null]}
+          style={[commonStyles.input, error ? commonStyles.inputError : null]}
           placeholder="email@example.com"
+          placeholderTextColor={colors.textMuted}
           value={email}
           onChangeText={handleEmailChange}
           autoCapitalize="none"
@@ -102,37 +103,38 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         />
 
         <TextInput
-          style={[styles.input, error ? styles.inputError : null]}
+          style={[commonStyles.input, error ? commonStyles.inputError : null]}
           placeholder="Password"
+          placeholderTextColor={colors.textMuted}
           value={password}
           onChangeText={handlePasswordChange}
           secureTextEntry
           editable={!loading}
         />
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
-          style={[styles.button, loading ? styles.buttonDisabled : null]}
+          style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
           onPress={handleLogin}
           disabled={loading}
           accessibilityState={{ disabled: loading }}
         >
           {loading ? (
             <>
-              <ActivityIndicator color="#fff" size="small" style={styles.activityIndicator} />
-              <Text style={styles.buttonText}>Logging in...</Text>
+              <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
+              <Text style={commonStyles.buttonText}>Logging in...</Text>
             </>
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={commonStyles.buttonText}>Login</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.changeServerLink}
+          style={commonStyles.link}
           onPress={handleChangeServer}
         >
-          <Text style={styles.changeServerText}>Change Server</Text>
+          <Text style={commonStyles.linkText}>Change Server</Text>
         </TouchableOpacity>
       </View>
       <VersionDisplay />
@@ -140,74 +142,3 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 400,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 24,
-    color: '#666',
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 12,
-    color: '#333',
-  },
-  inputError: {
-    borderColor: '#f44336',
-  },
-  errorText: {
-    color: '#f44336',
-    fontSize: 14,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: '#2196f3',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  buttonDisabled: {
-    backgroundColor: '#90caf9',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  activityIndicator: {
-    marginRight: 8,
-  },
-  changeServerLink: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  changeServerText: {
-    color: '#2196f3',
-    fontSize: 14,
-    textDecorationLine: 'underline',
-  },
-})
