@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/stevendejongnl/guidr/compare/v1.12.1...v1.12.2) (2025-12-29)
+
+### Bug Fixes
+
+* code signing shit ([51f6be4](https://github.com/stevendejongnl/guidr/commit/51f6be4c86fd094069e3b71e9d1b1ccda5a9f87a))
+* include default-configuration.toml in Docker image ([a7ef0e2](https://github.com/stevendejongnl/guidr/commit/a7ef0e26466cb338e58e9b1f41f4277d994eb8a4))
+
 ## [1.12.1](https://github.com/stevendejongnl/guidr/compare/v1.12.0...v1.12.1) (2025-12-29)
 
 ### Bug Fixes
