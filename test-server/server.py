@@ -4,7 +4,9 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 import os
+import tomllib
 import uvicorn
 
 VERSION = os.getenv("GUIDR_VERSION", "0.1.0")
@@ -31,6 +33,8 @@ class LoginResponse(BaseModel):
 # Configuration Models
 class ServerConfigResponse(BaseModel):
     debugMode: bool
+    minAppVersion: Optional[str] = None
+    maxAppVersion: Optional[str] = None
 
 # Test credentials for authentication
 TEST_CREDENTIALS = {
@@ -179,12 +183,25 @@ def get_server_config():
     Debug mode is always enabled for the test server to allow developers
     to access debug screens with cache clearing and diagnostics.
 
-    Version fields (minAppVersion, maxAppVersion) can be set via environment variables
-    to enforce app version requirements. When set, clients with versions outside
-    the range will be prompted to update.
+    Version fields:
+    - minAppVersion: Read from default-configuration.toml if present, can be overridden
+      via MIN_APP_VERSION environment variable
+    - maxAppVersion: Always set to the current server version (VERSION env var or default)
+
+    When set, clients with versions outside the range will be prompted to update.
     """
+    # Read minAppVersion from default-configuration.toml if not overridden by env var
     min_version = os.getenv("MIN_APP_VERSION")
-    max_version = os.getenv("MAX_APP_VERSION")
+    if min_version is None:
+        config_path = Path(__file__).parent.parent / "default-configuration.toml"
+        if config_path.exists():
+            with open(config_path, "rb") as f:
+                config = tomllib.load(f)
+                min_version = config.get("server", {}).get("minAppVersion")
+
+    # maxAppVersion is always the current server version
+    max_version = VERSION
+
     return ServerConfigResponse(
         debugMode=True,
         minAppVersion=min_version,

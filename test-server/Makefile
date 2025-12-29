@@ -10,7 +10,8 @@ test:
 
 # Run server
 run:
-	poetry run guidr-server
+	@VERSION=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	GUIDR_VERSION=$$VERSION poetry run guidr-server
 
 # Lint with ruff
 lint:
