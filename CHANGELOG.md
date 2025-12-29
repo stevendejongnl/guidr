@@ -1,3 +1,9 @@
+## [1.12.1](https://github.com/stevendejongnl/guidr/compare/v1.12.0...v1.12.1) (2025-12-29)
+
+### Bug Fixes
+
+* **ci:** add CODE_SIGN_IDENTITY and destination for iOS archive build ([247ad86](https://github.com/stevendejongnl/guidr/commit/247ad86492d8266a4ee5abd2ab1fc92b9e02f9a5))
+
 ## [1.12.0](https://github.com/stevendejongnl/guidr/compare/v1.11.1...v1.12.0) (2025-12-29)
 
 ### Features
