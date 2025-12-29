@@ -1,3 +1,17 @@
+## [1.13.0](https://github.com/stevendejongnl/guidr/compare/v1.12.2...v1.13.0) (2025-12-29)
+
+### Features
+
+* add Android emulator URL to server startup message ([48fa821](https://github.com/stevendejongnl/guidr/commit/48fa82147d4d6d67363331d77f6af513b8f473c2))
+* add icon generation script for iOS and Android; include SVG source and update package.json for sharp dependency ([7dec4ca](https://github.com/stevendejongnl/guidr/commit/7dec4ca5800496e6f1d1c65c04668cbc9e6ed8f6))
+* add VersionDisplay component to Debug and Home screens; update Dockerfile and Makefile for context adjustments ([708b700](https://github.com/stevendejongnl/guidr/commit/708b700c1fd223a0e66a4e1a1cd638f495b64aeb))
+* refactor styles to use common theme; update loading indicators and button styles across screens ([4b5dd4c](https://github.com/stevendejongnl/guidr/commit/4b5dd4c17e1b76ba0169101f4fded44bbfa4699b))
+
+### Bug Fixes
+
+* sync version from package.json before building Android/iOS apps ([a88eaca](https://github.com/stevendejongnl/guidr/commit/a88eaca57138fb9c54d77d7aeb611e9a120f8c85))
+* update workflow job paths in ci-cd.yml ([3c2382e](https://github.com/stevendejongnl/guidr/commit/3c2382ebac5a6d5cc2505b5448b8bcb9e8f1765f))
+
 ## [1.12.2](https://github.com/stevendejongnl/guidr/compare/v1.12.1...v1.12.2) (2025-12-29)
 
 ### Bug Fixes
