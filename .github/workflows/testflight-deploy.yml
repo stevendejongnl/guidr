@@ -140,17 +140,74 @@ jobs:
           echo "IPA_PATH=$(pwd)/ios/build/guidr.ipa" >> $GITHUB_OUTPUT
           echo "Version: $VERSION, Build: $BUILD_NUMBER"
 
-      # Upload to TestFlight using altool (more reliable than pilot for uploads)
+      # Extract changelog for TestFlight "What to Test" notes
+      - name: Generate TestFlight changelog
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          BUILD_NUM="${{ env.BUILD_NUMBER }}"
+
+          # Extract the latest version's changelog section from CHANGELOG.md
+          if [ -f "CHANGELOG.md" ]; then
+            # Get content for the current version (between ## [version] and next ## [)
+            CHANGELOG_TEXT=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+
+            # If no exact version match, get the latest section
+            if [ -z "$CHANGELOG_TEXT" ]; then
+              CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md)
+            fi
+
+            # Clean up the text: remove empty lines at start/end, format for TestFlight (limit 4000 chars)
+            CHANGELOG_TEXT=$(echo "$CHANGELOG_TEXT" | sed '/^$/d' | head -c 3900)
+
+            if [ -z "$CHANGELOG_TEXT" ]; then
+              CHANGELOG_TEXT="Please test the latest features and report any issues."
+            fi
+          else
+            CHANGELOG_TEXT="Please test the latest features and report any issues."
+          fi
+
+          # Build the changelog file with proper formatting
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            {
+              echo "🧪 Manual Test Build - v${VERSION} (Build ${BUILD_NUM})"
+              echo ""
+              echo "$CHANGELOG_TEXT"
+              echo ""
+              echo "---"
+              echo "This is a manual test build from the CI/CD pipeline."
+            } > /tmp/changelog.txt
+          else
+            {
+              echo "🚀 New Release - v${VERSION}"
+              echo ""
+              echo "$CHANGELOG_TEXT"
+            } > /tmp/changelog.txt
+          fi
+
+          echo "CHANGELOG_FILE=/tmp/changelog.txt" >> $GITHUB_ENV
+
+          # Output for logging
+          echo "=== TestFlight What to Test ==="
+          cat /tmp/changelog.txt
+          echo "==============================="
+
+      # Upload to TestFlight using Fastlane pilot (supports changelog for "What to Test")
       - name: Upload to TestFlight
         if: |
           (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch') &&
           github.event.inputs.skip_testflight != 'true'
         run: |
-          xcrun altool --upload-app \
-            --type ios \
-            --file "${{ steps.version.outputs.IPA_PATH }}" \
-            --apiKey "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
-            --apiIssuer "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
+          # Read changelog from file
+          CHANGELOG_TEXT=$(cat "${{ env.CHANGELOG_FILE }}")
+
+          bundle exec fastlane pilot upload \
+            --ipa "${{ steps.version.outputs.IPA_PATH }}" \
+            --api_key_path "${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}" \
+            --skip_waiting_for_build_processing true \
+            --changelog "$CHANGELOG_TEXT" \
+            --distribute_external false
 
       # Upload IPA as artifact (for debugging/archiving)
       - name: Upload IPA artifact
