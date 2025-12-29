@@ -6,7 +6,12 @@ set -e
 
 echo "Building iOS app for simulator..."
 
-cd "$(dirname "$0")/ios"
+cd "$(dirname "$0")"
+
+# Sync version from package.json before building
+./scripts/sync-version.sh
+
+cd ios
 
 echo "Installing CocoaPods dependencies..."
 pod install

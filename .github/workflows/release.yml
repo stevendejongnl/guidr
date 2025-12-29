@@ -69,6 +69,10 @@ jobs:
       - name: Build Android APK
         if: env.SHOULD_RELEASE == 'true'
         run: |
+          # Update version files before building
+          chmod +x scripts/sync-version.sh scripts/update-android-version.sh
+          ./scripts/update-android-version.sh "$NEXT_VERSION"
+
           chmod +x android/gradlew
           android/gradlew assembleRelease --no-daemon --stacktrace -p android
 
