@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/stevendejongnl/guidr/compare/v1.11.1...v1.12.0) (2025-12-29)
+
+### Features
+
+* add TestFlight 'What to Test' notes from changelog ([b7b933b](https://github.com/stevendejongnl/guidr/commit/b7b933b141691b176bff09f55b211629cb8212ed))
+
 ## [1.11.1](https://github.com/stevendejongnl/guidr/compare/v1.11.0...v1.11.1) (2025-12-29)
 
 ### Bug Fixes
