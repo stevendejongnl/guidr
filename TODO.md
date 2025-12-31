@@ -2,6 +2,37 @@
 
 This document tracks the remaining work to complete the Guidr application. The core domain logic and deployment infrastructure are complete. This roadmap focuses on implementing the remaining features to create a fully functional guide execution app.
 
+---
+
+## 🔄 In Progress: Dependabot PR Merges (PARKED)
+
+**Status**: Waiting for Dependabot to finish rebasing PRs after merging #7
+
+**Plan**: `/home/stevendejong/.claude/plans/graceful-tickling-sutton.md`
+
+**Summary**: 8 Dependabot PRs need to be reviewed and merged. Some have CI failures that need investigation.
+
+**Progress**:
+- ✅ PR #7: ruff 0.3.7 → 0.14.10 (MERGED 2025-12-31)
+- ⏳ Waiting for Dependabot rebase of remaining PRs
+- ⏸️ PR #8: pytest 8.4.2 → 9.0.2 (ready to merge after rebase)
+- ⏸️ PRs #2, #3, #5, #6: Need workflow re-runs (transient Android failures)
+- ⏸️ PR #1: @typescript-eslint 7→8 (needs parser update in package.json)
+- ⏸️ PR #4: semantic-release 24→25 (needs npm plugin removed from .releaserc.json)
+
+**Next Actions** (when resuming):
+1. Merge PR #8 after rebase completes
+2. Re-run failed workflows for PRs #2, #3, #5, #6
+3. Fix PR #1: Update @typescript-eslint/parser to v8.51.0 in package.json
+4. Fix PR #4: Remove `@semantic-release/npm` from .releaserc.json line 42
+
+**Key Findings**:
+- PR #1 has peer dependency conflict (plugin v8 requires parser v8)
+- PR #4 fails because npm plugin interferes with React Native builds in semantic-release v25
+- PRs #2, #3, #5, #6 have Android-only failures (likely environmental, not dependency-related)
+
+---
+
 ## Current Status
 
 ✅ **Completed:**
