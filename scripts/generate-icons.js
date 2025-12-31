@@ -54,6 +54,15 @@ async function generateIcon(svgBuffer, size, outputPath) {
   console.log(`Generated: ${outputPath} (${size}x${size})`);
 }
 
+async function generateIconWithoutAlpha(svgBuffer, size, outputPath, backgroundColor = '#A7F3D0') {
+  await sharp(svgBuffer)
+    .resize(size, size)
+    .flatten({ background: backgroundColor })  // Flatten alpha channel with background color
+    .png({ compressionLevel: 9, palette: false })  // Force RGB (no alpha)
+    .toFile(outputPath);
+  console.log(`Generated (no alpha): ${outputPath} (${size}x${size})`);
+}
+
 async function generateRoundIcon(svgBuffer, size, outputPath) {
   // Create circular mask
   const circle = Buffer.from(
@@ -143,7 +152,13 @@ async function main() {
   console.log('\n--- Generating iOS Icons ---');
   for (const icon of IOS_ICONS) {
     const outputPath = path.join(IOS_OUTPUT_DIR, icon.filename);
-    await generateIcon(svgBuffer, icon.size, outputPath);
+
+    // Use opaque version for 1024x1024 (App Store requirement)
+    if (icon.size === 1024) {
+      await generateIconWithoutAlpha(svgBuffer, icon.size, outputPath);
+    } else {
+      await generateIcon(svgBuffer, icon.size, outputPath);
+    }
   }
 
   // Generate Android launcher icons (legacy)

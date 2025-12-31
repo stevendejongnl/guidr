@@ -57,7 +57,7 @@
       {
         "assets": [
           {
-            "path": "android/app/build/outputs/apk/release/guidr-v${nextRelease.version}.apk",
+            "path": "android/app/build/outputs/apk/release/guidr-v*.apk",
             "label": "Guidr Android v${nextRelease.version} (APK)"
           }
         ]
