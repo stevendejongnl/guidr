@@ -1,3 +1,9 @@
+## [1.15.3](https://github.com/stevendejongnl/guidr/compare/v1.15.2...v1.15.3) (2025-12-31)
+
+### Bug Fixes
+
+* add iOS config fallback and disable Sentry in tests ([813db78](https://github.com/stevendejongnl/guidr/commit/813db788b45084dacf2bf714ceedc8b7c626988e))
+
 ## [1.15.2](https://github.com/stevendejongnl/guidr/compare/v1.15.1...v1.15.2) (2025-12-31)
 
 ### Bug Fixes
