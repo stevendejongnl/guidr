@@ -1,3 +1,13 @@
+## [1.14.0](https://github.com/stevendejongnl/guidr/compare/v1.13.0...v1.14.0) (2025-12-31)
+
+### Features
+
+* add Android adaptive icon support ([b49ed55](https://github.com/stevendejongnl/guidr/commit/b49ed556bffc5ec782e318942d17aa74de0b8296)), closes [#A7F3D0](https://github.com/stevendejongnl/guidr/issues/A7F3D0)
+
+### Bug Fixes
+
+* update fastlane to 2.230.0 to resolve TestFlight upload error ([5f293fc](https://github.com/stevendejongnl/guidr/commit/5f293fcf271668d40bc2314a1979b344b1de3913))
+
 ## [1.13.0](https://github.com/stevendejongnl/guidr/compare/v1.12.2...v1.13.0) (2025-12-29)
 
 ### Features
