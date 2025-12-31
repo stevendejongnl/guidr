@@ -193,12 +193,6 @@ jobs:
           cat /tmp/changelog.txt
           echo "==============================="
 
-      # Try to update Fastlane before upload
-      - name: Update Fastlane
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          gem install fastlane
-
       # Upload to TestFlight using Fastlane pilot (supports changelog for "What to Test")
       - name: Upload to TestFlight
         if: |
