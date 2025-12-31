@@ -55,6 +55,10 @@ test-server/venv/
 test-server/__pycache__/
 test-server/*.pyc
 
+# Sentry
+android/sentry.properties
+ios/sentry.properties
+
 # Misc
 .idea/
 .env.local
