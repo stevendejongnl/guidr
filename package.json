@@ -10,6 +10,7 @@
     "android": "react-native run-android",
     "android:watch": "node scripts/watch-android.js",
     "ios": "react-native run-ios",
+    "generate-icons": "node scripts/generate-icons.js",
     "preandroid": "node scripts/copy-config.js",
     "preios": "node scripts/copy-config.js",
     "start": "react-native start",

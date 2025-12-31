@@ -43,6 +43,9 @@ const ANDROID_FOREGROUND_ICONS = [
 const IOS_OUTPUT_DIR = path.join(__dirname, '..', 'ios', 'guidr', 'Images.xcassets', 'AppIcon.appiconset');
 const ANDROID_RES_DIR = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'res');
 
+// Background color for adaptive icons (from icon.svg)
+const ICON_BACKGROUND_COLOR = '#A7F3D0';
+
 async function generateIcon(svgBuffer, size, outputPath) {
   await sharp(svgBuffer)
     .resize(size, size)
@@ -102,6 +105,36 @@ async function generateForegroundIcon(size, outputPath) {
   console.log(`Generated (foreground): ${outputPath} (${size}x${size})`);
 }
 
+function generateColorsXml() {
+  const colorsXml = `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">${ICON_BACKGROUND_COLOR}</color>
+</resources>
+`;
+  const outputPath = path.join(ANDROID_RES_DIR, 'values', 'colors.xml');
+  fs.writeFileSync(outputPath, colorsXml);
+  console.log(`Generated: ${outputPath}`);
+}
+
+function generateAdaptiveIconXml() {
+  const adaptiveIconXml = `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>
+`;
+
+  // Generate ic_launcher.xml
+  const launcherPath = path.join(ANDROID_RES_DIR, 'mipmap-anydpi-v26', 'ic_launcher.xml');
+  fs.writeFileSync(launcherPath, adaptiveIconXml);
+  console.log(`Generated: ${launcherPath}`);
+
+  // Generate ic_launcher_round.xml
+  const launcherRoundPath = path.join(ANDROID_RES_DIR, 'mipmap-anydpi-v26', 'ic_launcher_round.xml');
+  fs.writeFileSync(launcherRoundPath, adaptiveIconXml);
+  console.log(`Generated: ${launcherRoundPath}`);
+}
+
 async function main() {
   console.log('Reading SVG source...');
   const svgBuffer = fs.readFileSync(SVG_PATH);
@@ -135,6 +168,11 @@ async function main() {
   // Also generate the 1024px PNG in project root for reference
   console.log('\n--- Generating Reference Icon ---');
   await generateIcon(svgBuffer, 1024, path.join(__dirname, '..', 'icon.png'));
+
+  // Generate Android adaptive icon configuration
+  console.log('\n--- Generating Android Adaptive Icon Configuration ---');
+  generateColorsXml();
+  generateAdaptiveIconXml();
 
   console.log('\n✅ All icons generated successfully!');
 }
