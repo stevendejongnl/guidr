@@ -17,6 +17,7 @@ import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
 import { GitHubReleaseClient } from '../../infrastructure/api/GitHubReleaseClient'
 import { UpdateCheckStorage } from '../../infrastructure/storage/UpdateCheckStorage'
 import { UpdateService, UpdateCheckResult } from '../../domain/services/UpdateService'
+import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { commonStyles, colors } from '../theme'
 
 export const AppNavigator: React.FC = () => {
@@ -54,6 +55,10 @@ export const AppNavigator: React.FC = () => {
             ServerConfigCache.setConfig(config)
             setServerConfig(config)
           } catch (error) {
+            ErrorReporter.capture(error, {
+              component: 'AppNavigator',
+              action: 'fetchServerConfig',
+            })
             console.error('Failed to fetch server config:', error)
             // Set default config on failure
             const defaultConfig = { debugMode: false }
@@ -85,12 +90,20 @@ export const AppNavigator: React.FC = () => {
               )
               setUpdateCheckResult(updateResult)
             } catch (error) {
+              ErrorReporter.capture(error, {
+                component: 'AppNavigator',
+                action: 'checkForUpdates',
+              })
               console.error('Update check failed:', error)
               // Don't block the app if update check fails
             }
           }
         }
       } catch (error) {
+        ErrorReporter.capture(error, {
+          component: 'AppNavigator',
+          action: 'checkConfiguration',
+        })
         console.error('Failed to check configuration:', error)
       } finally {
         setLoading(false)
@@ -115,6 +128,10 @@ export const AppNavigator: React.FC = () => {
         ServerConfigCache.setConfig(config)
         setServerConfig(config)
       } catch (error) {
+        ErrorReporter.capture(error, {
+          component: 'AppNavigator',
+          action: 'handleServerSetupComplete',
+        })
         console.error('Failed to fetch server config:', error)
         const defaultConfig = { debugMode: false }
         ServerConfigCache.setConfig(defaultConfig)
@@ -136,6 +153,7 @@ export const AppNavigator: React.FC = () => {
       await authStorage.clearAll()
       setHasAuthToken(false)
     } catch (error) {
+      ErrorReporter.capture(error, { component: 'AppNavigator', action: 'logout' })
       console.error('Logout failed:', error)
       // Still update state to log out user even if storage clear fails
       setHasAuthToken(false)
@@ -205,6 +223,10 @@ export const AppNavigator: React.FC = () => {
               }
             }}
             onError={(error) => {
+              ErrorReporter.capture(error, {
+                component: 'AppNavigator',
+                action: 'updateDownloadError',
+              })
               console.error('Update download error:', error)
               setShowUpdateDownload(false)
             }}

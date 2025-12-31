@@ -40,7 +40,9 @@ export class AuthStorage {
   }
 
   async clearAll(): Promise<void> {
-    await AsyncStorage.removeItem(AUTH_TOKEN_KEY)
-    await AsyncStorage.removeItem(USER_EMAIL_KEY)
+    await Promise.all([
+      AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+      AsyncStorage.removeItem(USER_EMAIL_KEY),
+    ])
   }
 }

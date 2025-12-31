@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import { ApkInstaller, DownloadProgress } from '../../infrastructure/update/ApkInstaller'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import {
   commonStyles,
   colors,
@@ -67,6 +68,10 @@ export const UpdateDownloadScreen: React.FC<UpdateDownloadScreenProps> = ({
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to download update'
+      ErrorReporter.capture(err, {
+        component: 'UpdateDownloadScreen',
+        action: 'downloadApk',
+      })
       setError(errorMessage)
       setState('error')
       onError(errorMessage)
@@ -82,6 +87,10 @@ export const UpdateDownloadScreen: React.FC<UpdateDownloadScreenProps> = ({
         await installer.deleteDownloadedApk(apkPath)
       }
     } catch (err) {
+      ErrorReporter.capture(err, {
+        component: 'UpdateDownloadScreen',
+        action: 'cancelDownload',
+      })
       console.error('Failed to cancel download:', err)
     }
     onCancel()

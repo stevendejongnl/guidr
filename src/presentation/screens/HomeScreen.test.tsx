@@ -74,6 +74,63 @@ describe('HomeScreen', () => {
 
       expect(mockOnLogout).toHaveBeenCalledTimes(1)
     })
+
+    it('should show loading indicator during logout', async () => {
+      mockOnLogout.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
+
+      const { getByText, queryByText } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+      )
+
+      fireEvent.press(getByText('Logout'))
+
+      await waitFor(() => {
+        expect(queryByText('Logging out...')).toBeTruthy()
+      })
+
+      await waitFor(() => {
+        expect(mockOnLogout).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    it('should disable button during logout', async () => {
+      mockOnLogout.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
+
+      const { getByText, UNSAFE_getByProps } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+      )
+
+      fireEvent.press(getByText('Logout'))
+
+      await waitFor(() => {
+        const button = UNSAFE_getByProps({ disabled: true })
+        expect(button).toBeTruthy()
+      })
+    })
+
+    it('should handle async logout errors', async () => {
+      mockOnLogout.mockRejectedValue(new Error('Logout failed'))
+
+      const { getByText, queryByText } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+      )
+
+      fireEvent.press(getByText('Logout'))
+
+      await waitFor(() => {
+        expect(mockOnLogout).toHaveBeenCalledTimes(1)
+      })
+
+      // Should reset loading state even on error
+      await waitFor(() => {
+        expect(queryByText('Logging out...')).toBeNull()
+        expect(getByText('Logout')).toBeTruthy()
+      })
+    })
   })
 
   describe('debug button', () => {
