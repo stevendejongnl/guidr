@@ -1,0 +1,151 @@
+version: 2
+updates:
+  # npm (Primary)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+    groups:
+      react-native-core:
+        patterns:
+          - "react-native"
+          - "@react-native/*"
+          - "@react-native-community/*"
+        update-types:
+          - "minor"
+          - "patch"
+      semantic-release:
+        patterns:
+          - "semantic-release"
+          - "@semantic-release/*"
+        update-types:
+          - "minor"
+          - "patch"
+      testing:
+        patterns:
+          - "jest"
+          - "@testing-library/*"
+          - "@types/jest"
+          - "ts-jest"
+        update-types:
+          - "minor"
+          - "patch"
+      react-navigation:
+        patterns:
+          - "@react-navigation/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Gradle (Android)
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "android"
+    ignore:
+      - dependency-name: "gradle"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.tools.build:gradle"
+        versions: ["9.x"]
+    groups:
+      android-build-tools:
+        patterns:
+          - "com.android.tools.build*"
+          - "org.jetbrains.kotlin*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Bundler (iOS CocoaPods)
+  - package-ecosystem: "bundler"
+    directory: "/ios"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "ios"
+
+  # Bundler (Fastlane)
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "fastlane"
+    groups:
+      fastlane:
+        patterns:
+          - "fastlane"
+          - "fastlane-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # pip (Test Server)
+  - package-ecosystem: "pip"
+    directory: "/test-server"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "09:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "test-server"
+    groups:
+      fastapi-stack:
+        patterns:
+          - "fastapi"
+          - "uvicorn"
+          - "pydantic"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-tools:
+        patterns:
+          - "pytest*"
+          - "ruff"
+          - "mypy"
+        update-types:
+          - "minor"
+          - "patch"
