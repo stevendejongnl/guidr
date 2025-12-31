@@ -334,6 +334,14 @@ docs: update docs
 style: format code
 ```
 
+**IMPORTANT - Commit Message Format:**
+- Use clear, descriptive commit messages that explain WHY, not just WHAT
+- Follow conventional commit format (type: description)
+- Keep subject line under 72 characters
+- Use imperative mood ("add feature" not "added feature")
+- **NEVER include AI/tool attribution** (no "Generated with Claude Code", "Co-Authored-By: Claude", etc.)
+- **NEVER include generated footers or signatures** - commits should only contain your changes and rationale
+
 ### Before Pushing
 ```bash
 git pull --rebase origin main  # Check if behind
@@ -343,7 +351,8 @@ git push origin main
 
 ### Rules
 - ✅ Clear, descriptive commit messages
-- ❌ Never mention Claude/AI assistants in commits
+- ❌ Never mention Claude/AI assistants in commits or commit messages
+- ❌ Never add generated footers, signatures, or attribution
 - ✅ Always rebase before pushing to avoid conflicts
 
 ## Common Issues
