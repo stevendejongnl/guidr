@@ -1,3 +1,11 @@
+## [1.15.1](https://github.com/stevendejongnl/guidr/compare/v1.15.0...v1.15.1) (2025-12-31)
+
+### Bug Fixes
+
+* add Android version update to release process and sync to 1.15.0 ([554565a](https://github.com/stevendejongnl/guidr/commit/554565a1c78693c13a5bd0d4089c3ce4b87dec8c))
+* add Sentry auth token configuration to CI/CD workflows ([b73ac59](https://github.com/stevendejongnl/guidr/commit/b73ac5921f2d0f46ba5e48850000b917d689d7ef))
+* correct Sentry installation and secure auth tokens ([905b0f9](https://github.com/stevendejongnl/guidr/commit/905b0f9d1a8ea4cf17ea01233ff54a3977bae596))
+
 ## [1.15.0](https://github.com/stevendejongnl/guidr/compare/v1.14.1...v1.15.0) (2025-12-31)
 
 ### Features
