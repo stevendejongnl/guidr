@@ -66,6 +66,27 @@ jobs:
             echo "No release needed - no relevant commits since last release"
           fi
 
+      - name: Create Sentry properties files
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          # Android sentry.properties
+          cat > android/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          # iOS sentry.properties (for future iOS builds)
+          cat > ios/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          echo "✅ Created Sentry properties files"
+
       - name: Build Android APK
         if: env.SHOULD_RELEASE == 'true'
         run: |

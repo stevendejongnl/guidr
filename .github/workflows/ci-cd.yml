@@ -16,6 +16,10 @@ jobs:
 
   android-build:
     uses: ./.github/workflows/job-android-build.yml
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
   ios-build:
     uses: ./.github/workflows/job-ios-build.yml
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

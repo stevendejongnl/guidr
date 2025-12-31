@@ -59,6 +59,18 @@ jobs:
           cd ios
           pod install
 
+      - name: Create Sentry properties file
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          cat > ios/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          echo "✅ Created iOS Sentry properties file"
+
       - name: Setup Ruby and Bundler
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: ruby/setup-ruby@v1

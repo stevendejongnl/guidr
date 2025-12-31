@@ -2,6 +2,9 @@ name: iOS Build Job
 
 on:
   workflow_call:
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
 
 jobs:
   ios-build:
@@ -22,6 +25,17 @@ jobs:
         run: |
           cd ios
           pod install
+
+      - name: Create Sentry properties file
+        run: |
+          cat > ios/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          echo "✅ Created iOS Sentry properties file"
 
       - name: Build iOS app for simulator
         run: |
