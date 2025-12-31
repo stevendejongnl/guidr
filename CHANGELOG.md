@@ -1,3 +1,13 @@
+## [1.14.1](https://github.com/stevendejongnl/guidr/compare/v1.14.0...v1.14.1) (2025-12-31)
+
+### Bug Fixes
+
+* resolve GitHub release APK attachment and TestFlight icon validation failures ([66c03a0](https://github.com/stevendejongnl/guidr/commit/66c03a033e42ea97886dbdfa3e8064a46354e0cc))
+
+### Documentation
+
+* add explicit prohibition on AI attribution in commit messages ([6413565](https://github.com/stevendejongnl/guidr/commit/64135651e405cae6e4dc8a18b38d200597be3d3c))
+
 ## [1.14.0](https://github.com/stevendejongnl/guidr/compare/v1.13.0...v1.14.0) (2025-12-31)
 
 ### Features
