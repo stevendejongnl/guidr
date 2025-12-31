@@ -87,6 +87,19 @@ jobs:
             ls -la android/app/build/outputs/apk/release/ || true
           fi
 
+      - name: Rename APK with version
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          VERSION="${{ env.NEXT_VERSION }}"
+          OLD_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          NEW_PATH="android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
+
+          mv "$OLD_PATH" "$NEW_PATH"
+          echo "✅ Renamed APK to: guidr-v${VERSION}.apk"
+
+          # Verify the file exists
+          ls -lh "$NEW_PATH"
+
       - name: Run semantic-release
         if: env.SHOULD_RELEASE == 'true'
         env:
