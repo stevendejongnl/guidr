@@ -1,3 +1,9 @@
+## [1.15.2](https://github.com/stevendejongnl/guidr/compare/v1.15.1...v1.15.2) (2025-12-31)
+
+### Bug Fixes
+
+* resolve iOS logout button and enable Sentry error reporting ([12528de](https://github.com/stevendejongnl/guidr/commit/12528de4d0fd20094ab58aba9c299398ff5cb62f))
+
 ## [1.15.1](https://github.com/stevendejongnl/guidr/compare/v1.15.0...v1.15.1) (2025-12-31)
 
 ### Bug Fixes
