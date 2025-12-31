@@ -49,7 +49,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "echo ${nextRelease.version} > .version && chmod +x scripts/update-ios-version.sh scripts/update-test-server-version.sh && ./scripts/update-ios-version.sh ${nextRelease.version} && ./scripts/update-test-server-version.sh ${nextRelease.version}"
+        "prepareCmd": "echo ${nextRelease.version} > .version && chmod +x scripts/update-ios-version.sh scripts/update-android-version.sh scripts/update-test-server-version.sh && ./scripts/update-ios-version.sh ${nextRelease.version} && ./scripts/update-android-version.sh ${nextRelease.version} && ./scripts/update-test-server-version.sh ${nextRelease.version}"
       }
     ],
     [
