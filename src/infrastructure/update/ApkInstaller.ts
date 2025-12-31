@@ -8,7 +8,7 @@ export interface DownloadProgress {
 }
 
 export class ApkInstaller {
-  private downloadJob: RNFS.DownloadBeganCallbackResult | null = null
+  private downloadJob: ReturnType<typeof RNFS.downloadFile> | null = null
   private readonly apkFileName = 'guidr-update.apk'
 
   constructor(private readonly testMode: boolean = false) {}
@@ -114,8 +114,8 @@ export class ApkInstaller {
   }
 
   async cancelDownload(): Promise<void> {
-    if (this.downloadJob) {
-      this.downloadJob.stopDownload()
+    if (this.downloadJob && 'stopDownload' in this.downloadJob) {
+      (this.downloadJob as any).stopDownload()
       this.downloadJob = null
     }
   }

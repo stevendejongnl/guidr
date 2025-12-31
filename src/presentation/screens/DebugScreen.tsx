@@ -6,12 +6,16 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { UpdateButton } from '../components/UpdateButton'
+import { UpdateCheckResult } from '../../domain/services/UpdateService'
 import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
 
 interface DebugScreenProps {
@@ -126,6 +130,13 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
     return '***' + token.slice(-8)
   }
 
+  const handleUpdateCheckComplete = (result: UpdateCheckResult) => {
+    if (result.updateAvailable) {
+      console.log('Update available:', result.latestVersion)
+      // The UpdateButton component will display the message
+    }
+  }
+
   return (
     <View style={commonStyles.containerTop}>
       <View style={styles.header}>
@@ -183,6 +194,17 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
             </Text>
           )}
         </View>
+
+        {/* Update Check Section (Android only) */}
+        {Platform.OS === 'android' && (
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>App Updates</Text>
+            <UpdateButton
+              serverConfig={ServerConfigCache.getConfig() || {}}
+              onCheckComplete={handleUpdateCheckComplete}
+            />
+          </View>
+        )}
 
         {/* Clear Cache Section */}
         <View style={commonStyles.section}>

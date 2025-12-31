@@ -78,7 +78,6 @@ export class UpdateService {
       // Determine if mandatory
       const isMandatory = this.determineIfMandatory(
         currentVersion,
-        latestVersion,
         this.serverConfig.minAppVersion
       )
 
@@ -142,7 +141,6 @@ export class UpdateService {
 
   private determineIfMandatory(
     currentVersion: string,
-    latestVersion: string,
     minVersionFromServer?: string | null
   ): boolean {
     // If server specifies minAppVersion and current < min, MANDATORY

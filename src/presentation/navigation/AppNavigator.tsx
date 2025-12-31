@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import { ActivityIndicator, View, Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
@@ -12,6 +12,11 @@ import { LoginScreen } from '../screens/LoginScreen'
 import { HomeScreen } from '../screens/HomeScreen'
 import { DebugScreen } from '../screens/DebugScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
+import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
+import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
+import { GitHubReleaseClient } from '../../infrastructure/api/GitHubReleaseClient'
+import { UpdateCheckStorage } from '../../infrastructure/storage/UpdateCheckStorage'
+import { UpdateService, UpdateCheckResult } from '../../domain/services/UpdateService'
 import { commonStyles, colors } from '../theme'
 
 export const AppNavigator: React.FC = () => {
@@ -26,6 +31,9 @@ export const AppNavigator: React.FC = () => {
   const [showDebugScreen, setShowDebugScreen] = useState(false)
   const [showServerSetup, setShowServerSetup] = useState(false)
   const [appVersion] = useState(() => DeviceInfo.getVersion())
+  const [updateCheckResult, setUpdateCheckResult] = useState<UpdateCheckResult | null>(null)
+  const [showUpdateDownload, setShowUpdateDownload] = useState(false)
+  const [dismissedOptionalUpdate, setDismissedOptionalUpdate] = useState(false)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -58,6 +66,30 @@ export const AppNavigator: React.FC = () => {
 
         const hasToken = await authStorage.hasAuthToken()
         setHasAuthToken(hasToken)
+
+        // Check for updates on Android
+        if (Platform.OS === 'android') {
+          const currentConfig = ServerConfigCache.getConfig()
+          if (currentConfig) {
+            try {
+              const githubClient = new GitHubReleaseClient()
+              const updateStorage = new UpdateCheckStorage()
+              const updateService = new UpdateService(
+                githubClient,
+                updateStorage,
+                { minAppVersion: currentConfig.minAppVersion ?? null }
+              )
+              const updateResult = await updateService.checkForUpdates(
+                appVersion,
+                false
+              )
+              setUpdateCheckResult(updateResult)
+            } catch (error) {
+              console.error('Update check failed:', error)
+              // Don't block the app if update check fails
+            }
+          }
+        }
       } catch (error) {
         console.error('Failed to check configuration:', error)
       } finally {
@@ -149,6 +181,53 @@ export const AppNavigator: React.FC = () => {
         onChangeServer={handleChangeServer}
       />
     )
+  }
+
+  // Check for Android updates
+  if (
+    Platform.OS === 'android' &&
+    updateCheckResult?.updateAvailable &&
+    !dismissedOptionalUpdate
+  ) {
+    if (updateCheckResult.isMandatory || !dismissedOptionalUpdate) {
+      if (showUpdateDownload && updateCheckResult.release?.apkUrl) {
+        return (
+          <UpdateDownloadScreen
+            apkUrl={updateCheckResult.release.apkUrl}
+            onComplete={() => {
+              // Installation triggered, user will restart app manually
+              console.log('Update installation triggered')
+            }}
+            onCancel={() => {
+              setShowUpdateDownload(false)
+              if (!updateCheckResult.isMandatory) {
+                setDismissedOptionalUpdate(true)
+              }
+            }}
+            onError={(error) => {
+              console.error('Update download error:', error)
+              setShowUpdateDownload(false)
+            }}
+          />
+        )
+      }
+
+      const handleDismiss = updateCheckResult.isMandatory
+        ? undefined
+        : () => setDismissedOptionalUpdate(true)
+
+      return (
+        <UpdateAvailableScreen
+          currentVersion={updateCheckResult.currentVersion}
+          latestVersion={updateCheckResult.latestVersion}
+          changelog={updateCheckResult.release?.body || ''}
+          isMandatory={updateCheckResult.isMandatory}
+          onStartUpdate={() => setShowUpdateDownload(true)}
+          {...(handleDismiss && { onDismiss: handleDismiss })}
+          onChangeServer={handleChangeServer}
+        />
+      )
+    }
   }
 
   if (!hasAuthToken && serverUrl) {
