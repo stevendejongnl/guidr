@@ -1,3 +1,16 @@
+## [1.15.0](https://github.com/stevendejongnl/guidr/compare/v1.14.1...v1.15.0) (2025-12-31)
+
+### Features
+
+* add APK installer with download and install capabilities ([67c00a9](https://github.com/stevendejongnl/guidr/commit/67c00a91aa8310d33d3c8ed10bdcbaf9d3e243f6))
+* add infrastructure and domain layers for in-app updates ([cecbe48](https://github.com/stevendejongnl/guidr/commit/cecbe4822a9652e50b7dd51dade9356db8a721f1))
+* add update UI screens and Android FileProvider configuration ([73b239e](https://github.com/stevendejongnl/guidr/commit/73b239e029087d25b715637935ebfc49ef38b731))
+* integrate in-app update check and UI flow for Android ([a6d0bbb](https://github.com/stevendejongnl/guidr/commit/a6d0bbbc19a00f671d760242f357079c4b84751c))
+
+### Bug Fixes
+
+* resolve Android version not updating in release APKs ([efb67c1](https://github.com/stevendejongnl/guidr/commit/efb67c15b0340828bd5a023182009ed52e790202))
+
 ## [1.14.1](https://github.com/stevendejongnl/guidr/compare/v1.14.0...v1.14.1) (2025-12-31)
 
 ### Bug Fixes
