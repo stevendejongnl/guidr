@@ -132,4 +132,125 @@ describe('AuthClient', () => {
         .rejects.toThrow('An unexpected error occurred during login')
     })
   })
+
+  describe('register', () => {
+    it('should return token, email, and id on successful registration', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({
+          token: 'mock-token-456',
+          email: 'newuser@example.com',
+          id: 'user-123'
+        }),
+      } as Response)
+
+      const result = await authClient.register('newuser@example.com', 'password123')
+
+      expect(result.token).toBe('mock-token-456')
+      expect(result.email).toBe('newuser@example.com')
+      expect(result.id).toBe('user-123')
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/register',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'newuser@example.com', password: 'password123' }),
+        }
+      )
+    })
+
+    it('should throw error on 409 conflict (duplicate email)', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({ detail: 'Email already registered' }),
+      } as Response)
+
+      await expect(authClient.register('existing@example.com', 'password123'))
+        .rejects.toThrow('Email already registered')
+    })
+
+    it('should throw generic error when response has no detail', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(authClient.register('test@example.com', 'password123'))
+        .rejects.toThrow('Registration failed')
+    })
+
+    it('should throw error on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network request failed'))
+
+      await expect(authClient.register('test@example.com', 'password123'))
+        .rejects.toThrow('Network request failed')
+    })
+
+    it('should throw error for empty email', async () => {
+      await expect(authClient.register('', 'password123'))
+        .rejects.toThrow('Email cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only email', async () => {
+      await expect(authClient.register('   ', 'password123'))
+        .rejects.toThrow('Email cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for empty password', async () => {
+      await expect(authClient.register('test@example.com', ''))
+        .rejects.toThrow('Password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only password', async () => {
+      await expect(authClient.register('test@example.com', '   '))
+        .rejects.toThrow('Password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error when response is missing token', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({ email: 'test@example.com', id: 'user-123' }),
+      } as Response)
+
+      await expect(authClient.register('test@example.com', 'password123'))
+        .rejects.toThrow('Invalid response from server')
+    })
+
+    it('should throw error when response is missing email', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({ token: 'mock-token-123', id: 'user-123' }),
+      } as Response)
+
+      await expect(authClient.register('test@example.com', 'password123'))
+        .rejects.toThrow('Invalid response from server')
+    })
+
+    it('should throw error when response is missing id', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({ token: 'mock-token-123', email: 'test@example.com' }),
+      } as Response)
+
+      await expect(authClient.register('test@example.com', 'password123'))
+        .rejects.toThrow('Invalid response from server')
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      mockFetch.mockRejectedValue('unexpected error')
+
+      await expect(authClient.register('test@example.com', 'password123'))
+        .rejects.toThrow('An unexpected error occurred during registration')
+    })
+  })
 })

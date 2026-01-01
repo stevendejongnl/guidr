@@ -31,6 +31,22 @@ class LoginResponse(BaseModel):
     token: str
     email: str
 
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class RegisterResponse(BaseModel):
+    token: str
+    email: str
+    id: str
+
+class UserModel(BaseModel):
+    id: str
+    email: str
+    password: str
+    createdAt: str
+    updatedAt: str
+
 # Configuration Models
 class ServerConfigResponse(BaseModel):
     debugMode: bool
@@ -92,6 +108,7 @@ categories: dict[str, CategoryModel] = {}
 guides: dict[str, GuideModel] = {}
 steps: dict[str, StepModel] = {}
 sessions: dict[str, SessionModel] = {}
+users: dict[str, UserModel] = {}
 
 # Initialize with example data
 def init_example_data():
@@ -168,6 +185,7 @@ def read_root():
         "endpoints": {
             "config": "/config",
             "login": "/login",
+            "register": "/register",
             "categories": "/categories",
             "guides": "/guides",
             "steps": "/steps",
@@ -221,10 +239,23 @@ def login(request: LoginRequest):
     """
     Authenticate user with email and password.
 
+    Checks registered users first, then falls back to test credentials.
+
     Test credentials:
     - test@example.com / password123
     - admin@guidr.com / admin123
     """
+    # Check registered users first
+    email_lower = request.email.lower()
+    for user in users.values():
+        if user.email.lower() == email_lower:
+            if user.password == request.password:
+                token = f"mock-jwt-{user.email}-{datetime.now().timestamp()}"
+                return LoginResponse(token=token, email=user.email)
+            else:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Fall back to test credentials
     if request.email not in TEST_CREDENTIALS:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
@@ -235,6 +266,39 @@ def login(request: LoginRequest):
     token = f"mock-jwt-{request.email}-{datetime.now().timestamp()}"
 
     return LoginResponse(token=token, email=request.email)
+
+@app.post("/register", response_model=RegisterResponse, status_code=201)
+def register(request: RegisterRequest):
+    """
+    Register a new user with email and password.
+
+    Returns auth token and user data for immediate login.
+    """
+    # Check for duplicate email (case-insensitive)
+    email_lower = request.email.lower()
+    for user in users.values():
+        if user.email.lower() == email_lower:
+            raise HTTPException(status_code=409, detail="Email already registered")
+
+    # Create new user
+    import uuid
+    user_id = str(uuid.uuid4())
+    now = datetime.now().isoformat()
+
+    new_user = UserModel(
+        id=user_id,
+        email=request.email,
+        password=request.password,
+        createdAt=now,
+        updatedAt=now
+    )
+
+    users[user_id] = new_user
+
+    # Generate token for auto-login
+    token = f"mock-jwt-{new_user.email}-{datetime.now().timestamp()}"
+
+    return RegisterResponse(token=token, email=new_user.email, id=user_id)
 
 # Category endpoints
 @app.get("/categories", response_model=List[CategoryModel])

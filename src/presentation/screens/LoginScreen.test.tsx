@@ -12,11 +12,15 @@ describe('LoginScreen', () => {
   let mockAuthStorage: jest.Mocked<AuthStorage>
   let mockAuthClient: jest.Mocked<AuthClient>
   let mockOnComplete: jest.Mock
+  let mockOnChangeServer: jest.Mock
+  let mockOnRegister: jest.Mock
 
   beforeEach(() => {
     mockAuthStorage = new AuthStorage() as jest.Mocked<AuthStorage>
     mockAuthClient = new AuthClient('http://localhost:8000') as jest.Mocked<AuthClient>
     mockOnComplete = jest.fn()
+    mockOnChangeServer = jest.fn()
+    mockOnRegister = jest.fn()
     jest.clearAllMocks()
   })
 
@@ -27,7 +31,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -42,7 +47,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -56,7 +62,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -70,7 +77,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -84,7 +92,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -99,7 +108,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -115,7 +125,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -131,7 +142,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -152,7 +164,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -178,7 +191,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -195,7 +209,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -215,7 +230,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -244,7 +260,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -278,7 +295,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -309,7 +327,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -336,7 +355,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -370,7 +390,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -402,7 +423,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -437,7 +459,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -465,7 +488,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -473,13 +497,13 @@ describe('LoginScreen', () => {
     })
 
     it('should call onChangeServer when link pressed', () => {
-      const mockOnChangeServer = jest.fn()
       const { getByText } = render(
         <LoginScreen
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
           onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -491,7 +515,6 @@ describe('LoginScreen', () => {
 
     it('should clear error when change server pressed', async () => {
       mockAuthClient.login.mockRejectedValue(new Error('Invalid credentials'))
-      const mockOnChangeServer = jest.fn()
 
       const { getByText, getByPlaceholderText, queryByText } = render(
         <LoginScreen
@@ -499,6 +522,7 @@ describe('LoginScreen', () => {
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
           onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -530,7 +554,8 @@ describe('LoginScreen', () => {
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
           onComplete={mockOnComplete}
-          onChangeServer={jest.fn()}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
         />
       )
 
@@ -546,6 +571,39 @@ describe('LoginScreen', () => {
       expect(changeServerLink.props['accessibilityState']?.disabled).toBeFalsy()
 
       resolveLogin!({ token: 'token', email: 'test@example.com' })
+    })
+  })
+
+  describe('registration', () => {
+    it('should render registration link', () => {
+      const { getByText } = render(
+        <LoginScreen
+          authStorage={mockAuthStorage}
+          authClient={mockAuthClient}
+          onComplete={mockOnComplete}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
+        />
+      )
+
+      expect(getByText('Don\'t have an account? Register')).toBeTruthy()
+    })
+
+    it('should call onRegister when link pressed', () => {
+      const { getByText } = render(
+        <LoginScreen
+          authStorage={mockAuthStorage}
+          authClient={mockAuthClient}
+          onComplete={mockOnComplete}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
+        />
+      )
+
+      const link = getByText('Don\'t have an account? Register')
+      fireEvent.press(link)
+
+      expect(mockOnRegister).toHaveBeenCalledTimes(1)
     })
   })
 })

@@ -9,6 +9,7 @@ import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCach
 import { isVersionSupported } from '../../common/VersionUtils'
 import { ServerSetupScreen } from '../screens/ServerSetupScreen'
 import { LoginScreen } from '../screens/LoginScreen'
+import { RegistrationScreen } from '../screens/RegistrationScreen'
 import { HomeScreen } from '../screens/HomeScreen'
 import { DebugScreen } from '../screens/DebugScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
@@ -31,6 +32,7 @@ export const AppNavigator: React.FC = () => {
   } | null>(null)
   const [showDebugScreen, setShowDebugScreen] = useState(false)
   const [showServerSetup, setShowServerSetup] = useState(false)
+  const [showRegistration, setShowRegistration] = useState(false)
   const [appVersion] = useState(() => DeviceInfo.getVersion())
   const [updateCheckResult, setUpdateCheckResult] = useState<UpdateCheckResult | null>(null)
   const [showUpdateDownload, setShowUpdateDownload] = useState(false)
@@ -164,6 +166,19 @@ export const AppNavigator: React.FC = () => {
     setShowServerSetup(true)
   }
 
+  const handleShowRegistration = () => {
+    setShowRegistration(true)
+  }
+
+  const handleBackToLogin = () => {
+    setShowRegistration(false)
+  }
+
+  const handleRegistrationComplete = () => {
+    setHasAuthToken(true)
+    setShowRegistration(false)
+  }
+
   if (loading) {
     return (
       <View style={commonStyles.loadingContainer}>
@@ -254,12 +269,25 @@ export const AppNavigator: React.FC = () => {
 
   if (!hasAuthToken && serverUrl) {
     const authClient = new AuthClient(serverUrl)
+
+    if (showRegistration) {
+      return (
+        <RegistrationScreen
+          authStorage={authStorage}
+          authClient={authClient}
+          onComplete={handleRegistrationComplete}
+          onBackToLogin={handleBackToLogin}
+        />
+      )
+    }
+
     return (
       <LoginScreen
         authStorage={authStorage}
         authClient={authClient}
         onComplete={handleLoginComplete}
         onChangeServer={handleChangeServer}
+        onRegister={handleShowRegistration}
       />
     )
   }

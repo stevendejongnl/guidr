@@ -3,6 +3,12 @@ export interface LoginResponse {
   email: string
 }
 
+export interface RegisterResponse {
+  token: string
+  email: string
+  id: string
+}
+
 export class AuthClient {
   private readonly serverUrl: string
 
@@ -47,6 +53,43 @@ export class AuthClient {
         throw error
       }
       throw new Error('An unexpected error occurred during login')
+    }
+  }
+
+  async register(email: string, password: string): Promise<RegisterResponse> {
+    if (!email || email.trim() === '') {
+      throw new Error('Email cannot be empty')
+    }
+    if (!password || password.trim() === '') {
+      throw new Error('Password cannot be empty')
+    }
+
+    try {
+      const response = await fetch(`${this.serverUrl}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Registration failed')
+      }
+
+      const data = await response.json()
+
+      if (!data.token || !data.email || !data.id) {
+        throw new Error('Invalid response from server')
+      }
+
+      return { token: data.token, email: data.email, id: data.id }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred during registration')
     }
   }
 }

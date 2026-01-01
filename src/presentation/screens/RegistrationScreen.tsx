@@ -11,23 +11,22 @@ import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { commonStyles, colors } from '../theme'
 
-interface LoginScreenProps {
+interface RegistrationScreenProps {
   authStorage: AuthStorage
   authClient: AuthClient
   onComplete: () => void
-  onChangeServer: () => void
-  onRegister: () => void
+  onBackToLogin: () => void
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({
+export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
   authStorage,
   authClient,
   onComplete,
-  onChangeServer,
-  onRegister,
+  onBackToLogin,
 }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -45,12 +44,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   }
 
+  const handleConfirmPasswordChange = (text: string) => {
+    setConfirmPassword(text)
+    if (error) {
+      setError('')
+    }
+  }
+
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     if (!email.trim()) {
       setError('Please enter your email')
       return
@@ -62,7 +68,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
 
     if (!password.trim()) {
-      setError('Please enter your password')
+      setError('Please enter a password')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
+    if (!confirmPassword.trim()) {
+      setError('Please confirm your password')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
       return
     }
 
@@ -70,27 +91,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setError('')
 
     try {
-      const response = await authClient.login(email, password)
-      await authStorage.setAuthToken(response.token)
-      await authStorage.setUserEmail(response.email)
+      const registerResponse = await authClient.register(email, password)
+      await authStorage.setAuthToken(registerResponse.token)
+      await authStorage.setUserEmail(registerResponse.email)
       onComplete()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleChangeServer = () => {
+  const handleBackToLogin = () => {
     setError('')
-    onChangeServer()
+    onBackToLogin()
   }
 
   return (
     <View style={commonStyles.container}>
       <View style={commonStyles.content}>
-        <Text style={commonStyles.title}>Welcome to Guidr</Text>
-        <Text style={commonStyles.description}>Sign in to continue</Text>
+        <Text style={commonStyles.title}>Create Account</Text>
+        <Text style={commonStyles.description}>Sign up to get started</Text>
 
         <TextInput
           style={[commonStyles.input, error ? commonStyles.inputError : null]}
@@ -106,10 +127,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <TextInput
           style={[commonStyles.input, error ? commonStyles.inputError : null]}
-          placeholder="Password"
+          placeholder="Password (min 6 characters)"
           placeholderTextColor={colors.textMuted}
           value={password}
           onChangeText={handlePasswordChange}
+          secureTextEntry
+          editable={!loading}
+        />
+
+        <TextInput
+          style={[commonStyles.input, error ? commonStyles.inputError : null]}
+          placeholder="Confirm Password"
+          placeholderTextColor={colors.textMuted}
+          value={confirmPassword}
+          onChangeText={handleConfirmPasswordChange}
           secureTextEntry
           editable={!loading}
         />
@@ -118,36 +149,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <TouchableOpacity
           style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
-          onPress={handleLogin}
+          onPress={handleRegister}
           disabled={loading}
           accessibilityState={{ disabled: loading }}
         >
           {loading ? (
             <>
               <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
-              <Text style={commonStyles.buttonText}>Logging in...</Text>
+              <Text style={commonStyles.buttonText}>Creating account...</Text>
             </>
           ) : (
-            <Text style={commonStyles.buttonText}>Login</Text>
+            <Text style={commonStyles.buttonText}>Create Account</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity
           style={commonStyles.link}
-          onPress={handleChangeServer}
+          onPress={handleBackToLogin}
         >
-          <Text style={commonStyles.linkText}>Change Server</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={commonStyles.link}
-          onPress={onRegister}
-        >
-          <Text style={commonStyles.linkText}>Don&apos;t have an account? Register</Text>
+          <Text style={commonStyles.linkText}>Already have an account? Sign in</Text>
         </TouchableOpacity>
       </View>
       <VersionDisplay />
     </View>
   )
 }
-
