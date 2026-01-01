@@ -1,3 +1,9 @@
+## [1.16.0](https://github.com/stevendejongnl/guidr/compare/v1.15.3...v1.16.0) (2026-01-01)
+
+### Features
+
+* add user registration with auto-login ([55fae60](https://github.com/stevendejongnl/guidr/commit/55fae60856f6800663612c288b2d2731155d6f64))
+
 ## [1.15.3](https://github.com/stevendejongnl/guidr/compare/v1.15.2...v1.15.3) (2025-12-31)
 
 ### Bug Fixes
