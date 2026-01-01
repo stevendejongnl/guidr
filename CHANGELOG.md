@@ -1,3 +1,9 @@
+## [1.17.0](https://github.com/stevendejongnl/guidr/compare/v1.16.0...v1.17.0) (2026-01-01)
+
+### Features
+
+* add MongoDB persistence with Argon2 and JWT authentication ([3f286b6](https://github.com/stevendejongnl/guidr/commit/3f286b6c722f065400b90411bc57ad13f9ffa065))
+
 ## [1.16.0](https://github.com/stevendejongnl/guidr/compare/v1.15.3...v1.16.0) (2026-01-01)
 
 ### Features
