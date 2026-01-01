@@ -4,13 +4,14 @@ A FastAPI-based test server for local development and testing of the Guidr mobil
 
 ## Features
 
-- In-memory storage (data resets on restart)
-- Full CRUD operations for all domain entities (Categories, Guides, Steps, Sessions)
-- Pre-loaded example data (cooking guide)
-- Mock authentication for testing login flows
-- CORS enabled for React Native development
-- Interactive API documentation (Swagger/ReDoc)
-- Docker support for easy deployment
+- **MongoDB persistence** - Full data persistence across restarts
+- **Real authentication** - Argon2 password hashing + JWT tokens
+- **Full CRUD operations** for all domain entities (Categories, Guides, Steps, Sessions)
+- **Pre-loaded example data** - Cooking guide with 2 categories, 1 guide, 3 steps
+- **CORS enabled** for React Native development
+- **Interactive API documentation** (Swagger/ReDoc)
+- **Docker support** with Docker Compose for easy deployment
+- **Kubernetes ready** with secret management
 
 ## Version Compatibility
 
@@ -146,6 +147,84 @@ make help
 
 ---
 
+## MongoDB Configuration
+
+The test-server requires MongoDB for data persistence. You have several options:
+
+### Option 1: Local MongoDB (Docker Compose - Recommended)
+
+The included `docker-compose.yml` sets up both MongoDB and the test-server:
+
+```bash
+cd test-server
+docker-compose up
+```
+
+This starts:
+- **MongoDB** on port 27017
+- **Test Server** on port 8000
+- **Mongo Express** (optional UI) on port 8081
+
+**Accessing Mongo Express**:
+- URL: http://localhost:8081
+- Username: `admin`
+- Password: `admin123`
+
+### Option 2: MongoDB Atlas (Cloud)
+
+For production or remote development, use MongoDB Atlas:
+
+1. Create a free cluster at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+2. Get connection string (e.g., `mongodb+srv://user:pass@cluster.mongodb.net/guidr_test`)
+3. Set environment variables (see below)
+
+### Option 3: Local MongoDB Installation
+
+Install MongoDB locally:
+
+```bash
+# macOS (using Homebrew)
+brew tap mongodb/brew
+brew install mongodb-community@8.0
+brew services start mongodb-community@8.0
+
+# Ubuntu/Debian
+sudo apt-get install -y mongodb-org
+sudo systemctl start mongod
+
+# Verify
+mongosh --eval "db.version()"
+```
+
+### Environment Variables
+
+Create `.env.local` in the `test-server` directory:
+
+```bash
+# MongoDB Configuration
+MONGODB_URL=mongodb://localhost:27017  # or your Atlas connection string
+MONGODB_DATABASE=guidr_test
+
+# JWT Configuration (generate with: python -c "import secrets; print(secrets.token_urlsafe(32))")
+JWT_SECRET_KEY=your-generated-secret-key-min-32-characters
+JWT_ALGORITHM=HS256
+JWT_EXPIRATION_MINUTES=10080  # 7 days
+
+# Application
+GUIDR_VERSION=1.15.3
+```
+
+**Generate a secure JWT secret**:
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+**For Docker Compose**: Environment variables are set in `docker-compose.yml`
+
+**For Kubernetes**: Use Kubernetes Secrets (see Production Deployment section)
+
+---
+
 ## Docker Development
 
 ### Build Locally
@@ -183,14 +262,42 @@ Once running, visit:
 
 ## Authentication
 
-The server provides a mock authentication endpoint for testing.
+The server provides **real authentication** with Argon2 password hashing and JWT tokens.
+
+### Security Features
+
+- **Password Hashing**: Argon2 (time_cost=2, memory_cost=64MB)
+- **JWT Tokens**: Real JWT with HS256 algorithm
+- **Token Expiration**: 7 days (configurable)
+- **Secure Storage**: Passwords stored as Argon2 hashes in MongoDB
 
 ### Test Credentials
+
+For development, the following test credentials are available (even without database):
 
 | Email | Password |
 |-------|----------|
 | test@example.com | password123 |
 | admin@guidr.com | admin123 |
+
+### Registration Endpoint
+
+**POST /register**
+
+```bash
+curl -X POST http://localhost:8000/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "newuser@example.com", "password": "securepassword"}'
+```
+
+**Success Response (201)**:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "email": "newuser@example.com",
+  "id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
 
 ### Login Endpoint
 
@@ -205,7 +312,7 @@ curl -X POST http://localhost:8000/login \
 **Success Response (200)**:
 ```json
 {
-  "token": "mock-jwt-test@example.com-1735041234.567",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwidXNlcl9pZCI6InRlc3QtdXNlciIsImV4cCI6MTczNTY0NzIzNCwiaWF0IjoxNzM1MDQyNDM0fQ.signature",
   "email": "test@example.com"
 }
 ```
@@ -215,6 +322,20 @@ curl -X POST http://localhost:8000/login \
 {
   "detail": "Invalid email or password"
 }
+```
+
+### JWT Token Structure
+
+Tokens contain:
+- `sub`: User email
+- `user_id`: User UUID
+- `exp`: Expiration timestamp
+- `iat`: Issued at timestamp
+
+**Decoding a JWT** (for debugging):
+```bash
+# Using jwt.io or
+python -c "from jose import jwt; print(jwt.decode('YOUR_TOKEN', 'YOUR_SECRET', algorithms=['HS256']))"
 ```
 
 ---
@@ -232,6 +353,7 @@ The server initializes with:
 
 ### Authentication
 - `POST /login` - Authenticate user with email and password
+- `POST /register` - Register new user (returns JWT token for auto-login)
 
 ### Categories
 - `GET /categories` - List all categories
@@ -322,7 +444,42 @@ docker pull ghcr.io/stevendejongnl/guidr-test-server:1
 
 The test-server includes Kubernetes manifests for production deployment with Nginx Ingress.
 
-**Quick Deploy**:
+**Prerequisites**:
+1. MongoDB instance (MongoDB Atlas recommended)
+2. Kubernetes cluster with Nginx Ingress installed
+
+**Step 1: Create MongoDB Secret**
+
+First, generate a JWT secret:
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Then create a Kubernetes secret with your MongoDB connection string:
+
+```bash
+# Create secret from template
+cp mongodb-secret.yaml mongodb-secret-production.yaml
+
+# Edit the file and replace placeholder values:
+# - mongodb-url: Your MongoDB Atlas connection string
+# - jwt-secret-key: The generated JWT secret
+
+# Apply the secret
+kubectl apply -f mongodb-secret-production.yaml -n guidr
+
+# IMPORTANT: Never commit mongodb-secret-production.yaml to git!
+```
+
+**Alternative: Create secret from command line**:
+```bash
+kubectl create secret generic guidr-mongodb-secret \
+  --from-literal=mongodb-url='mongodb+srv://user:pass@cluster.mongodb.net/guidr_test?retryWrites=true&w=majority' \
+  --from-literal=jwt-secret-key='YOUR_GENERATED_SECRET' \
+  -n guidr
+```
+
+**Step 2: Deploy Application**:
 ```bash
 # Using the simple manifest (default namespace)
 kubectl apply -f kubernetes-simple.yaml
@@ -421,7 +578,13 @@ docker-compose up -d
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GUIDR_VERSION` | `0.1.0` | Server version (set automatically in Docker image) |
+| `MONGODB_URL` | `mongodb://localhost:27017` | MongoDB connection string |
+| `MONGODB_DATABASE` | `guidr_test` | MongoDB database name |
+| `JWT_SECRET_KEY` | `dev-secret-key-change-in-production-min-32-characters` | JWT signing secret (minimum 32 characters) |
+| `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
+| `JWT_EXPIRATION_MINUTES` | `10080` | JWT token expiration (7 days) |
+| `GUIDR_VERSION` | `1.15.3` | Server version (set automatically in Docker image) |
+| `ROOT_PATH` | `` | FastAPI root path for reverse proxy deployments |
 
 ---
 
@@ -529,12 +692,14 @@ The following files are deprecated and will be removed in a future version:
 
 ## Notes
 
-- Data is stored in memory and will be lost when the server restarts
-- The server runs on port 8000 by default
-- CORS is configured to allow all origins for development
-- All timestamps use ISO 8601 format
-- Docker images are multi-platform (linux/amd64, linux/arm64)
-- JWT tokens are mock tokens for testing only
+- **Data persistence**: All data is stored in MongoDB and persists across server restarts
+- **Authentication**: Real JWT tokens with Argon2 password hashing (production-ready)
+- **Port**: The server runs on port 8000 by default
+- **CORS**: Configured to allow all origins for development
+- **Timestamps**: All timestamps use ISO 8601 format
+- **Docker images**: Multi-platform support (linux/amd64, linux/arm64)
+- **MongoDB UI**: Mongo Express available at http://localhost:8081 when using Docker Compose
+- **Security**: Never commit `.env.local` or MongoDB secrets to git
 
 ---
 

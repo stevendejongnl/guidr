@@ -1,17 +1,138 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
+from pydantic_settings import BaseSettings
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
+from contextlib import asynccontextmanager
 from enum import Enum
 from pathlib import Path
 import os
 import tomllib
 import uvicorn
+import uuid
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+from jose import JWTError, jwt
 
-VERSION = os.getenv("GUIDR_VERSION", "0.1.0")
-ROOT_PATH = os.getenv("ROOT_PATH", "")
-app = FastAPI(title="Guidr Test Server", version=VERSION, root_path=ROOT_PATH)
+# ==================
+# Configuration
+# ==================
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables"""
+    mongodb_url: str = "mongodb://localhost:27017"
+    mongodb_database: str = "guidr_test"
+    jwt_secret_key: str = "dev-secret-key-change-in-production-min-32-characters"
+    jwt_algorithm: str = "HS256"
+    jwt_expiration_minutes: int = 10080  # 7 days
+    guidr_version: str = "0.1.0"
+    root_path: str = ""
+
+    class Config:
+        env_file = ".env.local"
+        env_file_encoding = "utf-8"
+
+settings = Settings()
+VERSION = os.getenv("GUIDR_VERSION", settings.guidr_version)
+ROOT_PATH = settings.root_path
+
+# ==================
+# Database Connection
+# ==================
+
+mongodb_client: Optional[AsyncIOMotorClient] = None
+mongodb_database: Optional[AsyncIOMotorDatabase] = None
+
+# ==================
+# Authentication Utilities
+# ==================
+
+password_hasher = PasswordHasher(
+    time_cost=2,        # Number of iterations
+    memory_cost=65536,  # 64 MB
+    parallelism=1,      # Single thread (sufficient for FastAPI async)
+    hash_len=32,        # 32 bytes output
+    salt_len=16         # 16 bytes salt
+)
+
+def hash_password(password: str) -> str:
+    """Hash password using Argon2"""
+    return password_hasher.hash(password)
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """Verify password against Argon2 hash"""
+    try:
+        password_hasher.verify(password_hash, password)
+        return True
+    except VerifyMismatchError:
+        return False
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create JWT access token"""
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.jwt_expiration_minutes))
+    to_encode.update({"exp": expire, "iat": datetime.utcnow()})
+    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    return encoded_jwt
+
+def decode_access_token(token: str) -> Optional[dict]:
+    """Decode and validate JWT token"""
+    try:
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        return payload
+    except JWTError:
+        return None
+
+# ==================
+# Database Utilities
+# ==================
+
+def document_to_model(doc: Optional[dict]) -> Optional[dict]:
+    """Convert MongoDB document to API model format"""
+    if doc is None:
+        return None
+    doc.pop('_id', None)  # Remove MongoDB internal ID
+    # Convert datetime to ISO string
+    for key in ['created_at', 'updated_at', 'started_at', 'completed_at']:
+        if key in doc and isinstance(doc[key], datetime):
+            doc[key] = doc[key].isoformat()
+    return doc
+
+def generate_id() -> str:
+    """Generate UUID for application entities"""
+    return str(uuid.uuid4())
+
+# ==================
+# FastAPI Application Setup
+# ==================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """FastAPI lifespan context manager for startup/shutdown events"""
+    # Startup
+    global mongodb_client, mongodb_database
+    print(f"Connecting to MongoDB at {settings.mongodb_url}")
+    mongodb_client = AsyncIOMotorClient(settings.mongodb_url)
+    mongodb_database = mongodb_client[settings.mongodb_database]
+
+    # Ensure indexes
+    await ensure_indexes()
+
+    # Initialize example data if collections are empty
+    await init_example_data()
+
+    print("MongoDB connected successfully")
+
+    yield
+
+    # Shutdown
+    if mongodb_client:
+        mongodb_client.close()
+        print("MongoDB connection closed")
+
+app = FastAPI(title="Guidr Test Server", version=VERSION, root_path=ROOT_PATH, lifespan=lifespan)
 
 # CORS middleware for React Native
 app.add_middleware(
@@ -103,77 +224,126 @@ class SessionModel(BaseModel):
     createdAt: str
     updatedAt: str
 
-# In-memory storage
-categories: dict[str, CategoryModel] = {}
-guides: dict[str, GuideModel] = {}
-steps: dict[str, StepModel] = {}
-sessions: dict[str, SessionModel] = {}
-users: dict[str, UserModel] = {}
+# ==================
+# Database Index Management
+# ==================
 
-# Initialize with example data
-def init_example_data():
-    now = datetime.now().isoformat()
+async def ensure_indexes():
+    """Create MongoDB indexes for all collections"""
+    if mongodb_database is None:
+        return
+
+    print("Creating database indexes...")
+
+    # Users collection indexes
+    await mongodb_database.users.create_index("id", unique=True)
+    await mongodb_database.users.create_index("email", unique=True)
+
+    # Categories collection indexes
+    await mongodb_database.categories.create_index("id", unique=True)
+    await mongodb_database.categories.create_index("parent_id")
+
+    # Guides collection indexes
+    await mongodb_database.guides.create_index("id", unique=True)
+    await mongodb_database.guides.create_index("category_id")
+
+    # Steps collection indexes
+    await mongodb_database.steps.create_index("id", unique=True)
+    await mongodb_database.steps.create_index([("guide_id", 1), ("order", 1)])
+
+    # Sessions collection indexes
+    await mongodb_database.sessions.create_index("id", unique=True)
+    await mongodb_database.sessions.create_index("guide_id")
+    await mongodb_database.sessions.create_index("status")
+
+    print("Database indexes created successfully")
+
+# ==================
+# Example Data Initialization
+# ==================
+
+async def init_example_data():
+    """Initialize database with example data if empty (idempotent)"""
+    if mongodb_database is None:
+        return
+
+    # Check if already initialized
+    categories_count = await mongodb_database.categories.count_documents({})
+    if categories_count > 0:
+        print("Database already contains data, skipping initialization")
+        return
+
+    print("Initializing database with example data...")
+    now = datetime.utcnow()
 
     # Example categories
-    categories["cat-1"] = CategoryModel(
-        id="cat-1",
-        name="Cooking",
-        parentId=None,
-        createdAt=now,
-        updatedAt=now
-    )
-    categories["cat-2"] = CategoryModel(
-        id="cat-2",
-        name="Recipes",
-        parentId="cat-1",
-        createdAt=now,
-        updatedAt=now
-    )
+    cat1_id = "cat-1"
+    cat2_id = "cat-2"
+
+    await mongodb_database.categories.insert_many([
+        {
+            "id": cat1_id,
+            "name": "Cooking",
+            "parent_id": None,
+            "created_at": now,
+            "updated_at": now
+        },
+        {
+            "id": cat2_id,
+            "name": "Recipes",
+            "parent_id": cat1_id,
+            "created_at": now,
+            "updated_at": now
+        }
+    ])
 
     # Example guide
-    guides["guide-1"] = GuideModel(
-        id="guide-1",
-        categoryId="cat-2",
-        title="Perfect Pasta",
-        description="How to cook perfect pasta every time",
-        stepIds=["step-1", "step-2", "step-3"],
-        createdAt=now,
-        updatedAt=now
-    )
+    guide1_id = "guide-1"
+    await mongodb_database.guides.insert_one({
+        "id": guide1_id,
+        "category_id": cat2_id,
+        "title": "Perfect Pasta",
+        "description": "How to cook perfect pasta every time",
+        "step_ids": ["step-1", "step-2", "step-3"],
+        "created_at": now,
+        "updated_at": now
+    })
 
     # Example steps
-    steps["step-1"] = StepModel(
-        id="step-1",
-        guideId="guide-1",
-        order=0,
-        title="Boil water",
-        description="Fill pot with water and bring to a rolling boil",
-        duration=300,
-        createdAt=now,
-        updatedAt=now
-    )
-    steps["step-2"] = StepModel(
-        id="step-2",
-        guideId="guide-1",
-        order=1,
-        title="Add pasta",
-        description="Add pasta to boiling water with salt",
-        duration=60,
-        createdAt=now,
-        updatedAt=now
-    )
-    steps["step-3"] = StepModel(
-        id="step-3",
-        guideId="guide-1",
-        order=2,
-        title="Cook pasta",
-        description="Cook according to package directions",
-        duration=480,
-        createdAt=now,
-        updatedAt=now
-    )
+    await mongodb_database.steps.insert_many([
+        {
+            "id": "step-1",
+            "guide_id": guide1_id,
+            "order": 0,
+            "title": "Boil water",
+            "description": "Fill pot with water and bring to a rolling boil",
+            "duration": 300,
+            "created_at": now,
+            "updated_at": now
+        },
+        {
+            "id": "step-2",
+            "guide_id": guide1_id,
+            "order": 1,
+            "title": "Add pasta",
+            "description": "Add pasta to boiling water with salt",
+            "duration": 60,
+            "created_at": now,
+            "updated_at": now
+        },
+        {
+            "id": "step-3",
+            "guide_id": guide1_id,
+            "order": 2,
+            "title": "Cook pasta",
+            "description": "Cook according to package directions",
+            "duration": 480,
+            "created_at": now,
+            "updated_at": now
+        }
+    ])
 
-init_example_data()
+    print("Example data initialized successfully")
 
 # Health check
 @app.get("/")
@@ -235,7 +405,7 @@ def get_server_config():
 
 # Authentication endpoints
 @app.post("/login", response_model=LoginResponse)
-def login(request: LoginRequest):
+async def login(request: LoginRequest):
     """
     Authenticate user with email and password.
 
@@ -247,28 +417,30 @@ def login(request: LoginRequest):
     """
     # Check registered users first
     email_lower = request.email.lower()
-    for user in users.values():
-        if user.email.lower() == email_lower:
-            if user.password == request.password:
-                token = f"mock-jwt-{user.email}-{datetime.now().timestamp()}"
-                return LoginResponse(token=token, email=user.email)
-            else:
-                raise HTTPException(status_code=401, detail="Invalid email or password")
+    user_doc = await mongodb_database.users.find_one({"email": email_lower})
 
-    # Fall back to test credentials
-    if request.email not in TEST_CREDENTIALS:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+    if user_doc:
+        # Verify password hash
+        if verify_password(request.password, user_doc["password_hash"]):
+            # Generate real JWT token
+            token_data = {"sub": user_doc["email"], "user_id": user_doc["id"]}
+            token = create_access_token(token_data)
+            return LoginResponse(token=token, email=user_doc["email"])
+        else:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    if TEST_CREDENTIALS[request.email] != request.password:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+    # Fall back to test credentials for development
+    if request.email in TEST_CREDENTIALS:
+        if TEST_CREDENTIALS[request.email] == request.password:
+            # Generate real JWT token for test users
+            token_data = {"sub": request.email, "user_id": "test-user"}
+            token = create_access_token(token_data)
+            return LoginResponse(token=token, email=request.email)
 
-    # Generate mock JWT token
-    token = f"mock-jwt-{request.email}-{datetime.now().timestamp()}"
-
-    return LoginResponse(token=token, email=request.email)
+    raise HTTPException(status_code=401, detail="Invalid email or password")
 
 @app.post("/register", response_model=RegisterResponse, status_code=201)
-def register(request: RegisterRequest):
+async def register(request: RegisterRequest):
     """
     Register a new user with email and password.
 
@@ -276,173 +448,421 @@ def register(request: RegisterRequest):
     """
     # Check for duplicate email (case-insensitive)
     email_lower = request.email.lower()
-    for user in users.values():
-        if user.email.lower() == email_lower:
-            raise HTTPException(status_code=409, detail="Email already registered")
+    existing_user = await mongodb_database.users.find_one({"email": email_lower})
 
-    # Create new user
-    import uuid
-    user_id = str(uuid.uuid4())
-    now = datetime.now().isoformat()
+    if existing_user:
+        raise HTTPException(status_code=409, detail="Email already registered")
 
-    new_user = UserModel(
-        id=user_id,
-        email=request.email,
-        password=request.password,
-        createdAt=now,
-        updatedAt=now
-    )
+    # Create new user with hashed password
+    user_id = generate_id()
+    now = datetime.utcnow()
+    password_hash = hash_password(request.password)
 
-    users[user_id] = new_user
+    user_doc = {
+        "id": user_id,
+        "email": email_lower,
+        "password_hash": password_hash,
+        "created_at": now,
+        "updated_at": now
+    }
 
-    # Generate token for auto-login
-    token = f"mock-jwt-{new_user.email}-{datetime.now().timestamp()}"
+    await mongodb_database.users.insert_one(user_doc)
 
-    return RegisterResponse(token=token, email=new_user.email, id=user_id)
+    # Generate real JWT token for auto-login
+    token_data = {"sub": email_lower, "user_id": user_id}
+    token = create_access_token(token_data)
+
+    return RegisterResponse(token=token, email=email_lower, id=user_id)
 
 # Category endpoints
 @app.get("/categories", response_model=List[CategoryModel])
-def get_categories():
-    return list(categories.values())
+async def get_categories():
+    cursor = mongodb_database.categories.find({})
+    categories_list = []
+    async for doc in cursor:
+        cat_dict = document_to_model(doc)
+        categories_list.append(CategoryModel(
+            id=cat_dict["id"],
+            name=cat_dict["name"],
+            parentId=cat_dict.get("parent_id"),
+            createdAt=cat_dict["created_at"],
+            updatedAt=cat_dict["updated_at"]
+        ))
+    return categories_list
 
 @app.get("/categories/{category_id}", response_model=CategoryModel)
-def get_category(category_id: str):
-    if category_id not in categories:
+async def get_category(category_id: str):
+    doc = await mongodb_database.categories.find_one({"id": category_id})
+    if not doc:
         raise HTTPException(status_code=404, detail=f"Category with id {category_id} not found")
-    return categories[category_id]
+    cat_dict = document_to_model(doc)
+    return CategoryModel(
+        id=cat_dict["id"],
+        name=cat_dict["name"],
+        parentId=cat_dict.get("parent_id"),
+        createdAt=cat_dict["created_at"],
+        updatedAt=cat_dict["updated_at"]
+    )
 
 @app.get("/categories/parent/{parent_id}", response_model=List[CategoryModel])
-def get_categories_by_parent(parent_id: str):
+async def get_categories_by_parent(parent_id: str):
     if parent_id == "null":
-        return [c for c in categories.values() if c.parentId is None]
-    return [c for c in categories.values() if c.parentId == parent_id]
+        query = {"parent_id": None}
+    else:
+        query = {"parent_id": parent_id}
+
+    cursor = mongodb_database.categories.find(query)
+    categories_list = []
+    async for doc in cursor:
+        cat_dict = document_to_model(doc)
+        categories_list.append(CategoryModel(
+            id=cat_dict["id"],
+            name=cat_dict["name"],
+            parentId=cat_dict.get("parent_id"),
+            createdAt=cat_dict["created_at"],
+            updatedAt=cat_dict["updated_at"]
+        ))
+    return categories_list
 
 @app.post("/categories", response_model=CategoryModel, status_code=201)
-def create_category(category: CategoryModel):
-    categories[category.id] = category
+async def create_category(category: CategoryModel):
+    now = datetime.utcnow()
+    cat_doc = {
+        "id": category.id,
+        "name": category.name,
+        "parent_id": category.parentId,
+        "created_at": now,
+        "updated_at": now
+    }
+    await mongodb_database.categories.insert_one(cat_doc)
     return category
 
 @app.put("/categories/{category_id}", response_model=CategoryModel)
-def update_category(category_id: str, category: CategoryModel):
-    if category_id not in categories:
+async def update_category(category_id: str, category: CategoryModel):
+    existing = await mongodb_database.categories.find_one({"id": category_id})
+    if not existing:
         raise HTTPException(status_code=404, detail=f"Category with id {category_id} not found")
-    categories[category_id] = category
+
+    now = datetime.utcnow()
+    cat_doc = {
+        "id": category.id,
+        "name": category.name,
+        "parent_id": category.parentId,
+        "created_at": existing["created_at"],
+        "updated_at": now
+    }
+    await mongodb_database.categories.replace_one({"id": category_id}, cat_doc)
     return category
 
 @app.delete("/categories/{category_id}", status_code=204)
-def delete_category(category_id: str):
-    if category_id not in categories:
+async def delete_category(category_id: str):
+    result = await mongodb_database.categories.delete_one({"id": category_id})
+    if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail=f"Category with id {category_id} not found")
-    del categories[category_id]
     return None
 
 # Guide endpoints
 @app.get("/guides", response_model=List[GuideModel])
-def get_guides():
-    return list(guides.values())
+async def get_guides():
+    cursor = mongodb_database.guides.find({})
+    guides_list = []
+    async for doc in cursor:
+        guide_dict = document_to_model(doc)
+        guides_list.append(GuideModel(
+            id=guide_dict["id"],
+            categoryId=guide_dict["category_id"],
+            title=guide_dict["title"],
+            description=guide_dict.get("description"),
+            stepIds=guide_dict.get("step_ids", []),
+            createdAt=guide_dict["created_at"],
+            updatedAt=guide_dict["updated_at"]
+        ))
+    return guides_list
 
 @app.get("/guides/{guide_id}", response_model=GuideModel)
-def get_guide(guide_id: str):
-    if guide_id not in guides:
+async def get_guide(guide_id: str):
+    doc = await mongodb_database.guides.find_one({"id": guide_id})
+    if not doc:
         raise HTTPException(status_code=404, detail=f"Guide with id {guide_id} not found")
-    return guides[guide_id]
+    guide_dict = document_to_model(doc)
+    return GuideModel(
+        id=guide_dict["id"],
+        categoryId=guide_dict["category_id"],
+        title=guide_dict["title"],
+        description=guide_dict.get("description"),
+        stepIds=guide_dict.get("step_ids", []),
+        createdAt=guide_dict["created_at"],
+        updatedAt=guide_dict["updated_at"]
+    )
 
 @app.get("/guides/category/{category_id}", response_model=List[GuideModel])
-def get_guides_by_category(category_id: str):
-    return [g for g in guides.values() if g.categoryId == category_id]
+async def get_guides_by_category(category_id: str):
+    cursor = mongodb_database.guides.find({"category_id": category_id})
+    guides_list = []
+    async for doc in cursor:
+        guide_dict = document_to_model(doc)
+        guides_list.append(GuideModel(
+            id=guide_dict["id"],
+            categoryId=guide_dict["category_id"],
+            title=guide_dict["title"],
+            description=guide_dict.get("description"),
+            stepIds=guide_dict.get("step_ids", []),
+            createdAt=guide_dict["created_at"],
+            updatedAt=guide_dict["updated_at"]
+        ))
+    return guides_list
 
 @app.post("/guides", response_model=GuideModel, status_code=201)
-def create_guide(guide: GuideModel):
-    guides[guide.id] = guide
+async def create_guide(guide: GuideModel):
+    now = datetime.utcnow()
+    guide_doc = {
+        "id": guide.id,
+        "category_id": guide.categoryId,
+        "title": guide.title,
+        "description": guide.description,
+        "step_ids": guide.stepIds,
+        "created_at": now,
+        "updated_at": now
+    }
+    await mongodb_database.guides.insert_one(guide_doc)
     return guide
 
 @app.put("/guides/{guide_id}", response_model=GuideModel)
-def update_guide(guide_id: str, guide: GuideModel):
-    if guide_id not in guides:
+async def update_guide(guide_id: str, guide: GuideModel):
+    existing = await mongodb_database.guides.find_one({"id": guide_id})
+    if not existing:
         raise HTTPException(status_code=404, detail=f"Guide with id {guide_id} not found")
-    guides[guide_id] = guide
+
+    now = datetime.utcnow()
+    guide_doc = {
+        "id": guide.id,
+        "category_id": guide.categoryId,
+        "title": guide.title,
+        "description": guide.description,
+        "step_ids": guide.stepIds,
+        "created_at": existing["created_at"],
+        "updated_at": now
+    }
+    await mongodb_database.guides.replace_one({"id": guide_id}, guide_doc)
     return guide
 
 @app.delete("/guides/{guide_id}", status_code=204)
-def delete_guide(guide_id: str):
-    if guide_id not in guides:
+async def delete_guide(guide_id: str):
+    result = await mongodb_database.guides.delete_one({"id": guide_id})
+    if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail=f"Guide with id {guide_id} not found")
-    del guides[guide_id]
     return None
 
 # Step endpoints
 @app.get("/steps", response_model=List[StepModel])
-def get_steps():
-    return list(steps.values())
+async def get_steps():
+    cursor = mongodb_database.steps.find({})
+    steps_list = []
+    async for doc in cursor:
+        step_dict = document_to_model(doc)
+        steps_list.append(StepModel(
+            id=step_dict["id"],
+            guideId=step_dict["guide_id"],
+            order=step_dict["order"],
+            title=step_dict["title"],
+            description=step_dict.get("description"),
+            duration=step_dict["duration"],
+            createdAt=step_dict["created_at"],
+            updatedAt=step_dict["updated_at"]
+        ))
+    return steps_list
 
 @app.get("/steps/{step_id}", response_model=StepModel)
-def get_step(step_id: str):
-    if step_id not in steps:
+async def get_step(step_id: str):
+    doc = await mongodb_database.steps.find_one({"id": step_id})
+    if not doc:
         raise HTTPException(status_code=404, detail=f"Step with id {step_id} not found")
-    return steps[step_id]
-
-@app.get("/steps/guide/{guide_id}", response_model=List[StepModel])
-def get_steps_by_guide(guide_id: str):
-    return sorted(
-        [s for s in steps.values() if s.guideId == guide_id],
-        key=lambda s: s.order
+    step_dict = document_to_model(doc)
+    return StepModel(
+        id=step_dict["id"],
+        guideId=step_dict["guide_id"],
+        order=step_dict["order"],
+        title=step_dict["title"],
+        description=step_dict.get("description"),
+        duration=step_dict["duration"],
+        createdAt=step_dict["created_at"],
+        updatedAt=step_dict["updated_at"]
     )
 
+@app.get("/steps/guide/{guide_id}", response_model=List[StepModel])
+async def get_steps_by_guide(guide_id: str):
+    cursor = mongodb_database.steps.find({"guide_id": guide_id}).sort("order", 1)
+    steps_list = []
+    async for doc in cursor:
+        step_dict = document_to_model(doc)
+        steps_list.append(StepModel(
+            id=step_dict["id"],
+            guideId=step_dict["guide_id"],
+            order=step_dict["order"],
+            title=step_dict["title"],
+            description=step_dict.get("description"),
+            duration=step_dict["duration"],
+            createdAt=step_dict["created_at"],
+            updatedAt=step_dict["updated_at"]
+        ))
+    return steps_list
+
 @app.post("/steps", response_model=StepModel, status_code=201)
-def create_step(step: StepModel):
-    steps[step.id] = step
+async def create_step(step: StepModel):
+    now = datetime.utcnow()
+    step_doc = {
+        "id": step.id,
+        "guide_id": step.guideId,
+        "order": step.order,
+        "title": step.title,
+        "description": step.description,
+        "duration": step.duration,
+        "created_at": now,
+        "updated_at": now
+    }
+    await mongodb_database.steps.insert_one(step_doc)
     return step
 
 @app.put("/steps/{step_id}", response_model=StepModel)
-def update_step(step_id: str, step: StepModel):
-    if step_id not in steps:
+async def update_step(step_id: str, step: StepModel):
+    existing = await mongodb_database.steps.find_one({"id": step_id})
+    if not existing:
         raise HTTPException(status_code=404, detail=f"Step with id {step_id} not found")
-    steps[step_id] = step
+
+    now = datetime.utcnow()
+    step_doc = {
+        "id": step.id,
+        "guide_id": step.guideId,
+        "order": step.order,
+        "title": step.title,
+        "description": step.description,
+        "duration": step.duration,
+        "created_at": existing["created_at"],
+        "updated_at": now
+    }
+    await mongodb_database.steps.replace_one({"id": step_id}, step_doc)
     return step
 
 @app.delete("/steps/{step_id}", status_code=204)
-def delete_step(step_id: str):
-    if step_id not in steps:
+async def delete_step(step_id: str):
+    result = await mongodb_database.steps.delete_one({"id": step_id})
+    if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail=f"Step with id {step_id} not found")
-    del steps[step_id]
     return None
 
 # Session endpoints
 @app.get("/sessions", response_model=List[SessionModel])
-def get_sessions():
-    return list(sessions.values())
+async def get_sessions():
+    cursor = mongodb_database.sessions.find({})
+    sessions_list = []
+    async for doc in cursor:
+        session_dict = document_to_model(doc)
+        sessions_list.append(SessionModel(
+            id=session_dict["id"],
+            guideId=session_dict["guide_id"],
+            status=SessionStatus(session_dict["status"]),
+            startedAt=session_dict.get("started_at"),
+            completedAt=session_dict.get("completed_at"),
+            currentStepId=session_dict.get("current_step_id"),
+            createdAt=session_dict["created_at"],
+            updatedAt=session_dict["updated_at"]
+        ))
+    return sessions_list
 
 @app.get("/sessions/{session_id}", response_model=SessionModel)
-def get_session(session_id: str):
-    if session_id not in sessions:
+async def get_session(session_id: str):
+    doc = await mongodb_database.sessions.find_one({"id": session_id})
+    if not doc:
         raise HTTPException(status_code=404, detail=f"Session with id {session_id} not found")
-    return sessions[session_id]
+    session_dict = document_to_model(doc)
+    return SessionModel(
+        id=session_dict["id"],
+        guideId=session_dict["guide_id"],
+        status=SessionStatus(session_dict["status"]),
+        startedAt=session_dict.get("started_at"),
+        completedAt=session_dict.get("completed_at"),
+        currentStepId=session_dict.get("current_step_id"),
+        createdAt=session_dict["created_at"],
+        updatedAt=session_dict["updated_at"]
+    )
 
 @app.get("/sessions/guide/{guide_id}", response_model=List[SessionModel])
-def get_sessions_by_guide(guide_id: str):
-    return [s for s in sessions.values() if s.guideId == guide_id]
+async def get_sessions_by_guide(guide_id: str):
+    cursor = mongodb_database.sessions.find({"guide_id": guide_id})
+    sessions_list = []
+    async for doc in cursor:
+        session_dict = document_to_model(doc)
+        sessions_list.append(SessionModel(
+            id=session_dict["id"],
+            guideId=session_dict["guide_id"],
+            status=SessionStatus(session_dict["status"]),
+            startedAt=session_dict.get("started_at"),
+            completedAt=session_dict.get("completed_at"),
+            currentStepId=session_dict.get("current_step_id"),
+            createdAt=session_dict["created_at"],
+            updatedAt=session_dict["updated_at"]
+        ))
+    return sessions_list
 
 @app.get("/sessions/status/{status}", response_model=List[SessionModel])
-def get_sessions_by_status(status: SessionStatus):
-    return [s for s in sessions.values() if s.status == status]
+async def get_sessions_by_status(status: SessionStatus):
+    cursor = mongodb_database.sessions.find({"status": status.value})
+    sessions_list = []
+    async for doc in cursor:
+        session_dict = document_to_model(doc)
+        sessions_list.append(SessionModel(
+            id=session_dict["id"],
+            guideId=session_dict["guide_id"],
+            status=SessionStatus(session_dict["status"]),
+            startedAt=session_dict.get("started_at"),
+            completedAt=session_dict.get("completed_at"),
+            currentStepId=session_dict.get("current_step_id"),
+            createdAt=session_dict["created_at"],
+            updatedAt=session_dict["updated_at"]
+        ))
+    return sessions_list
 
 @app.post("/sessions", response_model=SessionModel, status_code=201)
-def create_session(session: SessionModel):
-    sessions[session.id] = session
+async def create_session(session: SessionModel):
+    now = datetime.utcnow()
+    session_doc = {
+        "id": session.id,
+        "guide_id": session.guideId,
+        "status": session.status.value,
+        "started_at": session.startedAt,
+        "completed_at": session.completedAt,
+        "current_step_id": session.currentStepId,
+        "created_at": now,
+        "updated_at": now
+    }
+    await mongodb_database.sessions.insert_one(session_doc)
     return session
 
 @app.put("/sessions/{session_id}", response_model=SessionModel)
-def update_session(session_id: str, session: SessionModel):
-    if session_id not in sessions:
+async def update_session(session_id: str, session: SessionModel):
+    existing = await mongodb_database.sessions.find_one({"id": session_id})
+    if not existing:
         raise HTTPException(status_code=404, detail=f"Session with id {session_id} not found")
-    sessions[session_id] = session
+
+    now = datetime.utcnow()
+    session_doc = {
+        "id": session.id,
+        "guide_id": session.guideId,
+        "status": session.status.value,
+        "started_at": session.startedAt,
+        "completed_at": session.completedAt,
+        "current_step_id": session.currentStepId,
+        "created_at": existing["created_at"],
+        "updated_at": now
+    }
+    await mongodb_database.sessions.replace_one({"id": session_id}, session_doc)
     return session
 
 @app.delete("/sessions/{session_id}", status_code=204)
-def delete_session(session_id: str):
-    if session_id not in sessions:
+async def delete_session(session_id: str):
+    result = await mongodb_database.sessions.delete_one({"id": session_id})
+    if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail=f"Session with id {session_id} not found")
-    del sessions[session_id]
     return None
 
 def main():

@@ -39,6 +39,24 @@ spec:
         - name: ROOT_PATH
           value: "/testing-server"
         # GUIDR_VERSION is baked into the Docker image via build-arg
+        # MongoDB Configuration (from Secret)
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: guidr-mongodb-secret
+              key: mongodb-url
+        - name: MONGODB_DATABASE
+          value: "guidr_test"
+        # JWT Configuration (from Secret)
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: guidr-mongodb-secret
+              key: jwt-secret-key
+        - name: JWT_ALGORITHM
+          value: "HS256"
+        - name: JWT_EXPIRATION_MINUTES
+          value: "10080"
         resources:
           requests:
             memory: "128Mi"

@@ -1,4 +1,4 @@
-.PHONY: install test run docker-build docker-run clean lint typecheck
+.PHONY: install test run docker-build docker-run clean lint typecheck up up-detached down logs build ps restart help
 
 # Install dependencies
 install:
@@ -8,7 +8,35 @@ install:
 test:
 	poetry run pytest
 
-# Run server
+# Start all services with docker-compose
+up:
+	docker compose up --build
+
+# Start services in background
+up-detached:
+	docker compose up --build -d
+
+# Stop all services
+down:
+	docker compose down
+
+# View logs from all services
+logs:
+	docker compose logs -f
+
+# Build docker-compose services
+build:
+	docker compose build
+
+# Show running services
+ps:
+	docker compose ps
+
+# Restart all services
+restart:
+	docker compose restart
+
+# Run server locally with Poetry
 run:
 	@VERSION=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
 	GUIDR_VERSION=$$VERSION poetry run guidr-server
@@ -44,13 +72,28 @@ clean:
 # Help
 help:
 	@echo "Available targets:"
+	@echo ""
+	@echo "Docker Compose (recommended):"
+	@echo "  up                  Start all services (MongoDB + test-server) with docker-compose"
+	@echo "  up-detached         Start all services in background"
+	@echo "  down                Stop all services"
+	@echo "  logs                View logs from all services"
+	@echo "  build               Build docker-compose services"
+	@echo "  ps                  Show running services"
+	@echo "  restart             Restart all services"
+	@echo ""
+	@echo "Local Development:"
 	@echo "  install             Install dependencies with Poetry"
+	@echo "  run                 Run server locally with Poetry (requires MongoDB running)"
 	@echo "  test                Run tests with pytest"
-	@echo "  run                 Run the server"
 	@echo "  lint                Run ruff linter"
 	@echo "  typecheck           Run mypy type checker"
+	@echo ""
+	@echo "Docker (standalone):"
 	@echo "  docker-build        Build Docker image (latest)"
 	@echo "  docker-build-version Build Docker image with version from pyproject.toml"
 	@echo "  docker-run          Run Docker container"
+	@echo ""
+	@echo "Maintenance:"
 	@echo "  clean               Clean build artifacts"
 	@echo "  help                Show this help message"
