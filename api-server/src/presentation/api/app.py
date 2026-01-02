@@ -9,6 +9,8 @@ from .routers import (
     steps_router,
     sessions_router,
     users_router,
+    config_router,
+    system_router,
 )
 
 
@@ -37,15 +39,12 @@ def create_app() -> FastAPI:
     )
 
     # Register routers with /api/v1 prefix
+    app.include_router(system_router, prefix="/api/v1")
+    app.include_router(config_router, prefix="/api/v1")
     app.include_router(categories_router, prefix="/api/v1")
     app.include_router(guides_router, prefix="/api/v1")
     app.include_router(steps_router, prefix="/api/v1")
     app.include_router(sessions_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
-
-    @app.get("/health")
-    async def health_check():
-        """Health check endpoint."""
-        return {"status": "healthy"}
 
     return app

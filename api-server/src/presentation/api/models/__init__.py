@@ -6,6 +6,7 @@ from .guide_models import GuideCreate, GuideUpdate, GuideResponse
 from .step_models import StepCreate, StepUpdate, StepResponse
 from .session_models import SessionCreate, SessionResponse, MoveToStepRequest
 from .user_models import UserRegister, UserLogin, UserResponse, TokenResponse
+from .config_models import ConfigResponse
 
 __all__ = [
     # Error models
@@ -32,4 +33,6 @@ __all__ = [
     "UserLogin",
     "UserResponse",
     "TokenResponse",
+    # Config
+    "ConfigResponse",
 ]
