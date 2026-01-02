@@ -27,7 +27,7 @@ mongomock-motor = "^0.0.34"
 freezegun = "^1.5.0"
 
 [tool.poetry.scripts]
-guidr-server = "src.main:app"
+guidr-server = "src.main:main"
 
 [build-system]
 requires = ["poetry-core"]

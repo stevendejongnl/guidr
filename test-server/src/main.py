@@ -56,3 +56,9 @@ def create_application() -> FastAPI:
 
 # Application instance for ASGI servers (uvicorn, gunicorn)
 app = create_application()
+
+
+def main():
+    """Run the server with uvicorn."""
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
