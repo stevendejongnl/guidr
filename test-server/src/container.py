@@ -78,27 +78,27 @@ class Container(containers.DeclarativeContainer):
     # Repositories (Singletons)
     category_repository = providers.Singleton(
         MongoCategoryRepository,
-        database=database,
+        database=database.provided.db,
     )
 
     guide_repository = providers.Singleton(
         MongoGuideRepository,
-        database=database,
+        database=database.provided.db,
     )
 
     step_repository = providers.Singleton(
         MongoStepRepository,
-        database=database,
+        database=database.provided.db,
     )
 
     session_repository = providers.Singleton(
         MongoSessionRepository,
-        database=database,
+        database=database.provided.db,
     )
 
     user_repository = providers.Singleton(
         MongoUserRepository,
-        database=database,
+        database=database.provided.db,
     )
 
     # Category Use Cases (Factories)

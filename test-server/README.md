@@ -4,10 +4,13 @@ A FastAPI-based test server for local development and testing of the Guidr mobil
 
 ## Features
 
-- **MongoDB persistence** - Full data persistence across restarts
+- **Domain-Driven Design (DDD)** - Clean architecture with layered separation of concerns
+- **MongoDB persistence** - Full data persistence with repository pattern
 - **Real authentication** - Argon2 password hashing + JWT tokens
+- **Dependency Injection** - Comprehensive DI container with dependency-injector
 - **Full CRUD operations** for all domain entities (Categories, Guides, Steps, Sessions)
-- **Pre-loaded example data** - Cooking guide with 2 categories, 1 guide, 3 steps
+- **Comprehensive test coverage** - 297+ tests (domain, application, integration)
+- **RESTful API design** - Query parameter filtering, PATCH updates, action endpoints
 - **CORS enabled** for React Native development
 - **Interactive API documentation** (Swagger/ReDoc)
 - **Docker support** with Docker Compose for easy deployment
@@ -22,6 +25,72 @@ The test-server version is synchronized with the main Guidr app version to ensur
 | 0.x.x | 0.x.x | Early development |
 | 1.x.x | 1.x.x | Stable API |
 | 2.x.x | 2.x.x | Breaking changes |
+
+---
+
+## Architecture
+
+The test-server follows **Domain-Driven Design (DDD)** principles with a clean, layered architecture:
+
+```
+src/
+├── domain/                   # Business logic layer (framework-independent)
+│   ├── entities/            # Domain entities (Category, Guide, Step, Session, User)
+│   ├── value_objects/       # Immutable value objects (EntityId, Email, Password, etc.)
+│   ├── aggregates/          # Domain aggregates (GuideAggregate, SessionAggregate)
+│   ├── events/              # Domain events (GuideCreated, SessionStarted, etc.)
+│   ├── repositories/        # Repository interfaces (ICategoryRepository, etc.)
+│   ├── services/            # Domain services
+│   └── exceptions.py        # Domain exceptions
+│
+├── application/             # Application logic layer
+│   ├── use_cases/          # Use cases (CreateGuide, StartSession, etc.)
+│   ├── dtos/               # Data transfer objects for use cases
+│   └── mappers/            # Entity ↔ DTO mappers
+│
+├── infrastructure/          # External services and persistence
+│   ├── persistence/
+│   │   └── mongodb/        # MongoDB implementation
+│   │       ├── repositories/  # Repository implementations
+│   │       ├── mappers/      # Entity ↔ Document mappers
+│   │       └── database.py   # Connection management
+│   ├── auth/               # Authentication services
+│   │   ├── password_hasher.py  # Argon2 password hashing
+│   │   └── jwt_service.py      # JWT token management
+│   └── config/
+│       └── settings.py     # Pydantic settings (env vars)
+│
+├── presentation/            # API layer
+│   └── api/
+│       ├── routers/        # FastAPI routers (thin controllers)
+│       ├── models/         # Pydantic request/response models
+│       └── app.py          # FastAPI app factory
+│
+├── container.py            # Dependency injection container
+└── main.py                 # Application entry point
+
+tests/
+├── unit/                   # Unit tests (domain entities, use cases)
+├── integration/            # Integration tests (repositories with test DB)
+└── e2e/                    # End-to-end tests (API endpoints)
+```
+
+### Key Architectural Principles
+
+1. **Dependency Rule**: Dependencies point inward (domain has no external dependencies)
+2. **Repository Pattern**: Abstract data access behind interfaces
+3. **Dependency Injection**: All dependencies injected via DI container
+4. **Use Cases**: Each operation is a single-responsibility use case
+5. **Value Objects**: Immutable, validated value objects for domain concepts
+6. **Aggregates**: Enforce consistency boundaries (Guide + Steps, Session state machine)
+
+### Test Coverage
+
+- **297+ tests** covering all layers:
+  - 191 domain tests (entities, value objects, aggregates)
+  - 47 application tests (use cases with mocked repositories)
+  - 106 integration tests (MongoDB repositories)
+  - Additional e2e tests planned
 
 ---
 
@@ -80,10 +149,10 @@ poetry install
 poetry run guidr-server
 ```
 
-**Alternative**:
+**Alternative (using uvicorn directly)**:
 ```bash
 poetry shell  # Activate virtual environment
-python server.py
+uvicorn src.main:app --reload
 ```
 
 ### Development Commands
@@ -95,14 +164,19 @@ poetry install
 # Run server
 poetry run guidr-server
 
-# Run tests (when implemented)
+# Run tests
 poetry run pytest
+
+# Run specific test suite
+poetry run pytest tests/unit/domain/  # Domain tests
+poetry run pytest tests/unit/application/  # Application tests
+poetry run pytest tests/integration/  # Integration tests
 
 # Lint code
 poetry run ruff check .
 
 # Type check
-poetry run mypy server.py
+poetry run mypy src/
 
 # Add a new dependency
 poetry add <package-name>
@@ -351,42 +425,52 @@ The server initializes with:
 
 ## API Endpoints
 
-### Authentication
-- `POST /login` - Authenticate user with email and password
-- `POST /register` - Register new user (returns JWT token for auto-login)
+All endpoints are prefixed with `/api/v1` (e.g., `/api/v1/categories`).
 
-### Categories
+### Authentication (`/api/v1/auth`)
+- `POST /auth/register` - Register new user (returns JWT token for auto-login)
+- `POST /auth/login` - Authenticate user with email and password
+
+### Categories (`/api/v1/categories`)
 - `GET /categories` - List all categories
+- `GET /categories?parentId={id}` - Filter by parent (use `null` for root categories)
 - `GET /categories/{id}` - Get category by ID
-- `GET /categories/parent/{parentId}` - Get categories by parent (use "null" for root)
 - `POST /categories` - Create category
-- `PUT /categories/{id}` - Update category
+- `PATCH /categories/{id}` - Update category (partial update)
 - `DELETE /categories/{id}` - Delete category
 
-### Guides
+### Guides (`/api/v1/guides`)
 - `GET /guides` - List all guides
+- `GET /guides?categoryId={id}` - Filter by category
 - `GET /guides/{id}` - Get guide by ID
-- `GET /guides/category/{categoryId}` - Get guides by category
 - `POST /guides` - Create guide
-- `PUT /guides/{id}` - Update guide
+- `PATCH /guides/{id}` - Update guide (partial update)
 - `DELETE /guides/{id}` - Delete guide
 
-### Steps
+### Steps (`/api/v1/steps`)
 - `GET /steps` - List all steps
+- `GET /steps?guideId={id}` - Filter by guide (sorted by order)
 - `GET /steps/{id}` - Get step by ID
-- `GET /steps/guide/{guideId}` - Get steps by guide (sorted by order)
 - `POST /steps` - Create step
-- `PUT /steps/{id}` - Update step
+- `PATCH /steps/{id}` - Update step (partial update)
 - `DELETE /steps/{id}` - Delete step
 
-### Sessions
+### Sessions (`/api/v1/sessions`)
+**CRUD Operations:**
 - `GET /sessions` - List all sessions
+- `GET /sessions?guideId={id}` - Filter by guide
+- `GET /sessions?status={status}` - Filter by status (NotStarted, InProgress, Paused, Completed, Cancelled)
 - `GET /sessions/{id}` - Get session by ID
-- `GET /sessions/guide/{guideId}` - Get sessions by guide
-- `GET /sessions/status/{status}` - Get sessions by status
 - `POST /sessions` - Create session
-- `PUT /sessions/{id}` - Update session
 - `DELETE /sessions/{id}` - Delete session
+
+**State Transition Actions:**
+- `POST /sessions/{id}/start` - Start a session (NotStarted → InProgress)
+- `POST /sessions/{id}/pause` - Pause a session (InProgress → Paused)
+- `POST /sessions/{id}/resume` - Resume a session (Paused → InProgress)
+- `POST /sessions/{id}/complete` - Complete a session (InProgress → Completed)
+- `POST /sessions/{id}/cancel` - Cancel a session (any state → Cancelled)
+- `POST /sessions/{id}/move-to-step` - Move to specific step (requires `stepId` in body)
 
 ---
 
@@ -592,16 +676,32 @@ docker-compose up -d
 
 ### Making Changes
 
-1. Edit `server.py`
-2. Test locally:
+1. Make changes in the `src/` directory following DDD principles:
+   - Domain layer changes: `src/domain/`
+   - Application layer changes: `src/application/`
+   - Infrastructure changes: `src/infrastructure/`
+   - API changes: `src/presentation/api/`
+
+2. Write tests for your changes:
+   ```bash
+   # Add unit tests in tests/unit/
+   # Add integration tests in tests/integration/
+   poetry run pytest
+   ```
+
+3. Test locally:
    ```bash
    poetry run guidr-server
+   # Or with hot reload:
+   poetry run uvicorn src.main:app --reload
    ```
-3. Build Docker image:
+
+4. Build Docker image:
    ```bash
    docker build -t guidr-test-server:dev .
    ```
-4. Test Docker image:
+
+5. Test Docker image:
    ```bash
    docker run -p 8000:8000 guidr-test-server:dev
    ```
@@ -683,8 +783,9 @@ export PATH="$HOME/.local/bin:$PATH"  # Add to ~/.bashrc or ~/.zshrc
 
 ## Legacy Files
 
-The following files are deprecated and will be removed in a future version:
+The following files are kept for reference but are no longer used:
 
+- `server_legacy.py` - Original monolithic server (archived, will be removed in future version)
 - `run.sh` - Use `poetry run guidr-server` or `make run` instead
 - `requirements.txt` - Dependencies managed by Poetry in `pyproject.toml`
 
@@ -707,11 +808,34 @@ The following files are deprecated and will be removed in a future version:
 
 When adding new features to the test-server:
 
-1. Update `server.py` with new endpoints
-2. Add tests (when test infrastructure is set up)
-3. Update this README with new API endpoints
-4. Follow conventional commits for version management
-5. Test locally with Poetry and Docker before committing
+1. **Follow DDD principles**:
+   - Start with domain entities and value objects
+   - Add use cases in application layer
+   - Implement repositories in infrastructure layer
+   - Create API endpoints in presentation layer
+
+2. **Write tests first (TDD)**:
+   - Unit tests for domain entities and value objects
+   - Unit tests for use cases (with mocked repositories)
+   - Integration tests for repositories
+   - E2E tests for API endpoints
+
+3. **Update documentation**:
+   - Update this README with new API endpoints
+   - Add docstrings to new classes and methods
+   - Update architectural diagrams if structure changes
+
+4. **Follow conventional commits** for version management:
+   - `feat:` for new features
+   - `fix:` for bug fixes
+   - `refactor:` for code refactoring
+   - `test:` for test additions
+
+5. **Test thoroughly**:
+   - Run all tests: `poetry run pytest`
+   - Type check: `poetry run mypy src/`
+   - Lint: `poetry run ruff check .`
+   - Test Docker build before committing
 
 ## License
 

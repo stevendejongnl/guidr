@@ -52,8 +52,11 @@ ios/.xcode.env.local
 
 # Python test server
 test-server/venv/
+test-server/.venv/
 test-server/__pycache__/
+test-server/**/__pycache__/
 test-server/*.pyc
+test-server/.pytest_cache/
 
 # Sentry
 android/sentry.properties
