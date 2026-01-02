@@ -10,18 +10,28 @@ from ..models import UserRegister, UserLogin, UserResponse, TokenResponse, Error
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-# Placeholder dependencies
+# Container (injected at app startup)
+_container = None
+
+
+def set_container(container):
+    """Set the DI container for this router."""
+    global _container
+    _container = container
+
+
+# Dependency providers
 def get_register_user_use_case() -> RegisterUser:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.register_user_use_case()
 
 
 def get_login_user_use_case() -> LoginUser:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.login_user_use_case()
 
 
 def get_jwt_service():
     """Get JWT service for token generation."""
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.jwt_service()
 
 
 @router.post(

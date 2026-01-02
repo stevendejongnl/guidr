@@ -4,7 +4,7 @@ version = "1.17.0"
 description = "Test server for Guidr mobile app development"
 authors = ["Guidr Team"]
 readme = "README.md"
-packages = [{include = "server.py"}]
+packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -15,6 +15,7 @@ motor = "^3.6.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 argon2-cffi = "^23.1.0"
 pydantic-settings = "^2.0.0"
+dependency-injector = "^4.41.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
@@ -26,7 +27,7 @@ mongomock-motor = "^0.0.34"
 freezegun = "^1.5.0"
 
 [tool.poetry.scripts]
-guidr-server = "server:main"
+guidr-server = "src.main:app"
 
 [build-system]
 requires = ["poetry-core"]

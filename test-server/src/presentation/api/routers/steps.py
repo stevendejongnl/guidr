@@ -18,29 +18,39 @@ from ..models import StepCreate, StepUpdate, StepResponse, ErrorResponse
 router = APIRouter(prefix="/steps", tags=["steps"])
 
 
-# Placeholder dependencies
+# Container (injected at app startup)
+_container = None
+
+
+def set_container(container):
+    """Set the DI container for this router."""
+    global _container
+    _container = container
+
+
+# Dependency providers
 def get_create_step_use_case() -> CreateStep:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.create_step_use_case()
 
 
 def get_get_step_use_case() -> GetStep:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_step_use_case()
 
 
 def get_get_all_steps_use_case() -> GetAllSteps:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_all_steps_use_case()
 
 
 def get_get_steps_by_guide_use_case() -> GetStepsByGuide:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_steps_by_guide_use_case()
 
 
 def get_update_step_use_case() -> UpdateStep:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.update_step_use_case()
 
 
 def get_delete_step_use_case() -> DeleteStep:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.delete_step_use_case()
 
 
 @router.post(

@@ -309,6 +309,56 @@ test = ["certifi (>=2024)", "cryptography-vectors (==46.0.3)", "pretend (>=0.7)"
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
+name = "dependency-injector"
+version = "4.48.3"
+description = "Dependency injection framework for Python"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "dependency_injector-4.48.3-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:37d5b962d9ba67f6536557dec3c83136cefd7a747bbe8ba53b158e34e050bae5"},
+    {file = "dependency_injector-4.48.3-cp310-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:54aa2b8b8ff057555ab03ee98035eb41120d30f8ec220cf43aa3b117f6b9b1b1"},
+    {file = "dependency_injector-4.48.3-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:6a1f8d5b7dcf24773c27ddb9beab043753d8e251804f2398468944b93c767a35"},
+    {file = "dependency_injector-4.48.3-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:7ed11a944f5c84a5ad3f15bc9154f07affae2902967b4e47c74504d4595ed92f"},
+    {file = "dependency_injector-4.48.3-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:00c7ad5b5b5f9b1616c363770eed8c629a42dd0155b398c4458c949b8c0b9ae0"},
+    {file = "dependency_injector-4.48.3-cp310-abi3-win32.whl", hash = "sha256:2870a3b84ddb2e4b13731b7250b7714f0d4a07f6147a181b3ecbceed061b74f2"},
+    {file = "dependency_injector-4.48.3-cp310-abi3-win_amd64.whl", hash = "sha256:d0e6244b3674a48ee2c5b0af29bf20d2b0b5baef806dd1739af9aab9d20f08de"},
+    {file = "dependency_injector-4.48.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:ec13e76e013d1d978c8c9d37b70ca8046b438a973f3f8431f8577cb409c71a0c"},
+    {file = "dependency_injector-4.48.3-cp38-cp38-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:b945e2ca99277945add869d9e1647e6d98d8fe9c43bb4d82c980863206e6f777"},
+    {file = "dependency_injector-4.48.3-cp38-cp38-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c71a93681595e810ec9f5c5d7721ae67c7536453c4742b510048b7be41191efb"},
+    {file = "dependency_injector-4.48.3-cp38-cp38-musllinux_1_2_aarch64.whl", hash = "sha256:4505e4b005c4e3c8452c35cbf52e15e00794c9f2ee8a720bb11d908f2711e94e"},
+    {file = "dependency_injector-4.48.3-cp38-cp38-musllinux_1_2_x86_64.whl", hash = "sha256:4104851a7d40c05f579a7052c4c1aba75fe17a112a3ed3d69799e1e5fc2b15d7"},
+    {file = "dependency_injector-4.48.3-cp38-cp38-win32.whl", hash = "sha256:81147c55d36c935b0c0dc3b34176cf34b0ce53518a96a51d6b532d882be4a13a"},
+    {file = "dependency_injector-4.48.3-cp38-cp38-win_amd64.whl", hash = "sha256:430bb7728fa9066806d9e1585e9d246c48bc546b9b4cb80cb8d57e27f628c2e3"},
+    {file = "dependency_injector-4.48.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:d45fc3e2fad6381788371a9a86692936c51c14f029ccd87b103b5a760962c256"},
+    {file = "dependency_injector-4.48.3-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:d07eaca26d70fc3ec5258e9123c7d34dfdfb7b1c22b171bbdfc762c6162f94af"},
+    {file = "dependency_injector-4.48.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:0a9e595fd44f9c0612337d9df6384a8154c7228adf50f2eac71668175842ab97"},
+    {file = "dependency_injector-4.48.3-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:aa9eb9ad7d8d2f175ed29a13b281b8c37b984256a67b4f083c9e302b73727c90"},
+    {file = "dependency_injector-4.48.3-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:14bcb711cd58908a2768e9c0cf908a098edf1cdc856631f1332c9c92d0233516"},
+    {file = "dependency_injector-4.48.3-cp39-cp39-win32.whl", hash = "sha256:40714c4af571cf40d70d81c28662ec0d2f2027188c0346731c7a91856a1988be"},
+    {file = "dependency_injector-4.48.3-cp39-cp39-win_amd64.whl", hash = "sha256:e4d2e70a5df66749c1b8c089d80c9e093b9fa405ac37fef9abfff2e8702d475a"},
+    {file = "dependency_injector-4.48.3-pp310-pypy310_pp73-macosx_11_0_arm64.whl", hash = "sha256:bbee3a28ffe7b14ec3b6fe24aa64f12f47e4ee21318c8546589d5ba8cc32b8ef"},
+    {file = "dependency_injector-4.48.3-pp310-pypy310_pp73-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:67bee4c2ea35fbbd8190e3f4142a25f58f8c123b885e8b903411dfb8bd1c2f38"},
+    {file = "dependency_injector-4.48.3-pp310-pypy310_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:ee41e4d22ae7569877a1548a2fd40fa1ff7b80cf797ba0d0608201c918167d82"},
+    {file = "dependency_injector-4.48.3-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:81b5982b96b62d3ecbef7bd74816c790103ec862836aad9bf45044d6822ff134"},
+    {file = "dependency_injector-4.48.3-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:adb2a57deeb9d02b6981c1ba10a9a3b60fc2743ac2f7010f02abd579572368fe"},
+    {file = "dependency_injector-4.48.3-pp311-pypy311_pp73-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:8f74f415de9e5683d2cf919e0e384aae09cb3c1c042a5c4a63e8759fd4467395"},
+    {file = "dependency_injector-4.48.3-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:d2b390b65fde7694f61cc58084f3ed084e0739142fff192e68d54adde7f5a85e"},
+    {file = "dependency_injector-4.48.3-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:6e85aa3c0e70741cdff3e3f9cfe157663e10ab5e2cc88b129f93694bf7401ccc"},
+    {file = "dependency_injector-4.48.3.tar.gz", hash = "sha256:106e43a6a9959b2c49926edc45bdf07fdc377bc5fa1fd59012741590df30b20c"},
+]
+
+[package.dependencies]
+typing-extensions = {version = "*", markers = "python_version < \"3.13\""}
+
+[package.extras]
+aiohttp = ["aiohttp"]
+flask = ["flask"]
+pydantic = ["pydantic"]
+pydantic2 = ["pydantic-settings"]
+yaml = ["pyyaml"]
+
+[[package]]
 name = "dnspython"
 version = "2.8.0"
 description = "DNS toolkit"
@@ -384,6 +434,21 @@ typing-extensions = ">=4.8.0"
 [package.extras]
 all = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.7)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
 standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "jinja2 (>=2.11.2)", "python-multipart (>=0.0.7)", "uvicorn[standard] (>=0.12.0)"]
+
+[[package]]
+name = "freezegun"
+version = "1.5.5"
+description = "Let your Python tests travel through time"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "freezegun-1.5.5-py3-none-any.whl", hash = "sha256:cd557f4a75cf074e84bc374249b9dd491eaeacd61376b9eb3c423282211619d2"},
+    {file = "freezegun-1.5.5.tar.gz", hash = "sha256:ac7742a6cc6c25a2c35e9292dfd554b897b517d2dec26891a2e8debf205cb94a"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7"
 
 [[package]]
 name = "h11"
@@ -611,6 +676,42 @@ files = [
     {file = "librt-0.7.5-cp39-cp39-win_amd64.whl", hash = "sha256:a9eacbf983319b26b5f340a2e0cd47ac1ee4725a7f3a72fd0f15063c934b69d6"},
     {file = "librt-0.7.5.tar.gz", hash = "sha256:de4221a1181fa9c8c4b5f35506ed6f298948f44003d84d2a8b9885d7e01e6cfa"},
 ]
+
+[[package]]
+name = "mongomock"
+version = "4.3.0"
+description = "Fake pymongo stub for testing simple MongoDB-dependent code"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "mongomock-4.3.0-py2.py3-none-any.whl", hash = "sha256:5ef86bd12fc8806c6e7af32f21266c61b6c4ba96096f85129852d1c4fec1327e"},
+    {file = "mongomock-4.3.0.tar.gz", hash = "sha256:32667b79066fabc12d4f17f16a8fd7361b5f4435208b3ba32c226e52212a8c30"},
+]
+
+[package.dependencies]
+packaging = "*"
+pytz = "*"
+sentinels = "*"
+
+[package.extras]
+pyexecjs = ["pyexecjs"]
+pymongo = ["pymongo"]
+
+[[package]]
+name = "mongomock-motor"
+version = "0.0.34"
+description = "Library for mocking AsyncIOMotorClient built on top of mongomock."
+optional = false
+python-versions = "<4.0,>=3.8"
+groups = ["dev"]
+files = [
+    {file = "mongomock_motor-0.0.34-py3-none-any.whl", hash = "sha256:f14b131cbbaae26104c4e5c3e7d70452ab743b284fd52fc10fac668e9c6b0575"},
+    {file = "mongomock_motor-0.0.34.tar.gz", hash = "sha256:c8141ff9bf41ca19b87a935855013018a726ac3d2fbd74a14bbc71ce34a532d0"},
+]
+
+[package.dependencies]
+mongomock = ">=4.1.2,<5.0.0"
 
 [[package]]
 name = "motor"
@@ -1085,6 +1186,21 @@ docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
 testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
 
 [[package]]
+name = "python-dateutil"
+version = "2.9.0.post0"
+description = "Extensions to the standard Python datetime module"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+groups = ["dev"]
+files = [
+    {file = "python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"},
+    {file = "python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"},
+]
+
+[package.dependencies]
+six = ">=1.5"
+
+[[package]]
 name = "python-dotenv"
 version = "1.2.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -1122,6 +1238,18 @@ cryptography = ["cryptography (>=3.4.0)"]
 pycrypto = ["pycrypto (>=2.6.0,<2.7.0)"]
 pycryptodome = ["pycryptodome (>=3.3.1,<4.0.0)"]
 test = ["pytest", "pytest-cov"]
+
+[[package]]
+name = "pytz"
+version = "2025.2"
+description = "World timezone definitions, modern and historical"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "pytz-2025.2-py2.py3-none-any.whl", hash = "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00"},
+    {file = "pytz-2025.2.tar.gz", hash = "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3"},
+]
 
 [[package]]
 name = "pyyaml"
@@ -1251,12 +1379,27 @@ files = [
 ]
 
 [[package]]
+name = "sentinels"
+version = "1.1.1"
+description = "Various objects to denote special meanings in python"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "sentinels-1.1.1-py3-none-any.whl", hash = "sha256:835d3b28f3b47f5284afa4bf2db6e00f2dc5f80f9923d4b7e7aeeeccf6146a11"},
+    {file = "sentinels-1.1.1.tar.gz", hash = "sha256:3c2f64f754187c19e0a1a029b148b74cf58dd12ec27b4e19c0e5d6e22b5a9a86"},
+]
+
+[package.extras]
+testing = ["pylint", "pytest"]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
@@ -1614,4 +1757,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "e6da4bdfc1798099b9b89269b8894b3ecc8d747ec0bcbd95e135ee192d78a009"
+content-hash = "2afa1f59345cdb483a2e924a6b2bf2391d73527a5829c50fbafb7cb48b4c6fb9"

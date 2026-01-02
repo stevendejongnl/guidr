@@ -18,29 +18,39 @@ from ..models import GuideCreate, GuideUpdate, GuideResponse, ErrorResponse
 router = APIRouter(prefix="/guides", tags=["guides"])
 
 
-# Placeholder dependencies
+# Container (injected at app startup)
+_container = None
+
+
+def set_container(container):
+    """Set the DI container for this router."""
+    global _container
+    _container = container
+
+
+# Dependency providers
 def get_create_guide_use_case() -> CreateGuide:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.create_guide_use_case()
 
 
 def get_get_guide_use_case() -> GetGuide:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_guide_use_case()
 
 
 def get_get_all_guides_use_case() -> GetAllGuides:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_all_guides_use_case()
 
 
 def get_get_guides_by_category_use_case() -> GetGuidesByCategory:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_guides_by_category_use_case()
 
 
 def get_update_guide_use_case() -> UpdateGuide:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.update_guide_use_case()
 
 
 def get_delete_guide_use_case() -> DeleteGuide:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.delete_guide_use_case()
 
 
 @router.post(

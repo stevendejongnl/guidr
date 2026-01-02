@@ -29,53 +29,63 @@ from ..models import (
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
-# Placeholder dependencies
+# Container (injected at app startup)
+_container = None
+
+
+def set_container(container):
+    """Set the DI container for this router."""
+    global _container
+    _container = container
+
+
+# Dependency providers
 def get_create_session_use_case() -> CreateSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.create_session_use_case()
 
 
 def get_get_session_use_case() -> GetSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_session_use_case()
 
 
 def get_get_all_sessions_use_case() -> GetAllSessions:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_all_sessions_use_case()
 
 
 def get_get_sessions_by_guide_use_case() -> GetSessionsByGuide:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_sessions_by_guide_use_case()
 
 
 def get_get_sessions_by_status_use_case() -> GetSessionsByStatus:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_sessions_by_status_use_case()
 
 
 def get_start_session_use_case() -> StartSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.start_session_use_case()
 
 
 def get_pause_session_use_case() -> PauseSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.pause_session_use_case()
 
 
 def get_resume_session_use_case() -> ResumeSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.resume_session_use_case()
 
 
 def get_complete_session_use_case() -> CompleteSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.complete_session_use_case()
 
 
 def get_cancel_session_use_case() -> CancelSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.cancel_session_use_case()
 
 
 def get_move_session_to_step_use_case() -> MoveSessionToStep:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.move_session_to_step_use_case()
 
 
 def get_delete_session_use_case() -> DeleteSession:
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.delete_session_use_case()
 
 
 @router.post(

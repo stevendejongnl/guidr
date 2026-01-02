@@ -18,35 +18,45 @@ from ..models import CategoryCreate, CategoryUpdate, CategoryResponse, ErrorResp
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
-# Placeholder dependency - will be replaced with DI container
+# Container (injected at app startup)
+_container = None
+
+
+def set_container(container):
+    """Set the DI container for this router."""
+    global _container
+    _container = container
+
+
+# Dependency providers
 def get_create_category_use_case() -> CreateCategory:
     """Get CreateCategory use case."""
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.create_category_use_case()
 
 
 def get_get_category_use_case() -> GetCategory:
     """Get GetCategory use case."""
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_category_use_case()
 
 
 def get_get_all_categories_use_case() -> GetAllCategories:
     """Get GetAllCategories use case."""
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_all_categories_use_case()
 
 
 def get_get_categories_by_parent_use_case() -> GetCategoriesByParent:
     """Get GetCategoriesByParent use case."""
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.get_categories_by_parent_use_case()
 
 
 def get_update_category_use_case() -> UpdateCategory:
     """Get UpdateCategory use case."""
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.update_category_use_case()
 
 
 def get_delete_category_use_case() -> DeleteCategory:
     """Get DeleteCategory use case."""
-    raise NotImplementedError("DI container not yet implemented")
+    return _container.delete_category_use_case()
 
 
 @router.post(
