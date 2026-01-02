@@ -117,9 +117,9 @@ updates:
           - "minor"
           - "patch"
 
-  # pip (Test Server)
+  # pip (API Server)
   - package-ecosystem: "pip"
-    directory: "/test-server"
+    directory: "/api-server"
     schedule:
       interval: "weekly"
       day: "thursday"
@@ -131,7 +131,7 @@ updates:
       include: "scope"
     labels:
       - "dependencies"
-      - "test-server"
+      - "api-server"
     groups:
       fastapi-stack:
         patterns:

@@ -1,0 +1,131 @@
+---
+# Namespace (optional - remove if using default namespace)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: guidr
+  labels:
+    name: guidr
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guidr-api-server
+  namespace: guidr
+  labels:
+    app: guidr-api-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: guidr-api-server
+  template:
+    metadata:
+      labels:
+        app: guidr-api-server
+    spec:
+      containers:
+      - name: api-server
+        image: ghcr.io/stevendejongnl/guidr-api-server:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        env:
+        # ROOT_PATH tells FastAPI about the path prefix for OpenAPI docs
+        - name: ROOT_PATH
+          value: "/testing-server"
+        # GUIDR_VERSION is baked into the Docker image via build-arg
+        # MongoDB Configuration (from Secret)
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: guidr-mongodb-secret
+              key: mongodb-url
+        - name: MONGODB_DATABASE
+          value: "guidr_test"
+        # JWT Configuration (from Secret)
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: guidr-mongodb-secret
+              key: jwt-secret-key
+        - name: JWT_ALGORITHM
+          value: "HS256"
+        - name: JWT_EXPIRATION_MINUTES
+          value: "10080"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+      restartPolicy: Always
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: guidr-api-server
+  namespace: guidr
+  labels:
+    app: guidr-api-server
+spec:
+  type: ClusterIP
+  selector:
+    app: guidr-api-server
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  sessionAffinity: None
+
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: guidr-api-server
+  namespace: guidr
+  labels:
+    app: guidr-api-server
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: guidr.madebysteven.nl
+    http:
+      paths:
+      - path: /testing-server(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: guidr-api-server
+            port:
+              number: 80

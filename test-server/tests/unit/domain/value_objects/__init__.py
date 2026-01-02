@@ -1,1 +1,0 @@
-"""Value object unit tests."""

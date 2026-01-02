@@ -48,14 +48,14 @@ npm run lint:fix            # Auto-fix lint issues
 npm run typecheck           # Type check only
 ```
 
-### Test Server (FastAPI)
+### API Server (FastAPI)
 ```bash
 # Docker (recommended)
-docker pull ghcr.io/stevendejongnl/guidr-test-server:latest
-docker run -p 8000:8000 ghcr.io/stevendejongnl/guidr-test-server:latest
+docker pull ghcr.io/stevendejongnl/guidr-api-server:latest
+docker run -p 8000:8000 ghcr.io/stevendejongnl/guidr-api-server:latest
 
 # Poetry (local dev)
-cd test-server && poetry install && poetry run guidr-server
+cd api-server && poetry install && poetry run guidr-server
 
 # Connection URLs
 # Android emulator: http://10.0.2.2:8000
@@ -167,7 +167,7 @@ style: code style changes
 1. **@semantic-release/commit-analyzer**: Analyzes commits since last release
 2. **@semantic-release/release-notes-generator**: Generates CHANGELOG
 3. **@semantic-release/changelog**: Updates CHANGELOG.md
-4. **@semantic-release/exec**: Updates version in iOS/Android/test-server
+4. **@semantic-release/exec**: Updates version in iOS/Android/api-server
 5. **@semantic-release/github**: Creates GitHub release + uploads Android APK
 6. **@semantic-release/git**: Commits version changes with `[skip ci]`
 
@@ -396,7 +396,7 @@ git push origin main
 - Notifications for step completion
 - Offline sync with backend
 
-**Backend Requirements** (test-server provides mock implementation):
+**Backend Requirements** (api-server provides backend implementation):
 - REST API for CRUD operations
 - Guide/Step/Session persistence
 - User authentication (optional)

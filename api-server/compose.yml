@@ -1,0 +1,64 @@
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: guidr-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: guidr
+      MONGO_INITDB_ROOT_PASSWORD: guidr123
+      MONGO_INITDB_DATABASE: guidr_test
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api-server:
+    build:
+      context: ..
+      dockerfile: api-server/Dockerfile
+      args:
+        GUIDR_VERSION: ${GUIDR_VERSION:-1.15.3}
+    container_name: guidr-api-server
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URL: mongodb://guidr:guidr123@mongodb:27017/guidr_test?authSource=admin
+      MONGODB_DATABASE: guidr_test
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-key-change-in-production-min-32-characters}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRATION_MINUTES: 10080
+      GUIDR_VERSION: ${GUIDR_VERSION:-1.15.3}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Optional: MongoDB UI for development
+  mongo-express:
+    image: mongo-express:latest
+    container_name: guidr-mongo-express
+    ports:
+      - "8084:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://guidr:guidr123@mongodb:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME: guidr
+      ME_CONFIG_MONGODB_ADMINPASSWORD: guidr123
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:

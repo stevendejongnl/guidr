@@ -50,13 +50,13 @@ ios/.xcode.env.local
 # macOS
 .DS_Store
 
-# Python test server
-test-server/venv/
-test-server/.venv/
-test-server/__pycache__/
-test-server/**/__pycache__/
-test-server/*.pyc
-test-server/.pytest_cache/
+# Python API server
+api-server/venv/
+api-server/.venv/
+api-server/__pycache__/
+api-server/**/__pycache__/
+api-server/*.pyc
+api-server/.pytest_cache/
 
 # Sentry
 android/sentry.properties
