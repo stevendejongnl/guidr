@@ -1,0 +1,50 @@
+"""Update category use case."""
+
+from typing import Optional
+
+from src.domain.repositories import ICategoryRepository
+from src.domain.value_objects import EntityId
+from src.domain.exceptions import EntityNotFoundException
+from src.application.dtos import CategoryUpdateDTO, CategoryResponseDTO
+from src.application.mappers import CategoryMapper
+
+
+class UpdateCategory:
+    """Use case for updating a category."""
+
+    def __init__(self, category_repository: ICategoryRepository):
+        """Initialize use case.
+
+        Args:
+            category_repository: Repository for category persistence
+        """
+        self._repository = category_repository
+        self._mapper = CategoryMapper()
+
+    async def execute(
+        self, category_id: str, dto: CategoryUpdateDTO
+    ) -> Optional[CategoryResponseDTO]:
+        """Update a category.
+
+        Args:
+            category_id: Category ID
+            dto: Category update data
+
+        Returns:
+            CategoryResponseDTO with updated category data
+
+        Raises:
+            EntityNotFoundException: If category not found
+        """
+        # Find existing category
+        category = await self._repository.find_by_id(EntityId(category_id))
+        if not category:
+            raise EntityNotFoundException(f"Category not found: {category_id}")
+
+        # Update fields if provided
+        if dto.name is not None:
+            category.update_name(dto.name)
+
+        # Save and return
+        await self._repository.save(category)
+        return self._mapper.to_response_dto(category)
