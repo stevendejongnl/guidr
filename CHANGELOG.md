@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/stevendejongnl/guidr/compare/v1.18.0...v1.18.1) (2026-01-03)
+
+### Bug Fixes
+
+* **Sentry:** Disable replay and feedback integrations ([cfefb25](https://github.com/stevendejongnl/guidr/commit/cfefb25966bdf5b8687ef2e02c8d806501245267))
+* update AuthClient and Kubernetes configs to use /api/v1 base path ([479dc3b](https://github.com/stevendejongnl/guidr/commit/479dc3b375929347509e3a66eb3ab3c267536e70))
+
 ## [1.18.0](https://github.com/stevendejongnl/guidr/compare/v1.17.0...v1.18.0) (2026-01-03)
 
 ### Features
