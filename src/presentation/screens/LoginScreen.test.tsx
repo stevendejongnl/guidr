@@ -249,8 +249,14 @@ describe('LoginScreen', () => {
   describe('async operations', () => {
     it('should login successfully and call onComplete', async () => {
       mockAuthClient.login.mockResolvedValue({
-        token: 'mock-token-123',
-        email: 'test@example.com',
+        accessToken: 'mock-token-123',
+        tokenType: 'bearer',
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
       })
       mockAuthStorage.setAuthToken.mockResolvedValue()
       mockAuthStorage.setUserEmail.mockResolvedValue()
@@ -317,8 +323,14 @@ describe('LoginScreen', () => {
 
     it('should show error from AuthStorage on storage failure', async () => {
       mockAuthClient.login.mockResolvedValue({
-        token: 'mock-token-123',
-        email: 'test@example.com',
+        accessToken: 'mock-token-123',
+        tokenType: 'bearer',
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
       })
       mockAuthStorage.setAuthToken.mockRejectedValue(new Error('Storage error'))
 
@@ -407,7 +419,16 @@ describe('LoginScreen', () => {
         expect(getByText('Logging in...')).toBeTruthy()
       })
 
-      resolveLogin!({ token: 'mock-token', email: 'test@example.com' })
+      resolveLogin!({
+        accessToken: 'mock-token',
+        tokenType: 'bearer',
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      })
     })
 
     it('should disable inputs while loading', async () => {
@@ -441,7 +462,16 @@ describe('LoginScreen', () => {
         expect(passwordInput.props['editable']).toBe(false)
       })
 
-      resolveLogin!({ token: 'mock-token', email: 'test@example.com' })
+      resolveLogin!({
+        accessToken: 'mock-token',
+        tokenType: 'bearer',
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      })
     })
 
     it('should show activity indicator while loading', async () => {
@@ -477,7 +507,16 @@ describe('LoginScreen', () => {
         expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy()
       })
 
-      resolveLogin!({ token: 'mock-token', email: 'test@example.com' })
+      resolveLogin!({
+        accessToken: 'mock-token',
+        tokenType: 'bearer',
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      })
     })
   })
 
@@ -570,7 +609,16 @@ describe('LoginScreen', () => {
       const changeServerLink = getByText('Change Server')
       expect(changeServerLink.props['accessibilityState']?.disabled).toBeFalsy()
 
-      resolveLogin!({ token: 'token', email: 'test@example.com' })
+      resolveLogin!({
+        accessToken: 'token',
+        tokenType: 'bearer',
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      })
     })
   })
 

@@ -5,7 +5,7 @@ global.fetch = jest.fn()
 
 describe('AuthClient', () => {
   let authClient: AuthClient
-  const serverUrl = 'http://localhost:8000'
+  const serverUrl = 'http://localhost:8000/api/v1'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
@@ -33,15 +33,26 @@ describe('AuthClient', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ token: 'mock-token-123', email: 'test@example.com' }),
+        json: async () => ({
+          accessToken: 'mock-token-123',
+          tokenType: 'bearer',
+          user: {
+            id: 'user-123',
+            email: 'test@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+          },
+        }),
       } as Response)
 
       const result = await authClient.login('test@example.com', 'password123')
 
-      expect(result.token).toBe('mock-token-123')
-      expect(result.email).toBe('test@example.com')
+      expect(result.accessToken).toBe('mock-token-123')
+      expect(result.tokenType).toBe('bearer')
+      expect(result.user.email).toBe('test@example.com')
+      expect(result.user.id).toBe('user-123')
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/login',
+        'http://localhost:8000/api/v1/auth/login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -103,22 +114,25 @@ describe('AuthClient', () => {
       expect(mockFetch).not.toHaveBeenCalled()
     })
 
-    it('should throw error when response is missing token', async () => {
+    it('should throw error when response is missing accessToken', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ email: 'test@example.com' }),
+        json: async () => ({
+          tokenType: 'bearer',
+          user: { id: 'user-123', email: 'test@example.com', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+        }),
       } as Response)
 
       await expect(authClient.login('test@example.com', 'password123'))
         .rejects.toThrow('Invalid response from server')
     })
 
-    it('should throw error when response is missing email', async () => {
+    it('should throw error when response is missing user', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ token: 'mock-token-123' }),
+        json: async () => ({ accessToken: 'mock-token-123', tokenType: 'bearer' }),
       } as Response)
 
       await expect(authClient.login('test@example.com', 'password123'))
@@ -139,19 +153,25 @@ describe('AuthClient', () => {
         ok: true,
         status: 201,
         json: async () => ({
-          token: 'mock-token-456',
-          email: 'newuser@example.com',
-          id: 'user-123'
+          accessToken: 'mock-token-456',
+          tokenType: 'bearer',
+          user: {
+            id: 'user-123',
+            email: 'newuser@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+          },
         }),
       } as Response)
 
       const result = await authClient.register('newuser@example.com', 'password123')
 
-      expect(result.token).toBe('mock-token-456')
-      expect(result.email).toBe('newuser@example.com')
-      expect(result.id).toBe('user-123')
+      expect(result.accessToken).toBe('mock-token-456')
+      expect(result.tokenType).toBe('bearer')
+      expect(result.user.email).toBe('newuser@example.com')
+      expect(result.user.id).toBe('user-123')
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/register',
+        'http://localhost:8000/api/v1/auth/register',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -213,33 +233,40 @@ describe('AuthClient', () => {
       expect(mockFetch).not.toHaveBeenCalled()
     })
 
-    it('should throw error when response is missing token', async () => {
+    it('should throw error when response is missing accessToken', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 201,
-        json: async () => ({ email: 'test@example.com', id: 'user-123' }),
+        json: async () => ({
+          tokenType: 'bearer',
+          user: { email: 'test@example.com', id: 'user-123', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+        }),
       } as Response)
 
       await expect(authClient.register('test@example.com', 'password123'))
         .rejects.toThrow('Invalid response from server')
     })
 
-    it('should throw error when response is missing email', async () => {
+    it('should throw error when response is missing user', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 201,
-        json: async () => ({ token: 'mock-token-123', id: 'user-123' }),
+        json: async () => ({ accessToken: 'mock-token-123', tokenType: 'bearer' }),
       } as Response)
 
       await expect(authClient.register('test@example.com', 'password123'))
         .rejects.toThrow('Invalid response from server')
     })
 
-    it('should throw error when response is missing id', async () => {
+    it('should throw error when response is missing user.id', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 201,
-        json: async () => ({ token: 'mock-token-123', email: 'test@example.com' }),
+        json: async () => ({
+          accessToken: 'mock-token-123',
+          tokenType: 'bearer',
+          user: { email: 'test@example.com', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+        }),
       } as Response)
 
       await expect(authClient.register('test@example.com', 'password123'))

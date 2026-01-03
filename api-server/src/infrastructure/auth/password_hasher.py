@@ -22,12 +22,12 @@ class PasswordHasher:
         """
         return self._hasher.hash(password)
 
-    def verify_password(self, password_hash: str, password: str) -> bool:
+    def verify_password(self, password: str, password_hash: str) -> bool:
         """Verify a password against a hash.
 
         Args:
-            password_hash: Hashed password
             password: Plain text password to verify
+            password_hash: Hashed password
 
         Returns:
             True if password matches hash, False otherwise

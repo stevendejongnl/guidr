@@ -270,5 +270,5 @@ class Container(containers.DeclarativeContainer):
     login_user_use_case = providers.Factory(
         LoginUser,
         user_repository=user_repository,
-        password_hasher=password_hasher,
+        password_verifier=password_hasher,
     )

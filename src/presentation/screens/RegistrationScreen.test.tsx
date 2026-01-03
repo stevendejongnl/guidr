@@ -311,9 +311,14 @@ describe('RegistrationScreen', () => {
   describe('async operations', () => {
     it('should register user and auto-login on successful registration', async () => {
       mockAuthClient.register = jest.fn().mockResolvedValue({
-        token: 'mock-token-123',
-        email: 'test@example.com',
-        id: 'user-123'
+        accessToken: 'mock-token-123',
+        tokenType: 'bearer',
+        user: {
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
       })
       mockAuthStorage.setAuthToken = jest.fn().mockResolvedValue(undefined)
       mockAuthStorage.setUserEmail = jest.fn().mockResolvedValue(undefined)

@@ -1,13 +1,4 @@
-export interface LoginResponse {
-  token: string
-  email: string
-}
-
-export interface RegisterResponse {
-  token: string
-  email: string
-  id: string
-}
+import { AuthResponse } from './dtos/UserDto'
 
 export class AuthClient {
   private readonly serverUrl: string
@@ -19,7 +10,7 @@ export class AuthClient {
     this.serverUrl = serverUrl.replace(/\/$/, '') // Remove trailing slash
   }
 
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(email: string, password: string): Promise<AuthResponse> {
     if (!email || email.trim() === '') {
       throw new Error('Email cannot be empty')
     }
@@ -28,7 +19,7 @@ export class AuthClient {
     }
 
     try {
-      const response = await fetch(`${this.serverUrl}/login`, {
+      const response = await fetch(`${this.serverUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,11 +34,20 @@ export class AuthClient {
 
       const data = await response.json()
 
-      if (!data.token || !data.email) {
+      if (!data.accessToken || !data.tokenType || !data.user || !data.user.email) {
         throw new Error('Invalid response from server')
       }
 
-      return { token: data.token, email: data.email }
+      return {
+        accessToken: data.accessToken,
+        tokenType: data.tokenType,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          createdAt: data.user.createdAt,
+          updatedAt: data.user.updatedAt,
+        },
+      }
     } catch (error) {
       if (error instanceof Error) {
         throw error
@@ -56,7 +56,7 @@ export class AuthClient {
     }
   }
 
-  async register(email: string, password: string): Promise<RegisterResponse> {
+  async register(email: string, password: string): Promise<AuthResponse> {
     if (!email || email.trim() === '') {
       throw new Error('Email cannot be empty')
     }
@@ -65,7 +65,7 @@ export class AuthClient {
     }
 
     try {
-      const response = await fetch(`${this.serverUrl}/register`, {
+      const response = await fetch(`${this.serverUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,11 +80,20 @@ export class AuthClient {
 
       const data = await response.json()
 
-      if (!data.token || !data.email || !data.id) {
+      if (!data.accessToken || !data.tokenType || !data.user || !data.user.email || !data.user.id) {
         throw new Error('Invalid response from server')
       }
 
-      return { token: data.token, email: data.email, id: data.id }
+      return {
+        accessToken: data.accessToken,
+        tokenType: data.tokenType,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          createdAt: data.user.createdAt,
+          updatedAt: data.user.updatedAt,
+        },
+      }
     } catch (error) {
       if (error instanceof Error) {
         throw error
