@@ -1,13 +1,13 @@
 import { AuthResponse } from './dtos/UserDto'
 
 export class AuthClient {
-  private readonly serverUrl: string
+  private readonly apiBaseUrl: string
 
   constructor(serverUrl: string) {
     if (!serverUrl || serverUrl.trim() === '') {
       throw new Error('Server URL cannot be empty')
     }
-    this.serverUrl = serverUrl.replace(/\/$/, '') // Remove trailing slash
+    this.apiBaseUrl = `${serverUrl.replace(/\/$/, '')}/api/v1`
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -19,7 +19,7 @@ export class AuthClient {
     }
 
     try {
-      const response = await fetch(`${this.serverUrl}/auth/login`, {
+      const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ export class AuthClient {
     }
 
     try {
-      const response = await fetch(`${this.serverUrl}/auth/register`, {
+      const response = await fetch(`${this.apiBaseUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

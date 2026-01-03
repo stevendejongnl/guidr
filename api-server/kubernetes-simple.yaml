@@ -51,13 +51,13 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /
+            path: /api/v1/health
             port: http
           initialDelaySeconds: 10
           periodSeconds: 30
         readinessProbe:
           httpGet:
-            path: /
+            path: /api/v1/health
             port: http
           initialDelaySeconds: 5
           periodSeconds: 10
@@ -86,8 +86,6 @@ kind: Ingress
 metadata:
   name: guidr-api-server
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
@@ -95,8 +93,8 @@ spec:
   - host: guidr.madebysteven.nl
     http:
       paths:
-      - path: /testing-server(/|$)(.*)
-        pathType: ImplementationSpecific
+      - path: /
+        pathType: Prefix
         backend:
           service:
             name: guidr-api-server

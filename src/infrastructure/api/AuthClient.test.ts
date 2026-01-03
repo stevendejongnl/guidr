@@ -5,7 +5,7 @@ global.fetch = jest.fn()
 
 describe('AuthClient', () => {
   let authClient: AuthClient
-  const serverUrl = 'http://localhost:8000/api/v1'
+  const serverUrl = 'http://localhost:8000'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
