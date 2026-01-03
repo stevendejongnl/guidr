@@ -101,7 +101,7 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
       }
 
       const startTime = Date.now()
-      const response = await fetch(`${url}/`, {
+      const response = await fetch(`${url}/health`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       })
@@ -115,7 +115,7 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
       const responseTime = endTime - startTime
 
       setPingResult(`✓ Connected (${responseTime}ms)`)
-      setServerVersion(data.version || 'unknown')
+      setServerVersion(data.status === 'healthy' ? 'Available' : 'unknown')
     } catch (err) {
       setPingResult('✗ Connection failed')
       setError(err instanceof Error ? err.message : 'Connection test failed')

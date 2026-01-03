@@ -16,7 +16,7 @@ global.fetch = jest.fn()
 
 describe('DebugScreen', () => {
   let mockOnBack: jest.Mock
-  const serverUrl = 'http://localhost:8000'
+  const serverUrl = 'http://localhost:8000/api/v1'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('DebugScreen', () => {
 
     // Mock ServerConfigStorage
     const mockServerStorage = {
-      getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000'),
+      getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000/api/v1'),
     }
     ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerStorage)
 
@@ -99,7 +99,7 @@ describe('DebugScreen', () => {
       )
 
       await waitFor(() => {
-        expect(getByText('Server URL: http://localhost:8000')).toBeTruthy()
+        expect(getByText('Server URL: http://localhost:8000/api/v1')).toBeTruthy()
       })
     })
 
@@ -164,7 +164,7 @@ describe('DebugScreen', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ version: '1.5.0' }),
+        json: async () => ({ status: 'healthy' }),
       } as Response)
 
       const { getByText } = render(
@@ -176,11 +176,11 @@ describe('DebugScreen', () => {
 
       await waitFor(() => {
         expect(getByText(/✓ Connected/)).toBeTruthy()
-        expect(getByText('Server: 1.5.0')).toBeTruthy()
+        expect(getByText('Server: Available')).toBeTruthy()
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/',
+        'http://localhost:8000/api/v1/health',
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
