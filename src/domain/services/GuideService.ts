@@ -9,50 +9,50 @@ export class GuideService {
     private readonly stepRepository: IStepRepository
   ) {}
 
-  async createGuide(categoryId: string, title: string, description?: string): Promise<Guide> {
+  async createGuide(categoryId: string, title: string, description: string | undefined, authToken: string): Promise<Guide> {
     const id = uuid.v4() as string
     const guide = new Guide(id, categoryId, title, description)
-    await this.guideRepository.save(guide)
+    await this.guideRepository.save(guide, authToken)
     return guide
   }
 
-  async getGuideById(id: string): Promise<Guide | null> {
-    return await this.guideRepository.findById(id)
+  async getGuideById(id: string, authToken: string): Promise<Guide | null> {
+    return await this.guideRepository.findById(id, authToken)
   }
 
-  async getAllGuides(): Promise<Guide[]> {
-    return await this.guideRepository.findAll()
+  async getAllGuides(authToken: string): Promise<Guide[]> {
+    return await this.guideRepository.findAll(authToken)
   }
 
-  async getGuidesByCategoryId(categoryId: string): Promise<Guide[]> {
-    return await this.guideRepository.findByCategoryId(categoryId)
+  async getGuidesByCategoryId(categoryId: string, authToken: string): Promise<Guide[]> {
+    return await this.guideRepository.findByCategoryId(categoryId, authToken)
   }
 
-  async updateGuideTitle(id: string, newTitle: string): Promise<void> {
-    const guide = await this.guideRepository.findById(id)
+  async updateGuideTitle(id: string, newTitle: string, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(id, authToken)
     if (!guide) {
       throw new Error(`Guide with id ${id} not found`)
     }
     guide.updateTitle(newTitle)
-    await this.guideRepository.save(guide)
+    await this.guideRepository.save(guide, authToken)
   }
 
-  async updateGuideDescription(id: string, newDescription: string): Promise<void> {
-    const guide = await this.guideRepository.findById(id)
+  async updateGuideDescription(id: string, newDescription: string, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(id, authToken)
     if (!guide) {
       throw new Error(`Guide with id ${id} not found`)
     }
     guide.updateDescription(newDescription)
-    await this.guideRepository.save(guide)
+    await this.guideRepository.save(guide, authToken)
   }
 
-  async addStepToGuide(guideId: string, stepId: string): Promise<void> {
-    const guide = await this.guideRepository.findById(guideId)
+  async addStepToGuide(guideId: string, stepId: string, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(guideId, authToken)
     if (!guide) {
       throw new Error(`Guide with id ${guideId} not found`)
     }
 
-    const step = await this.stepRepository.findById(stepId)
+    const step = await this.stepRepository.findById(stepId, authToken)
     if (!step) {
       throw new Error(`Step with id ${stepId} not found`)
     }
@@ -62,29 +62,29 @@ export class GuideService {
     }
 
     guide.addStep(stepId)
-    await this.guideRepository.save(guide)
+    await this.guideRepository.save(guide, authToken)
   }
 
-  async removeStepFromGuide(guideId: string, stepId: string): Promise<void> {
-    const guide = await this.guideRepository.findById(guideId)
+  async removeStepFromGuide(guideId: string, stepId: string, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(guideId, authToken)
     if (!guide) {
       throw new Error(`Guide with id ${guideId} not found`)
     }
     guide.removeStep(stepId)
-    await this.guideRepository.save(guide)
+    await this.guideRepository.save(guide, authToken)
   }
 
-  async deleteGuide(id: string): Promise<void> {
-    const guide = await this.guideRepository.findById(id)
+  async deleteGuide(id: string, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(id, authToken)
     if (!guide) {
       throw new Error(`Guide with id ${id} not found`)
     }
 
     // Delete all steps associated with this guide
     for (const stepId of guide.stepIds) {
-      await this.stepRepository.delete(stepId)
+      await this.stepRepository.delete(stepId, authToken)
     }
 
-    await this.guideRepository.delete(id)
+    await this.guideRepository.delete(id, authToken)
   }
 }

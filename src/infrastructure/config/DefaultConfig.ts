@@ -11,7 +11,7 @@ export interface AppConfig {
 // This acts as a fallback if the TOML file cannot be loaded
 export const DEFAULT_CONFIG: AppConfig = {
   server: {
-    url: 'https://guidr.madebysteven.nl/testing-server',
+    url: 'https://guidr.madebysteven.nl/api/v1',
     minAppVersion: '1.11.1',
   },
 }

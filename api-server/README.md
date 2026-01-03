@@ -576,7 +576,7 @@ kubectl apply -f kubernetes.yaml
 - 2 replicas for high availability
 - Health checks (liveness & readiness probes)
 - Resource limits (128Mi-256Mi memory, 100m-500m CPU)
-- Path-based routing: `guidr.madebysteven.nl/testing-server`
+- Path-based routing: `guidr.madebysteven.nl/api/v1`
 - Nginx Ingress with URL rewriting
 
 **Check deployment**:
@@ -595,9 +595,9 @@ kubectl logs -f deployment/guidr-api-server -n guidr
 ```
 
 **Access the server**:
-- URL: https://guidr.madebysteven.nl/testing-server
-- Health check: https://guidr.madebysteven.nl/testing-server/
-- API docs: https://guidr.madebysteven.nl/testing-server/docs
+- URL: https://guidr.madebysteven.nl/api/v1
+- Health check: https://guidr.madebysteven.nl/api/v1/
+- API docs: https://guidr.madebysteven.nl/api/v1/docs
 
 **Update to new version**:
 ```bash

@@ -166,10 +166,10 @@ describe('ConfigLoader', () => {
   describe('getServerUrl', () => {
     it('should return server URL from configuration', async () => {
       mockPlatform.OS = 'ios'
-      const mockTomlContent = '[server]\nurl = "https://guidr.madebysteven.nl/testing-server"'
+      const mockTomlContent = '[server]\nurl = "https://guidr.madebysteven.nl/api/v1"'
       const mockParsedConfig = {
         server: {
-          url: 'https://guidr.madebysteven.nl/testing-server',
+          url: 'https://guidr.madebysteven.nl/api/v1',
         },
       }
 
@@ -178,7 +178,7 @@ describe('ConfigLoader', () => {
 
       const url = await ConfigLoader.getServerUrl()
 
-      expect(url).toBe('https://guidr.madebysteven.nl/testing-server')
+      expect(url).toBe('https://guidr.madebysteven.nl/api/v1')
     })
   })
 

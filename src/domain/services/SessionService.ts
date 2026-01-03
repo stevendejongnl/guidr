@@ -11,91 +11,91 @@ export class SessionService {
     private readonly stepRepository: IStepRepository
   ) {}
 
-  async createSession(guideId: string): Promise<Session> {
-    const guide = await this.guideRepository.findById(guideId)
+  async createSession(guideId: string, authToken: string): Promise<Session> {
+    const guide = await this.guideRepository.findById(guideId, authToken)
     if (!guide) {
       throw new Error(`Guide with id ${guideId} not found`)
     }
 
     const id = uuid.v4() as string
     const session = new Session(id, guideId)
-    await this.sessionRepository.save(session)
+    await this.sessionRepository.save(session, authToken)
     return session
   }
 
-  async getSessionById(id: string): Promise<Session | null> {
-    return await this.sessionRepository.findById(id)
+  async getSessionById(id: string, authToken: string): Promise<Session | null> {
+    return await this.sessionRepository.findById(id, authToken)
   }
 
-  async getAllSessions(): Promise<Session[]> {
-    return await this.sessionRepository.findAll()
+  async getAllSessions(authToken: string): Promise<Session[]> {
+    return await this.sessionRepository.findAll(authToken)
   }
 
-  async getSessionsByGuideId(guideId: string): Promise<Session[]> {
-    return await this.sessionRepository.findByGuideId(guideId)
+  async getSessionsByGuideId(guideId: string, authToken: string): Promise<Session[]> {
+    return await this.sessionRepository.findByGuideId(guideId, authToken)
   }
 
-  async getSessionsByStatus(status: SessionStatus): Promise<Session[]> {
-    return await this.sessionRepository.findByStatus(status)
+  async getSessionsByStatus(status: SessionStatus, authToken: string): Promise<Session[]> {
+    return await this.sessionRepository.findByStatus(status, authToken)
   }
 
-  async startSession(id: string): Promise<void> {
-    const session = await this.sessionRepository.findById(id)
+  async startSession(id: string, authToken: string): Promise<void> {
+    const session = await this.sessionRepository.findById(id, authToken)
     if (!session) {
       throw new Error(`Session with id ${id} not found`)
     }
     session.start()
-    await this.sessionRepository.save(session)
+    await this.sessionRepository.save(session, authToken)
   }
 
-  async pauseSession(id: string): Promise<void> {
-    const session = await this.sessionRepository.findById(id)
+  async pauseSession(id: string, authToken: string): Promise<void> {
+    const session = await this.sessionRepository.findById(id, authToken)
     if (!session) {
       throw new Error(`Session with id ${id} not found`)
     }
     session.pause()
-    await this.sessionRepository.save(session)
+    await this.sessionRepository.save(session, authToken)
   }
 
-  async resumeSession(id: string): Promise<void> {
-    const session = await this.sessionRepository.findById(id)
+  async resumeSession(id: string, authToken: string): Promise<void> {
+    const session = await this.sessionRepository.findById(id, authToken)
     if (!session) {
       throw new Error(`Session with id ${id} not found`)
     }
     session.resume()
-    await this.sessionRepository.save(session)
+    await this.sessionRepository.save(session, authToken)
   }
 
-  async completeSession(id: string): Promise<void> {
-    const session = await this.sessionRepository.findById(id)
+  async completeSession(id: string, authToken: string): Promise<void> {
+    const session = await this.sessionRepository.findById(id, authToken)
     if (!session) {
       throw new Error(`Session with id ${id} not found`)
     }
     session.complete()
-    await this.sessionRepository.save(session)
+    await this.sessionRepository.save(session, authToken)
   }
 
-  async cancelSession(id: string): Promise<void> {
-    const session = await this.sessionRepository.findById(id)
+  async cancelSession(id: string, authToken: string): Promise<void> {
+    const session = await this.sessionRepository.findById(id, authToken)
     if (!session) {
       throw new Error(`Session with id ${id} not found`)
     }
     session.cancel()
-    await this.sessionRepository.save(session)
+    await this.sessionRepository.save(session, authToken)
   }
 
-  async moveToStep(sessionId: string, stepId: string): Promise<void> {
-    const session = await this.sessionRepository.findById(sessionId)
+  async moveToStep(sessionId: string, stepId: string, authToken: string): Promise<void> {
+    const session = await this.sessionRepository.findById(sessionId, authToken)
     if (!session) {
       throw new Error(`Session with id ${sessionId} not found`)
     }
 
-    const guide = await this.guideRepository.findById(session.guideId)
+    const guide = await this.guideRepository.findById(session.guideId, authToken)
     if (!guide) {
       throw new Error(`Guide with id ${session.guideId} not found`)
     }
 
-    const step = await this.stepRepository.findById(stepId)
+    const step = await this.stepRepository.findById(stepId, authToken)
     if (!step) {
       throw new Error(`Step with id ${stepId} not found`)
     }
@@ -109,10 +109,10 @@ export class SessionService {
     }
 
     session.moveToStep(stepId)
-    await this.sessionRepository.save(session)
+    await this.sessionRepository.save(session, authToken)
   }
 
-  async deleteSession(id: string): Promise<void> {
-    await this.sessionRepository.delete(id)
+  async deleteSession(id: string, authToken: string): Promise<void> {
+    await this.sessionRepository.delete(id, authToken)
   }
 }

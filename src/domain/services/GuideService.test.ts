@@ -6,6 +6,7 @@ import { Step } from '../entities/Step'
 
 describe('GuideService', () => {
   let guideService: GuideService
+  const authToken = 'mock-auth-token'
   let mockGuideRepository: jest.Mocked<IGuideRepository>
   let mockStepRepository: jest.Mocked<IStepRepository>
 
@@ -33,30 +34,30 @@ describe('GuideService', () => {
       const title = 'Chocolate Chip Cookies'
       const description = 'Classic recipe'
 
-      const guide = await guideService.createGuide(categoryId, title, description)
+      const guide = await guideService.createGuide(categoryId, title, description, authToken)
 
       expect(guide.id).toBeDefined()
       expect(guide.categoryId).toBe(categoryId)
       expect(guide.title).toBe(title)
       expect(guide.description).toBe(description)
-      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
     it('should create a guide without description', async () => {
-      const guide = await guideService.createGuide('cat-1', 'Cookies')
+      const guide = await guideService.createGuide('cat-1', 'Cookies', undefined, authToken)
 
       expect(guide.description).toBeUndefined()
-      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
     it('should throw error if categoryId is empty', async () => {
-      await expect(guideService.createGuide('', 'Cookies')).rejects.toThrow(
+      await expect(guideService.createGuide('', 'Cookies', undefined, authToken)).rejects.toThrow(
         'Category id cannot be empty'
       )
     })
 
     it('should throw error if title is empty', async () => {
-      await expect(guideService.createGuide('cat-1', '')).rejects.toThrow(
+      await expect(guideService.createGuide('cat-1', '', undefined, authToken)).rejects.toThrow(
         'Guide title cannot be empty'
       )
     })
@@ -67,19 +68,19 @@ describe('GuideService', () => {
       const guide = new Guide('guide-1', 'cat-1', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
-      const result = await guideService.getGuideById('guide-1')
+      const result = await guideService.getGuideById('guide-1', authToken)
 
       expect(result).toBe(guide)
-      expect(mockGuideRepository.findById).toHaveBeenCalledWith('guide-1')
+      expect(mockGuideRepository.findById).toHaveBeenCalledWith('guide-1', authToken)
     })
 
     it('should return null if guide not found', async () => {
       mockGuideRepository.findById.mockResolvedValue(null)
 
-      const result = await guideService.getGuideById('guide-999')
+      const result = await guideService.getGuideById('guide-999', authToken)
 
       expect(result).toBeNull()
-      expect(mockGuideRepository.findById).toHaveBeenCalledWith('guide-999')
+      expect(mockGuideRepository.findById).toHaveBeenCalledWith('guide-999', authToken)
     })
   })
 
@@ -91,7 +92,7 @@ describe('GuideService', () => {
       ]
       mockGuideRepository.findAll.mockResolvedValue(guides)
 
-      const result = await guideService.getAllGuides()
+      const result = await guideService.getAllGuides(authToken)
 
       expect(result).toEqual(guides)
       expect(mockGuideRepository.findAll).toHaveBeenCalled()
@@ -106,10 +107,10 @@ describe('GuideService', () => {
       ]
       mockGuideRepository.findByCategoryId.mockResolvedValue(guides)
 
-      const result = await guideService.getGuidesByCategoryId('cat-1')
+      const result = await guideService.getGuidesByCategoryId('cat-1', authToken)
 
       expect(result).toEqual(guides)
-      expect(mockGuideRepository.findByCategoryId).toHaveBeenCalledWith('cat-1')
+      expect(mockGuideRepository.findByCategoryId).toHaveBeenCalledWith('cat-1', authToken)
     })
   })
 
@@ -118,16 +119,16 @@ describe('GuideService', () => {
       const guide = new Guide('guide-1', 'cat-1', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
-      await guideService.updateGuideTitle('guide-1', 'Chocolate Cookies')
+      await guideService.updateGuideTitle('guide-1', 'Chocolate Cookies', authToken)
 
       expect(guide.title).toBe('Chocolate Cookies')
-      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
     it('should throw error if guide not found', async () => {
       mockGuideRepository.findById.mockResolvedValue(null)
 
-      await expect(guideService.updateGuideTitle('guide-999', 'New Title')).rejects.toThrow(
+      await expect(guideService.updateGuideTitle('guide-999', 'New Title', authToken)).rejects.toThrow(
         'Guide with id guide-999 not found'
       )
     })
@@ -138,17 +139,17 @@ describe('GuideService', () => {
       const guide = new Guide('guide-1', 'cat-1', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
-      await guideService.updateGuideDescription('guide-1', 'A delicious recipe')
+      await guideService.updateGuideDescription('guide-1', 'A delicious recipe', authToken)
 
       expect(guide.description).toBe('A delicious recipe')
-      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
     it('should throw error if guide not found', async () => {
       mockGuideRepository.findById.mockResolvedValue(null)
 
       await expect(
-        guideService.updateGuideDescription('guide-999', 'Description')
+        guideService.updateGuideDescription('guide-999', 'Description', authToken)
       ).rejects.toThrow('Guide with id guide-999 not found')
     })
   })
@@ -160,16 +161,16 @@ describe('GuideService', () => {
       mockGuideRepository.findById.mockResolvedValue(guide)
       mockStepRepository.findById.mockResolvedValue(step)
 
-      await guideService.addStepToGuide('guide-1', 'step-1')
+      await guideService.addStepToGuide('guide-1', 'step-1', authToken)
 
       expect(guide.stepIds).toContain('step-1')
-      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
     it('should throw error if guide not found', async () => {
       mockGuideRepository.findById.mockResolvedValue(null)
 
-      await expect(guideService.addStepToGuide('guide-999', 'step-1')).rejects.toThrow(
+      await expect(guideService.addStepToGuide('guide-999', 'step-1', authToken)).rejects.toThrow(
         'Guide with id guide-999 not found'
       )
     })
@@ -179,7 +180,7 @@ describe('GuideService', () => {
       mockGuideRepository.findById.mockResolvedValue(guide)
       mockStepRepository.findById.mockResolvedValue(null)
 
-      await expect(guideService.addStepToGuide('guide-1', 'step-999')).rejects.toThrow(
+      await expect(guideService.addStepToGuide('guide-1', 'step-999', authToken)).rejects.toThrow(
         'Step with id step-999 not found'
       )
     })
@@ -190,7 +191,7 @@ describe('GuideService', () => {
       mockGuideRepository.findById.mockResolvedValue(guide)
       mockStepRepository.findById.mockResolvedValue(step)
 
-      await expect(guideService.addStepToGuide('guide-1', 'step-1')).rejects.toThrow(
+      await expect(guideService.addStepToGuide('guide-1', 'step-1', authToken)).rejects.toThrow(
         'Step step-1 does not belong to guide guide-1'
       )
     })
@@ -202,16 +203,16 @@ describe('GuideService', () => {
       guide.addStep('step-1')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
-      await guideService.removeStepFromGuide('guide-1', 'step-1')
+      await guideService.removeStepFromGuide('guide-1', 'step-1', authToken)
 
       expect(guide.stepIds).not.toContain('step-1')
-      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
     it('should throw error if guide not found', async () => {
       mockGuideRepository.findById.mockResolvedValue(null)
 
-      await expect(guideService.removeStepFromGuide('guide-999', 'step-1')).rejects.toThrow(
+      await expect(guideService.removeStepFromGuide('guide-999', 'step-1', authToken)).rejects.toThrow(
         'Guide with id guide-999 not found'
       )
     })
@@ -224,27 +225,27 @@ describe('GuideService', () => {
       guide.addStep('step-2')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
-      await guideService.deleteGuide('guide-1')
+      await guideService.deleteGuide('guide-1', authToken)
 
-      expect(mockStepRepository.delete).toHaveBeenCalledWith('step-1')
-      expect(mockStepRepository.delete).toHaveBeenCalledWith('step-2')
-      expect(mockGuideRepository.delete).toHaveBeenCalledWith('guide-1')
+      expect(mockStepRepository.delete).toHaveBeenCalledWith('step-1', authToken)
+      expect(mockStepRepository.delete).toHaveBeenCalledWith('step-2', authToken)
+      expect(mockGuideRepository.delete).toHaveBeenCalledWith('guide-1', authToken)
     })
 
     it('should delete guide even if it has no steps', async () => {
       const guide = new Guide('guide-1', 'cat-1', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
-      await guideService.deleteGuide('guide-1')
+      await guideService.deleteGuide('guide-1', authToken)
 
       expect(mockStepRepository.delete).not.toHaveBeenCalled()
-      expect(mockGuideRepository.delete).toHaveBeenCalledWith('guide-1')
+      expect(mockGuideRepository.delete).toHaveBeenCalledWith('guide-1', authToken)
     })
 
     it('should throw error if guide not found', async () => {
       mockGuideRepository.findById.mockResolvedValue(null)
 
-      await expect(guideService.deleteGuide('guide-999')).rejects.toThrow(
+      await expect(guideService.deleteGuide('guide-999', authToken)).rejects.toThrow(
         'Guide with id guide-999 not found'
       )
     })

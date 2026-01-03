@@ -5,6 +5,7 @@ import { IUserRepository } from '../repositories/IUserRepository'
 describe('UserService', () => {
   let userService: UserService
   let mockRepository: jest.Mocked<IUserRepository>
+  const authToken = 'mock-auth-token'
 
   beforeEach(() => {
     mockRepository = {
@@ -21,21 +22,21 @@ describe('UserService', () => {
     it('should create a new user with generated ID and save to repository', async () => {
       mockRepository.findByEmail.mockResolvedValue(null)
 
-      const user = await userService.registerUser('test@example.com', 'password123')
+      const user = await userService.registerUser('test@example.com', 'password123', authToken)
 
       expect(user.id).toBeDefined()
       expect(user.email).toBe('test@example.com')
       expect(user.passwordHash).toBe('password123')
-      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com')
-      expect(mockRepository.save).toHaveBeenCalledWith(user)
+      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com', authToken)
+      expect(mockRepository.save).toHaveBeenCalledWith(user, authToken)
     })
 
     it('should normalize email to lowercase before duplicate check', async () => {
       mockRepository.findByEmail.mockResolvedValue(null)
 
-      await userService.registerUser('Test@Example.COM', 'password123')
+      await userService.registerUser('Test@Example.COM', 'password123', authToken)
 
-      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com')
+      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com', authToken)
     })
 
     it('should throw error if email already exists', async () => {
@@ -43,7 +44,7 @@ describe('UserService', () => {
       mockRepository.findByEmail.mockResolvedValue(existingUser)
 
       await expect(
-        userService.registerUser('test@example.com', 'password123')
+        userService.registerUser('test@example.com', 'password123', authToken)
       ).rejects.toThrow('Email already registered')
 
       expect(mockRepository.save).not.toHaveBeenCalled()
@@ -54,7 +55,7 @@ describe('UserService', () => {
       mockRepository.findByEmail.mockResolvedValue(existingUser)
 
       await expect(
-        userService.registerUser('Test@Example.COM', 'password123')
+        userService.registerUser('Test@Example.COM', 'password123', authToken)
       ).rejects.toThrow('Email already registered')
 
       expect(mockRepository.save).not.toHaveBeenCalled()
@@ -64,7 +65,7 @@ describe('UserService', () => {
       mockRepository.findByEmail.mockResolvedValue(null)
 
       await expect(
-        userService.registerUser('notanemail', 'password123')
+        userService.registerUser('notanemail', 'password123', authToken)
       ).rejects.toThrow('User email must be a valid email address')
 
       expect(mockRepository.save).not.toHaveBeenCalled()
@@ -74,7 +75,7 @@ describe('UserService', () => {
       mockRepository.findByEmail.mockResolvedValue(null)
 
       await expect(
-        userService.registerUser('test@example.com', '')
+        userService.registerUser('test@example.com', '', authToken)
       ).rejects.toThrow('User password cannot be empty')
 
       expect(mockRepository.save).not.toHaveBeenCalled()
@@ -86,19 +87,19 @@ describe('UserService', () => {
       const user = new User('user-123', 'test@example.com', 'password123')
       mockRepository.findById.mockResolvedValue(user)
 
-      const result = await userService.getUserById('user-123')
+      const result = await userService.getUserById('user-123', authToken)
 
       expect(result).toBe(user)
-      expect(mockRepository.findById).toHaveBeenCalledWith('user-123')
+      expect(mockRepository.findById).toHaveBeenCalledWith('user-123', authToken)
     })
 
     it('should return null if user not found', async () => {
       mockRepository.findById.mockResolvedValue(null)
 
-      const result = await userService.getUserById('nonexistent-id')
+      const result = await userService.getUserById('nonexistent-id', authToken)
 
       expect(result).toBeNull()
-      expect(mockRepository.findById).toHaveBeenCalledWith('nonexistent-id')
+      expect(mockRepository.findById).toHaveBeenCalledWith('nonexistent-id', authToken)
     })
   })
 
@@ -107,28 +108,28 @@ describe('UserService', () => {
       const user = new User('user-123', 'test@example.com', 'password123')
       mockRepository.findByEmail.mockResolvedValue(user)
 
-      const result = await userService.getUserByEmail('test@example.com')
+      const result = await userService.getUserByEmail('test@example.com', authToken)
 
       expect(result).toBe(user)
-      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com')
+      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com', authToken)
     })
 
     it('should normalize email to lowercase before search', async () => {
       const user = new User('user-123', 'test@example.com', 'password123')
       mockRepository.findByEmail.mockResolvedValue(user)
 
-      await userService.getUserByEmail('Test@Example.COM')
+      await userService.getUserByEmail('Test@Example.COM', authToken)
 
-      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com')
+      expect(mockRepository.findByEmail).toHaveBeenCalledWith('test@example.com', authToken)
     })
 
     it('should return null if user not found', async () => {
       mockRepository.findByEmail.mockResolvedValue(null)
 
-      const result = await userService.getUserByEmail('nonexistent@example.com')
+      const result = await userService.getUserByEmail('nonexistent@example.com', authToken)
 
       expect(result).toBeNull()
-      expect(mockRepository.findByEmail).toHaveBeenCalledWith('nonexistent@example.com')
+      expect(mockRepository.findByEmail).toHaveBeenCalledWith('nonexistent@example.com', authToken)
     })
   })
 
@@ -140,27 +141,27 @@ describe('UserService', () => {
       ]
       mockRepository.findAll.mockResolvedValue(users)
 
-      const result = await userService.getAllUsers()
+      const result = await userService.getAllUsers(authToken)
 
       expect(result).toBe(users)
-      expect(mockRepository.findAll).toHaveBeenCalled()
+      expect(mockRepository.findAll).toHaveBeenCalledWith(authToken)
     })
 
     it('should return empty array if no users exist', async () => {
       mockRepository.findAll.mockResolvedValue([])
 
-      const result = await userService.getAllUsers()
+      const result = await userService.getAllUsers(authToken)
 
       expect(result).toEqual([])
-      expect(mockRepository.findAll).toHaveBeenCalled()
+      expect(mockRepository.findAll).toHaveBeenCalledWith(authToken)
     })
   })
 
   describe('deleteUser', () => {
     it('should delete user by id', async () => {
-      await userService.deleteUser('user-123')
+      await userService.deleteUser('user-123', authToken)
 
-      expect(mockRepository.delete).toHaveBeenCalledWith('user-123')
+      expect(mockRepository.delete).toHaveBeenCalledWith('user-123', authToken)
     })
   })
 })
