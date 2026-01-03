@@ -39,9 +39,9 @@ class CategoryMapper:
             Category entity
         """
         return Category(
-            id=EntityId(document["_id"]),
+            id=EntityId(str(document["_id"])),
             name=document["name"],
-            parent_id=EntityId(document["parentId"]) if document.get("parentId") else None,
+            parent_id=EntityId(str(document["parentId"])) if document.get("parentId") else None,
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
         )

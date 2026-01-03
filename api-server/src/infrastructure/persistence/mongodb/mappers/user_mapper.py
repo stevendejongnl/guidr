@@ -38,7 +38,7 @@ class UserMapper:
             User entity
         """
         return User(
-            id=EntityId(document["_id"]),
+            id=EntityId(str(document["_id"])),
             email=Email(document["email"]),
             password_hash=document["passwordHash"],
             created_at=document["createdAt"],

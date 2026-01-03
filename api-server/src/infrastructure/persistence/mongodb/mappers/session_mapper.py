@@ -41,12 +41,12 @@ class SessionMapper:
             Session entity
         """
         return Session(
-            id=EntityId(document["_id"]),
-            guide_id=EntityId(document["guideId"]),
+            id=EntityId(str(document["_id"])),
+            guide_id=EntityId(str(document["guideId"])),
             status=SessionStatus(document["status"]),
             started_at=document.get("startedAt"),
             completed_at=document.get("completedAt"),
-            current_step_id=EntityId(document["currentStepId"]) if document.get("currentStepId") else None,
+            current_step_id=EntityId(str(document["currentStepId"])) if document.get("currentStepId") else None,
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
         )

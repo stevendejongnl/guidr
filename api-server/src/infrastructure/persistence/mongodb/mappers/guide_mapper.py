@@ -40,11 +40,11 @@ class GuideMapper:
             Guide entity
         """
         return Guide(
-            id=EntityId(document["_id"]),
-            category_id=EntityId(document["categoryId"]),
+            id=EntityId(str(document["_id"])),
+            category_id=EntityId(str(document["categoryId"])),
             title=GuideTitle(document["title"]),
             description=document.get("description"),
-            step_ids=[EntityId(step_id) for step_id in document.get("stepIds", [])],
+            step_ids=[EntityId(str(step_id)) for step_id in document.get("stepIds", [])],
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
         )

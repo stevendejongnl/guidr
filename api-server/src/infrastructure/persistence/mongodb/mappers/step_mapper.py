@@ -41,8 +41,8 @@ class StepMapper:
             Step entity
         """
         return Step(
-            id=EntityId(document["_id"]),
-            guide_id=EntityId(document["guideId"]),
+            id=EntityId(str(document["_id"])),
+            guide_id=EntityId(str(document["guideId"])),
             order=document["order"],
             title=document["title"],
             duration=StepDuration(document["duration"]),
