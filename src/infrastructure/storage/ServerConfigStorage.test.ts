@@ -38,7 +38,7 @@ describe('ServerConfigStorage', () => {
 
   describe('setServerUrl', () => {
     it('should store valid HTTP URL', async () => {
-      await storage.setServerUrl('http://localhost:3000')
+      await storage.setServerUrl('http://localhost:3000/api/v1')
 
       expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
         'Guidr_ServerUrl',

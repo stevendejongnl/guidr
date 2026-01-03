@@ -5,7 +5,7 @@ global.fetch = jest.fn()
 
 describe('ServerConfigClient', () => {
   let configClient: ServerConfigClient
-  const serverUrl = 'http://localhost:8000'
+  const serverUrl = 'http://localhost:8000/api/v1'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
@@ -40,7 +40,7 @@ describe('ServerConfigClient', () => {
 
       expect(result.debugMode).toBe(true)
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/config',
+        'http://localhost:8000/api/v1/config',
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },

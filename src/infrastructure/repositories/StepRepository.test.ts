@@ -10,7 +10,7 @@ jest.mock('@react-native-async-storage/async-storage')
 global.fetch = jest.fn()
 
 describe('StepRepository', () => {
-  const serverUrl = 'http://localhost:8000'
+  const serverUrl = 'http://localhost:8000/api/v1'
   const authToken = 'mock-auth-token'
   let repository: StepRepository
 
