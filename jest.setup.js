@@ -30,6 +30,24 @@ console.error = (...args) => {
     return
   }
 
+  // Suppress expected ApkInstaller error logs in tests
+  if (
+    typeof message === 'string' &&
+    (message.includes('Failed to delete downloaded APK:') ||
+     message.includes('Failed to get free space:'))
+  ) {
+    return
+  }
+
+  // Suppress expected UpdateService error logs in tests
+  if (
+    typeof message === 'string' &&
+    (message.includes('Update check failed:') ||
+     message.includes('Failed to compare versions for mandatory check:'))
+  ) {
+    return
+  }
+
   // Suppress React act() warnings - these are testing library noise
   // in React Native where proper act() wrapping is often impractical
   if (

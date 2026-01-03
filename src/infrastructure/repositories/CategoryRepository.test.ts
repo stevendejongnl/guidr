@@ -10,7 +10,7 @@ jest.mock('@react-native-async-storage/async-storage')
 global.fetch = jest.fn()
 
 describe('CategoryRepository', () => {
-  const serverUrl = 'http://localhost:8000/api/v1'
+  const serverUrl = 'http://localhost:8000'
   const authToken = 'mock-auth-token'
   let repository: CategoryRepository
 

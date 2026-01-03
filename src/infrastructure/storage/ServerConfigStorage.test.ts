@@ -42,7 +42,7 @@ describe('ServerConfigStorage', () => {
 
       expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
         'Guidr_ServerUrl',
-        'http://localhost:3000'
+        'http://localhost:3000/api/v1'
       )
     })
 
