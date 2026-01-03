@@ -1,3 +1,28 @@
+## [1.18.0](https://github.com/stevendejongnl/guidr/compare/v1.17.0...v1.18.0) (2026-01-03)
+
+### Features
+
+* add config and health endpoints to API server ([6e08df6](https://github.com/stevendejongnl/guidr/commit/6e08df64b8f98fa0c7209b88a37703bf50980069))
+* complete Phase 8 - cutover to DDD architecture ([6cca5f4](https://github.com/stevendejongnl/guidr/commit/6cca5f4d5e4b8a7d165f30e308f0782c7d2fa14c))
+* implement application layer with use cases and DTOs (Phase 5) ([1cbf622](https://github.com/stevendejongnl/guidr/commit/1cbf622c14c0d9c1a961fb703fb4345a4f065adb))
+* implement DDD aggregates and domain events (Phase 3) ([09b5ef8](https://github.com/stevendejongnl/guidr/commit/09b5ef89e19110e41b6aab98bc829b7d7efb0b1b))
+* implement DDD domain entities with comprehensive tests (Phase 2 part 2) ([0dfce37](https://github.com/stevendejongnl/guidr/commit/0dfce379ec2670e2811bcbed5018b9ace6d1546b))
+* implement DDD domain layer with value objects (Phase 2 part 1) ([46eaa15](https://github.com/stevendejongnl/guidr/commit/46eaa15cc89b0800d73df549237417dd6a70740d))
+* implement HTTP repositories with AsyncStorage caching ([ed0073f](https://github.com/stevendejongnl/guidr/commit/ed0073fd75d3021f11d58c5c2b554ca9149e9ee7))
+* implement Phase 7 - DI container and infrastructure integration ([c47387f](https://github.com/stevendejongnl/guidr/commit/c47387f8c0a91a04161b95893446afd6c5eea948))
+* implement presentation layer with RESTful API design (Phase 6 Part 1) ([993c213](https://github.com/stevendejongnl/guidr/commit/993c213c24f8629f18ad415b4b134705c813289c))
+* implement repository pattern with MongoDB persistence (Phase 4) ([f9215e4](https://github.com/stevendejongnl/guidr/commit/f9215e47109b5145755afce5f27e322a0efde8de))
+
+### Bug Fixes
+
+* add main() function for poetry script entry point ([9f38b65](https://github.com/stevendejongnl/guidr/commit/9f38b6537f868fa3968d85b423c893e8452334f6))
+* use /health endpoint for DebugScreen connection test ([a9b245c](https://github.com/stevendejongnl/guidr/commit/a9b245c1673151cd01a6a2c6aa805d1fccb9779d))
+
+### Code Refactoring
+
+* rename test-server to api-server ([51bffee](https://github.com/stevendejongnl/guidr/commit/51bffee805964471ecff1bc977564e6b4916d9a8))
+* update auth endpoints to /api/v1 structure ([a601309](https://github.com/stevendejongnl/guidr/commit/a601309cb0a172432ef9d64742cc3b93535ca448))
+
 ## [1.17.0](https://github.com/stevendejongnl/guidr/compare/v1.16.0...v1.17.0) (2026-01-01)
 
 ### Features
