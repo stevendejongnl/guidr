@@ -1,3 +1,9 @@
+## [1.18.2](https://github.com/stevendejongnl/guidr/compare/v1.18.1...v1.18.2) (2026-01-03)
+
+### Bug Fixes
+
+* **api-server:** support MongoDB ObjectId format in EntityId validation ([464bf83](https://github.com/stevendejongnl/guidr/commit/464bf835946c7c0443adfde48de655aa8521993f))
+
 ## [1.18.1](https://github.com/stevendejongnl/guidr/compare/v1.18.0...v1.18.1) (2026-01-03)
 
 ### Bug Fixes
