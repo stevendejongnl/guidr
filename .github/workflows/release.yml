@@ -14,7 +14,7 @@ permissions:
 jobs:
   release:
     name: Semantic Release
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@v4
@@ -28,17 +28,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Setup Java for Android
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Install CocoaPods dependencies
-        run: |
-          cd ios
-          pod install
 
       - name: Run lint
         run: npm run lint
@@ -66,60 +55,6 @@ jobs:
             echo "No release needed - no relevant commits since last release"
           fi
 
-      - name: Create Sentry properties files
-        if: env.SHOULD_RELEASE == 'true'
-        run: |
-          # Android sentry.properties
-          cat > android/sentry.properties <<EOF
-          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
-          EOF
-
-          # iOS sentry.properties (for future iOS builds)
-          cat > ios/sentry.properties <<EOF
-          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
-          EOF
-
-          echo "✅ Created Sentry properties files"
-
-      - name: Build Android APK
-        if: env.SHOULD_RELEASE == 'true'
-        run: |
-          # Update version files before building
-          chmod +x scripts/sync-version.sh scripts/update-android-version.sh
-          ./scripts/update-android-version.sh "$NEXT_VERSION"
-
-          chmod +x android/gradlew
-          android/gradlew assembleRelease --no-daemon --stacktrace -p android
-
-          # Get APK size
-          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
-          if [ -f "$APK_PATH" ]; then
-            APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH")
-            echo "APK_SIZE=$APK_SIZE" >> $GITHUB_ENV
-            echo "Built APK: $APK_PATH (${APK_SIZE} bytes)"
-          else
-            echo "Warning: APK not found at expected path"
-            ls -la android/app/build/outputs/apk/release/ || true
-          fi
-
-      - name: Rename APK with version
-        if: env.SHOULD_RELEASE == 'true'
-        run: |
-          VERSION="${{ env.NEXT_VERSION }}"
-          OLD_PATH="android/app/build/outputs/apk/release/app-release.apk"
-          NEW_PATH="android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
-
-          mv "$OLD_PATH" "$NEW_PATH"
-          echo "✅ Renamed APK to: guidr-v${VERSION}.apk"
-
-          # Verify the file exists
-          ls -lh "$NEW_PATH"
 
       - name: Run semantic-release
         if: env.SHOULD_RELEASE == 'true'

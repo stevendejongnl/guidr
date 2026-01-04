@@ -1,0 +1,128 @@
+name: Android Release
+
+on:
+  # Trigger when a new release is created
+  repository_dispatch:
+    types: [release-created]
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.2.3)'
+        required: false
+        type: string
+
+permissions:
+  contents: write  # Required to upload assets to release
+
+jobs:
+  android-build-release:
+    name: Build and Upload Android APK
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'repository_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # Manual trigger: use input or package.json
+            if [ -n "${{ inputs.version }}" ]; then
+              VERSION="${{ inputs.version }}"
+            else
+              VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+            fi
+          else
+            # repository_dispatch trigger: use event payload
+            VERSION="${{ github.event.client_payload.version }}"
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Sentry properties file
+        run: |
+          cat > android/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          echo "✅ Created Android Sentry properties file"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Update Android version
+        run: |
+          chmod +x scripts/update-android-version.sh
+          ./scripts/update-android-version.sh "${{ steps.version.outputs.VERSION }}"
+
+      - name: Build Android APK
+        run: |
+          chmod +x android/gradlew
+          android/gradlew assembleRelease --no-daemon --stacktrace -p android
+
+          # Get APK info
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          if [ -f "$APK_PATH" ]; then
+            APK_SIZE=$(stat -c%s "$APK_PATH")
+            echo "Built APK: $APK_PATH (${APK_SIZE} bytes)"
+          else
+            echo "Error: APK not found at expected path"
+            ls -la android/app/build/outputs/apk/release/ || true
+            exit 1
+          fi
+
+      - name: Rename APK with version
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          OLD_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          NEW_PATH="android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
+
+          mv "$OLD_PATH" "$NEW_PATH"
+          echo "✅ Renamed APK to: guidr-v${VERSION}.apk"
+          ls -lh "$NEW_PATH"
+
+      - name: Upload APK to GitHub Release
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          APK_PATH="android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
+
+          gh release upload "v${VERSION}" "$APK_PATH" \
+            --clobber \
+            --repo "${{ github.repository }}"
+
+          echo "✅ Uploaded APK to release v${VERSION}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build complete
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          echo "✅ Android APK build and upload complete!"
+          echo ""
+          echo "Version: $VERSION"
+          echo "Release: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}"
+

@@ -52,17 +52,7 @@
         "prepareCmd": "echo ${nextRelease.version} > .version && chmod +x scripts/update-ios-version.sh scripts/update-android-version.sh scripts/update-api-server-version.sh && ./scripts/update-ios-version.sh ${nextRelease.version} && ./scripts/update-android-version.sh ${nextRelease.version} && ./scripts/update-api-server-version.sh ${nextRelease.version}"
       }
     ],
-    [
-      "@semantic-release/github",
-      {
-        "assets": [
-          {
-            "path": "android/app/build/outputs/apk/release/guidr-v*.apk",
-            "label": "Guidr Android v${nextRelease.version} (APK)"
-          }
-        ]
-      }
-    ],
+    "@semantic-release/github",
     [
       "@semantic-release/git",
       {
