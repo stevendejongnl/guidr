@@ -1,3 +1,9 @@
+## [1.19.0](https://github.com/stevendejongnl/guidr/compare/v1.18.3...v1.19.0) (2026-01-04)
+
+### Features
+
+* **Settings:** add SettingsScreen and integrate with HomeScreen menu ([5d7af57](https://github.com/stevendejongnl/guidr/commit/5d7af570d59c9e45634fd11c140ae4e1a2e99ab8))
+
 ## [1.18.3](https://github.com/stevendejongnl/guidr/compare/v1.18.2...v1.18.3) (2026-01-04)
 
 ### Bug Fixes
