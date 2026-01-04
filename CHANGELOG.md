@@ -1,3 +1,9 @@
+## [1.18.3](https://github.com/stevendejongnl/guidr/compare/v1.18.2...v1.18.3) (2026-01-04)
+
+### Bug Fixes
+
+* **ApkInstaller:** implement native module for APK installation and update tests ([9324552](https://github.com/stevendejongnl/guidr/commit/93245523cd116fb791e5e978071b8442b7484afb))
+
 ## [1.18.2](https://github.com/stevendejongnl/guidr/compare/v1.18.1...v1.18.2) (2026-01-03)
 
 ### Bug Fixes
