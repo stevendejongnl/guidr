@@ -6,6 +6,8 @@ module.exports = {
   ActivityIndicator: 'ActivityIndicator',
   KeyboardAvoidingView: 'KeyboardAvoidingView',
   ScrollView: 'ScrollView',
+  Modal: 'Modal',
+  Pressable: 'Pressable',
   Platform: {
     OS: 'ios',
     select: (obj) => obj.ios,

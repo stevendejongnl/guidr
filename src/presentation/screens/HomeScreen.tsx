@@ -2,19 +2,25 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { Menu, MenuItem } from '../components/Menu'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { commonStyles, colors } from '../theme'
 
 interface HomeScreenProps {
   onLogout: () => void | Promise<void>
   onOpenDebug: () => void
+  onOpenSettings: () => void
   debugMode: boolean
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, debugMode }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, onOpenSettings, debugMode }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loggingOut, setLoggingOut] = useState(false)
   const authStorage = new AuthStorage()
+
+  const menuItems: MenuItem[] = [
+    { id: 'settings', label: 'Settings', onPress: onOpenSettings },
+  ]
 
   useEffect(() => {
     const loadUserEmail = async () => {
@@ -45,6 +51,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, d
 
   return (
     <View style={commonStyles.container}>
+      <Menu items={menuItems} testID="home-menu" />
       <View style={commonStyles.contentCentered}>
         <Text style={commonStyles.titleLarge}>Guidr</Text>
         {userEmail ? (

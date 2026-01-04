@@ -8,11 +8,13 @@ jest.mock('../../infrastructure/storage/AuthStorage')
 describe('HomeScreen', () => {
   let mockOnLogout: jest.Mock
   let mockOnOpenDebug: jest.Mock
+  let mockOnOpenSettings: jest.Mock
   let mockAuthStorage: jest.Mocked<AuthStorage>
 
   beforeEach(() => {
     mockOnLogout = jest.fn()
     mockOnOpenDebug = jest.fn()
+    mockOnOpenSettings = jest.fn()
 
     mockAuthStorage = {
       getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
@@ -26,7 +28,7 @@ describe('HomeScreen', () => {
   describe('rendering', () => {
     it('should render title and description', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       expect(getByText('Guidr')).toBeTruthy()
@@ -35,7 +37,7 @@ describe('HomeScreen', () => {
 
     it('should render logout button', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       expect(getByText('Logout')).toBeTruthy()
@@ -43,7 +45,7 @@ describe('HomeScreen', () => {
 
     it('should display user email when loaded', async () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       await waitFor(() => {
@@ -55,7 +57,7 @@ describe('HomeScreen', () => {
       mockAuthStorage.getUserEmail.mockResolvedValue(null)
 
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       await waitFor(() => {
@@ -67,7 +69,7 @@ describe('HomeScreen', () => {
   describe('logout button', () => {
     it('should call onLogout when logout button is pressed', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       fireEvent.press(getByText('Logout'))
@@ -81,7 +83,7 @@ describe('HomeScreen', () => {
       )
 
       const { getByText, queryByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       fireEvent.press(getByText('Logout'))
@@ -101,7 +103,7 @@ describe('HomeScreen', () => {
       )
 
       const { getByText, UNSAFE_getByProps } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       fireEvent.press(getByText('Logout'))
@@ -116,7 +118,7 @@ describe('HomeScreen', () => {
       mockOnLogout.mockRejectedValue(new Error('Logout failed'))
 
       const { getByText, queryByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       fireEvent.press(getByText('Logout'))
@@ -136,7 +138,7 @@ describe('HomeScreen', () => {
   describe('debug button', () => {
     it('should show debug button when debugMode is true', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={true} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={true} />
       )
 
       expect(getByText('⚙ Debug Tools')).toBeTruthy()
@@ -144,7 +146,7 @@ describe('HomeScreen', () => {
 
     it('should not show debug button when debugMode is false', () => {
       const { queryByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       expect(queryByText('⚙ Debug Tools')).toBeNull()
@@ -152,7 +154,7 @@ describe('HomeScreen', () => {
 
     it('should call onOpenDebug when debug button is pressed', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={true} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={true} />
       )
 
       fireEvent.press(getByText('⚙ Debug Tools'))
@@ -162,7 +164,7 @@ describe('HomeScreen', () => {
 
     it('should have correct accessibility label for debug button', () => {
       const { getByLabelText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={true} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={true} />
       )
 
       expect(getByLabelText('Open debug tools')).toBeTruthy()
@@ -175,7 +177,7 @@ describe('HomeScreen', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
 
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} debugMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
       )
 
       await waitFor(() => {
@@ -188,6 +190,27 @@ describe('HomeScreen', () => {
       )
 
       consoleErrorSpy.mockRestore()
+    })
+  })
+
+  describe('menu', () => {
+    it('should render menu button', () => {
+      const { getByTestId } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
+      )
+
+      expect(getByTestId('home-menu')).toBeTruthy()
+    })
+
+    it('should call onOpenSettings when settings menu item is pressed', () => {
+      const { getByTestId } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenDebug={mockOnOpenDebug} onOpenSettings={mockOnOpenSettings} debugMode={false} />
+      )
+
+      fireEvent.press(getByTestId('home-menu'))
+      fireEvent.press(getByTestId('menu-item-settings'))
+
+      expect(mockOnOpenSettings).toHaveBeenCalledTimes(1)
     })
   })
 })

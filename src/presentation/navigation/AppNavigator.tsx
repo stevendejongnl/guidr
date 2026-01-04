@@ -12,6 +12,7 @@ import { LoginScreen } from '../screens/LoginScreen'
 import { RegistrationScreen } from '../screens/RegistrationScreen'
 import { HomeScreen } from '../screens/HomeScreen'
 import { DebugScreen } from '../screens/DebugScreen'
+import { SettingsScreen } from '../screens/SettingsScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -31,6 +32,7 @@ export const AppNavigator: React.FC = () => {
     maxAppVersion?: string | null
   } | null>(null)
   const [showDebugScreen, setShowDebugScreen] = useState(false)
+  const [showSettingsScreen, setShowSettingsScreen] = useState(false)
   const [showServerSetup, setShowServerSetup] = useState(false)
   const [showRegistration, setShowRegistration] = useState(false)
   const [appVersion] = useState(() => DeviceInfo.getVersion())
@@ -301,10 +303,29 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (showSettingsScreen) {
+    return (
+      <SettingsScreen
+        onBack={() => setShowSettingsScreen(false)}
+        onChangeServer={() => {
+          setShowSettingsScreen(false)
+          handleChangeServer()
+        }}
+        onOpenDebug={() => {
+          setShowSettingsScreen(false)
+          setShowDebugScreen(true)
+        }}
+        debugMode={serverConfig?.debugMode ?? false}
+        serverUrl={serverUrl}
+      />
+    )
+  }
+
   return (
     <HomeScreen
       onLogout={handleLogout}
       onOpenDebug={() => setShowDebugScreen(true)}
+      onOpenSettings={() => setShowSettingsScreen(true)}
       debugMode={serverConfig?.debugMode ?? false}
     />
   )
