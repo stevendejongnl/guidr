@@ -1,5 +1,7 @@
 import RNFS from 'react-native-fs'
-import { Platform, Linking } from 'react-native'
+import { Platform, NativeModules } from 'react-native'
+
+const { ApkInstallerModule } = NativeModules
 
 export interface DownloadProgress {
   bytesWritten: number
@@ -92,19 +94,9 @@ export class ApkInstaller {
         throw new Error('APK file not found at specified path')
       }
 
-      // Construct file:// URI for installation
-      // Android will handle this via FileProvider configured in AndroidManifest
-      const fileUri = `file://${filePath}`
-
-      // Open the APK file which triggers installation dialog
-      const canOpen = await Linking.canOpenURL(fileUri)
-      if (!canOpen) {
-        throw new Error(
-          'Cannot open APK file. Please check FileProvider configuration.'
-        )
-      }
-
-      await Linking.openURL(fileUri)
+      // Use native module to install APK via FileProvider
+      // This properly handles content:// URIs required on Android 7+
+      await ApkInstallerModule.installApk(filePath)
     } catch (error) {
       if (error instanceof Error) {
         throw error

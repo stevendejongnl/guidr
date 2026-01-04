@@ -5,11 +5,14 @@
  * 1. react-test-renderer deprecation (external dependency issue)
  * 2. ConfigLoader error logs (intentional error handling tests)
  * 3. React act() warnings (testing library noise in React Native)
+ * 4. Expected error handling test outputs
  *
  * Real, unexpected errors will still be logged and visible.
  */
 
 const originalError = console.error
+const originalWarn = console.warn
+const originalLog = console.log
 
 console.error = (...args) => {
   const message = args[0]
@@ -48,6 +51,32 @@ console.error = (...args) => {
     return
   }
 
+  // Suppress expected ErrorReporter logs in tests (error handling tests)
+  if (
+    typeof message === 'string' &&
+    message.includes('[ErrorReporter]')
+  ) {
+    return
+  }
+
+  // Suppress expected UpdateCheckStorage error logs in tests
+  if (
+    typeof message === 'string' &&
+    (message.includes('Failed to get last update check timestamp:') ||
+     message.includes('Failed to set last update check timestamp:') ||
+     message.includes('Failed to clear last update check:'))
+  ) {
+    return
+  }
+
+  // Suppress expected logout error logs in tests
+  if (
+    typeof message === 'string' &&
+    message.includes('Logout error:')
+  ) {
+    return
+  }
+
   // Suppress React act() warnings - these are testing library noise
   // in React Native where proper act() wrapping is often impractical
   if (
@@ -61,3 +90,34 @@ console.error = (...args) => {
   // Pass through all other errors
   originalError(...args)
 }
+
+console.warn = (...args) => {
+  const message = args[0]
+
+  // Suppress fake timers warning when advanceTimersByTime is called without useFakeTimers
+  if (
+    typeof message === 'string' &&
+    message.includes('A function to advance timers was called but the timers APIs are not replaced with fake timers')
+  ) {
+    return
+  }
+
+  // Pass through all other warnings
+  originalWarn(...args)
+}
+
+console.log = (...args) => {
+  const message = args[0]
+
+  // Suppress TEST MODE logs from ApkInstaller
+  if (
+    typeof message === 'string' &&
+    message.includes('TEST MODE:')
+  ) {
+    return
+  }
+
+  // Pass through all other logs
+  originalLog(...args)
+}
+

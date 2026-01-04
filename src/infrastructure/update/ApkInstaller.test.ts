@@ -1,6 +1,6 @@
 import { ApkInstaller, DownloadProgress } from './ApkInstaller'
 import RNFS from 'react-native-fs'
-import { Platform, Linking } from 'react-native'
+import { Platform, NativeModules } from 'react-native'
 
 // Mock react-native-fs
 jest.mock('react-native-fs', () => ({
@@ -12,15 +12,16 @@ jest.mock('react-native-fs', () => ({
   getFSInfo: jest.fn(),
 }))
 
-// Mock react-native Linking
+// Mock react-native NativeModules
 jest.mock('react-native', () => ({
   Platform: {
     OS: 'android',
     Version: 30,
   },
-  Linking: {
-    canOpenURL: jest.fn(),
-    openURL: jest.fn(),
+  NativeModules: {
+    ApkInstallerModule: {
+      installApk: jest.fn(),
+    },
   },
 }))
 
@@ -81,7 +82,7 @@ describe('ApkInstaller', () => {
       expect(RNFS.unlink).toHaveBeenCalledWith('/cache/guidr-update.apk')
     })
 
-    it.skip('should call progress callback during download', async () => {
+    it('should call progress callback during download', async () => {
       let capturedProgressCallback: ((res: any) => void) | undefined
       let resolveDownload: (value: any) => void
 
@@ -98,19 +99,6 @@ describe('ApkInstaller', () => {
       ;(RNFS.exists as jest.Mock).mockResolvedValue(false)
       ;(RNFS.downloadFile as jest.Mock).mockImplementation((options) => {
         capturedProgressCallback = options.progress
-        // Immediately call the progress callback to simulate progress
-        setImmediate(() => {
-          if (capturedProgressCallback) {
-            capturedProgressCallback({
-              bytesWritten: 500,
-              contentLength: 1000,
-            })
-            capturedProgressCallback({
-              bytesWritten: 1000,
-              contentLength: 1000,
-            })
-          }
-        })
         return mockDownloadJob
       })
       ;(RNFS.stat as jest.Mock).mockResolvedValue({ size: 1000 })
@@ -120,8 +108,18 @@ describe('ApkInstaller', () => {
         mockProgressCallback
       )
 
-      // Wait for progress callbacks
+      // Wait for downloadFile to be called and capture the progress callback
       await new Promise((resolve) => setImmediate(resolve))
+
+      // Now the callback should be captured, simulate progress
+      capturedProgressCallback!({
+        bytesWritten: 500,
+        contentLength: 1000,
+      })
+      capturedProgressCallback!({
+        bytesWritten: 1000,
+        contentLength: 1000,
+      })
 
       // Now resolve the download
       resolveDownload!({ statusCode: 200, bytesWritten: 1000 })
@@ -139,7 +137,7 @@ describe('ApkInstaller', () => {
       })
     })
 
-    it.skip('should handle progress when contentLength is 0', async () => {
+    it('should handle progress when contentLength is 0', async () => {
       let capturedProgressCallback: ((res: any) => void) | undefined
       let resolveDownload: (value: any) => void
 
@@ -156,14 +154,6 @@ describe('ApkInstaller', () => {
       ;(RNFS.exists as jest.Mock).mockResolvedValue(false)
       ;(RNFS.downloadFile as jest.Mock).mockImplementation((options) => {
         capturedProgressCallback = options.progress
-        setImmediate(() => {
-          if (capturedProgressCallback) {
-            capturedProgressCallback({
-              bytesWritten: 500,
-              contentLength: 0,
-            })
-          }
-        })
         return mockDownloadJob
       })
       ;(RNFS.stat as jest.Mock).mockResolvedValue({ size: 500 })
@@ -173,7 +163,14 @@ describe('ApkInstaller', () => {
         mockProgressCallback
       )
 
+      // Wait for downloadFile to be called and capture the progress callback
       await new Promise((resolve) => setImmediate(resolve))
+
+      // Now the callback should be captured, simulate progress
+      capturedProgressCallback!({
+        bytesWritten: 500,
+        contentLength: 0,
+      })
 
       resolveDownload!({ statusCode: 200, bytesWritten: 500 })
       await downloadApkPromise
@@ -237,16 +234,12 @@ describe('ApkInstaller', () => {
   describe('installApk', () => {
     it('should install APK successfully', async () => {
       (RNFS.exists as jest.Mock).mockResolvedValue(true)
-      ;(Linking.canOpenURL as jest.Mock).mockResolvedValue(true)
-      ;(Linking.openURL as jest.Mock).mockResolvedValue(undefined)
+      ;(NativeModules['ApkInstallerModule'].installApk as jest.Mock).mockResolvedValue(undefined)
 
       await installer.installApk('/cache/guidr-update.apk')
 
-      expect(Linking.canOpenURL).toHaveBeenCalledWith(
-        'file:///cache/guidr-update.apk'
-      )
-      expect(Linking.openURL).toHaveBeenCalledWith(
-        'file:///cache/guidr-update.apk'
+      expect(NativeModules['ApkInstallerModule'].installApk).toHaveBeenCalledWith(
+        '/cache/guidr-update.apk'
       )
     })
 
@@ -258,15 +251,15 @@ describe('ApkInstaller', () => {
       ).rejects.toThrow('APK file not found at specified path')
     })
 
-    it('should throw error if cannot open URL', async () => {
+    it('should throw error if native module fails', async () => {
       (RNFS.exists as jest.Mock).mockResolvedValue(true)
-      ;(Linking.canOpenURL as jest.Mock).mockResolvedValue(false)
+      ;(NativeModules['ApkInstallerModule'].installApk as jest.Mock).mockRejectedValue(
+        new Error('Native module error')
+      )
 
       await expect(
         installer.installApk('/cache/guidr-update.apk')
-      ).rejects.toThrow(
-        'Cannot open APK file. Please check FileProvider configuration.'
-      )
+      ).rejects.toThrow('Native module error')
     })
 
     it('should throw error on iOS platform', async () => {
@@ -283,8 +276,7 @@ describe('ApkInstaller', () => {
 
       await testInstaller.installApk('/cache/guidr-update.apk')
 
-      expect(Linking.canOpenURL).not.toHaveBeenCalled()
-      expect(Linking.openURL).not.toHaveBeenCalled()
+      expect(NativeModules['ApkInstallerModule'].installApk).not.toHaveBeenCalled()
     })
   })
 
