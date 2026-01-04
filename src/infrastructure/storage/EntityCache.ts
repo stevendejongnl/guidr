@@ -47,7 +47,7 @@ export class EntityCache<T> {
       }
 
       return entry.data
-    } catch (error) {
+    } catch (_error) {
       // Ignore cache errors, return null as cache miss
       return null
     }
@@ -66,7 +66,7 @@ export class EntityCache<T> {
       }
 
       await AsyncStorage.setItem(cacheKey, JSON.stringify(entry))
-    } catch (error) {
+    } catch (_error) {
       // Ignore cache errors, fail silently
     }
   }
@@ -78,7 +78,7 @@ export class EntityCache<T> {
     try {
       const cacheKey = this.buildCacheKey(key)
       await AsyncStorage.removeItem(cacheKey)
-    } catch (error) {
+    } catch (_error) {
       // Ignore cache errors
     }
   }
@@ -95,7 +95,7 @@ export class EntityCache<T> {
       if (keysToRemove.length > 0) {
         await AsyncStorage.multiRemove(keysToRemove)
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore cache errors
     }
   }

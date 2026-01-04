@@ -14,7 +14,7 @@ export const VersionDisplay: React.FC = () => {
       const appBuildNumber = DeviceInfo.getBuildNumber()
       setVersion(appVersion)
       setBuildNumber(appBuildNumber)
-    } catch (error) {
+    } catch (_error) {
       setVersion('0.0.0')
       setBuildNumber('0')
     } finally {
