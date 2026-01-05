@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
 
 interface SettingsScreenProps {
@@ -29,69 +30,71 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const buildNumber = DeviceInfo.getBuildNumber()
 
   return (
-    <View style={commonStyles.containerTop}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={onBack}
-          accessibilityLabel="Go back"
-          testID="settings-back-button"
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {/* App Information Section */}
-        <View style={commonStyles.section}>
-          <Text style={commonStyles.sectionTitle}>App Information</Text>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Version</Text>
-            <Text style={styles.settingValue}>{appVersion}</Text>
-          </View>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Build</Text>
-            <Text style={styles.settingValue}>{buildNumber}</Text>
-          </View>
-        </View>
-
-        {/* Server Section */}
-        <View style={commonStyles.section}>
-          <Text style={commonStyles.sectionTitle}>Server</Text>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Server URL</Text>
-            <Text style={styles.settingValueSmall} numberOfLines={1}>
-              {serverUrl || 'Not configured'}
-            </Text>
-          </View>
+    <SafeScreen>
+      <View style={commonStyles.containerTop}>
+        <View style={styles.header}>
           <TouchableOpacity
-            style={[commonStyles.buttonSecondary, styles.sectionButton]}
-            onPress={onChangeServer}
-            testID="change-server-button"
+            style={styles.backButton}
+            onPress={onBack}
+            accessibilityLabel="Go back"
+            testID="settings-back-button"
           >
-            <Text style={commonStyles.buttonText}>Change Server</Text>
+            <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>Settings</Text>
+          <View style={styles.headerSpacer} />
         </View>
 
-        {/* Debug Section - Only shown in debug mode */}
-        {debugMode && onOpenDebug && (
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          {/* App Information Section */}
           <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>Developer</Text>
+            <Text style={commonStyles.sectionTitle}>App Information</Text>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Version</Text>
+              <Text style={styles.settingValue}>{appVersion}</Text>
+            </View>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Build</Text>
+              <Text style={styles.settingValue}>{buildNumber}</Text>
+            </View>
+          </View>
+
+          {/* Server Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Server</Text>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Server URL</Text>
+              <Text style={styles.settingValueSmall} numberOfLines={1}>
+                {serverUrl || 'Not configured'}
+              </Text>
+            </View>
             <TouchableOpacity
               style={[commonStyles.buttonSecondary, styles.sectionButton]}
-              onPress={onOpenDebug}
-              testID="open-debug-button"
+              onPress={onChangeServer}
+              testID="change-server-button"
             >
-              <Text style={commonStyles.buttonText}>Debug Tools</Text>
+              <Text style={commonStyles.buttonText}>Change Server</Text>
             </TouchableOpacity>
           </View>
-        )}
-      </ScrollView>
 
-      <VersionDisplay />
-    </View>
+          {/* Debug Section - Only shown in debug mode */}
+          {debugMode && onOpenDebug && (
+            <View style={commonStyles.section}>
+              <Text style={commonStyles.sectionTitle}>Developer</Text>
+              <TouchableOpacity
+                style={[commonStyles.buttonSecondary, styles.sectionButton]}
+                onPress={onOpenDebug}
+                testID="open-debug-button"
+              >
+                <Text style={commonStyles.buttonText}>Debug Tools</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+
+        <VersionDisplay />
+      </View>
+    </SafeScreen>
   )
 }
 
@@ -154,4 +157,3 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
 })
-

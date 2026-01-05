@@ -14,6 +14,7 @@ import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigSt
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { UpdateButton } from '../components/UpdateButton'
 import { UpdateCheckResult } from '../../domain/services/UpdateService'
 import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
@@ -138,107 +139,108 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
   }
 
   return (
-    <View style={commonStyles.containerTop}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.backButton}
-          accessibilityLabel="Go back"
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={commonStyles.title}>Debug Tools</Text>
-      </View>
-
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {/* Version Info Section */}
-        <View style={commonStyles.section}>
-          <Text style={commonStyles.sectionTitle}>Version Information</Text>
-          <Text style={styles.infoText}>App: v{appVersion} ({appBuildNumber})</Text>
-          <Text style={styles.infoText}>
-            Server: {serverVersion || 'Not connected'}
-          </Text>
-        </View>
-
-        {/* Stored Configuration Section */}
-        <View style={commonStyles.section}>
-          <Text style={commonStyles.sectionTitle}>Stored Configuration</Text>
-          <Text style={styles.infoText}>
-            Server URL: {storedServerUrl || 'None'}
-          </Text>
-          <Text style={styles.infoText}>
-            Auth Token: {maskToken(authToken)}
-          </Text>
-          <Text style={styles.infoText}>
-            Email: {userEmail || 'None'}
-          </Text>
-        </View>
-
-        {/* Connection Test Section */}
-        <View style={commonStyles.section}>
-          <Text style={commonStyles.sectionTitle}>Connection Test</Text>
+    <SafeScreen>
+      <View style={commonStyles.containerTop}>
+        <View style={styles.header}>
           <TouchableOpacity
-            style={[styles.button, loading ? styles.buttonDisabled : null]}
-            onPress={handleConnectionTest}
-            disabled={loading}
-            accessibilityLabel="Test server connection"
+            onPress={onBack}
+            style={styles.backButton}
+            accessibilityLabel="Go back"
           >
-            <Text style={commonStyles.buttonText}>Test Connection</Text>
+            <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
-          {pingResult && (
-            <Text style={[
-              styles.infoText,
-              pingResult.startsWith('✓') ? commonStyles.successText : commonStyles.warningText
-            ]}>
-              {pingResult}
-            </Text>
-          )}
+          <Text style={commonStyles.title}>Debug Tools</Text>
         </View>
 
-        {/* Update Check Section (Android only) */}
-        {Platform.OS === 'android' && (
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          {/* Version Info Section */}
           <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>App Updates</Text>
-            <UpdateButton
-              serverConfig={ServerConfigCache.getConfig() || {}}
-              onCheckComplete={handleUpdateCheckComplete}
-            />
+            <Text style={commonStyles.sectionTitle}>Version Information</Text>
+            <Text style={styles.infoText}>App: v{appVersion} ({appBuildNumber})</Text>
+            <Text style={styles.infoText}>
+              Server: {serverVersion || 'Not connected'}
+            </Text>
           </View>
-        )}
 
-        {/* Clear Cache Section */}
-        <View style={commonStyles.section}>
-          <Text style={commonStyles.sectionTitle}>Cache Management</Text>
-          <Text style={commonStyles.warningText}>
-            Warning: This will clear all app data including server URL and authentication.
-          </Text>
-          <TouchableOpacity
-            style={[styles.dangerButton, loading ? styles.buttonDisabled : null]}
-            onPress={handleClearCache}
-            disabled={loading}
-            accessibilityLabel="Clear all cache"
-          >
-            <Text style={commonStyles.buttonText}>Clear All Cache</Text>
-          </TouchableOpacity>
-        </View>
+          {/* Stored Configuration Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Stored Configuration</Text>
+            <Text style={styles.infoText}>
+              Server URL: {storedServerUrl || 'None'}
+            </Text>
+            <Text style={styles.infoText}>
+              Auth Token: {maskToken(authToken)}
+            </Text>
+            <Text style={styles.infoText}>
+              Email: {userEmail || 'None'}
+            </Text>
+          </View>
 
-        {loading && (
-          <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
-        )}
+          {/* Connection Test Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Connection Test</Text>
+            <TouchableOpacity
+              style={[styles.button, loading ? styles.buttonDisabled : null]}
+              onPress={handleConnectionTest}
+              disabled={loading}
+              accessibilityLabel="Test server connection"
+            >
+              <Text style={commonStyles.buttonText}>Test Connection</Text>
+            </TouchableOpacity>
+            {pingResult && (
+              <Text style={[
+                styles.infoText,
+                pingResult.startsWith('✓') ? commonStyles.successText : commonStyles.warningText
+              ]}>
+                {pingResult}
+              </Text>
+            )}
+          </View>
 
-        {error && <Text style={styles.errorText}>{error}</Text>}
-        {successMessage && <Text style={commonStyles.successText}>{successMessage}</Text>}
-      </ScrollView>
-      <VersionDisplay />
-    </View>
+          {/* Update Check Section (Android only) */}
+          {Platform.OS === 'android' && (
+            <View style={commonStyles.section}>
+              <Text style={commonStyles.sectionTitle}>App Updates</Text>
+              <UpdateButton
+                serverConfig={ServerConfigCache.getConfig() || {}}
+                onCheckComplete={handleUpdateCheckComplete}
+              />
+            </View>
+          )}
+
+          {/* Clear Cache Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Cache Management</Text>
+            <Text style={commonStyles.warningText}>
+              Warning: This will clear all app data including server URL and authentication.
+            </Text>
+            <TouchableOpacity
+              style={[styles.dangerButton, loading ? styles.buttonDisabled : null]}
+              onPress={handleClearCache}
+              disabled={loading}
+              accessibilityLabel="Clear all cache"
+            >
+              <Text style={commonStyles.buttonText}>Clear All Cache</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading && (
+            <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+          )}
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          {successMessage && <Text style={commonStyles.successText}>{successMessage}</Text>}
+        </ScrollView>
+        <VersionDisplay />
+      </View>
+    </SafeScreen>
   )
 }
 
 const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.surface,
-    paddingTop: 50,
-    paddingBottom: spacing.lg,
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,

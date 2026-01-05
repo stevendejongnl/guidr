@@ -8,6 +8,7 @@ import {
   Linking,
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
 
 interface AppOutdatedScreenProps {
@@ -50,33 +51,35 @@ export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
   }
 
   return (
-    <View style={commonStyles.container}>
-      <View style={commonStyles.contentCentered}>
-        <Text style={styles.icon}>⚠️</Text>
-        <Text style={styles.title}>Update Required</Text>
-        <Text style={styles.description}>
+    <SafeScreen>
+      <View style={commonStyles.container}>
+        <View style={commonStyles.contentCentered}>
+          <Text style={styles.icon}>⚠️</Text>
+          <Text style={styles.title}>Update Required</Text>
+          <Text style={styles.description}>
           Your current app version ({currentVersion}) is not compatible with this server.
-        </Text>
-        <Text style={styles.versionInfo}>{getVersionMessage()}</Text>
+          </Text>
+          <Text style={styles.versionInfo}>{getVersionMessage()}</Text>
 
-        <TouchableOpacity
-          style={styles.updateButton}
-          onPress={handleUpdatePress}
-          accessibilityLabel={getUpdateButtonText()}
-        >
-          <Text style={commonStyles.buttonText}>{getUpdateButtonText()}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={handleUpdatePress}
+            accessibilityLabel={getUpdateButtonText()}
+          >
+            <Text style={commonStyles.buttonText}>{getUpdateButtonText()}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={commonStyles.buttonOutline}
-          onPress={onChangeServer}
-          accessibilityLabel="Change server"
-        >
-          <Text style={commonStyles.buttonTextMuted}>Change Server</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={commonStyles.buttonOutline}
+            onPress={onChangeServer}
+            accessibilityLabel="Change server"
+          >
+            <Text style={commonStyles.buttonTextMuted}>Change Server</Text>
+          </TouchableOpacity>
+        </View>
+        <VersionDisplay />
       </View>
-      <VersionDisplay />
-    </View>
+    </SafeScreen>
   )
 }
 

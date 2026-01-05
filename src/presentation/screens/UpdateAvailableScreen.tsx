@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import {
   commonStyles,
   colors,
@@ -50,64 +51,66 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
   }
 
   return (
-    <View style={commonStyles.container}>
-      <ScrollView contentContainerStyle={commonStyles.contentCentered}>
-        <Text style={styles.icon}>{getIcon()}</Text>
-        <Text style={styles.title}>{getTitle()}</Text>
+    <SafeScreen>
+      <View style={commonStyles.container}>
+        <ScrollView contentContainerStyle={commonStyles.contentCentered}>
+          <Text style={styles.icon}>{getIcon()}</Text>
+          <Text style={styles.title}>{getTitle()}</Text>
 
-        <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>
+          <View style={styles.versionContainer}>
+            <Text style={styles.versionText}>
             v{currentVersion} → v{latestVersion}
-          </Text>
-        </View>
-
-        {changelog && (
-          <View style={styles.changelogContainer}>
-            <Text style={styles.changelogTitle}>{'What\'s New:'}</Text>
-            <ScrollView style={styles.changelogScroll}>
-              <Text style={styles.changelogText}>
-                {formatChangelog(changelog)}
-              </Text>
-            </ScrollView>
-          </View>
-        )}
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.updateButton}
-            onPress={onStartUpdate}
-            accessibilityLabel={
-              isMandatory ? 'Update now' : 'Start update'
-            }
-          >
-            <Text style={commonStyles.buttonText}>
-              {isMandatory ? 'Update Now' : 'Update'}
             </Text>
-          </TouchableOpacity>
+          </View>
 
-          {!isMandatory && onDismiss && (
-            <TouchableOpacity
-              style={commonStyles.buttonOutline}
-              onPress={onDismiss}
-              accessibilityLabel="Dismiss update"
-            >
-              <Text style={commonStyles.buttonTextMuted}>Later</Text>
-            </TouchableOpacity>
+          {changelog && (
+            <View style={styles.changelogContainer}>
+              <Text style={styles.changelogTitle}>{'What\'s New:'}</Text>
+              <ScrollView style={styles.changelogScroll}>
+                <Text style={styles.changelogText}>
+                  {formatChangelog(changelog)}
+                </Text>
+              </ScrollView>
+            </View>
           )}
 
-          {onChangeServer && (
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={styles.changeServerButton}
-              onPress={onChangeServer}
-              accessibilityLabel="Change server"
+              style={styles.updateButton}
+              onPress={onStartUpdate}
+              accessibilityLabel={
+                isMandatory ? 'Update now' : 'Start update'
+              }
             >
-              <Text style={styles.changeServerText}>Change Server</Text>
+              <Text style={commonStyles.buttonText}>
+                {isMandatory ? 'Update Now' : 'Update'}
+              </Text>
             </TouchableOpacity>
-          )}
-        </View>
-      </ScrollView>
-      <VersionDisplay />
-    </View>
+
+            {!isMandatory && onDismiss && (
+              <TouchableOpacity
+                style={commonStyles.buttonOutline}
+                onPress={onDismiss}
+                accessibilityLabel="Dismiss update"
+              >
+                <Text style={commonStyles.buttonTextMuted}>Later</Text>
+              </TouchableOpacity>
+            )}
+
+            {onChangeServer && (
+              <TouchableOpacity
+                style={styles.changeServerButton}
+                onPress={onChangeServer}
+                accessibilityLabel="Change server"
+              >
+                <Text style={styles.changeServerText}>Change Server</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
+        <VersionDisplay />
+      </View>
+    </SafeScreen>
   )
 }
 

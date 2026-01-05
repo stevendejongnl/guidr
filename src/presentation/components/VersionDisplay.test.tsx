@@ -49,10 +49,14 @@ describe('VersionDisplay', () => {
     const { getByTestId } = render(<VersionDisplay />)
 
     const container = getByTestId('version-display')
-    expect(container.props['style']).toMatchObject({
-      position: 'absolute',
-      bottom: 20,
-      right: 20,
-    })
+    // The component uses useSafeAreaInsets() which returns 0 in tests
+    // So the bottom position is insets.bottom (0) + spacing.sm (8) = 8
+    const styles = container.props['style']
+    expect(styles).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ position: 'absolute', right: 20 }),
+        expect.objectContaining({ bottom: 8 }),
+      ])
+    )
   })
 })

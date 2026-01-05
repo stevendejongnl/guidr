@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { commonStyles, colors } from '../theme'
 
 interface ServerSetupScreenProps {
@@ -54,46 +55,47 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
   }
 
   return (
-    <KeyboardAvoidingView
-      style={commonStyles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={commonStyles.content}>
-        <Text style={commonStyles.title}>Server Configuration</Text>
-        <Text style={commonStyles.description}>Enter your Guidr server URL to get started.</Text>
+    <SafeScreen>
+      <KeyboardAvoidingView
+        style={commonStyles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={commonStyles.content}>
+          <Text style={commonStyles.title}>Server Configuration</Text>
+          <Text style={commonStyles.description}>Enter your Guidr server URL to get started.</Text>
 
-        <TextInput
-          style={[commonStyles.input, error ? commonStyles.inputError : null]}
-          placeholder="https://api.example.com"
-          placeholderTextColor={colors.textMuted}
-          value={url}
-          onChangeText={handleUrlChange}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          editable={!loading}
-        />
+          <TextInput
+            style={[commonStyles.input, error ? commonStyles.inputError : null]}
+            placeholder="https://api.example.com"
+            placeholderTextColor={colors.textMuted}
+            value={url}
+            onChangeText={handleUrlChange}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            editable={!loading}
+          />
 
-        {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
+          {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
 
-        <TouchableOpacity
-          style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
-          onPress={handleSave}
-          disabled={loading}
-          accessibilityState={{ disabled: loading }}
-        >
-          {loading ? (
-            <>
-              <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
-              <Text style={commonStyles.buttonText}>Saving...</Text>
-            </>
-          ) : (
-            <Text style={commonStyles.buttonText}>Save Server URL</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-      <VersionDisplay />
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
+            onPress={handleSave}
+            disabled={loading}
+            accessibilityState={{ disabled: loading }}
+          >
+            {loading ? (
+              <>
+                <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
+                <Text style={commonStyles.buttonText}>Saving...</Text>
+              </>
+            ) : (
+              <Text style={commonStyles.buttonText}>Save Server URL</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+        <VersionDisplay />
+      </KeyboardAvoidingView>
+    </SafeScreen>
   )
 }
-

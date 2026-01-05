@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { Menu, MenuItem } from '../components/Menu'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { commonStyles, colors } from '../theme'
@@ -50,46 +51,47 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, o
   }
 
   return (
-    <View style={commonStyles.container}>
-      <Menu items={menuItems} testID="home-menu" />
-      <View style={commonStyles.contentCentered}>
-        <Text style={commonStyles.titleLarge}>Guidr</Text>
-        {userEmail ? (
-          <Text style={commonStyles.subtitle}>Welcome, {userEmail}</Text>
-        ) : (
-          <Text style={commonStyles.subtitle}>Welcome!</Text>
-        )}
-        <Text style={commonStyles.descriptionCentered}>
-          The app is ready. Guide management features coming soon.
-        </Text>
-
-        {debugMode && (
-          <TouchableOpacity
-            style={[commonStyles.buttonSecondary, { marginBottom: 16 }]}
-            onPress={onOpenDebug}
-            accessibilityLabel="Open debug tools"
-          >
-            <Text style={commonStyles.buttonText}>⚙ Debug Tools</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={commonStyles.buttonDanger}
-          onPress={handleLogout}
-          disabled={loggingOut}
-        >
-          {loggingOut ? (
-            <>
-              <ActivityIndicator color={colors.textPrimary} size="small" />
-              <Text style={[commonStyles.buttonText, { marginLeft: 8 }]}>Logging out...</Text>
-            </>
+    <SafeScreen>
+      <View style={commonStyles.container}>
+        <Menu items={menuItems} testID="home-menu" />
+        <View style={commonStyles.contentCentered}>
+          <Text style={commonStyles.titleLarge}>Guidr</Text>
+          {userEmail ? (
+            <Text style={commonStyles.subtitle}>Welcome, {userEmail}</Text>
           ) : (
-            <Text style={commonStyles.buttonText}>Logout</Text>
+            <Text style={commonStyles.subtitle}>Welcome!</Text>
           )}
-        </TouchableOpacity>
+          <Text style={commonStyles.descriptionCentered}>
+            The app is ready. Guide management features coming soon.
+          </Text>
+
+          {debugMode && (
+            <TouchableOpacity
+              style={[commonStyles.buttonSecondary, { marginBottom: 16 }]}
+              onPress={onOpenDebug}
+              accessibilityLabel="Open debug tools"
+            >
+              <Text style={commonStyles.buttonText}>⚙ Debug Tools</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            style={commonStyles.buttonDanger}
+            onPress={handleLogout}
+            disabled={loggingOut}
+          >
+            {loggingOut ? (
+              <>
+                <ActivityIndicator color={colors.textPrimary} size="small" />
+                <Text style={[commonStyles.buttonText, { marginLeft: 8 }]}>Logging out...</Text>
+              </>
+            ) : (
+              <Text style={commonStyles.buttonText}>Logout</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+        <VersionDisplay />
       </View>
-      <VersionDisplay />
-    </View>
+    </SafeScreen>
   )
 }
-

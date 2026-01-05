@@ -9,6 +9,7 @@ import {
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { commonStyles, colors } from '../theme'
 
 interface LoginScreenProps {
@@ -87,67 +88,69 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   }
 
   return (
-    <View style={commonStyles.container}>
-      <View style={commonStyles.content}>
-        <Text style={commonStyles.title}>Welcome to Guidr</Text>
-        <Text style={commonStyles.description}>Sign in to continue</Text>
+    <SafeScreen>
+      <View style={commonStyles.container}>
+        <View style={commonStyles.content}>
+          <Text style={commonStyles.title}>Welcome to Guidr</Text>
+          <Text style={commonStyles.description}>Sign in to continue</Text>
 
-        <TextInput
-          style={[commonStyles.input, error ? commonStyles.inputError : null]}
-          placeholder="email@example.com"
-          placeholderTextColor={colors.textMuted}
-          value={email}
-          onChangeText={handleEmailChange}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          editable={!loading}
-        />
+          <TextInput
+            style={[commonStyles.input, error ? commonStyles.inputError : null]}
+            placeholder="email@example.com"
+            placeholderTextColor={colors.textMuted}
+            value={email}
+            onChangeText={handleEmailChange}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            editable={!loading}
+          />
 
-        <TextInput
-          style={[commonStyles.input, error ? commonStyles.inputError : null]}
-          placeholder="Password"
-          placeholderTextColor={colors.textMuted}
-          value={password}
-          onChangeText={handlePasswordChange}
-          secureTextEntry
-          editable={!loading}
-        />
+          <TextInput
+            style={[commonStyles.input, error ? commonStyles.inputError : null]}
+            placeholder="Password"
+            placeholderTextColor={colors.textMuted}
+            value={password}
+            onChangeText={handlePasswordChange}
+            secureTextEntry
+            editable={!loading}
+          />
 
-        {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
+          {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
 
-        <TouchableOpacity
-          style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
-          onPress={handleLogin}
-          disabled={loading}
-          accessibilityState={{ disabled: loading }}
-        >
-          {loading ? (
-            <>
-              <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
-              <Text style={commonStyles.buttonText}>Logging in...</Text>
-            </>
-          ) : (
-            <Text style={commonStyles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
+            onPress={handleLogin}
+            disabled={loading}
+            accessibilityState={{ disabled: loading }}
+          >
+            {loading ? (
+              <>
+                <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
+                <Text style={commonStyles.buttonText}>Logging in...</Text>
+              </>
+            ) : (
+              <Text style={commonStyles.buttonText}>Login</Text>
+            )}
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={commonStyles.link}
-          onPress={handleChangeServer}
-        >
-          <Text style={commonStyles.linkText}>Change Server</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={commonStyles.link}
+            onPress={handleChangeServer}
+          >
+            <Text style={commonStyles.linkText}>Change Server</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={commonStyles.link}
-          onPress={onRegister}
-        >
-          <Text style={commonStyles.linkText}>Don&apos;t have an account? Register</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={commonStyles.link}
+            onPress={onRegister}
+          >
+            <Text style={commonStyles.linkText}>Don&apos;t have an account? Register</Text>
+          </TouchableOpacity>
+        </View>
+        <VersionDisplay />
       </View>
-      <VersionDisplay />
-    </View>
+    </SafeScreen>
   )
 }
 

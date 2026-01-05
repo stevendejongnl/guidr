@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import { ApkInstaller, DownloadProgress } from '../../infrastructure/update/ApkInstaller'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import {
   commonStyles,
@@ -110,81 +111,87 @@ export const UpdateDownloadScreen: React.FC<UpdateDownloadScreenProps> = ({
 
   if (error) {
     return (
-      <View style={commonStyles.container}>
-        <View style={commonStyles.contentCentered}>
-          <Text style={styles.icon}>⚠️</Text>
-          <Text style={styles.title}>Download Failed</Text>
-          <Text style={commonStyles.errorText}>{error}</Text>
+      <SafeScreen>
+        <View style={commonStyles.container}>
+          <View style={commonStyles.contentCentered}>
+            <Text style={styles.icon}>⚠️</Text>
+            <Text style={styles.title}>Download Failed</Text>
+            <Text style={commonStyles.errorText}>{error}</Text>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={commonStyles.button}
-              onPress={handleRetry}
-              accessibilityLabel="Retry download"
-            >
-              <Text style={commonStyles.buttonText}>Retry</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={commonStyles.button}
+                onPress={handleRetry}
+                accessibilityLabel="Retry download"
+              >
+                <Text style={commonStyles.buttonText}>Retry</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={commonStyles.buttonOutline}
-              onPress={handleCancel}
-              accessibilityLabel="Cancel download"
-            >
-              <Text style={commonStyles.buttonTextMuted}>Cancel</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={commonStyles.buttonOutline}
+                onPress={handleCancel}
+                accessibilityLabel="Cancel download"
+              >
+                <Text style={commonStyles.buttonTextMuted}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+          <VersionDisplay />
         </View>
-        <VersionDisplay />
-      </View>
+      </SafeScreen>
     )
   }
 
   if (state === 'installing') {
     return (
-      <View style={commonStyles.container}>
-        <View style={commonStyles.contentCentered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.title}>Installing...</Text>
-          <Text style={styles.description}>
-            Please approve the installation when prompted
-          </Text>
+      <SafeScreen>
+        <View style={commonStyles.container}>
+          <View style={commonStyles.contentCentered}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.title}>Installing...</Text>
+            <Text style={styles.description}>
+              Please approve the installation when prompted
+            </Text>
+          </View>
+          <VersionDisplay />
         </View>
-        <VersionDisplay />
-      </View>
+      </SafeScreen>
     )
   }
 
   return (
-    <View style={commonStyles.container}>
-      <View style={commonStyles.contentCentered}>
-        <Text style={styles.icon}>📥</Text>
-        <Text style={styles.title}>Downloading Update...</Text>
+    <SafeScreen>
+      <View style={commonStyles.container}>
+        <View style={commonStyles.contentCentered}>
+          <Text style={styles.icon}>📥</Text>
+          <Text style={styles.title}>Downloading Update...</Text>
 
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View
-              style={[styles.progressFill, { width: `${progress}%` }]}
-            />
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBar}>
+              <View
+                style={[styles.progressFill, { width: `${progress}%` }]}
+              />
+            </View>
+            <Text style={styles.progressText}>{progress}%</Text>
           </View>
-          <Text style={styles.progressText}>{progress}%</Text>
+
+          {totalBytes > 0 && (
+            <Text style={styles.sizeText}>
+              {formatBytes(bytesDownloaded)} / {formatBytes(totalBytes)}
+            </Text>
+          )}
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={handleCancel}
+            accessibilityLabel="Cancel download"
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-
-        {totalBytes > 0 && (
-          <Text style={styles.sizeText}>
-            {formatBytes(bytesDownloaded)} / {formatBytes(totalBytes)}
-          </Text>
-        )}
-
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancel}
-          accessibilityLabel="Cancel download"
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
+        <VersionDisplay />
       </View>
-      <VersionDisplay />
-    </View>
+    </SafeScreen>
   )
 }
 

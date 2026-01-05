@@ -9,6 +9,7 @@ import {
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
+import { SafeScreen } from '../components/SafeScreen'
 import { commonStyles, colors } from '../theme'
 
 interface RegistrationScreenProps {
@@ -108,69 +109,71 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
   }
 
   return (
-    <View style={commonStyles.container}>
-      <View style={commonStyles.content}>
-        <Text style={commonStyles.title}>Create Account</Text>
-        <Text style={commonStyles.description}>Sign up to get started</Text>
+    <SafeScreen>
+      <View style={commonStyles.container}>
+        <View style={commonStyles.content}>
+          <Text style={commonStyles.title}>Create Account</Text>
+          <Text style={commonStyles.description}>Sign up to get started</Text>
 
-        <TextInput
-          style={[commonStyles.input, error ? commonStyles.inputError : null]}
-          placeholder="email@example.com"
-          placeholderTextColor={colors.textMuted}
-          value={email}
-          onChangeText={handleEmailChange}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          editable={!loading}
-        />
+          <TextInput
+            style={[commonStyles.input, error ? commonStyles.inputError : null]}
+            placeholder="email@example.com"
+            placeholderTextColor={colors.textMuted}
+            value={email}
+            onChangeText={handleEmailChange}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            editable={!loading}
+          />
 
-        <TextInput
-          style={[commonStyles.input, error ? commonStyles.inputError : null]}
-          placeholder="Password (min 6 characters)"
-          placeholderTextColor={colors.textMuted}
-          value={password}
-          onChangeText={handlePasswordChange}
-          secureTextEntry
-          editable={!loading}
-        />
+          <TextInput
+            style={[commonStyles.input, error ? commonStyles.inputError : null]}
+            placeholder="Password (min 6 characters)"
+            placeholderTextColor={colors.textMuted}
+            value={password}
+            onChangeText={handlePasswordChange}
+            secureTextEntry
+            editable={!loading}
+          />
 
-        <TextInput
-          style={[commonStyles.input, error ? commonStyles.inputError : null]}
-          placeholder="Confirm Password"
-          placeholderTextColor={colors.textMuted}
-          value={confirmPassword}
-          onChangeText={handleConfirmPasswordChange}
-          secureTextEntry
-          editable={!loading}
-        />
+          <TextInput
+            style={[commonStyles.input, error ? commonStyles.inputError : null]}
+            placeholder="Confirm Password"
+            placeholderTextColor={colors.textMuted}
+            value={confirmPassword}
+            onChangeText={handleConfirmPasswordChange}
+            secureTextEntry
+            editable={!loading}
+          />
 
-        {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
+          {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
 
-        <TouchableOpacity
-          style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
-          onPress={handleRegister}
-          disabled={loading}
-          accessibilityState={{ disabled: loading }}
-        >
-          {loading ? (
-            <>
-              <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
-              <Text style={commonStyles.buttonText}>Creating account...</Text>
-            </>
-          ) : (
-            <Text style={commonStyles.buttonText}>Create Account</Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
+            onPress={handleRegister}
+            disabled={loading}
+            accessibilityState={{ disabled: loading }}
+          >
+            {loading ? (
+              <>
+                <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
+                <Text style={commonStyles.buttonText}>Creating account...</Text>
+              </>
+            ) : (
+              <Text style={commonStyles.buttonText}>Create Account</Text>
+            )}
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={commonStyles.link}
-          onPress={handleBackToLogin}
-        >
-          <Text style={commonStyles.linkText}>Already have an account? Sign in</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={commonStyles.link}
+            onPress={handleBackToLogin}
+          >
+            <Text style={commonStyles.linkText}>Already have an account? Sign in</Text>
+          </TouchableOpacity>
+        </View>
+        <VersionDisplay />
       </View>
-      <VersionDisplay />
-    </View>
+    </SafeScreen>
   )
 }

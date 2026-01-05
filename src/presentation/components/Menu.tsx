@@ -72,7 +72,6 @@ export const Menu: React.FC<MenuProps> = ({ items, testID }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: spacing.xl,
     right: spacing.xl,
     zIndex: 10,
   },
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-start',
     alignItems: 'flex-end',
-    paddingTop: spacing.xl + 54, // Below the menu button
+    paddingTop: spacing.sm + 54, // Below the menu button (safe area is handled by container)
     paddingRight: spacing.xl,
   },
   menuContainer: {
