@@ -108,6 +108,7 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "guidr" */;
 			buildPhases = (
 				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* Copy Configuration File */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -170,6 +171,22 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Copy Configuration File */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/guidr/default-configuration.toml",
+			);
+			name = "Copy Configuration File";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/default-configuration.toml",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nCONFIG_SOURCE=\"${SRCROOT}/guidr/default-configuration.toml\"\nCONFIG_DEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/default-configuration.toml\"\n\nif [ -f \"$CONFIG_SOURCE\" ]; then\n    echo \"Copying configuration file to app bundle...\"\n    cp \"$CONFIG_SOURCE\" \"$CONFIG_DEST\"\n    echo \"Configuration file copied successfully.\"\nelse\n    echo \"error: Configuration file not found at $CONFIG_SOURCE\"\n    exit 1\nfi\n";
+		};
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
