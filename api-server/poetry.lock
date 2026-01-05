@@ -376,7 +376,7 @@ version = "2.8.0"
 description = "DNS toolkit"
 optional = false
 python-versions = ">=3.10"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "dnspython-2.8.0-py3-none-any.whl", hash = "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af"},
     {file = "dnspython-2.8.0.tar.gz", hash = "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f"},
@@ -714,18 +714,19 @@ pymongo = ["pymongo"]
 
 [[package]]
 name = "mongomock-motor"
-version = "0.0.34"
+version = "0.0.36"
 description = "Library for mocking AsyncIOMotorClient built on top of mongomock."
 optional = false
 python-versions = "<4.0,>=3.8"
 groups = ["dev"]
 files = [
-    {file = "mongomock_motor-0.0.34-py3-none-any.whl", hash = "sha256:f14b131cbbaae26104c4e5c3e7d70452ab743b284fd52fc10fac668e9c6b0575"},
-    {file = "mongomock_motor-0.0.34.tar.gz", hash = "sha256:c8141ff9bf41ca19b87a935855013018a726ac3d2fbd74a14bbc71ce34a532d0"},
+    {file = "mongomock_motor-0.0.36-py3-none-any.whl", hash = "sha256:3ecb7949662b8986ff9c267fa0b1402b5b75a6afd57f03850cd6e13a067e3691"},
+    {file = "mongomock_motor-0.0.36.tar.gz", hash = "sha256:3cf62352ece5af2f02e04d2f252393f88b5fe0487997da00584020cee4b8efba"},
 ]
 
 [package.dependencies]
 mongomock = ">=4.1.2,<5.0.0"
+motor = ">=2.5"
 
 [[package]]
 name = "motor"
@@ -733,7 +734,7 @@ version = "3.7.1"
 description = "Non-blocking MongoDB driver for Tornado or asyncio"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "motor-3.7.1-py3-none-any.whl", hash = "sha256:8a63b9049e38eeeb56b4fdd57c3312a6d1f25d01db717fe7d82222393c410298"},
     {file = "motor-3.7.1.tar.gz", hash = "sha256:27b4d46625c87928f331a6ca9d7c51c2f518ba0e270939d395bc1ddc89d64526"},
@@ -1092,7 +1093,7 @@ version = "4.15.5"
 description = "PyMongo - the Official MongoDB Python driver"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "pymongo-4.15.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a01a2054d50b50c121c720739a2216d855c48726b0002894de9b991cdd68a2a5"},
     {file = "pymongo-4.15.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5e57968139d81367117ed7b75d921445a575d4d7e61536f5e860475df92ac0a9"},
@@ -1794,4 +1795,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "67cd87c262d1c78e7af643a13d72f5142f2f8a28373300dcd80b56169c0fb906"
+content-hash = "6239d4534912f49e626f2b036bf3be418f8f11299c54198ed88cac609a2476ea"
