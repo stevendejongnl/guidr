@@ -20,7 +20,7 @@ class TestEntityId:
         with pytest.raises(ValidationException) as exc_info:
             EntityId("not-a-uuid")
 
-        assert "Invalid UUID format" in str(exc_info.value)
+        assert "Invalid entity ID format" in str(exc_info.value)
 
     def test_create_with_empty_string(self):
         """Should raise ValidationException for empty string."""

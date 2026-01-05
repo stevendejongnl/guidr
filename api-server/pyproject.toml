@@ -8,9 +8,9 @@ packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = "0.115.6"
-uvicorn = {extras = ["standard"], version = "0.34.0"}
-pydantic = {extras = ["email"], version = "2.10.6"}
+fastapi = "0.128.0"
+uvicorn = {extras = ["standard"], version = "0.40.0"}
+pydantic = {extras = ["email"], version = "2.12.5"}
 motor = "^3.6.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 argon2-cffi = "^23.1.0"
@@ -19,7 +19,7 @@ dependency-injector = "^4.41.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
-pytest-asyncio = "^0.23.0"
+pytest-asyncio = ">=0.26.0"
 httpx = "^0.27.0"
 ruff = "^0.14.10"
 mypy = "^1.9.0"
