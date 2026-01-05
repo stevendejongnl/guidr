@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
+import { MarkdownText } from '../components/MarkdownText'
 import {
   commonStyles,
   colors,
@@ -43,13 +44,6 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
     return isMandatory ? '⚠️' : '🚀'
   }
 
-  const formatChangelog = (text: string) => {
-    // Limit changelog to 500 chars or 10 lines
-    const lines = text.split('\n').slice(0, 10)
-    const truncated = lines.join('\n').slice(0, 500)
-    return truncated + (text.length > 500 ? '...' : '')
-  }
-
   return (
     <SafeScreen>
       <View style={commonStyles.container}>
@@ -66,10 +60,8 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
           {changelog && (
             <View style={styles.changelogContainer}>
               <Text style={styles.changelogTitle}>{'What\'s New:'}</Text>
-              <ScrollView style={styles.changelogScroll}>
-                <Text style={styles.changelogText}>
-                  {formatChangelog(changelog)}
-                </Text>
+              <ScrollView style={styles.changelogScroll} nestedScrollEnabled>
+                <MarkdownText>{changelog}</MarkdownText>
               </ScrollView>
             </View>
           )}
@@ -138,7 +130,7 @@ const styles = StyleSheet.create({
   changelogContainer: {
     width: '100%',
     marginBottom: spacing.xl,
-    maxHeight: 200,
+    maxHeight: 250,
   },
   changelogTitle: {
     fontSize: typography.sizeMd,
@@ -150,12 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
     padding: spacing.md,
-    maxHeight: 150,
-  },
-  changelogText: {
-    fontSize: typography.sizeSm,
-    color: colors.textSecondary,
-    lineHeight: 20,
+    maxHeight: 200,
   },
   buttonContainer: {
     width: '100%',

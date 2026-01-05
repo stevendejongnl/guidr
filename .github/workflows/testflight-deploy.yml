@@ -170,8 +170,21 @@ jobs:
               CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md)
             fi
 
-            # Clean up the text: remove empty lines at start/end, format for TestFlight (limit 4000 chars)
-            CHANGELOG_TEXT=$(echo "$CHANGELOG_TEXT" | sed '/^$/d' | head -c 3900)
+            # Convert markdown to plain text for TestFlight (doesn't support markdown)
+            CHANGELOG_TEXT=$(echo "$CHANGELOG_TEXT" | \
+              sed 's/^### //' | \
+              sed 's/^## //' | \
+              sed 's/^# //' | \
+              sed 's/^\* /• /' | \
+              sed 's/^- /• /' | \
+              sed 's/\*\*\([^*]*\)\*\*/\1/g' | \
+              sed 's/__\([^_]*\)__/\1/g' | \
+              sed 's/\*\([^*]*\)\*/\1/g' | \
+              sed 's/_\([^_]*\)_/\1/g' | \
+              sed 's/`\([^`]*\)`/\1/g' | \
+              sed 's/\[([^]]*)\]([^)]*)/\1/g' | \
+              sed '/^$/d' | \
+              head -c 3900)
 
             if [ -z "$CHANGELOG_TEXT" ]; then
               CHANGELOG_TEXT="Please test the latest features and report any issues."

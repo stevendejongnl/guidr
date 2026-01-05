@@ -43,13 +43,12 @@ describe('UpdateAvailableScreen', () => {
     expect(getByText('Bug fixes and improvements')).toBeTruthy()
   })
 
-  it('should truncate long changelog to 500 characters', () => {
-    const longChangelog = 'a'.repeat(600)
+  it('should render long changelog content (scrollable)', () => {
+    const longChangelog = 'This is a long changelog with many updates and improvements'
     const { getByText } = render(
       <UpdateAvailableScreen {...defaultProps} changelog={longChangelog} />
     )
-    const displayedText = getByText(/a+\.\.\./)
-    expect(displayedText).toBeTruthy()
+    expect(getByText(longChangelog)).toBeTruthy()
   })
 
   it('should call onStartUpdate when Update button is pressed', () => {
