@@ -54,3 +54,11 @@ class UpdateProfileDTO:
     user_id: str
     name: str | None = None
     interests: list[str] | None = None
+
+
+@dataclass
+class DeleteAccountDTO:
+    """DTO for deleting user account."""
+
+    user_id: str
+    password: str

@@ -44,6 +44,7 @@ from .application.use_cases.step import (
 from .application.use_cases.user import (
     ChangeEmail,
     ChangePassword,
+    DeleteAccount,
     LoginUser,
     RegisterUser,
     UpdateProfile,
@@ -293,4 +294,10 @@ class Container(containers.DeclarativeContainer):
     update_profile_use_case = providers.Factory(
         UpdateProfile,
         user_repository=user_repository,
+    )
+
+    delete_account_use_case = providers.Factory(
+        DeleteAccount,
+        user_repository=user_repository,
+        password_hasher=password_hasher,
     )

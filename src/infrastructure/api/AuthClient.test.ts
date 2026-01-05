@@ -757,4 +757,110 @@ describe('AuthClient', () => {
       ).rejects.toThrow('An unexpected error occurred during profile update')
     })
   })
+
+  describe('deleteAccount', () => {
+    const authToken = 'mock-auth-token-123'
+
+    it('should successfully delete account', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ message: 'Account deleted successfully' }),
+      } as Response)
+
+      await authClient.deleteAccount('Password123', authToken)
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/account',
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer mock-auth-token-123',
+          },
+          body: JSON.stringify({ password: 'Password123' }),
+        }
+      )
+    })
+
+    it('should throw error when password is incorrect', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ detail: 'Password is incorrect' }),
+      } as Response)
+
+      await expect(
+        authClient.deleteAccount('WrongPassword', authToken)
+      ).rejects.toThrow('Password is incorrect')
+    })
+
+    it('should throw error when auth token is expired', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Unauthorized' }),
+      } as Response)
+
+      await expect(
+        authClient.deleteAccount('Password123', 'expired-token')
+      ).rejects.toThrow('Unauthorized')
+    })
+
+    it('should throw generic error when response has no detail', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(
+        authClient.deleteAccount('Password123', authToken)
+      ).rejects.toThrow('Account deletion failed')
+    })
+
+    it('should throw error on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network request failed'))
+
+      await expect(
+        authClient.deleteAccount('Password123', authToken)
+      ).rejects.toThrow('Network request failed')
+    })
+
+    it('should throw error for empty password', async () => {
+      await expect(
+        authClient.deleteAccount('', authToken)
+      ).rejects.toThrow('Password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only password', async () => {
+      await expect(
+        authClient.deleteAccount('   ', authToken)
+      ).rejects.toThrow('Password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for empty auth token', async () => {
+      await expect(
+        authClient.deleteAccount('Password123', '')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only auth token', async () => {
+      await expect(
+        authClient.deleteAccount('Password123', '   ')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      mockFetch.mockRejectedValue('unexpected error')
+
+      await expect(
+        authClient.deleteAccount('Password123', authToken)
+      ).rejects.toThrow('An unexpected error occurred during account deletion')
+    })
+  })
 })

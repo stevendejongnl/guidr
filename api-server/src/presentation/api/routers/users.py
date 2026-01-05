@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from src.application.dtos import (
     ChangeEmailDTO,
     ChangePasswordDTO,
+    DeleteAccountDTO,
     UpdateProfileDTO,
     UserCreateDTO,
     UserLoginDTO,
@@ -12,6 +13,7 @@ from src.application.dtos import (
 from src.application.use_cases.user import (
     ChangeEmail,
     ChangePassword,
+    DeleteAccount,
     LoginUser,
     RegisterUser,
     UpdateProfile,
@@ -24,6 +26,7 @@ from ..dependencies.auth import get_current_user
 from ..models import (
     ChangeEmailRequest,
     ChangePasswordRequest,
+    DeleteAccountRequest,
     ErrorResponse,
     TokenResponse,
     UpdateProfileRequest,
@@ -78,6 +81,12 @@ def get_update_profile_use_case() -> UpdateProfile:
     """Get UpdateProfile use case."""
     assert _container is not None, "Container not initialized"
     return _container.update_profile_use_case()
+
+
+def get_delete_account_use_case() -> DeleteAccount:
+    """Get DeleteAccount use case."""
+    assert _container is not None, "Container not initialized"
+    return _container.delete_account_use_case()
 
 
 @router.post(
@@ -286,5 +295,41 @@ async def update_profile(
             name=current_user.name,
             interests=current_user.interests,
         )
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.delete(
+    "/account",
+    status_code=status.HTTP_200_OK,
+    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}},
+)
+async def delete_account(
+    request: DeleteAccountRequest,
+    current_user: User = Depends(get_current_user),
+    use_case: DeleteAccount = Depends(get_delete_account_use_case),
+) -> dict:
+    """Delete user account (requires authentication and password verification).
+
+    Args:
+        request: Account deletion request with password verification
+        current_user: Authenticated user from JWT token
+        use_case: Account deletion use case
+
+    Returns:
+        Success message
+
+    Raises:
+        HTTPException 400: If password incorrect
+        HTTPException 401: If authentication fails
+    """
+    try:
+        dto = DeleteAccountDTO(
+            user_id=current_user.id.value,
+            password=request.password,
+        )
+        await use_case.execute(dto)
+
+        return {"message": "Account deleted successfully"}
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

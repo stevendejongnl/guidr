@@ -249,4 +249,38 @@ export class AuthClient {
       throw new Error('An unexpected error occurred during profile update')
     }
   }
+
+  async deleteAccount(password: string, authToken: string): Promise<void> {
+    if (!password || password.trim() === '') {
+      throw new Error('Password cannot be empty')
+    }
+    if (!authToken || authToken.trim() === '') {
+      throw new Error('Auth token cannot be empty')
+    }
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/auth/account`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          password,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Account deletion failed')
+      }
+
+      // Success - no return value needed
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred during account deletion')
+    }
+  }
 }

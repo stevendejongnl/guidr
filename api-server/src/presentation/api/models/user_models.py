@@ -90,3 +90,14 @@ class UpdateProfileRequest(BaseModel):
         """Pydantic config."""
 
         populate_by_name = True
+
+
+class DeleteAccountRequest(BaseModel):
+    """Request model for deleting user account."""
+
+    password: str
+
+    class Config:
+        """Pydantic config."""
+
+        populate_by_name = True
