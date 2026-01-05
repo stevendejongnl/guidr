@@ -13,7 +13,7 @@ uvicorn = {extras = ["standard"], version = "0.40.0"}
 pydantic = {extras = ["email"], version = "2.12.5"}
 motor = "^3.6.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-argon2-cffi = "^23.1.0"
+argon2-cffi = "^25.1.0"
 pydantic-settings = "^2.0.0"
 dependency-injector = "^4.41.0"
 
