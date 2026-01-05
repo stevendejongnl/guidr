@@ -21,6 +21,7 @@ from .presentation.api.routers import (
 from .presentation.api.routers import (
     users as users_router,
 )
+from .presentation.api.dependencies import auth as auth_dependencies
 
 
 @asynccontextmanager
@@ -52,12 +53,13 @@ def create_application() -> FastAPI:
     # Replace lifespan
     app.router.lifespan_context = lifespan
 
-    # Inject container into routers
+    # Inject container into routers and dependencies
     categories_router.set_container(container)
     guides_router.set_container(container)
     steps_router.set_container(container)
     sessions_router.set_container(container)
     users_router.set_container(container)
+    auth_dependencies.set_container(container)
 
     return app
 
