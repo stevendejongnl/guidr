@@ -13,6 +13,7 @@ describe('SettingsScreen', () => {
     onBack: jest.fn(),
     onChangeServer: jest.fn(),
     onOpenDebug: jest.fn(),
+    onOpenProfile: jest.fn(),
     debugMode: false,
     serverUrl: 'https://api.example.com',
   }
@@ -87,6 +88,7 @@ describe('SettingsScreen', () => {
     const propsWithoutDebug = {
       onBack: jest.fn(),
       onChangeServer: jest.fn(),
+      onOpenProfile: jest.fn(),
       debugMode: true,
       serverUrl: 'https://api.example.com',
     }

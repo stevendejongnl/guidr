@@ -15,6 +15,7 @@ interface SettingsScreenProps {
   onBack: () => void
   onChangeServer: () => void
   onOpenDebug?: () => void
+  onOpenProfile: () => void
   debugMode: boolean
   serverUrl: string | null
 }
@@ -23,6 +24,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onBack,
   onChangeServer,
   onOpenDebug,
+  onOpenProfile,
   debugMode,
   serverUrl,
 }) => {
@@ -74,6 +76,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               testID="change-server-button"
             >
               <Text style={commonStyles.buttonText}>Change Server</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Account Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Account</Text>
+            <TouchableOpacity
+              style={[commonStyles.buttonSecondary, styles.sectionButton]}
+              onPress={onOpenProfile}
+              testID="open-profile-button"
+            >
+              <Text style={commonStyles.buttonText}>My Profile & Account</Text>
             </TouchableOpacity>
           </View>
 

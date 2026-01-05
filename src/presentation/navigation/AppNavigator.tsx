@@ -13,6 +13,7 @@ import { RegistrationScreen } from '../screens/RegistrationScreen'
 import { HomeScreen } from '../screens/HomeScreen'
 import { DebugScreen } from '../screens/DebugScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
+import { ProfileScreen } from '../screens/ProfileScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -25,6 +26,7 @@ import { commonStyles, colors } from '../theme'
 export const AppNavigator: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [hasAuthToken, setHasAuthToken] = useState(false)
+  const [userEmail, setUserEmail] = useState<string>('')
   const [serverUrl, setServerUrl] = useState<string | null>(null)
   const [serverConfig, setServerConfig] = useState<{
     debugMode: boolean
@@ -33,6 +35,7 @@ export const AppNavigator: React.FC = () => {
   } | null>(null)
   const [showDebugScreen, setShowDebugScreen] = useState(false)
   const [showSettingsScreen, setShowSettingsScreen] = useState(false)
+  const [showProfileScreen, setShowProfileScreen] = useState(false)
   const [showServerSetup, setShowServerSetup] = useState(false)
   const [showRegistration, setShowRegistration] = useState(false)
   const [appVersion] = useState(() => DeviceInfo.getVersion())
@@ -75,6 +78,12 @@ export const AppNavigator: React.FC = () => {
 
         const hasToken = await authStorage.hasAuthToken()
         setHasAuthToken(hasToken)
+
+        // Load user email if authenticated
+        if (hasToken) {
+          const email = await authStorage.getUserEmail()
+          setUserEmail(email || '')
+        }
 
         // Check for updates on Android
         if (Platform.OS === 'android') {
@@ -148,8 +157,10 @@ export const AppNavigator: React.FC = () => {
     setHasAuthToken(false)
   }
 
-  const handleLoginComplete = () => {
+  const handleLoginComplete = async () => {
     setHasAuthToken(true)
+    const email = await authStorage.getUserEmail()
+    setUserEmail(email || '')
   }
 
   const handleLogout = async () => {
@@ -176,9 +187,11 @@ export const AppNavigator: React.FC = () => {
     setShowRegistration(false)
   }
 
-  const handleRegistrationComplete = () => {
+  const handleRegistrationComplete = async () => {
     setHasAuthToken(true)
     setShowRegistration(false)
+    const email = await authStorage.getUserEmail()
+    setUserEmail(email || '')
   }
 
   if (loading) {
@@ -303,6 +316,19 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (showProfileScreen && serverUrl) {
+    const authClient = new AuthClient(serverUrl)
+
+    return (
+      <ProfileScreen
+        onBack={() => setShowProfileScreen(false)}
+        authClient={authClient}
+        authStorage={authStorage}
+        userEmail={userEmail}
+      />
+    )
+  }
+
   if (showSettingsScreen) {
     return (
       <SettingsScreen
@@ -314,6 +340,10 @@ export const AppNavigator: React.FC = () => {
         onOpenDebug={() => {
           setShowSettingsScreen(false)
           setShowDebugScreen(true)
+        }}
+        onOpenProfile={() => {
+          setShowSettingsScreen(false)
+          setShowProfileScreen(true)
         }}
         debugMode={serverConfig?.debugMode ?? false}
         serverUrl={serverUrl}
