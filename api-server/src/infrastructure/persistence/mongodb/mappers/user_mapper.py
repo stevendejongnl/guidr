@@ -25,6 +25,8 @@ class UserMapper:
             "passwordHash": user.password_hash,
             "createdAt": user.created_at,
             "updatedAt": user.updated_at,
+            "name": user.name,
+            "interests": user.interests,
         }
 
     @staticmethod
@@ -43,4 +45,6 @@ class UserMapper:
             password_hash=document["passwordHash"],
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
+            name=document.get("name"),
+            interests=document.get("interests", []),
         )

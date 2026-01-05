@@ -7,8 +7,11 @@ from .guide_models import GuideCreate, GuideResponse, GuideUpdate
 from .session_models import MoveToStepRequest, SessionCreate, SessionResponse
 from .step_models import StepCreate, StepResponse, StepUpdate
 from .user_models import (
+    ChangeEmailRequest,
     ChangePasswordRequest,
+    DeleteAccountRequest,
     TokenResponse,
+    UpdateProfileRequest,
     UserLogin,
     UserRegister,
     UserResponse,
@@ -35,7 +38,10 @@ __all__ = [
     "SessionResponse",
     "MoveToStepRequest",
     # User
+    "ChangeEmailRequest",
     "ChangePasswordRequest",
+    "DeleteAccountRequest",
+    "UpdateProfileRequest",
     "UserRegister",
     "UserLogin",
     "UserResponse",
