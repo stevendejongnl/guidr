@@ -47,7 +47,7 @@ lint:
 
 # Type check with mypy
 typecheck:
-	poetry run mypy server.py
+	poetry run mypy src/
 
 # Build Docker image
 docker-build:

@@ -2,8 +2,6 @@
 
 from datetime import UTC, datetime
 
-import pytest
-
 from src.domain.entities import User
 from src.domain.value_objects import Email, EntityId
 

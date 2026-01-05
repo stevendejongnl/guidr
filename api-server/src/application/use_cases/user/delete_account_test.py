@@ -57,18 +57,22 @@ class TestDeleteAccount:
         await use_case.execute(dto)
 
         # Assert
-        mock_user_repository.find_by_id.assert_called_once_with(
-            "550e8400-e29b-41d4-a716-446655440000",
-            authToken=""
-        )
+        mock_user_repository.find_by_id.assert_called_once()
+        # Verify EntityId was passed to find_by_id
+        find_call_args = mock_user_repository.find_by_id.call_args[0]
+        assert isinstance(find_call_args[0], EntityId)
+        assert find_call_args[0].value == "550e8400-e29b-41d4-a716-446655440000"
+
         mock_password_hasher.verify_password.assert_called_once_with(
             "Password123",
             "$argon2id$v=19$m=65536,t=3,p=4$hash"
         )
-        mock_user_repository.delete.assert_called_once_with(
-            "550e8400-e29b-41d4-a716-446655440000",
-            authToken=""
-        )
+
+        mock_user_repository.delete.assert_called_once()
+        # Verify EntityId was passed to delete
+        delete_call_args = mock_user_repository.delete.call_args[0]
+        assert isinstance(delete_call_args[0], EntityId)
+        assert delete_call_args[0].value == "550e8400-e29b-41d4-a716-446655440000"
 
     @pytest.mark.asyncio
     async def test_delete_account_user_not_found(
@@ -133,7 +137,8 @@ class TestDeleteAccount:
 
         # Assert - User was deleted
         # (UserDeleted event is emitted by the entity or repository)
-        mock_user_repository.delete.assert_called_once_with(
-            "550e8400-e29b-41d4-a716-446655440000",
-            authToken=""
-        )
+        mock_user_repository.delete.assert_called_once()
+        # Verify EntityId was passed to delete
+        delete_call_args = mock_user_repository.delete.call_args[0]
+        assert isinstance(delete_call_args[0], EntityId)
+        assert delete_call_args[0].value == "550e8400-e29b-41d4-a716-446655440000"

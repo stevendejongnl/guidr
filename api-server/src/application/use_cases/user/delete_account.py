@@ -3,6 +3,7 @@
 from src.application.dtos import DeleteAccountDTO
 from src.domain.exceptions import ValidationException
 from src.domain.repositories import IUserRepository
+from src.domain.value_objects.entity_id import EntityId
 from src.infrastructure.auth import PasswordHasher
 
 
@@ -33,7 +34,8 @@ class DeleteAccount:
             ValidationException: If user not found or password incorrect
         """
         # Fetch user by ID
-        user = await self._user_repository.find_by_id(dto.user_id, authToken="")
+        user_id = EntityId(dto.user_id)
+        user = await self._user_repository.find_by_id(user_id)
         if user is None:
             raise ValidationException("User not found")
 
@@ -45,4 +47,4 @@ class DeleteAccount:
             raise ValidationException("Password is incorrect")
 
         # Delete user (emits UserDeleted event)
-        await self._user_repository.delete(dto.user_id, authToken="")
+        await self._user_repository.delete(user_id)

@@ -4,6 +4,7 @@ from src.application.dtos import ChangePasswordDTO
 from src.domain.exceptions import ValidationException
 from src.domain.repositories import IUserRepository
 from src.domain.value_objects import Password
+from src.domain.value_objects.entity_id import EntityId
 from src.infrastructure.auth import PasswordHasher
 
 
@@ -35,7 +36,8 @@ class ChangePassword:
                                or new password invalid
         """
         # Fetch user by ID
-        user = await self._user_repository.find_by_id(dto.user_id, authToken="")
+        user_id = EntityId(dto.user_id)
+        user = await self._user_repository.find_by_id(user_id)
         if user is None:
             raise ValidationException("User not found")
 
@@ -60,4 +62,4 @@ class ChangePassword:
         user.update_password_hash(new_hash)
 
         # Save user
-        await self._user_repository.save(user, authToken="")
+        await self._user_repository.save(user)

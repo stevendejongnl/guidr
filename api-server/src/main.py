@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from .container import Container
 from .presentation.api.app import create_app
+from .presentation.api.dependencies import auth as auth_dependencies
 from .presentation.api.routers import (
     categories as categories_router,
 )
@@ -21,7 +22,6 @@ from .presentation.api.routers import (
 from .presentation.api.routers import (
     users as users_router,
 )
-from .presentation.api.dependencies import auth as auth_dependencies
 
 
 @asynccontextmanager

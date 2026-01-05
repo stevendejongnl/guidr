@@ -3,6 +3,7 @@
 from src.application.dtos import UpdateProfileDTO
 from src.domain.exceptions import ValidationException
 from src.domain.repositories import IUserRepository
+from src.domain.value_objects.entity_id import EntityId
 
 
 class UpdateProfile:
@@ -29,7 +30,8 @@ class UpdateProfile:
             ValidationException: If user not found
         """
         # Fetch user by ID
-        user = await self._user_repository.find_by_id(dto.user_id, authToken="")
+        user_id = EntityId(dto.user_id)
+        user = await self._user_repository.find_by_id(user_id)
         if user is None:
             raise ValidationException("User not found")
 
@@ -42,4 +44,4 @@ class UpdateProfile:
             user.set_interests(dto.interests)
 
         # Persist changes (emits UserProfileUpdated event)
-        await self._user_repository.save(user, authToken="")
+        await self._user_repository.save(user)

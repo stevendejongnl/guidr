@@ -54,10 +54,11 @@ class TestGetCurrentUser:
         # Assert
         assert result == valid_user
         mock_jwt_service.verify_token.assert_called_once_with("valid_token_here")
-        mock_user_repository.find_by_id.assert_called_once_with(
-            "550e8400-e29b-41d4-a716-446655440000",
-            authToken=""
-        )
+        mock_user_repository.find_by_id.assert_called_once()
+        # Verify EntityId was passed
+        call_args = mock_user_repository.find_by_id.call_args[0]
+        assert isinstance(call_args[0], EntityId)
+        assert call_args[0].value == "550e8400-e29b-41d4-a716-446655440000"
 
     @pytest.mark.asyncio
     async def test_get_current_user_with_missing_bearer_prefix(

@@ -48,10 +48,11 @@ class TestUpdateProfile:
         await use_case.execute(dto)
 
         # Assert
-        mock_user_repository.find_by_id.assert_called_once_with(
-            "550e8400-e29b-41d4-a716-446655440000",
-            authToken=""
-        )
+        mock_user_repository.find_by_id.assert_called_once()
+        # Verify EntityId was passed
+        call_args = mock_user_repository.find_by_id.call_args[0]
+        assert isinstance(call_args[0], EntityId)
+        assert call_args[0].value == "550e8400-e29b-41d4-a716-446655440000"
         mock_user_repository.save.assert_called_once()
 
         # Verify name was updated

@@ -2,13 +2,14 @@
 
 from fastapi import Depends, Header, HTTPException, status
 
+from src.container import Container
 from src.domain.entities import User
 from src.domain.repositories import IUserRepository
+from src.domain.value_objects.entity_id import EntityId
 from src.infrastructure.auth import JWTService
 
-
 # Container reference (set by router initialization)
-_container = None
+_container: Container | None = None
 
 
 def set_container(container):
@@ -68,8 +69,8 @@ async def get_current_user(
         )
 
     # Extract user ID from token payload
-    user_id: str | None = payload.get("sub")
-    if user_id is None:
+    user_id = payload.get("sub")
+    if not isinstance(user_id, str) or user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
@@ -77,8 +78,8 @@ async def get_current_user(
         )
 
     # Fetch user from repository
-    # Note: We pass empty authToken since this is the authentication step
-    user = await user_repository.find_by_id(user_id, authToken="")
+    user_entity_id = EntityId(user_id)
+    user = await user_repository.find_by_id(user_entity_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
