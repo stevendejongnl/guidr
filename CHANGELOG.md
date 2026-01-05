@@ -1,3 +1,13 @@
+## [1.20.0](https://github.com/stevendejongnl/guidr/compare/v1.19.0...v1.20.0) (2026-01-05)
+
+### Features
+
+* add typing stubs for pyasn1 and python-jose to dev dependencies ([ae12bac](https://github.com/stevendejongnl/guidr/commit/ae12bac3283c458f25f817eb4b92781fbd8c7f76))
+
+### Bug Fixes
+
+* update import order and add missing imports across multiple files ([613ce23](https://github.com/stevendejongnl/guidr/commit/613ce23c25ecc789557eee6ac74369f1c889fef3))
+
 ## [1.19.0](https://github.com/stevendejongnl/guidr/compare/v1.18.3...v1.19.0) (2026-01-04)
 
 ### Features
