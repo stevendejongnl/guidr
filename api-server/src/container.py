@@ -41,7 +41,12 @@ from .application.use_cases.step import (
     GetStepsByGuide,
     UpdateStep,
 )
-from .application.use_cases.user import LoginUser, RegisterUser
+from .application.use_cases.user import (
+    ChangeEmail,
+    ChangePassword,
+    LoginUser,
+    RegisterUser,
+)
 from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
 from .infrastructure.persistence.mongodb.database import Database
@@ -270,4 +275,16 @@ class Container(containers.DeclarativeContainer):
         LoginUser,
         user_repository=user_repository,
         password_verifier=password_hasher,
+    )
+
+    change_password_use_case = providers.Factory(
+        ChangePassword,
+        user_repository=user_repository,
+        password_hasher=password_hasher,
+    )
+
+    change_email_use_case = providers.Factory(
+        ChangeEmail,
+        user_repository=user_repository,
+        password_hasher=password_hasher,
     )

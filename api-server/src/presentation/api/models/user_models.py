@@ -52,3 +52,27 @@ class TokenResponse(BaseModel):
         """Pydantic config."""
 
         populate_by_name = True
+
+
+class ChangePasswordRequest(BaseModel):
+    """Request model for changing user password."""
+
+    old_password: str = Field(..., alias="oldPassword")
+    new_password: str = Field(..., alias="newPassword")
+
+    class Config:
+        """Pydantic config."""
+
+        populate_by_name = True
+
+
+class ChangeEmailRequest(BaseModel):
+    """Request model for changing user email."""
+
+    new_email: str = Field(..., alias="newEmail")
+    password: str
+
+    class Config:
+        """Pydantic config."""
+
+        populate_by_name = True

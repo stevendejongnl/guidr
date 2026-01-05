@@ -9,6 +9,8 @@ from .session_dtos import (
 )
 from .step_dtos import StepCreateDTO, StepResponseDTO, StepUpdateDTO
 from .user_dtos import (
+    ChangeEmailDTO,
+    ChangePasswordDTO,
     UserCreateDTO,
     UserLoginDTO,
     UserResponseDTO,
@@ -32,6 +34,8 @@ __all__ = [
     "SessionUpdateDTO",
     "SessionResponseDTO",
     # User
+    "ChangeEmailDTO",
+    "ChangePasswordDTO",
     "UserCreateDTO",
     "UserLoginDTO",
     "UserResponseDTO",

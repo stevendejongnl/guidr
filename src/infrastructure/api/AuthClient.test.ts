@@ -280,4 +280,330 @@ describe('AuthClient', () => {
         .rejects.toThrow('An unexpected error occurred during registration')
     })
   })
+
+  describe('changePassword', () => {
+    const authToken = 'mock-auth-token-123'
+
+    it('should successfully change password', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ message: 'Password changed successfully' }),
+      } as Response)
+
+      await authClient.changePassword('OldPassword123', 'NewPassword456', authToken)
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/change-password',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer mock-auth-token-123',
+          },
+          body: JSON.stringify({
+            oldPassword: 'OldPassword123',
+            newPassword: 'NewPassword456',
+          }),
+        }
+      )
+    })
+
+    it('should throw error when old password is incorrect', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ detail: 'Current password is incorrect' }),
+      } as Response)
+
+      await expect(
+        authClient.changePassword('WrongPassword', 'NewPassword456', authToken)
+      ).rejects.toThrow('Current password is incorrect')
+    })
+
+    it('should throw error when new password is invalid', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ detail: 'Password must be at least 6 characters' }),
+      } as Response)
+
+      await expect(
+        authClient.changePassword('OldPassword123', 'short', authToken)
+      ).rejects.toThrow('Password must be at least 6 characters')
+    })
+
+    it('should throw error when auth token is expired', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Unauthorized' }),
+      } as Response)
+
+      await expect(
+        authClient.changePassword('OldPassword123', 'NewPassword456', 'expired-token')
+      ).rejects.toThrow('Unauthorized')
+    })
+
+    it('should throw generic error when response has no detail', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(
+        authClient.changePassword('OldPassword123', 'NewPassword456', authToken)
+      ).rejects.toThrow('Password change failed')
+    })
+
+    it('should throw error on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network request failed'))
+
+      await expect(
+        authClient.changePassword('OldPassword123', 'NewPassword456', authToken)
+      ).rejects.toThrow('Network request failed')
+    })
+
+    it('should throw error for empty old password', async () => {
+      await expect(
+        authClient.changePassword('', 'NewPassword456', authToken)
+      ).rejects.toThrow('Old password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only old password', async () => {
+      await expect(
+        authClient.changePassword('   ', 'NewPassword456', authToken)
+      ).rejects.toThrow('Old password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for empty new password', async () => {
+      await expect(
+        authClient.changePassword('OldPassword123', '', authToken)
+      ).rejects.toThrow('New password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only new password', async () => {
+      await expect(
+        authClient.changePassword('OldPassword123', '   ', authToken)
+      ).rejects.toThrow('New password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for empty auth token', async () => {
+      await expect(
+        authClient.changePassword('OldPassword123', 'NewPassword456', '')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only auth token', async () => {
+      await expect(
+        authClient.changePassword('OldPassword123', 'NewPassword456', '   ')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      mockFetch.mockRejectedValue('unexpected error')
+
+      await expect(
+        authClient.changePassword('OldPassword123', 'NewPassword456', authToken)
+      ).rejects.toThrow('An unexpected error occurred during password change')
+    })
+  })
+
+  describe('changeEmail', () => {
+    const authToken = 'mock-auth-token-123'
+
+    it('should return new token and user on successful email change', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          accessToken: 'new-mock-token-456',
+          tokenType: 'bearer',
+          user: {
+            id: 'user-123',
+            email: 'newemail@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+          },
+        }),
+      } as Response)
+
+      const result = await authClient.changeEmail(
+        'newemail@example.com',
+        'Password123',
+        authToken
+      )
+
+      expect(result.accessToken).toBe('new-mock-token-456')
+      expect(result.tokenType).toBe('bearer')
+      expect(result.user.email).toBe('newemail@example.com')
+      expect(result.user.id).toBe('user-123')
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/change-email',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer mock-auth-token-123',
+          },
+          body: JSON.stringify({
+            newEmail: 'newemail@example.com',
+            password: 'Password123',
+          }),
+        }
+      )
+    })
+
+    it('should throw error when password is incorrect', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ detail: 'Password is incorrect' }),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('newemail@example.com', 'WrongPassword', authToken)
+      ).rejects.toThrow('Password is incorrect')
+    })
+
+    it('should throw error when email is invalid', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ detail: 'Invalid email format' }),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('invalid-email', 'Password123', authToken)
+      ).rejects.toThrow('Invalid email format')
+    })
+
+    it('should throw error when email already in use', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ detail: 'Email already in use' }),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('existing@example.com', 'Password123', authToken)
+      ).rejects.toThrow('Email already in use')
+    })
+
+    it('should throw error when auth token is expired', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Unauthorized' }),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('newemail@example.com', 'Password123', 'expired-token')
+      ).rejects.toThrow('Unauthorized')
+    })
+
+    it('should throw generic error when response has no detail', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('newemail@example.com', 'Password123', authToken)
+      ).rejects.toThrow('Email change failed')
+    })
+
+    it('should throw error on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network request failed'))
+
+      await expect(
+        authClient.changeEmail('newemail@example.com', 'Password123', authToken)
+      ).rejects.toThrow('Network request failed')
+    })
+
+    it('should throw error for empty new email', async () => {
+      await expect(
+        authClient.changeEmail('', 'Password123', authToken)
+      ).rejects.toThrow('New email cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only new email', async () => {
+      await expect(
+        authClient.changeEmail('   ', 'Password123', authToken)
+      ).rejects.toThrow('New email cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for empty password', async () => {
+      await expect(
+        authClient.changeEmail('newemail@example.com', '', authToken)
+      ).rejects.toThrow('Password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only password', async () => {
+      await expect(
+        authClient.changeEmail('newemail@example.com', '   ', authToken)
+      ).rejects.toThrow('Password cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for empty auth token', async () => {
+      await expect(
+        authClient.changeEmail('newemail@example.com', 'Password123', '')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only auth token', async () => {
+      await expect(
+        authClient.changeEmail('newemail@example.com', 'Password123', '   ')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error when response is missing accessToken', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          tokenType: 'bearer',
+          user: { id: 'user-123', email: 'new@example.com', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+        }),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('new@example.com', 'Password123', authToken)
+      ).rejects.toThrow('Invalid response from server')
+    })
+
+    it('should throw error when response is missing user', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ accessToken: 'new-token-123', tokenType: 'bearer' }),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('new@example.com', 'Password123', authToken)
+      ).rejects.toThrow('Invalid response from server')
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      mockFetch.mockRejectedValue('unexpected error')
+
+      await expect(
+        authClient.changeEmail('new@example.com', 'Password123', authToken)
+      ).rejects.toThrow('An unexpected error occurred during email change')
+    })
+  })
 })

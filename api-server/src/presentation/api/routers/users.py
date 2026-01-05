@@ -2,12 +2,32 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.application.dtos import UserCreateDTO, UserLoginDTO
-from src.application.use_cases.user import LoginUser, RegisterUser
+from src.application.dtos import (
+    ChangeEmailDTO,
+    ChangePasswordDTO,
+    UserCreateDTO,
+    UserLoginDTO,
+)
+from src.application.use_cases.user import (
+    ChangeEmail,
+    ChangePassword,
+    LoginUser,
+    RegisterUser,
+)
 from src.container import Container
+from src.domain.entities import User
 from src.domain.exceptions import ValidationException
 
-from ..models import ErrorResponse, TokenResponse, UserLogin, UserRegister, UserResponse
+from ..dependencies.auth import get_current_user
+from ..models import (
+    ChangeEmailRequest,
+    ChangePasswordRequest,
+    ErrorResponse,
+    TokenResponse,
+    UserLogin,
+    UserRegister,
+    UserResponse,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -37,6 +57,18 @@ def get_jwt_service():
     """Get JWT service for token generation."""
     assert _container is not None, "Container not initialized"
     return _container.jwt_service()
+
+
+def get_change_password_use_case() -> ChangePassword:
+    """Get ChangePassword use case."""
+    assert _container is not None, "Container not initialized"
+    return _container.change_password_use_case()
+
+
+def get_change_email_use_case() -> ChangeEmail:
+    """Get ChangeEmail use case."""
+    assert _container is not None, "Container not initialized"
+    return _container.change_email_use_case()
 
 
 @router.post(
@@ -108,3 +140,96 @@ async def login(
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+
+@router.post(
+    "/change-password",
+    status_code=status.HTTP_200_OK,
+    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}},
+)
+async def change_password(
+    request: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    use_case: ChangePassword = Depends(get_change_password_use_case),
+) -> dict:
+    """Change user password (requires authentication).
+
+    Args:
+        request: Password change request with old and new passwords
+        current_user: Authenticated user from JWT token
+        use_case: Password change use case
+
+    Returns:
+        Success message
+
+    Raises:
+        HTTPException 400: If old password incorrect or new password invalid
+        HTTPException 401: If authentication fails
+    """
+    try:
+        dto = ChangePasswordDTO(
+            user_id=current_user.id.value,
+            old_password=request.old_password,
+            new_password=request.new_password,
+        )
+        await use_case.execute(dto)
+
+        return {"message": "Password changed successfully"}
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post(
+    "/change-email",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}},
+)
+async def change_email(
+    request: ChangeEmailRequest,
+    current_user: User = Depends(get_current_user),
+    use_case: ChangeEmail = Depends(get_change_email_use_case),
+    jwt_service=Depends(get_jwt_service),
+) -> TokenResponse:
+    """Change user email (requires authentication).
+
+    Args:
+        request: Email change request with new email and password
+        current_user: Authenticated user from JWT token
+        use_case: Email change use case
+        jwt_service: JWT service for token generation
+
+    Returns:
+        New access token with updated email and user data
+
+    Raises:
+        HTTPException 400: If password incorrect, email invalid, or email in use
+        HTTPException 401: If authentication fails
+    """
+    try:
+        dto = ChangeEmailDTO(
+            user_id=current_user.id.value,
+            new_email=request.new_email,
+            password=request.password,
+        )
+        await use_case.execute(dto)
+
+        # Fetch updated user to get new email
+        # (User entity was updated in use case)
+        updated_email = current_user.email.value
+
+        # Generate new JWT token with updated email
+        token = jwt_service.create_access_token(data={"sub": current_user.id.value})
+
+        return TokenResponse(
+            accessToken=token,
+            tokenType="bearer",
+            user=UserResponse(
+                id=current_user.id.value,
+                email=updated_email,
+                createdAt=current_user.created_at.isoformat(),
+                updatedAt=current_user.updated_at.isoformat(),
+            ),
+        )
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
