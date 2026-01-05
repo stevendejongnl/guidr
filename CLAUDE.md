@@ -2,6 +2,19 @@
 
 Project guidance for Claude Code when working with this repository.
 
+## Important: Architectural Decision Records (ADRs)
+
+**All architectural decisions must be documented in `docs/adr/` following the standard ADR format.**
+
+When planning significant features or making architectural decisions:
+1. Create new ADR files in `docs/adr/` directory
+2. Use format: `NNN-descriptive-name.md` (e.g., `001-user-profile-and-account-management.md`)
+3. Follow the standard ADR template (see `docs/adr/README.md`)
+4. Update the index in `docs/adr/README.md`
+5. Link related ADRs together
+
+**Do not create temporary plan files without corresponding ADRs for architectural decisions.**
+
 ## Project Overview
 
 **Guidr** - Step-by-step guide execution app for Android/iOS. Multi-step processes with precise timing (recipes, workouts, lab protocols). Built with Domain-Driven Design (DDD) and Test-Driven Development (TDD) using bare React Native + TypeScript.
