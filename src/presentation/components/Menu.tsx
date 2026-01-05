@@ -72,6 +72,7 @@ export const Menu: React.FC<MenuProps> = ({ items, testID }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
+    top: spacing.xl,
     right: spacing.xl,
     zIndex: 10,
   },
