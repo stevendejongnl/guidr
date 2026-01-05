@@ -1,8 +1,9 @@
 import pytest
+
 from src.domain.aggregates import GuideAggregate
 from src.domain.entities import Guide, Step
-from src.domain.value_objects import EntityId, GuideTitle, StepDuration
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import EntityId, GuideTitle, StepDuration
 
 
 class TestGuideAggregate:

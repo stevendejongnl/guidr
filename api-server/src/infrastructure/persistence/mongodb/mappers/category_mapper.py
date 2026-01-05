@@ -1,7 +1,6 @@
 """MongoDB mapper for Category entity."""
 
-from typing import Any, Optional
-from datetime import datetime
+from typing import Any
 
 from src.domain.entities import Category
 from src.domain.value_objects import EntityId

@@ -1,10 +1,9 @@
 """Session domain entity."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
-from ..value_objects import EntityId, SessionStatus
 from ..exceptions import ValidationException
+from ..value_objects import EntityId, SessionStatus
 
 
 class Session:
@@ -17,12 +16,12 @@ class Session:
         self,
         id: EntityId,
         guide_id: EntityId,
-        status: Optional[SessionStatus] = None,
-        started_at: Optional[datetime] = None,
-        completed_at: Optional[datetime] = None,
-        current_step_id: Optional[EntityId] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
+        status: SessionStatus | None = None,
+        started_at: datetime | None = None,
+        completed_at: datetime | None = None,
+        current_step_id: EntityId | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
     ):
         """Initialize a Session.
 
@@ -42,8 +41,8 @@ class Session:
         self._started_at = started_at
         self._completed_at = completed_at
         self._current_step_id = current_step_id
-        self._created_at = created_at or datetime.utcnow()
-        self._updated_at = updated_at or datetime.utcnow()
+        self._created_at = created_at or datetime.now(UTC)
+        self._updated_at = updated_at or datetime.now(UTC)
 
     @property
     def id(self) -> EntityId:
@@ -61,17 +60,17 @@ class Session:
         return self._status
 
     @property
-    def started_at(self) -> Optional[datetime]:
+    def started_at(self) -> datetime | None:
         """Get start timestamp."""
         return self._started_at
 
     @property
-    def completed_at(self) -> Optional[datetime]:
+    def completed_at(self) -> datetime | None:
         """Get completion timestamp."""
         return self._completed_at
 
     @property
-    def current_step_id(self) -> Optional[EntityId]:
+    def current_step_id(self) -> EntityId | None:
         """Get current step ID."""
         return self._current_step_id
 
@@ -97,8 +96,8 @@ class Session:
             raise ValidationException("Session has already been started")
 
         self._status = SessionStatus.IN_PROGRESS
-        self._started_at = datetime.utcnow()
-        self._updated_at = datetime.utcnow()
+        self._started_at = datetime.now(UTC)
+        self._updated_at = datetime.now(UTC)
 
     def pause(self) -> None:
         """Pause the session.
@@ -112,7 +111,7 @@ class Session:
             raise ValidationException("Cannot pause session that is not in progress")
 
         self._status = SessionStatus.PAUSED
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def resume(self) -> None:
         """Resume the session.
@@ -126,7 +125,7 @@ class Session:
             raise ValidationException("Cannot resume session that is not paused")
 
         self._status = SessionStatus.IN_PROGRESS
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def complete(self) -> None:
         """Complete the session.
@@ -140,8 +139,8 @@ class Session:
             raise ValidationException("Cannot complete session that has not been started")
 
         self._status = SessionStatus.COMPLETED
-        self._completed_at = datetime.utcnow()
-        self._updated_at = datetime.utcnow()
+        self._completed_at = datetime.now(UTC)
+        self._updated_at = datetime.now(UTC)
 
     def cancel(self) -> None:
         """Cancel the session.
@@ -155,8 +154,8 @@ class Session:
             raise ValidationException("Cannot cancel session that has not been started")
 
         self._status = SessionStatus.CANCELLED
-        self._completed_at = datetime.utcnow()
-        self._updated_at = datetime.utcnow()
+        self._completed_at = datetime.now(UTC)
+        self._updated_at = datetime.now(UTC)
 
     def move_to_step(self, step_id: EntityId) -> None:
         """Move to a specific step in the guide.
@@ -171,7 +170,7 @@ class Session:
             raise ValidationException("Cannot move to step when session is not active")
 
         self._current_step_id = step_id
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def is_active(self) -> bool:
         """Check if session is currently active.

@@ -2,12 +2,12 @@
 
 from uuid import uuid4
 
-from src.domain.entities import Step
-from src.domain.repositories import IStepRepository, IGuideRepository
-from src.domain.value_objects import EntityId, StepDuration
-from src.domain.exceptions import ValidationException
 from src.application.dtos import StepCreateDTO, StepResponseDTO
 from src.application.mappers import StepMapper
+from src.domain.entities import Step
+from src.domain.exceptions import ValidationException
+from src.domain.repositories import IGuideRepository, IStepRepository
+from src.domain.value_objects import EntityId, StepDuration
 
 
 class CreateStep:

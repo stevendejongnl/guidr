@@ -1,20 +1,22 @@
 """User/Auth API router."""
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.domain.exceptions import ValidationException
-from src.application.use_cases.user import RegisterUser, LoginUser
 from src.application.dtos import UserCreateDTO, UserLoginDTO
-from ..models import UserRegister, UserLogin, UserResponse, TokenResponse, ErrorResponse
+from src.application.use_cases.user import LoginUser, RegisterUser
+from src.container import Container
+from src.domain.exceptions import ValidationException
+
+from ..models import ErrorResponse, TokenResponse, UserLogin, UserRegister, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 # Container (injected at app startup)
-_container = None
+_container: Container | None = None
 
 
-def set_container(container):
+def set_container(container: Container) -> None:
     """Set the DI container for this router."""
     global _container
     _container = container
@@ -22,15 +24,18 @@ def set_container(container):
 
 # Dependency providers
 def get_register_user_use_case() -> RegisterUser:
+    assert _container is not None, "Container not initialized"
     return _container.register_user_use_case()
 
 
 def get_login_user_use_case() -> LoginUser:
+    assert _container is not None, "Container not initialized"
     return _container.login_user_use_case()
 
 
 def get_jwt_service():
     """Get JWT service for token generation."""
+    assert _container is not None, "Container not initialized"
     return _container.jwt_service()
 
 
@@ -54,13 +59,13 @@ async def register(
         token = jwt_service.create_access_token(data={"sub": result.id})
 
         return TokenResponse(
-            access_token=token,
-            token_type="bearer",
+            accessToken=token,
+            tokenType="bearer",
             user=UserResponse(
                 id=result.id,
                 email=result.email,
-                created_at=result.created_at,
-                updated_at=result.updated_at,
+                createdAt=result.created_at,
+                updatedAt=result.updated_at,
             ),
         )
     except ValidationException as e:
@@ -92,13 +97,13 @@ async def login(
         token = jwt_service.create_access_token(data={"sub": result.id})
 
         return TokenResponse(
-            access_token=token,
-            token_type="bearer",
+            accessToken=token,
+            tokenType="bearer",
             user=UserResponse(
                 id=result.id,
                 email=result.email,
-                created_at=result.created_at,
-                updated_at=result.updated_at,
+                createdAt=result.created_at,
+                updatedAt=result.updated_at,
             ),
         )
     except ValidationException as e:

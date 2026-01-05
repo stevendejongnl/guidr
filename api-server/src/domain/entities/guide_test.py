@@ -1,8 +1,9 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime
+
 from src.domain.entities import Guide
 from src.domain.value_objects import EntityId, GuideTitle
-from src.domain.exceptions import ValidationException
 
 
 class TestGuide:
@@ -210,4 +211,4 @@ class TestGuide:
             guide.category_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
 
         with pytest.raises(AttributeError):
-            guide.created_at = datetime.utcnow()
+            guide.created_at = datetime.now(UTC)

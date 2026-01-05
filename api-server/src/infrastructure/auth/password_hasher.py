@@ -20,7 +20,7 @@ class PasswordHasher:
         Returns:
             Hashed password string
         """
-        return self._hasher.hash(password)
+        return str(self._hasher.hash(password))
 
     def verify_password(self, password: str, password_hash: str) -> bool:
         """Verify a password against a hash.

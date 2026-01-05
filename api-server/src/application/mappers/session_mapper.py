@@ -1,7 +1,7 @@
 """Session mapper for entity-DTO conversion."""
 
-from src.domain.entities import Session
 from src.application.dtos import SessionResponseDTO
+from src.domain.entities import Session
 
 
 class SessionMapper:

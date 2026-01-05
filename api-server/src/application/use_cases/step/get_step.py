@@ -1,11 +1,10 @@
 """Get step use case."""
 
-from typing import Optional
 
-from src.domain.repositories import IStepRepository
-from src.domain.value_objects import EntityId
 from src.application.dtos import StepResponseDTO
 from src.application.mappers import StepMapper
+from src.domain.repositories import IStepRepository
+from src.domain.value_objects import EntityId
 
 
 class GetStep:
@@ -20,7 +19,7 @@ class GetStep:
         self._repository = step_repository
         self._mapper = StepMapper()
 
-    async def execute(self, step_id: str) -> Optional[StepResponseDTO]:
+    async def execute(self, step_id: str) -> StepResponseDTO | None:
         """Get a step by ID.
 
         Args:

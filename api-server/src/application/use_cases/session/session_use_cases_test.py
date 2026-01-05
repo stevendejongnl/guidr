@@ -5,28 +5,27 @@ from uuid import uuid4
 
 import pytest
 
-from src.domain.entities import Session, Guide, Step
+from src.application.dtos import SessionCreateDTO
+from src.application.use_cases.session import (
+    CancelSession,
+    CompleteSession,
+    CreateSession,
+    DeleteSession,
+    GetSessionsByGuide,
+    GetSessionsByStatus,
+    MoveSessionToStep,
+    PauseSession,
+    ResumeSession,
+    StartSession,
+)
+from src.domain.entities import Guide, Session, Step
+from src.domain.exceptions import EntityNotFoundException, ValidationException
 from src.domain.value_objects import (
     EntityId,
     GuideTitle,
     SessionStatus,
     StepDuration,
 )
-from src.domain.exceptions import ValidationException, EntityNotFoundException
-from src.application.use_cases.session import (
-    CreateSession,
-    GetSession,
-    GetSessionsByGuide,
-    GetSessionsByStatus,
-    StartSession,
-    PauseSession,
-    ResumeSession,
-    CompleteSession,
-    CancelSession,
-    MoveSessionToStep,
-    DeleteSession,
-)
-from src.application.dtos import SessionCreateDTO
 
 
 @pytest.fixture

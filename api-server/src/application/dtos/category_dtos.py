@@ -1,7 +1,6 @@
 """Category DTOs for application layer."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -9,14 +8,14 @@ class CategoryCreateDTO:
     """DTO for creating a category."""
 
     name: str
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
 
 
 @dataclass
 class CategoryUpdateDTO:
     """DTO for updating a category."""
 
-    name: Optional[str] = None
+    name: str | None = None
 
 
 @dataclass
@@ -25,6 +24,6 @@ class CategoryResponseDTO:
 
     id: str
     name: str
-    parent_id: Optional[str]
+    parent_id: str | None
     created_at: str  # ISO format
     updated_at: str  # ISO format

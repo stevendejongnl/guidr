@@ -1,28 +1,30 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime
+
 from src.domain.events import (
     BaseDomainEvent,
-    UserRegistered,
-    UserLoggedIn,
-    UserPasswordChanged,
     CategoryCreated,
-    CategoryUpdated,
     CategoryDeleted,
+    CategoryUpdated,
     GuideCreated,
-    GuideUpdated,
     GuideDeleted,
-    StepAddedToGuide,
-    StepRemovedFromGuide,
-    StepCreated,
-    StepUpdated,
-    StepDeleted,
+    GuideUpdated,
+    SessionCancelled,
+    SessionCompleted,
     SessionCreated,
-    SessionStarted,
     SessionPaused,
     SessionResumed,
-    SessionCompleted,
-    SessionCancelled,
+    SessionStarted,
     SessionStepChanged,
+    StepAddedToGuide,
+    StepCreated,
+    StepDeleted,
+    StepRemovedFromGuide,
+    StepUpdated,
+    UserLoggedIn,
+    UserPasswordChanged,
+    UserRegistered,
 )
 
 
@@ -393,5 +395,5 @@ class TestEventIdentity:
 
         assert isinstance(event.occurred_at, datetime)
         # Should be close to current time
-        time_diff = datetime.utcnow() - event.occurred_at
+        time_diff = datetime.now(UTC) - event.occurred_at
         assert time_diff.total_seconds() < 1

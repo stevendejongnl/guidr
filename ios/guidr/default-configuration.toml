@@ -3,6 +3,6 @@
 
 [server]
 # Default server URL - automatically configured on first app launch
-url = "https://guidr.madebysteven.nl/api/v1"
+url = "https://guidr.madebysteven.nl"
 # Minimum app version required to use this server
 minAppVersion = "1.11.1"

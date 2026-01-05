@@ -5,12 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import (
     categories_router,
-    guides_router,
-    steps_router,
-    sessions_router,
-    users_router,
     config_router,
+    guides_router,
+    sessions_router,
+    steps_router,
     system_router,
+    users_router,
 )
 
 

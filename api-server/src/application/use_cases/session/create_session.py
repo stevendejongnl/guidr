@@ -2,12 +2,12 @@
 
 from uuid import uuid4
 
-from src.domain.entities import Session
-from src.domain.repositories import ISessionRepository, IGuideRepository
-from src.domain.value_objects import EntityId
-from src.domain.exceptions import ValidationException
 from src.application.dtos import SessionCreateDTO, SessionResponseDTO
 from src.application.mappers import SessionMapper
+from src.domain.entities import Session
+from src.domain.exceptions import ValidationException
+from src.domain.repositories import IGuideRepository, ISessionRepository
+from src.domain.value_objects import EntityId
 
 
 class CreateSession:

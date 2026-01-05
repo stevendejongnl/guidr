@@ -38,6 +38,39 @@ jobs:
       - name: Run typecheck
         run: npm run typecheck
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: api-server/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('api-server/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install API server dependencies
+        working-directory: api-server
+        run: poetry install
+
+      - name: Run API server tests
+        working-directory: api-server
+        run: poetry run pytest
+
+      - name: Run API server lint
+        working-directory: api-server
+        run: poetry run ruff check .
+
+      - name: Run API server type check
+        working-directory: api-server
+        run: poetry run mypy src
+
       - name: Run semantic-release (dry-run to get version)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

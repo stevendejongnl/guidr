@@ -1,10 +1,9 @@
 """Category domain entity."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
-from ..value_objects import EntityId
 from ..exceptions import ValidationException
+from ..value_objects import EntityId
 
 
 class Category:
@@ -14,9 +13,9 @@ class Category:
         self,
         id: EntityId,
         name: str,
-        parent_id: Optional[EntityId] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
+        parent_id: EntityId | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
     ):
         """Initialize a Category.
 
@@ -36,8 +35,8 @@ class Category:
         self._id = id
         self._name = name
         self._parent_id = parent_id
-        self._created_at = created_at or datetime.utcnow()
-        self._updated_at = updated_at or datetime.utcnow()
+        self._created_at = created_at or datetime.now(UTC)
+        self._updated_at = updated_at or datetime.now(UTC)
 
     @property
     def id(self) -> EntityId:
@@ -50,7 +49,7 @@ class Category:
         return self._name
 
     @property
-    def parent_id(self) -> Optional[EntityId]:
+    def parent_id(self) -> EntityId | None:
         """Get parent category ID."""
         return self._parent_id
 
@@ -77,7 +76,7 @@ class Category:
             raise ValidationException("Category name cannot be empty")
 
         self._name = new_name
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def is_root(self) -> bool:
         """Check if this is a root category (no parent).

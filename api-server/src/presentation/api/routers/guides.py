@@ -1,28 +1,30 @@
 """Guide API router."""
 
-from typing import Optional
-from fastapi import APIRouter, HTTPException, status, Depends
 
-from src.domain.exceptions import ValidationException, EntityNotFoundException
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.application.dtos import GuideCreateDTO, GuideUpdateDTO
 from src.application.use_cases.guide import (
     CreateGuide,
-    GetGuide,
+    DeleteGuide,
     GetAllGuides,
+    GetGuide,
     GetGuidesByCategory,
     UpdateGuide,
-    DeleteGuide,
 )
-from src.application.dtos import GuideCreateDTO, GuideUpdateDTO
-from ..models import GuideCreate, GuideUpdate, GuideResponse, ErrorResponse
+from src.container import Container
+from src.domain.exceptions import EntityNotFoundException, ValidationException
+
+from ..models import ErrorResponse, GuideCreate, GuideResponse, GuideUpdate
 
 router = APIRouter(prefix="/guides", tags=["guides"])
 
 
 # Container (injected at app startup)
-_container = None
+_container: Container | None = None
 
 
-def set_container(container):
+def set_container(container: Container) -> None:
     """Set the DI container for this router."""
     global _container
     _container = container
@@ -30,26 +32,32 @@ def set_container(container):
 
 # Dependency providers
 def get_create_guide_use_case() -> CreateGuide:
+    assert _container is not None, "Container not initialized"
     return _container.create_guide_use_case()
 
 
 def get_get_guide_use_case() -> GetGuide:
+    assert _container is not None, "Container not initialized"
     return _container.get_guide_use_case()
 
 
 def get_get_all_guides_use_case() -> GetAllGuides:
+    assert _container is not None, "Container not initialized"
     return _container.get_all_guides_use_case()
 
 
 def get_get_guides_by_category_use_case() -> GetGuidesByCategory:
+    assert _container is not None, "Container not initialized"
     return _container.get_guides_by_category_use_case()
 
 
 def get_update_guide_use_case() -> UpdateGuide:
+    assert _container is not None, "Container not initialized"
     return _container.update_guide_use_case()
 
 
 def get_delete_guide_use_case() -> DeleteGuide:
+    assert _container is not None, "Container not initialized"
     return _container.delete_guide_use_case()
 
 
@@ -73,12 +81,12 @@ async def create_guide(
         result = await use_case.execute(dto)
         return GuideResponse(
             id=result.id,
-            category_id=result.category_id,
+            categoryId=result.category_id,
             title=result.title,
             description=result.description,
-            step_ids=result.step_ids,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            stepIds=result.step_ids,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -102,18 +110,18 @@ async def get_guide(
         )
     return GuideResponse(
         id=result.id,
-        category_id=result.category_id,
+        categoryId=result.category_id,
         title=result.title,
         description=result.description,
-        step_ids=result.step_ids,
-        created_at=result.created_at,
-        updated_at=result.updated_at,
+        stepIds=result.step_ids,
+        createdAt=result.created_at,
+        updatedAt=result.updated_at,
     )
 
 
 @router.get("", response_model=list[GuideResponse])
 async def list_guides(
-    category_id: Optional[str] = None,
+    category_id: str | None = None,
     use_case_all: GetAllGuides = Depends(get_get_all_guides_use_case),
     use_case_by_category: GetGuidesByCategory = Depends(
         get_get_guides_by_category_use_case
@@ -128,12 +136,12 @@ async def list_guides(
     return [
         GuideResponse(
             id=r.id,
-            category_id=r.category_id,
+            categoryId=r.category_id,
             title=r.title,
             description=r.description,
-            step_ids=r.step_ids,
-            created_at=r.created_at,
-            updated_at=r.updated_at,
+            stepIds=r.step_ids,
+            createdAt=r.created_at,
+            updatedAt=r.updated_at,
         )
         for r in results
     ]
@@ -153,14 +161,19 @@ async def update_guide(
     try:
         dto = GuideUpdateDTO(title=guide.title, description=guide.description)
         result = await use_case.execute(guide_id, dto)
+        if result is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Guide not found: {guide_id}",
+            )
         return GuideResponse(
             id=result.id,
-            category_id=result.category_id,
+            categoryId=result.category_id,
             title=result.title,
             description=result.description,
-            step_ids=result.step_ids,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            stepIds=result.step_ids,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

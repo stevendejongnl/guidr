@@ -1,8 +1,8 @@
 """Get all sessions use case."""
 
-from src.domain.repositories import ISessionRepository
 from src.application.dtos import SessionResponseDTO
 from src.application.mappers import SessionMapper
+from src.domain.repositories import ISessionRepository
 
 
 class GetAllSessions:

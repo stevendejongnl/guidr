@@ -1,7 +1,6 @@
 """Step DTOs for application layer."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -11,18 +10,18 @@ class StepCreateDTO:
     guide_id: str
     order: int
     title: str
-    description: Optional[str] = None
-    duration: Optional[int] = None  # seconds
+    description: str | None = None
+    duration: int | None = None  # seconds
 
 
 @dataclass
 class StepUpdateDTO:
     """DTO for updating a step."""
 
-    order: Optional[int] = None
-    title: Optional[str] = None
-    description: Optional[str] = None
-    duration: Optional[int] = None  # seconds
+    order: int | None = None
+    title: str | None = None
+    description: str | None = None
+    duration: int | None = None  # seconds
 
 
 @dataclass
@@ -33,7 +32,7 @@ class StepResponseDTO:
     guide_id: str
     order: int
     title: str
-    description: Optional[str]
-    duration: Optional[int]  # seconds
+    description: str | None
+    duration: int | None  # seconds
     created_at: str  # ISO format
     updated_at: str  # ISO format

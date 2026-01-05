@@ -1,11 +1,12 @@
 """MongoDB implementation of Step repository."""
 
-from typing import Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from src.domain.repositories import IStepRepository
 from src.domain.entities import Step
+from src.domain.repositories import IStepRepository
 from src.domain.value_objects import EntityId
+
 from ..mappers import StepMapper
 
 
@@ -21,7 +22,7 @@ class MongoStepRepository(IStepRepository):
         self._collection = database["steps"]
         self._mapper = StepMapper()
 
-    async def find_by_id(self, id: EntityId) -> Optional[Step]:
+    async def find_by_id(self, id: EntityId) -> Step | None:
         """Find step by ID."""
         document = await self._collection.find_one({"_id": id.value})
         return self._mapper.to_entity(document) if document else None

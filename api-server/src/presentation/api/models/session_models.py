@@ -1,6 +1,6 @@
 """Session API models."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -21,9 +21,9 @@ class SessionResponse(BaseModel):
     id: str
     guide_id: str = Field(..., alias="guideId")
     status: str
-    started_at: Optional[str] = Field(None, alias="startedAt")
-    completed_at: Optional[str] = Field(None, alias="completedAt")
-    current_step_id: Optional[str] = Field(None, alias="currentStepId")
+    started_at: str | None = Field(None, alias="startedAt")
+    completed_at: str | None = Field(None, alias="completedAt")
+    current_step_id: str | None = Field(None, alias="currentStepId")
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 

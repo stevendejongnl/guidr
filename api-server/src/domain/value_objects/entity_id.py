@@ -3,6 +3,7 @@
 import re
 from dataclasses import dataclass
 from uuid import UUID
+
 from ..exceptions import ValidationException
 
 # MongoDB ObjectId pattern: 24 hexadecimal characters

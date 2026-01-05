@@ -1,12 +1,11 @@
 """Update step use case."""
 
-from typing import Optional
 
+from src.application.dtos import StepResponseDTO, StepUpdateDTO
+from src.application.mappers import StepMapper
+from src.domain.exceptions import EntityNotFoundException
 from src.domain.repositories import IStepRepository
 from src.domain.value_objects import EntityId, StepDuration
-from src.domain.exceptions import EntityNotFoundException
-from src.application.dtos import StepUpdateDTO, StepResponseDTO
-from src.application.mappers import StepMapper
 
 
 class UpdateStep:
@@ -23,7 +22,7 @@ class UpdateStep:
 
     async def execute(
         self, step_id: str, dto: StepUpdateDTO
-    ) -> Optional[StepResponseDTO]:
+    ) -> StepResponseDTO | None:
         """Update a step.
 
         Args:

@@ -1,8 +1,8 @@
 """Get all steps use case."""
 
-from src.domain.repositories import IStepRepository
 from src.application.dtos import StepResponseDTO
 from src.application.mappers import StepMapper
+from src.domain.repositories import IStepRepository
 
 
 class GetAllSteps:

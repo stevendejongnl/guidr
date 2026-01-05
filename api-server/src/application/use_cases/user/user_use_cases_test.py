@@ -5,11 +5,11 @@ from uuid import uuid4
 
 import pytest
 
-from src.domain.entities import User
-from src.domain.value_objects import EntityId, Email
-from src.domain.exceptions import ValidationException
-from src.application.use_cases.user import RegisterUser, LoginUser
 from src.application.dtos import UserCreateDTO, UserLoginDTO
+from src.application.use_cases.user import LoginUser, RegisterUser
+from src.domain.entities import User
+from src.domain.exceptions import ValidationException
+from src.domain.value_objects import Email, EntityId
 
 
 @pytest.fixture

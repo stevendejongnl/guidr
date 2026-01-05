@@ -1,7 +1,7 @@
 """User mapper for entity-DTO conversion."""
 
-from src.domain.entities import User
 from src.application.dtos import UserResponseDTO
+from src.domain.entities import User
 
 
 class UserMapper:

@@ -1,8 +1,10 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime
+
 from src.domain.entities import Category
-from src.domain.value_objects import EntityId
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import EntityId
 
 
 class TestCategory:
@@ -134,4 +136,4 @@ class TestCategory:
         category = Category(id=id, name="Cooking")
 
         with pytest.raises(AttributeError):
-            category.created_at = datetime.utcnow()
+            category.created_at = datetime.now(UTC)

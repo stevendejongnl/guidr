@@ -3,7 +3,7 @@
 from typing import Any
 
 from src.domain.entities import User
-from src.domain.value_objects import EntityId, Email
+from src.domain.value_objects import Email, EntityId
 
 
 class UserMapper:

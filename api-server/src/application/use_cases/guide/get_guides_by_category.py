@@ -1,9 +1,9 @@
 """Get guides by category use case."""
 
-from src.domain.repositories import IGuideRepository
-from src.domain.value_objects import EntityId
 from src.application.dtos import GuideResponseDTO
 from src.application.mappers import GuideMapper
+from src.domain.repositories import IGuideRepository
+from src.domain.value_objects import EntityId
 
 
 class GetGuidesByCategory:

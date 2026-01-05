@@ -1,11 +1,12 @@
 """MongoDB implementation of Category repository."""
 
-from typing import Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from src.domain.repositories import ICategoryRepository
 from src.domain.entities import Category
+from src.domain.repositories import ICategoryRepository
 from src.domain.value_objects import EntityId
+
 from ..mappers import CategoryMapper
 
 
@@ -21,7 +22,7 @@ class MongoCategoryRepository(ICategoryRepository):
         self._collection = database["categories"]
         self._mapper = CategoryMapper()
 
-    async def find_by_id(self, id: EntityId) -> Optional[Category]:
+    async def find_by_id(self, id: EntityId) -> Category | None:
         """Find category by ID."""
         document = await self._collection.find_one({"_id": id.value})
         return self._mapper.to_entity(document) if document else None
@@ -32,7 +33,7 @@ class MongoCategoryRepository(ICategoryRepository):
         documents = await cursor.to_list(length=None)
         return [self._mapper.to_entity(doc) for doc in documents]
 
-    async def find_by_parent_id(self, parent_id: Optional[EntityId]) -> list[Category]:
+    async def find_by_parent_id(self, parent_id: EntityId | None) -> list[Category]:
         """Find categories by parent ID."""
         filter_query = {"parentId": parent_id.value if parent_id else None}
         cursor = self._collection.find(filter_query)

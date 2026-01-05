@@ -1,6 +1,6 @@
 """Step API models."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -10,8 +10,8 @@ class StepCreate(BaseModel):
     guide_id: str = Field(..., alias="guideId")
     order: int
     title: str
-    description: Optional[str] = None
-    duration: Optional[int] = None  # seconds
+    description: str | None = None
+    duration: int | None = None  # seconds
 
     class Config:
         """Pydantic config."""
@@ -22,10 +22,10 @@ class StepCreate(BaseModel):
 class StepUpdate(BaseModel):
     """Request model for updating a step."""
 
-    order: Optional[int] = None
-    title: Optional[str] = None
-    description: Optional[str] = None
-    duration: Optional[int] = None  # seconds
+    order: int | None = None
+    title: str | None = None
+    description: str | None = None
+    duration: int | None = None  # seconds
 
     class Config:
         """Pydantic config."""
@@ -40,8 +40,8 @@ class StepResponse(BaseModel):
     guide_id: str = Field(..., alias="guideId")
     order: int
     title: str
-    description: Optional[str]
-    duration: Optional[int]  # seconds
+    description: str | None
+    duration: int | None  # seconds
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 

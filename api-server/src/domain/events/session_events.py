@@ -1,7 +1,7 @@
 """Session domain events."""
 
 from dataclasses import dataclass
-from typing import Optional
+
 from .base import BaseDomainEvent
 
 
@@ -57,5 +57,5 @@ class SessionStepChanged(BaseDomainEvent):
     """Event raised when the current step changes in a session."""
 
     session_id: str
-    previous_step_id: Optional[str]
+    previous_step_id: str | None
     current_step_id: str

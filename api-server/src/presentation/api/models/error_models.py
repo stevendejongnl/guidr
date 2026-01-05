@@ -1,15 +1,15 @@
 """Error response models."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
 class ErrorDetail(BaseModel):
     """Detailed error information."""
 
-    field: Optional[str] = None
+    field: str | None = None
     message: str
-    code: Optional[str] = None
+    code: str | None = None
 
 
 class ErrorResponse(BaseModel):

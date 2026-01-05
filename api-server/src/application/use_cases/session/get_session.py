@@ -1,11 +1,10 @@
 """Get session use case."""
 
-from typing import Optional
 
-from src.domain.repositories import ISessionRepository
-from src.domain.value_objects import EntityId
 from src.application.dtos import SessionResponseDTO
 from src.application.mappers import SessionMapper
+from src.domain.repositories import ISessionRepository
+from src.domain.value_objects import EntityId
 
 
 class GetSession:
@@ -20,7 +19,7 @@ class GetSession:
         self._repository = session_repository
         self._mapper = SessionMapper()
 
-    async def execute(self, session_id: str) -> Optional[SessionResponseDTO]:
+    async def execute(self, session_id: str) -> SessionResponseDTO | None:
         """Get a session by ID.
 
         Args:

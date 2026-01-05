@@ -2,9 +2,9 @@
 
 from abc import abstractmethod
 
-from .base import IRepository
 from ..entities import Guide
 from ..value_objects import EntityId
+from .base import IRepository
 
 
 class IGuideRepository(IRepository[Guide]):

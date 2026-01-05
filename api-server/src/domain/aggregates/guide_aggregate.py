@@ -1,11 +1,9 @@
 """Guide aggregate root."""
 
-from typing import Optional
-from datetime import datetime
 
 from ..entities import Guide, Step
-from ..value_objects import EntityId, GuideTitle
 from ..exceptions import ValidationException
+from ..value_objects import EntityId, GuideTitle
 
 
 class GuideAggregate:
@@ -20,7 +18,7 @@ class GuideAggregate:
     - Guide tracks all step IDs
     """
 
-    def __init__(self, guide: Guide, steps: Optional[list[Step]] = None):
+    def __init__(self, guide: Guide, steps: list[Step] | None = None):
         """Initialize Guide aggregate.
 
         Args:
@@ -59,7 +57,7 @@ class GuideAggregate:
         """Get total number of steps."""
         return len(self._steps)
 
-    def get_step(self, step_id: EntityId) -> Optional[Step]:
+    def get_step(self, step_id: EntityId) -> Step | None:
         """Get a specific step by ID.
 
         Args:

@@ -1,11 +1,12 @@
 """MongoDB implementation of Session repository."""
 
-from typing import Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from src.domain.repositories import ISessionRepository
 from src.domain.entities import Session
+from src.domain.repositories import ISessionRepository
 from src.domain.value_objects import EntityId, SessionStatus
+
 from ..mappers import SessionMapper
 
 
@@ -21,7 +22,7 @@ class MongoSessionRepository(ISessionRepository):
         self._collection = database["sessions"]
         self._mapper = SessionMapper()
 
-    async def find_by_id(self, id: EntityId) -> Optional[Session]:
+    async def find_by_id(self, id: EntityId) -> Session | None:
         """Find session by ID."""
         document = await self._collection.find_one({"_id": id.value})
         return self._mapper.to_entity(document) if document else None

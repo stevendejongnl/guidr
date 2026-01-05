@@ -1,8 +1,9 @@
 import pytest
+
 from src.domain.aggregates import SessionAggregate
-from src.domain.entities import Session, Guide, Step
-from src.domain.value_objects import EntityId, GuideTitle, StepDuration, SessionStatus
+from src.domain.entities import Guide, Session, Step
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import EntityId, GuideTitle, SessionStatus, StepDuration
 
 
 class TestSessionAggregate:
@@ -413,9 +414,15 @@ class TestSessionAggregate:
         step1_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
         step2_id = EntityId("550e8400-e29b-41d4-a716-446655440004")
         step3_id = EntityId("550e8400-e29b-41d4-a716-446655440005")
-        step1 = Step(id=step1_id, guide_id=guide_id, order=0, title="Step 1", duration=StepDuration(60))
-        step2 = Step(id=step2_id, guide_id=guide_id, order=1, title="Step 2", duration=StepDuration(60))
-        step3 = Step(id=step3_id, guide_id=guide_id, order=2, title="Step 3", duration=StepDuration(60))
+        step1 = Step(
+            id=step1_id, guide_id=guide_id, order=0, title="Step 1", duration=StepDuration(60)
+        )
+        step2 = Step(
+            id=step2_id, guide_id=guide_id, order=1, title="Step 2", duration=StepDuration(60)
+        )
+        step3 = Step(
+            id=step3_id, guide_id=guide_id, order=2, title="Step 3", duration=StepDuration(60)
+        )
 
         aggregate = SessionAggregate(session=session, guide=guide, steps=[step1, step2, step3])
         aggregate.start()
@@ -440,8 +447,12 @@ class TestSessionAggregate:
 
         step1_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
         step2_id = EntityId("550e8400-e29b-41d4-a716-446655440004")
-        step1 = Step(id=step1_id, guide_id=guide_id, order=0, title="Step 1", duration=StepDuration(60))
-        step2 = Step(id=step2_id, guide_id=guide_id, order=1, title="Step 2", duration=StepDuration(60))
+        step1 = Step(
+            id=step1_id, guide_id=guide_id, order=0, title="Step 1", duration=StepDuration(60)
+        )
+        step2 = Step(
+            id=step2_id, guide_id=guide_id, order=1, title="Step 2", duration=StepDuration(60)
+        )
 
         aggregate = SessionAggregate(session=session, guide=guide, steps=[step1, step2])
         aggregate.start()

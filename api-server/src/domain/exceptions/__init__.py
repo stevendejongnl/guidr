@@ -1,9 +1,9 @@
 """Domain exceptions."""
 
-from .base import BaseDomainException
-from .validation_error import ValidationException
-from .entity_not_found import EntityNotFoundException
 from .auth_error import AuthenticationException
+from .base import BaseDomainException
+from .entity_not_found import EntityNotFoundException
+from .validation_error import ValidationException
 
 __all__ = [
     "BaseDomainException",

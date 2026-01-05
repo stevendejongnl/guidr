@@ -1,7 +1,7 @@
 """Step domain events."""
 
 from dataclasses import dataclass
-from typing import Optional
+
 from .base import BaseDomainEvent
 
 
@@ -14,7 +14,7 @@ class StepCreated(BaseDomainEvent):
     order: int
     title: str
     duration: int
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class StepUpdated(BaseDomainEvent):
     order: int
     title: str
     duration: int
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @dataclass(frozen=True)

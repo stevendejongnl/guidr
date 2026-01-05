@@ -1,39 +1,41 @@
 """Session API router."""
 
-from typing import Optional
-from fastapi import APIRouter, HTTPException, status, Depends
 
-from src.domain.exceptions import ValidationException, EntityNotFoundException
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.application.dtos import SessionCreateDTO
 from src.application.use_cases.session import (
+    CancelSession,
+    CompleteSession,
     CreateSession,
-    GetSession,
+    DeleteSession,
     GetAllSessions,
+    GetSession,
     GetSessionsByGuide,
     GetSessionsByStatus,
-    StartSession,
+    MoveSessionToStep,
     PauseSession,
     ResumeSession,
-    CompleteSession,
-    CancelSession,
-    MoveSessionToStep,
-    DeleteSession,
+    StartSession,
 )
-from src.application.dtos import SessionCreateDTO
+from src.container import Container
+from src.domain.exceptions import EntityNotFoundException, ValidationException
+
 from ..models import (
+    ErrorResponse,
+    MoveToStepRequest,
     SessionCreate,
     SessionResponse,
-    MoveToStepRequest,
-    ErrorResponse,
 )
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 # Container (injected at app startup)
-_container = None
+_container: Container | None = None
 
 
-def set_container(container):
+def set_container(container: Container) -> None:
     """Set the DI container for this router."""
     global _container
     _container = container
@@ -41,50 +43,62 @@ def set_container(container):
 
 # Dependency providers
 def get_create_session_use_case() -> CreateSession:
+    assert _container is not None, "Container not initialized"
     return _container.create_session_use_case()
 
 
 def get_get_session_use_case() -> GetSession:
+    assert _container is not None, "Container not initialized"
     return _container.get_session_use_case()
 
 
 def get_get_all_sessions_use_case() -> GetAllSessions:
+    assert _container is not None, "Container not initialized"
     return _container.get_all_sessions_use_case()
 
 
 def get_get_sessions_by_guide_use_case() -> GetSessionsByGuide:
+    assert _container is not None, "Container not initialized"
     return _container.get_sessions_by_guide_use_case()
 
 
 def get_get_sessions_by_status_use_case() -> GetSessionsByStatus:
+    assert _container is not None, "Container not initialized"
     return _container.get_sessions_by_status_use_case()
 
 
 def get_start_session_use_case() -> StartSession:
+    assert _container is not None, "Container not initialized"
     return _container.start_session_use_case()
 
 
 def get_pause_session_use_case() -> PauseSession:
+    assert _container is not None, "Container not initialized"
     return _container.pause_session_use_case()
 
 
 def get_resume_session_use_case() -> ResumeSession:
+    assert _container is not None, "Container not initialized"
     return _container.resume_session_use_case()
 
 
 def get_complete_session_use_case() -> CompleteSession:
+    assert _container is not None, "Container not initialized"
     return _container.complete_session_use_case()
 
 
 def get_cancel_session_use_case() -> CancelSession:
+    assert _container is not None, "Container not initialized"
     return _container.cancel_session_use_case()
 
 
 def get_move_session_to_step_use_case() -> MoveSessionToStep:
+    assert _container is not None, "Container not initialized"
     return _container.move_session_to_step_use_case()
 
 
 def get_delete_session_use_case() -> DeleteSession:
+    assert _container is not None, "Container not initialized"
     return _container.delete_session_use_case()
 
 
@@ -104,13 +118,13 @@ async def create_session(
         result = await use_case.execute(dto)
         return SessionResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             status=result.status,
-            started_at=result.started_at,
-            completed_at=result.completed_at,
-            current_step_id=result.current_step_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            startedAt=result.started_at,
+            completedAt=result.completed_at,
+            currentStepId=result.current_step_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -134,20 +148,20 @@ async def get_session(
         )
     return SessionResponse(
         id=result.id,
-        guide_id=result.guide_id,
+        guideId=result.guide_id,
         status=result.status,
-        started_at=result.started_at,
-        completed_at=result.completed_at,
-        current_step_id=result.current_step_id,
-        created_at=result.created_at,
-        updated_at=result.updated_at,
+        startedAt=result.started_at,
+        completedAt=result.completed_at,
+        currentStepId=result.current_step_id,
+        createdAt=result.created_at,
+        updatedAt=result.updated_at,
     )
 
 
 @router.get("", response_model=list[SessionResponse])
 async def list_sessions(
-    guide_id: Optional[str] = None,
-    status_filter: Optional[str] = None,
+    guide_id: str | None = None,
+    status_filter: str | None = None,
     use_case_all: GetAllSessions = Depends(get_get_all_sessions_use_case),
     use_case_by_guide: GetSessionsByGuide = Depends(get_get_sessions_by_guide_use_case),
     use_case_by_status: GetSessionsByStatus = Depends(
@@ -165,13 +179,13 @@ async def list_sessions(
     return [
         SessionResponse(
             id=r.id,
-            guide_id=r.guide_id,
+            guideId=r.guide_id,
             status=r.status,
-            started_at=r.started_at,
-            completed_at=r.completed_at,
-            current_step_id=r.current_step_id,
-            created_at=r.created_at,
-            updated_at=r.updated_at,
+            startedAt=r.started_at,
+            completedAt=r.completed_at,
+            currentStepId=r.current_step_id,
+            createdAt=r.created_at,
+            updatedAt=r.updated_at,
         )
         for r in results
     ]
@@ -192,13 +206,13 @@ async def start_session(
         result = await use_case.execute(session_id)
         return SessionResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             status=result.status,
-            started_at=result.started_at,
-            completed_at=result.completed_at,
-            current_step_id=result.current_step_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            startedAt=result.started_at,
+            completedAt=result.completed_at,
+            currentStepId=result.current_step_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -220,13 +234,13 @@ async def pause_session(
         result = await use_case.execute(session_id)
         return SessionResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             status=result.status,
-            started_at=result.started_at,
-            completed_at=result.completed_at,
-            current_step_id=result.current_step_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            startedAt=result.started_at,
+            completedAt=result.completed_at,
+            currentStepId=result.current_step_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -248,13 +262,13 @@ async def resume_session(
         result = await use_case.execute(session_id)
         return SessionResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             status=result.status,
-            started_at=result.started_at,
-            completed_at=result.completed_at,
-            current_step_id=result.current_step_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            startedAt=result.started_at,
+            completedAt=result.completed_at,
+            currentStepId=result.current_step_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -276,13 +290,13 @@ async def complete_session(
         result = await use_case.execute(session_id)
         return SessionResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             status=result.status,
-            started_at=result.started_at,
-            completed_at=result.completed_at,
-            current_step_id=result.current_step_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            startedAt=result.started_at,
+            completedAt=result.completed_at,
+            currentStepId=result.current_step_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -304,13 +318,13 @@ async def cancel_session(
         result = await use_case.execute(session_id)
         return SessionResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             status=result.status,
-            started_at=result.started_at,
-            completed_at=result.completed_at,
-            current_step_id=result.current_step_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            startedAt=result.started_at,
+            completedAt=result.completed_at,
+            currentStepId=result.current_step_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -333,13 +347,13 @@ async def move_to_step(
         result = await use_case.execute(session_id, request.step_id)
         return SessionResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             status=result.status,
-            started_at=result.started_at,
-            completed_at=result.completed_at,
-            current_step_id=result.current_step_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            startedAt=result.started_at,
+            completedAt=result.completed_at,
+            currentStepId=result.current_step_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

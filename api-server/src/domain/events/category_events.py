@@ -1,7 +1,7 @@
 """Category domain events."""
 
 from dataclasses import dataclass
-from typing import Optional
+
 from .base import BaseDomainEvent
 
 
@@ -11,7 +11,7 @@ class CategoryCreated(BaseDomainEvent):
 
     category_id: str
     name: str
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,7 @@ class CategoryUpdated(BaseDomainEvent):
 
     category_id: str
     name: str
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
 
 
 @dataclass(frozen=True)

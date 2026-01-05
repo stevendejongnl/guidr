@@ -1,11 +1,10 @@
 """Get guide use case."""
 
-from typing import Optional
 
-from src.domain.repositories import IGuideRepository
-from src.domain.value_objects import EntityId
 from src.application.dtos import GuideResponseDTO
 from src.application.mappers import GuideMapper
+from src.domain.repositories import IGuideRepository
+from src.domain.value_objects import EntityId
 
 
 class GetGuide:
@@ -20,7 +19,7 @@ class GetGuide:
         self._repository = guide_repository
         self._mapper = GuideMapper()
 
-    async def execute(self, guide_id: str) -> Optional[GuideResponseDTO]:
+    async def execute(self, guide_id: str) -> GuideResponseDTO | None:
         """Get a guide by ID.
 
         Args:

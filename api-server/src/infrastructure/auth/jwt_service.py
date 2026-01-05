@@ -1,7 +1,6 @@
 """JWT token service."""
 
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 
@@ -31,12 +30,12 @@ class JWTService:
             Encoded JWT token string
         """
         to_encode = data.copy()
-        expire = datetime.utcnow() + timedelta(minutes=self._expiration_minutes)
+        expire = datetime.now(UTC) + timedelta(minutes=self._expiration_minutes)
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, self._secret_key, algorithm=self._algorithm)
+        encoded_jwt: str = jwt.encode(to_encode, self._secret_key, algorithm=self._algorithm)
         return encoded_jwt
 
-    def verify_token(self, token: str) -> Optional[dict]:
+    def verify_token(self, token: str) -> dict[str, object] | None:
         """Verify and decode a JWT token.
 
         Args:
@@ -46,7 +45,9 @@ class JWTService:
             Decoded token payload if valid, None otherwise
         """
         try:
-            payload = jwt.decode(token, self._secret_key, algorithms=[self._algorithm])
+            payload: dict[str, object] = jwt.decode(
+                token, self._secret_key, algorithms=[self._algorithm]
+            )
             return payload
         except JWTError:
             return None

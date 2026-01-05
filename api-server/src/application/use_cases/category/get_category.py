@@ -1,11 +1,10 @@
 """Get category use case."""
 
-from typing import Optional
 
-from src.domain.repositories import ICategoryRepository
-from src.domain.value_objects import EntityId
 from src.application.dtos import CategoryResponseDTO
 from src.application.mappers import CategoryMapper
+from src.domain.repositories import ICategoryRepository
+from src.domain.value_objects import EntityId
 
 
 class GetCategory:
@@ -20,7 +19,7 @@ class GetCategory:
         self._repository = category_repository
         self._mapper = CategoryMapper()
 
-    async def execute(self, category_id: str) -> Optional[CategoryResponseDTO]:
+    async def execute(self, category_id: str) -> CategoryResponseDTO | None:
         """Get a category by ID.
 
         Args:

@@ -5,18 +5,18 @@ from uuid import uuid4
 
 import pytest
 
-from src.domain.entities import Category
-from src.domain.value_objects import EntityId
-from src.domain.exceptions import ValidationException, EntityNotFoundException
+from src.application.dtos import CategoryCreateDTO, CategoryUpdateDTO
 from src.application.use_cases.category import (
     CreateCategory,
-    GetCategory,
+    DeleteCategory,
     GetAllCategories,
     GetCategoriesByParent,
+    GetCategory,
     UpdateCategory,
-    DeleteCategory,
 )
-from src.application.dtos import CategoryCreateDTO, CategoryUpdateDTO
+from src.domain.entities import Category
+from src.domain.exceptions import EntityNotFoundException, ValidationException
+from src.domain.value_objects import EntityId
 
 
 @pytest.fixture

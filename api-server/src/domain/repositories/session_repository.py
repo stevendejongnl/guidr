@@ -2,9 +2,9 @@
 
 from abc import abstractmethod
 
-from .base import IRepository
 from ..entities import Session
 from ..value_objects import EntityId, SessionStatus
+from .base import IRepository
 
 
 class ISessionRepository(IRepository[Session]):

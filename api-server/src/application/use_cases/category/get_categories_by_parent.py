@@ -1,11 +1,10 @@
 """Get categories by parent use case."""
 
-from typing import Optional
 
-from src.domain.repositories import ICategoryRepository
-from src.domain.value_objects import EntityId
 from src.application.dtos import CategoryResponseDTO
 from src.application.mappers import CategoryMapper
+from src.domain.repositories import ICategoryRepository
+from src.domain.value_objects import EntityId
 
 
 class GetCategoriesByParent:
@@ -20,7 +19,7 @@ class GetCategoriesByParent:
         self._repository = category_repository
         self._mapper = CategoryMapper()
 
-    async def execute(self, parent_id: Optional[str]) -> list[CategoryResponseDTO]:
+    async def execute(self, parent_id: str | None) -> list[CategoryResponseDTO]:
         """Get categories by parent ID.
 
         Args:

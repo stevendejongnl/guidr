@@ -2,12 +2,12 @@
 
 from uuid import uuid4
 
-from src.domain.entities import Category
-from src.domain.repositories import ICategoryRepository
-from src.domain.value_objects import EntityId
-from src.domain.exceptions import ValidationException
 from src.application.dtos import CategoryCreateDTO, CategoryResponseDTO
 from src.application.mappers import CategoryMapper
+from src.domain.entities import Category
+from src.domain.exceptions import ValidationException
+from src.domain.repositories import ICategoryRepository
+from src.domain.value_objects import EntityId
 
 
 class CreateCategory:

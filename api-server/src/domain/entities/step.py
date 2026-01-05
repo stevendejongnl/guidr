@@ -1,10 +1,9 @@
 """Step domain entity."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
-from ..value_objects import EntityId, StepDuration
 from ..exceptions import ValidationException
+from ..value_objects import EntityId, StepDuration
 
 
 class Step:
@@ -16,10 +15,10 @@ class Step:
         guide_id: EntityId,
         order: int,
         title: str,
-        duration: StepDuration,
-        description: Optional[str] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
+        duration: StepDuration | None = None,
+        description: str | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
     ):
         """Initialize a Step.
 
@@ -28,7 +27,7 @@ class Step:
             guide_id: Parent guide ID
             order: Step order (non-negative)
             title: Step title (non-empty)
-            duration: Step duration in seconds (positive)
+            duration: Optional step duration in seconds (positive)
             description: Optional description
             created_at: Optional creation timestamp (defaults to now)
             updated_at: Optional update timestamp (defaults to now)
@@ -47,8 +46,8 @@ class Step:
         self._title = title
         self._duration = duration
         self._description = description
-        self._created_at = created_at or datetime.utcnow()
-        self._updated_at = updated_at or datetime.utcnow()
+        self._created_at = created_at or datetime.now(UTC)
+        self._updated_at = updated_at or datetime.now(UTC)
 
     @property
     def id(self) -> EntityId:
@@ -71,12 +70,12 @@ class Step:
         return self._title
 
     @property
-    def duration(self) -> StepDuration:
+    def duration(self) -> StepDuration | None:
         """Get step duration."""
         return self._duration
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         """Get step description."""
         return self._description
 
@@ -103,7 +102,7 @@ class Step:
             raise ValidationException("Step title cannot be empty")
 
         self._title = new_title
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def update_description(self, new_description: str) -> None:
         """Update step description.
@@ -112,16 +111,16 @@ class Step:
             new_description: New description
         """
         self._description = new_description
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
-    def update_duration(self, new_duration: StepDuration) -> None:
+    def update_duration(self, new_duration: StepDuration | None) -> None:
         """Update step duration.
 
         Args:
-            new_duration: New duration (positive integer)
+            new_duration: New duration (positive integer) or None
         """
         self._duration = new_duration
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def update_order(self, new_order: int) -> None:
         """Update step order.
@@ -136,4 +135,4 @@ class Step:
             raise ValidationException("Step order must be non-negative")
 
         self._order = new_order
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)

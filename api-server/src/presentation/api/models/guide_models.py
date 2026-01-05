@@ -1,6 +1,6 @@
 """Guide API models."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -9,7 +9,7 @@ class GuideCreate(BaseModel):
 
     category_id: str = Field(..., alias="categoryId")
     title: str
-    description: Optional[str] = None
+    description: str | None = None
 
     class Config:
         """Pydantic config."""
@@ -20,8 +20,8 @@ class GuideCreate(BaseModel):
 class GuideUpdate(BaseModel):
     """Request model for updating a guide."""
 
-    title: Optional[str] = None
-    description: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
 
     class Config:
         """Pydantic config."""
@@ -35,7 +35,7 @@ class GuideResponse(BaseModel):
     id: str
     category_id: str = Field(..., alias="categoryId")
     title: str
-    description: Optional[str]
+    description: str | None
     step_ids: list[str] = Field(..., alias="stepIds")
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")

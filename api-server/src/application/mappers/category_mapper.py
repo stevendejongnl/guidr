@@ -1,7 +1,7 @@
 """Category mapper for entity-DTO conversion."""
 
-from src.domain.entities import Category
 from src.application.dtos import CategoryResponseDTO
+from src.domain.entities import Category
 
 
 class CategoryMapper:

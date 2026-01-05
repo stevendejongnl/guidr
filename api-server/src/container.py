@@ -2,57 +2,56 @@
 
 from dependency_injector import containers, providers
 
+# Import all use cases
+from .application.use_cases.category import (
+    CreateCategory,
+    DeleteCategory,
+    GetAllCategories,
+    GetCategoriesByParent,
+    GetCategory,
+    UpdateCategory,
+)
+from .application.use_cases.guide import (
+    CreateGuide,
+    DeleteGuide,
+    GetAllGuides,
+    GetGuide,
+    GetGuidesByCategory,
+    UpdateGuide,
+)
+from .application.use_cases.session import (
+    CancelSession,
+    CompleteSession,
+    CreateSession,
+    DeleteSession,
+    GetAllSessions,
+    GetSession,
+    GetSessionsByGuide,
+    GetSessionsByStatus,
+    MoveSessionToStep,
+    PauseSession,
+    ResumeSession,
+    StartSession,
+)
+from .application.use_cases.step import (
+    CreateStep,
+    DeleteStep,
+    GetAllSteps,
+    GetStep,
+    GetStepsByGuide,
+    UpdateStep,
+)
+from .application.use_cases.user import LoginUser, RegisterUser
+from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
 from .infrastructure.persistence.mongodb.database import Database
 from .infrastructure.persistence.mongodb.repositories import (
     MongoCategoryRepository,
     MongoGuideRepository,
-    MongoStepRepository,
     MongoSessionRepository,
+    MongoStepRepository,
     MongoUserRepository,
 )
-from .infrastructure.auth import PasswordHasher, JWTService
-
-# Import all use cases
-from .application.use_cases.category import (
-    CreateCategory,
-    GetCategory,
-    GetAllCategories,
-    GetCategoriesByParent,
-    UpdateCategory,
-    DeleteCategory,
-)
-from .application.use_cases.guide import (
-    CreateGuide,
-    GetGuide,
-    GetAllGuides,
-    GetGuidesByCategory,
-    UpdateGuide,
-    DeleteGuide,
-)
-from .application.use_cases.step import (
-    CreateStep,
-    GetStep,
-    GetAllSteps,
-    GetStepsByGuide,
-    UpdateStep,
-    DeleteStep,
-)
-from .application.use_cases.session import (
-    CreateSession,
-    GetSession,
-    GetAllSessions,
-    GetSessionsByGuide,
-    GetSessionsByStatus,
-    StartSession,
-    PauseSession,
-    ResumeSession,
-    CompleteSession,
-    CancelSession,
-    MoveSessionToStep,
-    DeleteSession,
-)
-from .application.use_cases.user import RegisterUser, LoginUser
 
 
 class Container(containers.DeclarativeContainer):

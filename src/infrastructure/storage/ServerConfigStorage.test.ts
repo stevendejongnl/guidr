@@ -13,7 +13,7 @@ describe('ServerConfigStorage', () => {
   beforeEach(() => {
     storage = new ServerConfigStorage()
     jest.clearAllMocks()
-    mockConfigLoader.getServerUrl.mockResolvedValue('https://guidr.madebysteven.nl/api/v1')
+    mockConfigLoader.getServerUrl.mockResolvedValue('https://guidr.madebysteven.nl')
   })
 
   describe('getServerUrl', () => {
@@ -127,7 +127,7 @@ describe('ServerConfigStorage', () => {
       expect(mockConfigLoader.getServerUrl).toHaveBeenCalled()
       expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
         'Guidr_ServerUrl',
-        'https://guidr.madebysteven.nl/api/v1'
+        'https://guidr.madebysteven.nl'
       )
     })
 
@@ -146,7 +146,7 @@ describe('ServerConfigStorage', () => {
       const result = await storage.getDefaultServerUrl()
 
       expect(mockConfigLoader.getServerUrl).toHaveBeenCalled()
-      expect(result).toBe('https://guidr.madebysteven.nl/api/v1')
+      expect(result).toBe('https://guidr.madebysteven.nl')
     })
   })
 })

@@ -2,7 +2,8 @@
 
 from fastapi import APIRouter, Depends
 
-from src.infrastructure.config import get_settings, Settings
+from src.infrastructure.config import Settings, get_settings
+
 from ..models import ConfigResponse
 
 router = APIRouter(tags=["config"])
@@ -16,7 +17,7 @@ async def get_config(settings: Settings = Depends(get_settings)) -> ConfigRespon
         Server configuration including debug mode and version constraints
     """
     return ConfigResponse(
-        debug_mode=settings.debug_mode,
-        min_app_version=settings.min_app_version,
-        max_app_version=settings.max_app_version,
+        debugMode=settings.debug_mode,
+        minAppVersion=settings.min_app_version,
+        maxAppVersion=settings.max_app_version,
     )

@@ -8,9 +8,17 @@ from .container import Container
 from .presentation.api.app import create_app
 from .presentation.api.routers import (
     categories as categories_router,
+)
+from .presentation.api.routers import (
     guides as guides_router,
-    steps as steps_router,
+)
+from .presentation.api.routers import (
     sessions as sessions_router,
+)
+from .presentation.api.routers import (
+    steps as steps_router,
+)
+from .presentation.api.routers import (
     users as users_router,
 )
 

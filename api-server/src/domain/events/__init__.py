@@ -1,25 +1,25 @@
 """Domain events."""
 
 from .base import BaseDomainEvent
-from .user_events import UserRegistered, UserLoggedIn, UserPasswordChanged
-from .category_events import CategoryCreated, CategoryUpdated, CategoryDeleted
+from .category_events import CategoryCreated, CategoryDeleted, CategoryUpdated
 from .guide_events import (
     GuideCreated,
-    GuideUpdated,
     GuideDeleted,
+    GuideUpdated,
     StepAddedToGuide,
     StepRemovedFromGuide,
 )
-from .step_events import StepCreated, StepUpdated, StepDeleted
 from .session_events import (
+    SessionCancelled,
+    SessionCompleted,
     SessionCreated,
-    SessionStarted,
     SessionPaused,
     SessionResumed,
-    SessionCompleted,
-    SessionCancelled,
+    SessionStarted,
     SessionStepChanged,
 )
+from .step_events import StepCreated, StepDeleted, StepUpdated
+from .user_events import UserLoggedIn, UserPasswordChanged, UserRegistered
 
 __all__ = [
     "BaseDomainEvent",

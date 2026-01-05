@@ -1,10 +1,9 @@
 """Base repository interface."""
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar
 
 from ..value_objects import EntityId
-
 
 T = TypeVar("T")
 
@@ -17,7 +16,7 @@ class IRepository(ABC, Generic[T]):
     """
 
     @abstractmethod
-    async def find_by_id(self, id: EntityId) -> Optional[T]:
+    async def find_by_id(self, id: EntityId) -> T | None:
         """Find entity by ID.
 
         Args:

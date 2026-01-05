@@ -1,8 +1,8 @@
 """Get all categories use case."""
 
-from src.domain.repositories import ICategoryRepository
 from src.application.dtos import CategoryResponseDTO
 from src.application.mappers import CategoryMapper
+from src.domain.repositories import ICategoryRepository
 
 
 class GetAllCategories:

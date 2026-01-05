@@ -1,12 +1,11 @@
 """Update guide use case."""
 
-from typing import Optional
 
+from src.application.dtos import GuideResponseDTO, GuideUpdateDTO
+from src.application.mappers import GuideMapper
+from src.domain.exceptions import EntityNotFoundException
 from src.domain.repositories import IGuideRepository
 from src.domain.value_objects import EntityId, GuideTitle
-from src.domain.exceptions import EntityNotFoundException
-from src.application.dtos import GuideUpdateDTO, GuideResponseDTO
-from src.application.mappers import GuideMapper
 
 
 class UpdateGuide:
@@ -23,7 +22,7 @@ class UpdateGuide:
 
     async def execute(
         self, guide_id: str, dto: GuideUpdateDTO
-    ) -> Optional[GuideResponseDTO]:
+    ) -> GuideResponseDTO | None:
         """Update a guide.
 
         Args:

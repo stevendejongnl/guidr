@@ -1,7 +1,7 @@
 """Guide domain events."""
 
 from dataclasses import dataclass
-from typing import Optional
+
 from .base import BaseDomainEvent
 
 
@@ -12,7 +12,7 @@ class GuideCreated(BaseDomainEvent):
     guide_id: str
     category_id: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class GuideUpdated(BaseDomainEvent):
 
     guide_id: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @dataclass(frozen=True)

@@ -1,18 +1,17 @@
 """Category repository interface."""
 
 from abc import abstractmethod
-from typing import Optional
 
-from .base import IRepository
 from ..entities import Category
 from ..value_objects import EntityId
+from .base import IRepository
 
 
 class ICategoryRepository(IRepository[Category]):
     """Repository interface for Category entities."""
 
     @abstractmethod
-    async def find_by_parent_id(self, parent_id: Optional[EntityId]) -> list[Category]:
+    async def find_by_parent_id(self, parent_id: EntityId | None) -> list[Category]:
         """Find categories by parent ID.
 
         Args:

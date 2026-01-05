@@ -1,7 +1,9 @@
-import pytest
 import uuid
-from src.domain.value_objects import EntityId
+
+import pytest
+
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import EntityId
 
 
 class TestEntityId:

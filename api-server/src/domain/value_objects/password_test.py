@@ -1,6 +1,7 @@
 import pytest
-from src.domain.value_objects import Password
+
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import Password
 
 
 class TestPassword:

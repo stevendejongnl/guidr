@@ -1,7 +1,7 @@
 """Step mapper for entity-DTO conversion."""
 
-from src.domain.entities import Step
 from src.application.dtos import StepResponseDTO
+from src.domain.entities import Step
 
 
 class StepMapper:

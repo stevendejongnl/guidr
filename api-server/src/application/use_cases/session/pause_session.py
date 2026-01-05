@@ -1,10 +1,10 @@
 """Pause session use case."""
 
-from src.domain.repositories import ISessionRepository
-from src.domain.value_objects import EntityId
-from src.domain.exceptions import EntityNotFoundException
 from src.application.dtos import SessionResponseDTO
 from src.application.mappers import SessionMapper
+from src.domain.exceptions import EntityNotFoundException
+from src.domain.repositories import ISessionRepository
+from src.domain.value_objects import EntityId
 
 
 class PauseSession:

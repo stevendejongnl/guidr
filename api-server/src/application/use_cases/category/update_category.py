@@ -1,12 +1,11 @@
 """Update category use case."""
 
-from typing import Optional
 
+from src.application.dtos import CategoryResponseDTO, CategoryUpdateDTO
+from src.application.mappers import CategoryMapper
+from src.domain.exceptions import EntityNotFoundException
 from src.domain.repositories import ICategoryRepository
 from src.domain.value_objects import EntityId
-from src.domain.exceptions import EntityNotFoundException
-from src.application.dtos import CategoryUpdateDTO, CategoryResponseDTO
-from src.application.mappers import CategoryMapper
 
 
 class UpdateCategory:
@@ -23,7 +22,7 @@ class UpdateCategory:
 
     async def execute(
         self, category_id: str, dto: CategoryUpdateDTO
-    ) -> Optional[CategoryResponseDTO]:
+    ) -> CategoryResponseDTO | None:
         """Update a category.
 
         Args:

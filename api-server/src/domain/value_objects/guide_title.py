@@ -1,6 +1,7 @@
 """Guide title value object."""
 
 from dataclasses import dataclass
+
 from ..exceptions import ValidationException
 
 

@@ -1,28 +1,30 @@
 """Category API router."""
 
-from typing import Optional
-from fastapi import APIRouter, HTTPException, status, Depends
 
-from src.domain.exceptions import ValidationException, EntityNotFoundException
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.application.dtos import CategoryCreateDTO, CategoryUpdateDTO
 from src.application.use_cases.category import (
     CreateCategory,
-    GetCategory,
+    DeleteCategory,
     GetAllCategories,
     GetCategoriesByParent,
+    GetCategory,
     UpdateCategory,
-    DeleteCategory,
 )
-from src.application.dtos import CategoryCreateDTO, CategoryUpdateDTO
-from ..models import CategoryCreate, CategoryUpdate, CategoryResponse, ErrorResponse
+from src.container import Container
+from src.domain.exceptions import EntityNotFoundException, ValidationException
+
+from ..models import CategoryCreate, CategoryResponse, CategoryUpdate, ErrorResponse
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
 # Container (injected at app startup)
-_container = None
+_container: Container | None = None
 
 
-def set_container(container):
+def set_container(container: Container) -> None:
     """Set the DI container for this router."""
     global _container
     _container = container
@@ -31,31 +33,37 @@ def set_container(container):
 # Dependency providers
 def get_create_category_use_case() -> CreateCategory:
     """Get CreateCategory use case."""
+    assert _container is not None, "Container not initialized"
     return _container.create_category_use_case()
 
 
 def get_get_category_use_case() -> GetCategory:
     """Get GetCategory use case."""
+    assert _container is not None, "Container not initialized"
     return _container.get_category_use_case()
 
 
 def get_get_all_categories_use_case() -> GetAllCategories:
     """Get GetAllCategories use case."""
+    assert _container is not None, "Container not initialized"
     return _container.get_all_categories_use_case()
 
 
 def get_get_categories_by_parent_use_case() -> GetCategoriesByParent:
     """Get GetCategoriesByParent use case."""
+    assert _container is not None, "Container not initialized"
     return _container.get_categories_by_parent_use_case()
 
 
 def get_update_category_use_case() -> UpdateCategory:
     """Get UpdateCategory use case."""
+    assert _container is not None, "Container not initialized"
     return _container.update_category_use_case()
 
 
 def get_delete_category_use_case() -> DeleteCategory:
     """Get DeleteCategory use case."""
+    assert _container is not None, "Container not initialized"
     return _container.delete_category_use_case()
 
 
@@ -76,9 +84,9 @@ async def create_category(
         return CategoryResponse(
             id=result.id,
             name=result.name,
-            parent_id=result.parent_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            parentId=result.parent_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -103,15 +111,15 @@ async def get_category(
     return CategoryResponse(
         id=result.id,
         name=result.name,
-        parent_id=result.parent_id,
-        created_at=result.created_at,
-        updated_at=result.updated_at,
+        parentId=result.parent_id,
+        createdAt=result.created_at,
+        updatedAt=result.updated_at,
     )
 
 
 @router.get("", response_model=list[CategoryResponse])
 async def list_categories(
-    parent_id: Optional[str] = None,
+    parent_id: str | None = None,
     use_case_all: GetAllCategories = Depends(get_get_all_categories_use_case),
     use_case_by_parent: GetCategoriesByParent = Depends(
         get_get_categories_by_parent_use_case
@@ -127,9 +135,9 @@ async def list_categories(
         CategoryResponse(
             id=r.id,
             name=r.name,
-            parent_id=r.parent_id,
-            created_at=r.created_at,
-            updated_at=r.updated_at,
+            parentId=r.parent_id,
+            createdAt=r.created_at,
+            updatedAt=r.updated_at,
         )
         for r in results
     ]
@@ -149,12 +157,17 @@ async def update_category(
     try:
         dto = CategoryUpdateDTO(name=category.name)
         result = await use_case.execute(category_id, dto)
+        if result is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Category not found: {category_id}",
+            )
         return CategoryResponse(
             id=result.id,
             name=result.name,
-            parent_id=result.parent_id,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            parentId=result.parent_id,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

@@ -3,12 +3,12 @@
 from typing import Protocol
 from uuid import uuid4
 
-from src.domain.entities import User
-from src.domain.repositories import IUserRepository
-from src.domain.value_objects import EntityId, Email, Password
-from src.domain.exceptions import ValidationException
 from src.application.dtos import UserCreateDTO, UserResponseDTO
 from src.application.mappers import UserMapper
+from src.domain.entities import User
+from src.domain.exceptions import ValidationException
+from src.domain.repositories import IUserRepository
+from src.domain.value_objects import Email, EntityId, Password
 
 
 class IPasswordHasher(Protocol):

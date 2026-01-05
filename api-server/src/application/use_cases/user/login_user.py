@@ -1,12 +1,12 @@
 """Login user use case."""
 
-from typing import Optional, Protocol
+from typing import Protocol
 
-from src.domain.repositories import IUserRepository
-from src.domain.value_objects import Email, Password
-from src.domain.exceptions import ValidationException
 from src.application.dtos import UserLoginDTO, UserResponseDTO
 from src.application.mappers import UserMapper
+from src.domain.exceptions import ValidationException
+from src.domain.repositories import IUserRepository
+from src.domain.value_objects import Email, Password
 
 
 class IPasswordVerifier(Protocol):
@@ -35,7 +35,7 @@ class LoginUser:
         self._password_verifier = password_verifier
         self._mapper = UserMapper()
 
-    async def execute(self, dto: UserLoginDTO) -> Optional[UserResponseDTO]:
+    async def execute(self, dto: UserLoginDTO) -> UserResponseDTO | None:
         """Login a user.
 
         Args:

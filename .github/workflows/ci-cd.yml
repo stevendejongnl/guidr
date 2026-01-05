@@ -41,6 +41,74 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
 
+  api-server-test:
+    name: API Server Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: api-server/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('api-server/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run tests
+        run: poetry run pytest
+
+  api-server-lint:
+    name: API Server Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: api-server/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('api-server/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run ruff
+        run: poetry run ruff check .
+
+      - name: Run mypy
+        run: poetry run mypy src
+
+
   android-build:
     name: Android Build
     runs-on: ubuntu-latest

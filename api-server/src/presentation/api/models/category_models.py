@@ -1,6 +1,6 @@
 """Category API models."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -8,7 +8,7 @@ class CategoryCreate(BaseModel):
     """Request model for creating a category."""
 
     name: str
-    parent_id: Optional[str] = Field(None, alias="parentId")
+    parent_id: str | None = Field(None, alias="parentId")
 
     class Config:
         """Pydantic config."""
@@ -19,7 +19,7 @@ class CategoryCreate(BaseModel):
 class CategoryUpdate(BaseModel):
     """Request model for updating a category."""
 
-    name: Optional[str] = None
+    name: str | None = None
 
     class Config:
         """Pydantic config."""
@@ -32,7 +32,7 @@ class CategoryResponse(BaseModel):
 
     id: str
     name: str
-    parent_id: Optional[str] = Field(None, alias="parentId")
+    parent_id: str | None = Field(None, alias="parentId")
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 

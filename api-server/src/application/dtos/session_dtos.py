@@ -1,7 +1,6 @@
 """Session DTOs for application layer."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -15,7 +14,7 @@ class SessionCreateDTO:
 class SessionUpdateDTO:
     """DTO for updating a session."""
 
-    current_step_id: Optional[str] = None
+    current_step_id: str | None = None
 
 
 @dataclass
@@ -25,8 +24,8 @@ class SessionResponseDTO:
     id: str
     guide_id: str
     status: str  # SessionStatus enum value
-    started_at: Optional[str]  # ISO format
-    completed_at: Optional[str]  # ISO format
-    current_step_id: Optional[str]
+    started_at: str | None  # ISO format
+    completed_at: str | None  # ISO format
+    current_step_id: str | None
     created_at: str  # ISO format
     updated_at: str  # ISO format

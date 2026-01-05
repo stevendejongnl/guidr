@@ -5,18 +5,15 @@ from uuid import uuid4
 
 import pytest
 
-from src.domain.entities import Step, Guide, Category
-from src.domain.value_objects import EntityId, GuideTitle, StepDuration
-from src.domain.exceptions import ValidationException, EntityNotFoundException
+from src.application.dtos import StepCreateDTO, StepUpdateDTO
 from src.application.use_cases.step import (
     CreateStep,
-    GetStep,
-    GetAllSteps,
     GetStepsByGuide,
     UpdateStep,
-    DeleteStep,
 )
-from src.application.dtos import StepCreateDTO, StepUpdateDTO
+from src.domain.entities import Guide, Step
+from src.domain.exceptions import EntityNotFoundException, ValidationException
+from src.domain.value_objects import EntityId, GuideTitle, StepDuration
 
 
 @pytest.fixture

@@ -1,8 +1,10 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime
+
 from src.domain.entities import Session
-from src.domain.value_objects import EntityId, SessionStatus
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import EntityId, SessionStatus
 
 
 class TestSession:
@@ -293,4 +295,4 @@ class TestSession:
             session.guide_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
 
         with pytest.raises(AttributeError):
-            session.created_at = datetime.utcnow()
+            session.created_at = datetime.now(UTC)

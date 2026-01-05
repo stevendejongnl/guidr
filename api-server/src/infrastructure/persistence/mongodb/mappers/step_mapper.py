@@ -25,7 +25,7 @@ class StepMapper:
             "order": step.order,
             "title": step.title,
             "description": step.description,
-            "duration": step.duration.value,
+            "duration": step.duration.value if step.duration is not None else None,
             "createdAt": step.created_at,
             "updatedAt": step.updated_at,
         }
@@ -40,12 +40,13 @@ class StepMapper:
         Returns:
             Step entity
         """
+        duration_value = document.get("duration")
         return Step(
             id=EntityId(str(document["_id"])),
             guide_id=EntityId(str(document["guideId"])),
             order=document["order"],
             title=document["title"],
-            duration=StepDuration(document["duration"]),
+            duration=StepDuration(duration_value) if duration_value is not None else None,
             description=document.get("description"),
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],

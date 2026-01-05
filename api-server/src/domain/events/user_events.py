@@ -1,6 +1,7 @@
 """User domain events."""
 
 from dataclasses import dataclass
+
 from .base import BaseDomainEvent
 
 

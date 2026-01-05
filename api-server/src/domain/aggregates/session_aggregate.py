@@ -1,11 +1,9 @@
 """Session aggregate root."""
 
-from typing import Optional
-from datetime import datetime
 
-from ..entities import Session, Guide, Step
-from ..value_objects import EntityId, SessionStatus
+from ..entities import Guide, Session, Step
 from ..exceptions import ValidationException
+from ..value_objects import EntityId
 
 
 class SessionAggregate:
@@ -24,7 +22,7 @@ class SessionAggregate:
         self,
         session: Session,
         guide: Guide,
-        steps: Optional[list[Step]] = None
+        steps: list[Step] | None = None
     ):
         """Initialize Session aggregate.
 
@@ -57,7 +55,7 @@ class SessionAggregate:
         return self._guide
 
     @property
-    def current_step(self) -> Optional[Step]:
+    def current_step(self) -> Step | None:
         """Get the current step if one is set.
 
         Returns:
@@ -76,7 +74,7 @@ class SessionAggregate:
         """
         return sorted(self._steps.values(), key=lambda s: s.order)
 
-    def start(self, initial_step_id: Optional[EntityId] = None) -> None:
+    def start(self, initial_step_id: EntityId | None = None) -> None:
         """Start the session.
 
         Args:
@@ -135,7 +133,7 @@ class SessionAggregate:
         self._validate_step_belongs_to_guide(step_id)
         self._session.move_to_step(step_id)
 
-    def move_to_next_step(self) -> Optional[Step]:
+    def move_to_next_step(self) -> Step | None:
         """Move to the next step in order.
 
         Returns:
@@ -171,7 +169,7 @@ class SessionAggregate:
 
         return None
 
-    def move_to_previous_step(self) -> Optional[Step]:
+    def move_to_previous_step(self) -> Step | None:
         """Move to the previous step in order.
 
         Returns:

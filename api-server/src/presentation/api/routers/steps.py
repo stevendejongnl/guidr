@@ -1,28 +1,30 @@
 """Step API router."""
 
-from typing import Optional
-from fastapi import APIRouter, HTTPException, status, Depends
 
-from src.domain.exceptions import ValidationException, EntityNotFoundException
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.application.dtos import StepCreateDTO, StepUpdateDTO
 from src.application.use_cases.step import (
     CreateStep,
-    GetStep,
+    DeleteStep,
     GetAllSteps,
+    GetStep,
     GetStepsByGuide,
     UpdateStep,
-    DeleteStep,
 )
-from src.application.dtos import StepCreateDTO, StepUpdateDTO
-from ..models import StepCreate, StepUpdate, StepResponse, ErrorResponse
+from src.container import Container
+from src.domain.exceptions import EntityNotFoundException, ValidationException
+
+from ..models import ErrorResponse, StepCreate, StepResponse, StepUpdate
 
 router = APIRouter(prefix="/steps", tags=["steps"])
 
 
 # Container (injected at app startup)
-_container = None
+_container: Container | None = None
 
 
-def set_container(container):
+def set_container(container: Container) -> None:
     """Set the DI container for this router."""
     global _container
     _container = container
@@ -30,26 +32,32 @@ def set_container(container):
 
 # Dependency providers
 def get_create_step_use_case() -> CreateStep:
+    assert _container is not None, "Container not initialized"
     return _container.create_step_use_case()
 
 
 def get_get_step_use_case() -> GetStep:
+    assert _container is not None, "Container not initialized"
     return _container.get_step_use_case()
 
 
 def get_get_all_steps_use_case() -> GetAllSteps:
+    assert _container is not None, "Container not initialized"
     return _container.get_all_steps_use_case()
 
 
 def get_get_steps_by_guide_use_case() -> GetStepsByGuide:
+    assert _container is not None, "Container not initialized"
     return _container.get_steps_by_guide_use_case()
 
 
 def get_update_step_use_case() -> UpdateStep:
+    assert _container is not None, "Container not initialized"
     return _container.update_step_use_case()
 
 
 def get_delete_step_use_case() -> DeleteStep:
+    assert _container is not None, "Container not initialized"
     return _container.delete_step_use_case()
 
 
@@ -75,13 +83,13 @@ async def create_step(
         result = await use_case.execute(dto)
         return StepResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             order=result.order,
             title=result.title,
             description=result.description,
             duration=result.duration,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -105,19 +113,19 @@ async def get_step(
         )
     return StepResponse(
         id=result.id,
-        guide_id=result.guide_id,
+        guideId=result.guide_id,
         order=result.order,
         title=result.title,
         description=result.description,
         duration=result.duration,
-        created_at=result.created_at,
-        updated_at=result.updated_at,
+        createdAt=result.created_at,
+        updatedAt=result.updated_at,
     )
 
 
 @router.get("", response_model=list[StepResponse])
 async def list_steps(
-    guide_id: Optional[str] = None,
+    guide_id: str | None = None,
     use_case_all: GetAllSteps = Depends(get_get_all_steps_use_case),
     use_case_by_guide: GetStepsByGuide = Depends(get_get_steps_by_guide_use_case),
 ) -> list[StepResponse]:
@@ -130,13 +138,13 @@ async def list_steps(
     return [
         StepResponse(
             id=r.id,
-            guide_id=r.guide_id,
+            guideId=r.guide_id,
             order=r.order,
             title=r.title,
             description=r.description,
             duration=r.duration,
-            created_at=r.created_at,
-            updated_at=r.updated_at,
+            createdAt=r.created_at,
+            updatedAt=r.updated_at,
         )
         for r in results
     ]
@@ -161,15 +169,20 @@ async def update_step(
             duration=step.duration,
         )
         result = await use_case.execute(step_id, dto)
+        if result is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Step not found: {step_id}",
+            )
         return StepResponse(
             id=result.id,
-            guide_id=result.guide_id,
+            guideId=result.guide_id,
             order=result.order,
             title=result.title,
             description=result.description,
             duration=result.duration,
-            created_at=result.created_at,
-            updated_at=result.updated_at,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

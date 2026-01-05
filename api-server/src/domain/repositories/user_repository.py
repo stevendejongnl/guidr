@@ -1,18 +1,17 @@
 """User repository interface."""
 
 from abc import abstractmethod
-from typing import Optional
 
-from .base import IRepository
 from ..entities import User
 from ..value_objects import Email
+from .base import IRepository
 
 
 class IUserRepository(IRepository[User]):
     """Repository interface for User entities."""
 
     @abstractmethod
-    async def find_by_email(self, email: Email) -> Optional[User]:
+    async def find_by_email(self, email: Email) -> User | None:
         """Find user by email.
 
         Args:

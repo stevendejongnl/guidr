@@ -1,10 +1,9 @@
 """User domain entity."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
-from ..value_objects import EntityId, Email
 from ..exceptions import ValidationException
+from ..value_objects import Email, EntityId
 
 
 class User:
@@ -15,8 +14,8 @@ class User:
         id: EntityId,
         email: Email,
         password_hash: str,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
     ):
         """Initialize a User.
 
@@ -36,8 +35,8 @@ class User:
         self._id = id
         self._email = email
         self._password_hash = password_hash
-        self._created_at = created_at or datetime.utcnow()
-        self._updated_at = updated_at or datetime.utcnow()
+        self._created_at = created_at or datetime.now(UTC)
+        self._updated_at = updated_at or datetime.now(UTC)
 
     @property
     def id(self) -> EntityId:
@@ -77,4 +76,4 @@ class User:
             raise ValidationException("Password hash cannot be empty")
 
         self._password_hash = new_password_hash
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)

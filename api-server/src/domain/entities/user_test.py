@@ -1,8 +1,10 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime
+
 from src.domain.entities import User
-from src.domain.value_objects import EntityId, Email
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import Email, EntityId
 
 
 class TestUser:
@@ -114,4 +116,4 @@ class TestUser:
             user.email = Email("new@example.com")
 
         with pytest.raises(AttributeError):
-            user.created_at = datetime.utcnow()
+            user.created_at = datetime.now(UTC)

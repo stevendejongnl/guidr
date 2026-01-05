@@ -1,11 +1,12 @@
 """MongoDB implementation of Guide repository."""
 
-from typing import Optional
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from src.domain.repositories import IGuideRepository
 from src.domain.entities import Guide
+from src.domain.repositories import IGuideRepository
 from src.domain.value_objects import EntityId
+
 from ..mappers import GuideMapper
 
 
@@ -21,7 +22,7 @@ class MongoGuideRepository(IGuideRepository):
         self._collection = database["guides"]
         self._mapper = GuideMapper()
 
-    async def find_by_id(self, id: EntityId) -> Optional[Guide]:
+    async def find_by_id(self, id: EntityId) -> Guide | None:
         """Find guide by ID."""
         document = await self._collection.find_one({"_id": id.value})
         return self._mapper.to_entity(document) if document else None

@@ -1,10 +1,8 @@
 """Guide domain entity."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
 from ..value_objects import EntityId, GuideTitle
-from ..exceptions import ValidationException
 
 
 class Guide:
@@ -15,10 +13,10 @@ class Guide:
         id: EntityId,
         category_id: EntityId,
         title: GuideTitle,
-        description: Optional[str] = None,
-        step_ids: Optional[list[EntityId]] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
+        description: str | None = None,
+        step_ids: list[EntityId] | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
     ):
         """Initialize a Guide.
 
@@ -36,8 +34,8 @@ class Guide:
         self._title = title
         self._description = description
         self._step_ids = step_ids or []
-        self._created_at = created_at or datetime.utcnow()
-        self._updated_at = updated_at or datetime.utcnow()
+        self._created_at = created_at or datetime.now(UTC)
+        self._updated_at = updated_at or datetime.now(UTC)
 
     @property
     def id(self) -> EntityId:
@@ -55,7 +53,7 @@ class Guide:
         return self._title
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         """Get guide description."""
         return self._description
 
@@ -86,7 +84,7 @@ class Guide:
             new_title: New title (non-empty)
         """
         self._title = new_title
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def update_description(self, new_description: str) -> None:
         """Update guide description.
@@ -95,7 +93,7 @@ class Guide:
             new_description: New description
         """
         self._description = new_description
-        self._updated_at = datetime.utcnow()
+        self._updated_at = datetime.now(UTC)
 
     def add_step(self, step_id: EntityId) -> None:
         """Add a step to this guide.
@@ -108,7 +106,7 @@ class Guide:
         """
         if step_id not in self._step_ids:
             self._step_ids.append(step_id)
-            self._updated_at = datetime.utcnow()
+            self._updated_at = datetime.now(UTC)
 
     def remove_step(self, step_id: EntityId) -> None:
         """Remove a step from this guide.
@@ -121,4 +119,4 @@ class Guide:
         """
         if step_id in self._step_ids:
             self._step_ids.remove(step_id)
-            self._updated_at = datetime.utcnow()
+            self._updated_at = datetime.now(UTC)

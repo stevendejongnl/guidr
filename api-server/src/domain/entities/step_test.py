@@ -1,8 +1,10 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime
+
 from src.domain.entities import Step
-from src.domain.value_objects import EntityId, StepDuration
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import EntityId, StepDuration
 
 
 class TestStep:
@@ -223,4 +225,4 @@ class TestStep:
             step.guide_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
 
         with pytest.raises(AttributeError):
-            step.created_at = datetime.utcnow()
+            step.created_at = datetime.now(UTC)
