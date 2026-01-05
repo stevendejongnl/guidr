@@ -1,3 +1,12 @@
+## [1.21.0](https://github.com/stevendejongnl/guidr/compare/v1.20.0...v1.21.0) (2026-01-05)
+
+### Features
+
+* add shell script build phase to copy configuration file to app bundle ([feeedf8](https://github.com/stevendejongnl/guidr/commit/feeedf82869ecb2c07d8b76a26af0108479bb77e))
+* **app:** dynamically set package version from metadata ([b143d26](https://github.com/stevendejongnl/guidr/commit/b143d2618b9dedb02716dc1d6655576182859ad1))
+* **ui:** add safe area support for iOS notch and Android system bars ([e10645a](https://github.com/stevendejongnl/guidr/commit/e10645a1985fa5bd47a64433d4f0e1cc982c4ae1))
+* **ui:** render changelog with markdown formatting ([87821f9](https://github.com/stevendejongnl/guidr/commit/87821f986ed5898b86091391b9548e60e70a06ac))
+
 ## [1.20.0](https://github.com/stevendejongnl/guidr/compare/v1.19.0...v1.20.0) (2026-01-05)
 
 ### Features
