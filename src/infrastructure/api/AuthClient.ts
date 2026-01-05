@@ -1,4 +1,4 @@
-import { AuthResponse } from './dtos/UserDto'
+import { AuthResponse, UserDto } from './dtos/UserDto'
 
 export class AuthClient {
   private readonly apiBaseUrl: string
@@ -198,6 +198,55 @@ export class AuthClient {
         throw error
       }
       throw new Error('An unexpected error occurred during email change')
+    }
+  }
+
+  async updateProfile(
+    name: string | null,
+    interests: string[] | null,
+    authToken: string,
+  ): Promise<UserDto> {
+    if (!authToken || authToken.trim() === '') {
+      throw new Error('Auth token cannot be empty')
+    }
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/auth/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          name,
+          interests,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Profile update failed')
+      }
+
+      const data = await response.json()
+
+      if (!data.id || !data.email) {
+        throw new Error('Invalid response from server')
+      }
+
+      return {
+        id: data.id,
+        email: data.email,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        name: data.name,
+        interests: data.interests,
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred during profile update')
     }
   }
 }

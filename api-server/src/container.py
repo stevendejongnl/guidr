@@ -46,6 +46,7 @@ from .application.use_cases.user import (
     ChangePassword,
     LoginUser,
     RegisterUser,
+    UpdateProfile,
 )
 from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
@@ -287,4 +288,9 @@ class Container(containers.DeclarativeContainer):
         ChangeEmail,
         user_repository=user_repository,
         password_hasher=password_hasher,
+    )
+
+    update_profile_use_case = providers.Factory(
+        UpdateProfile,
+        user_repository=user_repository,
     )

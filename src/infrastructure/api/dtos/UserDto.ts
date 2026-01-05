@@ -8,6 +8,8 @@ export interface UserDto {
   email: string
   createdAt: string // ISO 8601
   updatedAt: string // ISO 8601
+  name?: string | null
+  interests?: string[] | null
 }
 
 /**

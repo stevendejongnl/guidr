@@ -34,6 +34,8 @@ class UserResponse(BaseModel):
     email: str
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
+    name: str | None = None
+    interests: list[str] | None = None
 
     class Config:
         """Pydantic config."""
@@ -71,6 +73,18 @@ class ChangeEmailRequest(BaseModel):
 
     new_email: str = Field(..., alias="newEmail")
     password: str
+
+    class Config:
+        """Pydantic config."""
+
+        populate_by_name = True
+
+
+class UpdateProfileRequest(BaseModel):
+    """Request model for updating user profile."""
+
+    name: str | None = None
+    interests: list[str] | None = None
 
     class Config:
         """Pydantic config."""

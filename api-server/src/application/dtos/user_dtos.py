@@ -45,3 +45,12 @@ class ChangeEmailDTO:
     user_id: str
     new_email: str
     password: str
+
+
+@dataclass
+class UpdateProfileDTO:
+    """DTO for updating user profile (name and interests)."""
+
+    user_id: str
+    name: str | None = None
+    interests: list[str] | None = None

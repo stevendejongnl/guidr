@@ -606,4 +606,155 @@ describe('AuthClient', () => {
       ).rejects.toThrow('An unexpected error occurred during email change')
     })
   })
+
+  describe('updateProfile', () => {
+    const authToken = 'mock-auth-token-123'
+
+    it('should return updated user on successful profile update', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          name: 'John Doe',
+          interests: ['baking', 'sports'],
+        }),
+      } as Response)
+
+      const result = await authClient.updateProfile('John Doe', ['baking', 'sports'], authToken)
+
+      expect(result.id).toBe('user-123')
+      expect(result.name).toBe('John Doe')
+      expect(result.interests).toEqual(['baking', 'sports'])
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/profile',
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer mock-auth-token-123',
+          },
+          body: JSON.stringify({
+            name: 'John Doe',
+            interests: ['baking', 'sports'],
+          }),
+        }
+      )
+    })
+
+    it('should update only name when interests is null', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          name: 'Jane Doe',
+          interests: null,
+        }),
+      } as Response)
+
+      const result = await authClient.updateProfile('Jane Doe', null, authToken)
+
+      expect(result.name).toBe('Jane Doe')
+      expect(result.interests).toBeNull()
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/profile',
+        expect.objectContaining({
+          body: JSON.stringify({ name: 'Jane Doe', interests: null }),
+        })
+      )
+    })
+
+    it('should update only interests when name is null', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: 'user-123',
+          email: 'test@example.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          name: null,
+          interests: ['cooking'],
+        }),
+      } as Response)
+
+      const result = await authClient.updateProfile(null, ['cooking'], authToken)
+
+      expect(result.name).toBeNull()
+      expect(result.interests).toEqual(['cooking'])
+    })
+
+    it('should throw error when auth token is expired', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Unauthorized' }),
+      } as Response)
+
+      await expect(
+        authClient.updateProfile('John', ['sports'], 'expired-token')
+      ).rejects.toThrow('Unauthorized')
+    })
+
+    it('should throw generic error when response has no detail', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(
+        authClient.updateProfile('John', ['sports'], authToken)
+      ).rejects.toThrow('Profile update failed')
+    })
+
+    it('should throw error on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network request failed'))
+
+      await expect(
+        authClient.updateProfile('John', ['sports'], authToken)
+      ).rejects.toThrow('Network request failed')
+    })
+
+    it('should throw error for empty auth token', async () => {
+      await expect(
+        authClient.updateProfile('John', ['sports'], '')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only auth token', async () => {
+      await expect(
+        authClient.updateProfile('John', ['sports'], '   ')
+      ).rejects.toThrow('Auth token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error when response is missing user data', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+      } as Response)
+
+      await expect(
+        authClient.updateProfile('John', ['sports'], authToken)
+      ).rejects.toThrow('Invalid response from server')
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      mockFetch.mockRejectedValue('unexpected error')
+
+      await expect(
+        authClient.updateProfile('John', ['sports'], authToken)
+      ).rejects.toThrow('An unexpected error occurred during profile update')
+    })
+  })
 })

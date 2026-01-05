@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from src.application.dtos import (
     ChangeEmailDTO,
     ChangePasswordDTO,
+    UpdateProfileDTO,
     UserCreateDTO,
     UserLoginDTO,
 )
@@ -13,6 +14,7 @@ from src.application.use_cases.user import (
     ChangePassword,
     LoginUser,
     RegisterUser,
+    UpdateProfile,
 )
 from src.container import Container
 from src.domain.entities import User
@@ -24,6 +26,7 @@ from ..models import (
     ChangePasswordRequest,
     ErrorResponse,
     TokenResponse,
+    UpdateProfileRequest,
     UserLogin,
     UserRegister,
     UserResponse,
@@ -69,6 +72,12 @@ def get_change_email_use_case() -> ChangeEmail:
     """Get ChangeEmail use case."""
     assert _container is not None, "Container not initialized"
     return _container.change_email_use_case()
+
+
+def get_update_profile_use_case() -> UpdateProfile:
+    """Get UpdateProfile use case."""
+    assert _container is not None, "Container not initialized"
+    return _container.update_profile_use_case()
 
 
 @router.post(
@@ -230,6 +239,52 @@ async def change_email(
                 createdAt=current_user.created_at.isoformat(),
                 updatedAt=current_user.updated_at.isoformat(),
             ),
+        )
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.patch(
+    "/profile",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}},
+)
+async def update_profile(
+    request: UpdateProfileRequest,
+    current_user: User = Depends(get_current_user),
+    use_case: UpdateProfile = Depends(get_update_profile_use_case),
+) -> UserResponse:
+    """Update user profile (name and interests, requires authentication).
+
+    Args:
+        request: Profile update request with optional name and interests
+        current_user: Authenticated user from JWT token
+        use_case: Profile update use case
+
+    Returns:
+        Updated user data
+
+    Raises:
+        HTTPException 400: If validation fails
+        HTTPException 401: If authentication fails
+    """
+    try:
+        dto = UpdateProfileDTO(
+            user_id=current_user.id.value,
+            name=request.name,
+            interests=request.interests,
+        )
+        await use_case.execute(dto)
+
+        # Return updated user data
+        return UserResponse(
+            id=current_user.id.value,
+            email=current_user.email.value,
+            createdAt=current_user.created_at.isoformat(),
+            updatedAt=current_user.updated_at.isoformat(),
+            name=current_user.name,
+            interests=current_user.interests,
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
