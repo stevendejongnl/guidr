@@ -26,3 +26,27 @@ class UserPasswordChanged(BaseDomainEvent):
     """Event raised when a user changes their password."""
 
     user_id: str
+
+
+@dataclass(frozen=True)
+class UserEmailChanged(BaseDomainEvent):
+    """Event raised when a user changes their email."""
+
+    user_id: str
+    old_email: str
+    new_email: str
+
+
+@dataclass(frozen=True)
+class UserProfileUpdated(BaseDomainEvent):
+    """Event raised when a user updates their profile (name or interests)."""
+
+    user_id: str
+
+
+@dataclass(frozen=True)
+class UserDeleted(BaseDomainEvent):
+    """Event raised when a user account is deleted."""
+
+    user_id: str
+    email: str

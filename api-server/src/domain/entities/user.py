@@ -16,6 +16,8 @@ class User:
         password_hash: str,
         created_at: datetime | None = None,
         updated_at: datetime | None = None,
+        name: str | None = None,
+        interests: list[str] | None = None,
     ):
         """Initialize a User.
 
@@ -25,6 +27,8 @@ class User:
             password_hash: Hashed password (Argon2)
             created_at: Optional creation timestamp (defaults to now)
             updated_at: Optional update timestamp (defaults to now)
+            name: Optional display name
+            interests: Optional list of interest categories (defaults to empty list)
 
         Raises:
             ValidationException: If password_hash is empty
@@ -37,6 +41,8 @@ class User:
         self._password_hash = password_hash
         self._created_at = created_at or datetime.now(UTC)
         self._updated_at = updated_at or datetime.now(UTC)
+        self._name = name
+        self._interests = interests if interests is not None else []
 
     @property
     def id(self) -> EntityId:
@@ -63,6 +69,16 @@ class User:
         """Get last update timestamp."""
         return self._updated_at
 
+    @property
+    def name(self) -> str | None:
+        """Get user display name."""
+        return self._name
+
+    @property
+    def interests(self) -> list[str]:
+        """Get user interests (returns copy to prevent external modification)."""
+        return self._interests.copy()
+
     def update_password_hash(self, new_password_hash: str) -> None:
         """Update password hash.
 
@@ -76,4 +92,31 @@ class User:
             raise ValidationException("Password hash cannot be empty")
 
         self._password_hash = new_password_hash
+        self._updated_at = datetime.now(UTC)
+
+    def update_name(self, new_name: str | None) -> None:
+        """Update user display name.
+
+        Args:
+            new_name: New display name (can be None to clear name)
+        """
+        self._name = new_name
+        self._updated_at = datetime.now(UTC)
+
+    def update_email(self, new_email: Email) -> None:
+        """Update user email.
+
+        Args:
+            new_email: New email address (validated)
+        """
+        self._email = new_email
+        self._updated_at = datetime.now(UTC)
+
+    def set_interests(self, interests: list[str]) -> None:
+        """Set user interests (replaces entire list).
+
+        Args:
+            interests: List of interest category IDs
+        """
+        self._interests = interests.copy()
         self._updated_at = datetime.now(UTC)

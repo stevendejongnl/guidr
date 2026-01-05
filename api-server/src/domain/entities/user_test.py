@@ -117,3 +117,143 @@ class TestUser:
 
         with pytest.raises(AttributeError):
             user.created_at = datetime.now(UTC)
+
+    def test_create_user_with_name(self):
+        """Should create user with optional name."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            name="John Doe"
+        )
+
+        assert user.name == "John Doe"
+
+    def test_create_user_without_name(self):
+        """Should create user with None name when not provided."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(id=id, email=email, password_hash=password_hash)
+
+        assert user.name is None
+
+    def test_create_user_with_interests(self):
+        """Should create user with interests list."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            interests=["baking", "sports"]
+        )
+
+        assert user.interests == ["baking", "sports"]
+
+    def test_create_user_without_interests(self):
+        """Should create user with empty interests list when not provided."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(id=id, email=email, password_hash=password_hash)
+
+        assert user.interests == []
+
+    def test_update_name(self):
+        """Should update name and timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(id=id, email=email, password_hash=password_hash, name="John")
+        original_updated = user.updated_at
+
+        user.update_name("John Doe")
+
+        assert user.name == "John Doe"
+        assert user.updated_at > original_updated
+
+    def test_update_name_to_none(self):
+        """Should allow setting name to None."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(id=id, email=email, password_hash=password_hash, name="John")
+
+        user.update_name(None)
+
+        assert user.name is None
+
+    def test_update_email(self):
+        """Should update email and timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(id=id, email=email, password_hash=password_hash)
+        original_updated = user.updated_at
+
+        new_email = Email("newemail@example.com")
+        user.update_email(new_email)
+
+        assert user.email == new_email
+        assert user.updated_at > original_updated
+
+    def test_set_interests(self):
+        """Should replace interests list and update timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            interests=["baking"]
+        )
+        original_updated = user.updated_at
+
+        user.set_interests(["sports", "cooking", "diy"])
+
+        assert user.interests == ["sports", "cooking", "diy"]
+        assert user.updated_at > original_updated
+
+    def test_set_interests_to_empty(self):
+        """Should allow setting interests to empty list."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            interests=["baking", "sports"]
+        )
+
+        user.set_interests([])
+
+        assert user.interests == []
+
+    def test_interests_returns_copy(self):
+        """Should return a copy of interests list (immutable)."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            interests=["baking"]
+        )
+
+        interests = user.interests
+        interests.append("sports")
+
+        # Original should not be modified
+        assert user.interests == ["baking"]
