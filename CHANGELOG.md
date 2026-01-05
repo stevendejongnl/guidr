@@ -1,3 +1,27 @@
+## [1.22.0](https://github.com/stevendejongnl/guidr/compare/v1.21.0...v1.22.0) (2026-01-05)
+
+### Features
+
+* **auth:** implement delete account functionality ([6df2d4a](https://github.com/stevendejongnl/guidr/commit/6df2d4aa30c0392645df36f56463e7f25f0e84ea))
+* **auth:** implement email change functionality ([353b57b](https://github.com/stevendejongnl/guidr/commit/353b57b45719705054ea54f3aa8551dacbb5b338))
+* **auth:** implement password change functionality ([6d8f777](https://github.com/stevendejongnl/guidr/commit/6d8f777124bdfa2870d14ace8ea8b4c6e631b5e7))
+* **backend:** expand user entity with name and interests fields ([d687348](https://github.com/stevendejongnl/guidr/commit/d6873480cab00f9796eb691a2880495875822cc5))
+* **backend:** implement JWT authentication middleware ([0fb4013](https://github.com/stevendejongnl/guidr/commit/0fb401346e4a951afefd052a98249e41c82c7e92))
+* **domain:** add interest categories constants ([f86c3e9](https://github.com/stevendejongnl/guidr/commit/f86c3e937bd550d4a713bac4fcd608eb3629f52f))
+* **navigation:** integrate ProfileScreen into navigation flow ([b34931f](https://github.com/stevendejongnl/guidr/commit/b34931f9cc361979a7181b8d0203a5e72eb94f86))
+* **persistence:** update MongoDB mapper for name and interests fields ([868cbfd](https://github.com/stevendejongnl/guidr/commit/868cbfdbebfb6a1a99f59e80dd528283ff083c38))
+* **profile:** implement profile update functionality ([98ed5bc](https://github.com/stevendejongnl/guidr/commit/98ed5bc3f062c11432e1a5fefe263da173a12123))
+* **ui:** implement ProfileScreen with all sections ([d27df10](https://github.com/stevendejongnl/guidr/commit/d27df1008e6131d99570aa941105f4ce7219107d))
+
+### Bug Fixes
+
+* **api-server:** resolve all ruff and mypy errors by correcting repository method signatures ([d3f9bd2](https://github.com/stevendejongnl/guidr/commit/d3f9bd206a6458fa91671ac8347b2dea4ded8ffa))
+* **ui:** position menu button in top-right corner ([047578d](https://github.com/stevendejongnl/guidr/commit/047578d9eccc0c431d8531cef08bad287b699ab1))
+
+### Documentation
+
+* add ADR documentation for user profile and account management ([8fff48e](https://github.com/stevendejongnl/guidr/commit/8fff48eb6c47dd9514a7ae372a5caabd9f228ce3))
+
 ## [1.21.0](https://github.com/stevendejongnl/guidr/compare/v1.20.0...v1.21.0) (2026-01-05)
 
 ### Features
