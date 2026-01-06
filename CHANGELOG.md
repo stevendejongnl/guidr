@@ -1,3 +1,9 @@
+## [1.22.3](https://github.com/stevendejongnl/guidr/compare/v1.22.2...v1.22.3) (2026-01-06)
+
+### Bug Fixes
+
+* **ci:** resolve Maven Central 403 errors and document iOS certificate fix ([43dfacb](https://github.com/stevendejongnl/guidr/commit/43dfacb36b89dbd999f7aef80ffe5cdf2391476b))
+
 ## [1.22.2](https://github.com/stevendejongnl/guidr/compare/v1.22.1...v1.22.2) (2026-01-06)
 
 ### Bug Fixes
