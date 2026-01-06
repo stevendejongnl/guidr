@@ -1,3 +1,9 @@
+## [1.22.5](https://github.com/stevendejongnl/guidr/compare/v1.22.4...v1.22.5) (2026-01-06)
+
+### Bug Fixes
+
+* **ci:** install Android SDK 36, Build Tools 36.0.0, and NDK with caching ([93da100](https://github.com/stevendejongnl/guidr/commit/93da1002390d36f2371948593243f05a192c4c9a))
+
 ## [1.22.4](https://github.com/stevendejongnl/guidr/compare/v1.22.3...v1.22.4) (2026-01-06)
 
 ### Bug Fixes
