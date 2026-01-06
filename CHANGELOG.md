@@ -1,3 +1,9 @@
+## [1.22.1](https://github.com/stevendejongnl/guidr/compare/v1.22.0...v1.22.1) (2026-01-06)
+
+### Bug Fixes
+
+* Add babel-plugin-module-resolver ([742a814](https://github.com/stevendejongnl/guidr/commit/742a814c50f9127c32074de11cc0f7b64890350f))
+
 ## [1.22.0](https://github.com/stevendejongnl/guidr/compare/v1.21.0...v1.22.0) (2026-01-05)
 
 ### Features
