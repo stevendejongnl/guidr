@@ -1,3 +1,9 @@
+## [1.22.6](https://github.com/stevendejongnl/guidr/compare/v1.22.5...v1.22.6) (2026-01-06)
+
+### Bug Fixes
+
+* **ci:** fix Android build and improve workflow naming ([3f8de17](https://github.com/stevendejongnl/guidr/commit/3f8de17ee47966ed94616243fc0a35bf2d17e68d))
+
 ## [1.22.5](https://github.com/stevendejongnl/guidr/compare/v1.22.4...v1.22.5) (2026-01-06)
 
 ### Bug Fixes
