@@ -29,6 +29,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create Sentry properties files
+        run: |
+          cat > android/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          cat > ios/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          echo "✅ Created Sentry properties files for Android and iOS"
+
       - name: Run lint
         run: npm run lint
 
