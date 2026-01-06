@@ -1,4 +1,21 @@
-pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+pluginManagement {
+    repositories {
+        google()
+        maven { url 'https://dl.google.com/android/maven2/' }
+        mavenCentral()
+        maven { url 'https://repo1.maven.org/maven2/' }
+        gradlePluginPortal()
+    }
+    includeBuild("../node_modules/@react-native/gradle-plugin")
+}
+dependencyResolutionManagement {
+    repositories {
+        google()
+        maven { url 'https://dl.google.com/android/maven2/' }
+        mavenCentral()
+        maven { url 'https://repo1.maven.org/maven2/' }
+    }
+}
 plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
 rootProject.name = 'guidr'
