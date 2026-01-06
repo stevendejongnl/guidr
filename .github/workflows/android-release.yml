@@ -1,4 +1,5 @@
 name: Android Release
+run-name: "Android Release ${{ github.event.client_payload.version || inputs.version || '' }}"
 
 on:
   # Trigger when a new release is created
@@ -88,29 +89,10 @@ jobs:
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
           sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
 
-      - name: Configure Gradle repositories
-        run: |
-          mkdir -p ~/.gradle/init.d
-          cat > ~/.gradle/init.d/repositories.gradle <<'EOF'
-          allprojects {
-              buildscript {
-                  repositories {
-                      google()
-                      maven { url 'https://dl.google.com/android/maven2/' }
-                      mavenCentral()
-                      maven { url 'https://repo1.maven.org/maven2/' }
-                  }
-              }
-              repositories {
-                  google()
-                  maven { url 'https://dl.google.com/android/maven2/' }
-                  mavenCentral()
-                  maven { url 'https://repo1.maven.org/maven2/' }
-              }
-          }
-          EOF
-
-          echo "✅ Configured Gradle repository mirrors"
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: on-success
 
       - name: Update Android version
         run: |

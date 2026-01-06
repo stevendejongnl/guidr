@@ -1,4 +1,5 @@
 name: Docker Publish
+run-name: "Docker Publish ${{ github.event.client_payload.version || inputs.version || '' }}"
 
 on:
   # Trigger when a new release is created
