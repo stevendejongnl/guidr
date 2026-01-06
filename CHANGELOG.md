@@ -1,3 +1,9 @@
+## [1.22.4](https://github.com/stevendejongnl/guidr/compare/v1.22.3...v1.22.4) (2026-01-06)
+
+### Bug Fixes
+
+* **android:** add repository mirrors to settings.gradle ([e520f15](https://github.com/stevendejongnl/guidr/commit/e520f157c8d79fe43ba3dbd006a6b6f6cd7a44c3))
+
 ## [1.22.3](https://github.com/stevendejongnl/guidr/compare/v1.22.2...v1.22.3) (2026-01-06)
 
 ### Bug Fixes
