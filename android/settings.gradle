@@ -8,6 +8,11 @@ pluginManagement {
     }
     includeBuild("../node_modules/@react-native/gradle-plugin")
 }
+
+plugins { id("com.facebook.react.settings") }
+
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+
 dependencyResolutionManagement {
     repositories {
         google()
@@ -16,8 +21,6 @@ dependencyResolutionManagement {
         maven { url 'https://repo1.maven.org/maven2/' }
     }
 }
-plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+
 rootProject.name = 'guidr'
 include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
