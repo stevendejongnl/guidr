@@ -1,3 +1,9 @@
+## [1.22.2](https://github.com/stevendejongnl/guidr/compare/v1.22.1...v1.22.2) (2026-01-06)
+
+### Bug Fixes
+
+* **ci:** add Sentry properties creation to release workflow ([caa1e6b](https://github.com/stevendejongnl/guidr/commit/caa1e6b686f4e5bb3c6db5e5469a344e1faf8f8b))
+
 ## [1.22.1](https://github.com/stevendejongnl/guidr/compare/v1.22.0...v1.22.1) (2026-01-06)
 
 ### Bug Fixes
