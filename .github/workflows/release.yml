@@ -47,6 +47,36 @@ jobs:
 
           echo "✅ Created Sentry properties files for Android and iOS"
 
+      - name: Setup Java for Android builds
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configure Gradle repositories
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/repositories.gradle <<'EOF'
+          allprojects {
+              buildscript {
+                  repositories {
+                      google()
+                      maven { url 'https://dl.google.com/android/maven2/' }
+                      mavenCentral()
+                      maven { url 'https://repo1.maven.org/maven2/' }
+                  }
+              }
+              repositories {
+                  google()
+                  maven { url 'https://dl.google.com/android/maven2/' }
+                  mavenCentral()
+                  maven { url 'https://repo1.maven.org/maven2/' }
+              }
+          }
+          EOF
+
+          echo "✅ Configured Gradle repository mirrors"
+
       - name: Run lint
         run: npm run lint
 
