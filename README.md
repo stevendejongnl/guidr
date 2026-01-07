@@ -54,7 +54,7 @@ npm install
 npm test
 
 # Run on Android
-npx react-native run-android
+npm run android
 
 # Build Android APK
 cd android && ./gradlew assembleRelease
