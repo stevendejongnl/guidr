@@ -1,3 +1,9 @@
+## [1.22.8](https://github.com/stevendejongnl/guidr/compare/v1.22.7...v1.22.8) (2026-01-07)
+
+### Bug Fixes
+
+* **android:** use plugins {} block for React Native root project plugin ([7260070](https://github.com/stevendejongnl/guidr/commit/7260070a33f8f7aa9847ddc7ff54ddfa20a09641))
+
 ## [1.22.7](https://github.com/stevendejongnl/guidr/compare/v1.22.6...v1.22.7) (2026-01-07)
 
 ### Bug Fixes
