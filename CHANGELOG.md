@@ -1,3 +1,9 @@
+## [1.23.0](https://github.com/stevendejongnl/guidr/compare/v1.22.8...v1.23.0) (2026-01-07)
+
+### Features
+
+* add Lit-based web application with FastAPI integration ([d6b108c](https://github.com/stevendejongnl/guidr/commit/d6b108cc358e03d5bba07fddff2d654d0c743351))
+
 ## [1.22.8](https://github.com/stevendejongnl/guidr/compare/v1.22.7...v1.22.8) (2026-01-07)
 
 ### Bug Fixes
