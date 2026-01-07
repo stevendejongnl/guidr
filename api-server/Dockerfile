@@ -12,7 +12,7 @@ COPY web-app/public ./public
 COPY web-app/src ./src
 
 # Install and build
-RUN npm ci --only=production
+RUN npm ci
 RUN npm run build
 
 # Stage 2: Build Python Dependencies
