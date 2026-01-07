@@ -46,7 +46,7 @@
     "@typescript-eslint/parser": "^8.51.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "conventional-changelog-conventionalcommits": "^9.1.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.39.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "husky": "^9.1.7",
