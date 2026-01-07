@@ -1,3 +1,9 @@
+## [1.22.7](https://github.com/stevendejongnl/guidr/compare/v1.22.6...v1.22.7) (2026-01-07)
+
+### Bug Fixes
+
+* **android:** update AGP version and refactor Gradle settings for React Native autolinking ([d1fc268](https://github.com/stevendejongnl/guidr/commit/d1fc2689d36599a0b33e6981ca4fed4610d07914))
+
 ## [1.22.6](https://github.com/stevendejongnl/guidr/compare/v1.22.5...v1.22.6) (2026-01-06)
 
 ### Bug Fixes
