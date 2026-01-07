@@ -10,10 +10,6 @@ test:
 
 # Start all services with docker-compose
 up:
-	docker compose up --build
-
-# Start services in background
-up-detached:
 	docker compose up --build -d
 
 # Stop all services
