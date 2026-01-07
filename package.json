@@ -54,7 +54,7 @@
     "semantic-release": "^25.0.2",
     "ts-jest": "^29.4.6",
     "tslib": "^2.8.1",
-    "typescript": "^5.5.2"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
