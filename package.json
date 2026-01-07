@@ -9,7 +9,9 @@
   "scripts": {
     "android": "react-native run-android",
     "android:watch": "node scripts/watch-android.js",
+    "android:build": "react-native build-android",
     "ios": "react-native run-ios",
+    "ios:build": "react-native build-ios",
     "generate-icons": "node scripts/generate-icons.js",
     "preandroid": "node scripts/copy-config.js",
     "preios": "node scripts/copy-config.js",
