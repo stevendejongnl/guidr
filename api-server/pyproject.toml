@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "guidr-api-server"
-version = "1.23.0"
+version = "1.23.1"
 description = "API server for Guidr mobile app"
 authors = ["Guidr Team"]
 readme = "README.md"

@@ -1,3 +1,10 @@
+## [1.23.1](https://github.com/stevendejongnl/guidr/compare/v1.23.0...v1.23.1) (2026-01-07)
+
+### Bug Fixes
+
+* npm web app build docker ([631d102](https://github.com/stevendejongnl/guidr/commit/631d102dbfe281d347ca51024a73104b66508bd4))
+* trigger pipeline ([3f0bf74](https://github.com/stevendejongnl/guidr/commit/3f0bf742bed8dcf67c716c2e188a613c1a5e5ecd))
+
 ## [1.23.0](https://github.com/stevendejongnl/guidr/compare/v1.22.8...v1.23.0) (2026-01-07)
 
 ### Features
