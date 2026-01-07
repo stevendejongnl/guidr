@@ -1,9 +1,12 @@
 """FastAPI application factory."""
 
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .routers import (
     categories_router,
@@ -60,5 +63,28 @@ def create_app() -> FastAPI:
     app.include_router(steps_router, prefix="/api/v1")
     app.include_router(sessions_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
+
+    # Static files for web app (only if dist exists)
+    web_app_dist = Path(__file__).parent.parent.parent.parent / "web-app" / "dist"
+    if web_app_dist.exists() and web_app_dist.is_dir():
+        # Mount static assets
+        app.mount(
+            "/assets",
+            StaticFiles(directory=str(web_app_dist / "assets")),
+            name="assets"
+        )
+
+        # SPA catch-all route - serves index.html for all non-API routes
+        @app.get("/{full_path:path}")
+        async def serve_spa(full_path: str):
+            """Serve SPA for all non-API routes."""
+            # Don't catch API routes (should never be reached due to router precedence)
+            if full_path.startswith("api/"):
+                raise HTTPException(status_code=404)
+
+            index_file = web_app_dist / "index.html"
+            if index_file.exists():
+                return FileResponse(index_file)
+            raise HTTPException(status_code=404)
 
     return app

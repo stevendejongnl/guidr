@@ -119,6 +119,13 @@ jobs:
         working-directory: api-server
         run: poetry run mypy src
 
+      - name: Build Web App
+        working-directory: web-app
+        run: |
+          npm install
+          npm run build
+          echo "✅ Web app built to web-app/dist/"
+
       - name: Run semantic-release (dry-run to get version)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

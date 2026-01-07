@@ -1,0 +1,160 @@
+import { html, LitElement, css } from 'lit'
+import { customElement, state } from 'lit/decorators.js'
+
+interface Guide {
+  id: string
+  name: string
+  description: string
+  category_id: string
+  step_ids: string[]
+}
+
+@customElement('guides-page')
+export class GuidesPage extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 2rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+
+    .error {
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: 4px;
+      padding: 1rem;
+      color: #c33;
+    }
+
+    .guides-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .guide-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .guide-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .guide-card h3 {
+      margin: 0 0 0.5rem 0;
+      color: #2c3e50;
+    }
+
+    .guide-card p {
+      color: #666;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .guide-meta {
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: #999;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+  `
+
+  @state()
+  private guides: Guide[] = []
+
+  @state()
+  private loading = true
+
+  @state()
+  private error: string | null = null
+
+  connectedCallback(): void {
+    super.connectedCallback()
+    this.fetchGuides()
+  }
+
+  private async fetchGuides(): Promise<void> {
+    try {
+      this.loading = true
+      this.error = null
+
+      const response = await fetch('/api/v1/guides')
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      this.guides = await response.json()
+    } catch (err) {
+      this.error = err instanceof Error ? err.message : 'Failed to fetch guides'
+    } finally {
+      this.loading = false
+    }
+  }
+
+  render() {
+    if (this.loading) {
+      return html`
+        <h1>Guides</h1>
+        <div class="loading">Loading guides...</div>
+      `
+    }
+
+    if (this.error) {
+      return html`
+        <h1>Guides</h1>
+        <div class="error">
+          <strong>Error:</strong> ${this.error}
+        </div>
+      `
+    }
+
+    if (this.guides.length === 0) {
+      return html`
+        <h1>Guides</h1>
+        <div class="empty">
+          <p>No guides available yet.</p>
+          <p>Create your first guide to get started!</p>
+        </div>
+      `
+    }
+
+    return html`
+      <h1>Guides</h1>
+      <div class="guides-grid">
+        ${this.guides.map(guide => html`
+          <div class="guide-card" @click=${() => this.navigateToGuide(guide.id)}>
+            <h3>${guide.name}</h3>
+            <p>${guide.description}</p>
+            <div class="guide-meta">
+              ${guide.step_ids.length} steps
+            </div>
+          </div>
+        `)}
+      </div>
+    `
+  }
+
+  private navigateToGuide(id: string): void {
+    window.history.pushState({}, '', `/guides/${id}`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+}
