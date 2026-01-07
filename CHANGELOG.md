@@ -1,3 +1,9 @@
+## [1.23.2](https://github.com/stevendejongnl/guidr/compare/v1.23.1...v1.23.2) (2026-01-07)
+
+### Bug Fixes
+
+* add tslib to web app ([5d2d345](https://github.com/stevendejongnl/guidr/commit/5d2d345487964217d7c65ee52528b7db290a2dfa))
+
 ## [1.23.1](https://github.com/stevendejongnl/guidr/compare/v1.23.0...v1.23.1) (2026-01-07)
 
 ### Bug Fixes
