@@ -8,12 +8,12 @@ const { spawn } = require('child_process')
 const { watch } = require('fs')
 const path = require('path')
 
-// Directories and files to watch
+// Directories and files to watch (relative to mobile/ directory)
 const watchPaths = [
-  'src',
-  'android/app/src',
-  'android/app/build.gradle',
-  'android/build.gradle',
+  'mobile/src',
+  'mobile/android/app/src',
+  'mobile/android/app/build.gradle',
+  'mobile/android/build.gradle',
 ]
 
 // Debounce timer
@@ -32,6 +32,7 @@ function runBuild() {
   console.log('\n🔨 Building Android...\n')
 
   const buildProcess = spawn('npm', ['run', 'android'], {
+    cwd: path.resolve(__dirname, '..', 'mobile'),
     stdio: 'inherit',
     shell: true,
   })

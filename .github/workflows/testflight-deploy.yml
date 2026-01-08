@@ -25,6 +25,9 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'repository_dispatch'
+    defaults:
+      run:
+        working-directory: mobile
 
     steps:
       - name: Checkout code
@@ -49,6 +52,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -161,14 +165,14 @@ jobs:
           VERSION="${{ steps.version.outputs.VERSION }}"
           BUILD_NUM="${{ env.BUILD_NUMBER }}"
 
-          # Extract the latest version's changelog section from CHANGELOG.md
-          if [ -f "CHANGELOG.md" ]; then
+          # Extract the latest version's changelog section from CHANGELOG.md (at root)
+          if [ -f "../CHANGELOG.md" ]; then
             # Get content for the current version (between ## [version] and next ## [)
-            CHANGELOG_TEXT=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+            CHANGELOG_TEXT=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' ../CHANGELOG.md)
 
             # If no exact version match, get the latest section
             if [ -z "$CHANGELOG_TEXT" ]; then
-              CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md)
+              CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' ../CHANGELOG.md)
             fi
 
             # Convert markdown to plain text for TestFlight (doesn't support markdown)
@@ -241,7 +245,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: guidr-testflight-v${{ steps.version.outputs.VERSION }}-build${{ env.BUILD_NUMBER }}
-          path: ios/build/guidr.ipa
+          path: mobile/ios/build/guidr.ipa
           retention-days: 30
 
       # Cleanup API key files

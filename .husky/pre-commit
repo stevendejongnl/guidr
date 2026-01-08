@@ -1,2 +1,3 @@
-npm run lint
-npm run typecheck
+#!/usr/bin/env bash
+npm --prefix mobile run lint
+npm --prefix mobile run typecheck

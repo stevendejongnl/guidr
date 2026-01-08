@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+mobile/node_modules/
 
 # Build output
 dist/
@@ -24,6 +25,11 @@ android/app/.cxx/
 android/build/
 android/.gradle/
 android/local.properties
+mobile/android/app/build/
+mobile/android/app/.cxx/
+mobile/android/build/
+mobile/android/.gradle/
+mobile/android/local.properties
 *.keystore
 !debug.keystore
 

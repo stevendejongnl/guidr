@@ -40,7 +40,7 @@ jobs:
             if [ -n "${{ inputs.version }}" ]; then
               VERSION="${{ inputs.version }}"
             else
-              VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+              VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
             fi
           else
             # repository_dispatch trigger: use event payload
