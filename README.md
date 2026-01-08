@@ -26,6 +26,8 @@ Guidr helps you execute multi-step processes with precise timing. Create guides 
 ## Tech Stack
 
 - **Frontend**: React Native with TypeScript
+- **Backend**: FastAPI with Python
+- **Web**: React with TypeScript
 - **Architecture**: Domain-Driven Design (DDD)
 - **Testing**: Test-Driven Development (TDD) with Jest
 - **Development**: Arch Linux compatible
@@ -34,6 +36,26 @@ Guidr helps you execute multi-step processes with precise timing. Create guides 
 
 🚧 **In Development** - Core domain logic and architecture being built.
 
+## Project Structure
+
+This is a monorepo containing three main projects:
+
+```
+guidr/
+├── mobile/              # React Native app (Android/iOS)
+│   ├── src/            # App source code
+│   ├── android/        # Android native code
+│   ├── ios/            # iOS native code
+│   └── package.json    # Mobile dependencies
+├── api-server/         # FastAPI backend
+│   ├── guidr_server/   # Server source code
+│   └── pyproject.toml  # Python dependencies
+├── web-app/            # React web app
+│   ├── src/            # Web source code
+│   └── package.json    # Web dependencies
+└── scripts/            # Shared build/utility scripts
+```
+
 ## Development
 
 ### Prerequisites
@@ -41,23 +63,52 @@ Guidr helps you execute multi-step processes with precise timing. Create guides 
 - **npm**: 11.6.2 or newer (bundled with Node.js)
 - **For Android**: Java 17, Android SDK
 - **For iOS**: macOS with Xcode 15+
+- **For API Server**: Python 3.11+, Poetry
 
-### Getting Started
+### Quick Start
+
+#### Mobile App
 ```bash
 # Check Node.js version
 node --version  # Should be 24.12.0 or newer
 
-# Install dependencies
+# Install dependencies (from root)
+cd mobile/
 npm install
 
 # Run tests
 npm test
 
-# Run on Android
+# Start Metro bundler
+npm start
+
+# Run on Android (in another terminal)
 npm run android
+
+# Run on iOS (macOS only)
+npm run ios
 
 # Build Android APK
 cd android && ./gradlew assembleRelease
+```
+
+#### API Server
+```bash
+# Using Docker (recommended)
+docker pull ghcr.io/stevendejongnl/guidr-api-server:latest
+docker run -p 8000:8000 ghcr.io/stevendejongnl/guidr-api-server:latest
+
+# Or with Poetry (local development)
+cd api-server/
+poetry install
+poetry run guidr-server
+```
+
+#### Web App
+```bash
+cd web-app/
+npm install
+npm run dev  # Start development server
 ```
 
 ## Architecture

@@ -17,11 +17,14 @@ When planning significant features or making architectural decisions:
 
 ## Project Overview
 
-**Guidr** - Step-by-step guide execution app for Android/iOS. Multi-step processes with precise timing (recipes, workouts, lab protocols). Built with Domain-Driven Design (DDD) and Test-Driven Development (TDD) using bare React Native + TypeScript.
+**Guidr** - Monorepo containing mobile app (React Native), API server (FastAPI), and web app (React). Step-by-step guide execution with precise timing (recipes, workouts, lab protocols). Built with Domain-Driven Design (DDD) and Test-Driven Development (TDD).
 
 **Status**: Core domain logic complete (171 tests passing). Server URL configuration screen implemented. Android native directories initialized with Gradle 8.13. Ready for feature development.
 
-**Tech Stack**: React Native 0.83.1 (bare workflow) | TypeScript (strict) | Jest + React Native Testing Library | AsyncStorage | React Navigation (planned)
+**Tech Stack**:
+- **Mobile**: React Native 0.83.1 (bare workflow) | TypeScript (strict) | Jest + React Native Testing Library | AsyncStorage | React Navigation (planned)
+- **API Server**: FastAPI | Python 3.11+ | Poetry
+- **Web**: React | TypeScript | Vite
 
 ## Prerequisites
 
@@ -30,19 +33,31 @@ When planning significant features or making architectural decisions:
 - **Java**: 17 (Gradle 8.13 requirement, no Java 25+ support)
 - **Android SDK**: Required for Android builds
 - **Xcode**: 15+ (macOS only, for iOS)
+- **Python**: 3.11+ (for API server)
+- **Poetry**: Latest (for API server dependency management)
 
 ## Quick Commands
 
-### Development
+### Mobile App Development
+All mobile commands run from the `mobile/` directory unless otherwise noted.
+
 ```bash
+# From mobile/ directory
+cd mobile/
+
 npm start                    # Metro bundler
 npm run android             # Android (set JAVA_HOME + ANDROID_HOME first)
-./run-android.sh            # Android with auto-environment
 npm run ios                 # iOS simulator (macOS only)
+
+# Or use wrapper script from mobile/ directory
+./run-android.sh            # Android with auto-environment
 ```
 
 ### Environment Setup (Required for Android)
 ```bash
+# From mobile/ directory
+cd mobile/
+
 # Option 1: direnv (recommended)
 direnv allow
 
@@ -51,8 +66,11 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 export ANDROID_HOME=~/Android/Sdk
 ```
 
-### Testing & Quality
+### Testing & Quality (Mobile)
 ```bash
+# From mobile/ directory
+cd mobile/
+
 npm test                    # Run all tests
 npm run test:watch          # Watch mode
 npm run test:coverage       # With coverage
@@ -63,42 +81,75 @@ npm run typecheck           # Type check only
 
 ### API Server (FastAPI)
 ```bash
-# Docker (recommended)
+# Docker (recommended, from any directory)
 docker pull ghcr.io/stevendejongnl/guidr-api-server:latest
 docker run -p 8000:8000 ghcr.io/stevendejongnl/guidr-api-server:latest
 
 # Poetry (local dev)
-cd api-server && poetry install && poetry run guidr-server
+cd api-server/
+poetry install
+poetry run guidr-server
 
-# Connection URLs
+# Connection URLs (for mobile app)
 # Android emulator: http://10.0.2.2:8000
 # iOS simulator: http://localhost:8000
 # Physical device: http://<your-ip>:8000
 ```
 
-### Build Commands
+### Web App Development
 ```bash
+# From web-app/ directory
+cd web-app/
+
+npm install                 # Install dependencies
+npm run dev                 # Start development server
+npm run build               # Production build
+npm run preview             # Preview production build
+```
+
+### Build Commands (Mobile)
+```bash
+# From mobile/ directory
+cd mobile/
+
 ./build-android.sh          # Android APK (handles Java 17 setup)
 ./build-ios-simulator.sh    # iOS simulator .app (macOS only)
+
+# Utility commands
 adb devices                 # Check connected Android devices
 emulator -list-avds         # List Android emulators
 ```
 
 ## Architecture
 
-### Project Structure
+### Monorepo Structure
 ```
-src/
-├── common/                      # DI container, Signal (reactive state)
-├── domain/
-│   ├── entities/               # Category, Guide, Step, Session
-│   ├── repositories/           # Data access interfaces (pending impl)
-│   └── services/               # Business logic with DI
-├── infrastructure/storage/      # AsyncStorage wrappers
-└── presentation/
-    ├── screens/                # UI screens
-    ├── navigation/             # React Navigation
-    └── App.tsx                 # Entry point
+guidr/
+├── mobile/                     # React Native mobile app
+│   ├── src/
+│   │   ├── common/            # DI container, Signal (reactive state)
+│   │   ├── domain/
+│   │   │   ├── entities/      # Category, Guide, Step, Session
+│   │   │   ├── repositories/  # Data access interfaces (pending impl)
+│   │   │   └── services/      # Business logic with DI
+│   │   ├── infrastructure/storage/  # AsyncStorage wrappers
+│   │   └── presentation/
+│   │       ├── screens/       # UI screens
+│   │       ├── navigation/    # React Navigation
+│   │       └── App.tsx        # Entry point
+│   ├── android/               # Android native code
+│   ├── ios/                   # iOS native code
+│   └── package.json
+├── api-server/                 # FastAPI backend
+│   ├── guidr_server/          # Server source code
+│   ├── tests/                 # Server tests
+│   └── pyproject.toml
+├── web-app/                    # React web app
+│   ├── src/                   # Web app source
+│   └── package.json
+├── scripts/                    # Shared build scripts
+├── default-configuration.toml  # Default server config
+└── docs/                       # Documentation including ADRs
 ```
 
 ### Domain Entities
@@ -107,11 +158,11 @@ src/
 - **Step**: Order, title, description, duration (seconds)
 - **Session**: State machine (NotStarted → InProgress ⇄ Paused → Completed/Cancelled)
 
-### TDD Workflow
+### TDD Workflow (Mobile App)
 1. **RED**: Write failing test
 2. **GREEN**: Minimal code to pass
 3. **REFACTOR**: Improve while tests stay green
-4. **VERIFY**: `npm test && npm run lint && npm run typecheck`
+4. **VERIFY**: `cd mobile/ && npm test && npm run lint && npm run typecheck`
 
 ## CI/CD Pipeline
 
@@ -123,18 +174,19 @@ src/
 │                                                              │
 │ Triggers: .github/workflows/ci-cd.yml                       │
 │ Runs: lint, test, typecheck, Android build, iOS sim build   │
+│ Working directory: mobile/                                   │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ Push to main (PR merge or direct commit)                    │
 │                                                              │
 │ Triggers: .github/workflows/release.yml                     │
-│ 1. Runs lint + test + typecheck                             │
+│ 1. Runs lint + test + typecheck (in mobile/)                │
 │ 2. Semantic-release analyzes commits (dry-run)              │
 │ 3. If release needed:                                       │
-│    - Builds Android APK                                     │
+│    - Builds Android APK (mobile/android/)                   │
 │    - Creates GitHub release with APK                        │
-│    - Updates version in package.json, iOS, Android          │
+│    - Updates version in mobile/package.json, iOS, Android   │
 │    - Updates CHANGELOG.md                                   │
 │    - Creates git tag (v1.2.3)                               │
 │    - Commits changes with [skip ci]                         │
@@ -154,6 +206,7 @@ src/
 │                          │  │                          │
 │ 1. Check if new tag      │  │ 1. Check if new tag      │
 │ 2. Build signed iOS IPA  │  │ 2. Build Docker image    │
+│    (mobile/ios/)         │  │    (api-server/)         │
 │ 3. Upload to TestFlight  │  │ 3. Push to GHCR          │
 │ 4. Assign to "main" group│ │ 4. Tag: version + latest │
 └──────────────────────────┘  └──────────────────────────┘
@@ -176,11 +229,11 @@ chore: maintenance tasks
 style: code style changes
 ```
 
-**What Semantic-Release Does** (`.releaserc.json`):
+**What Semantic-Release Does** (`mobile/.releaserc.json`):
 1. **@semantic-release/commit-analyzer**: Analyzes commits since last release
 2. **@semantic-release/release-notes-generator**: Generates CHANGELOG
 3. **@semantic-release/changelog**: Updates CHANGELOG.md
-4. **@semantic-release/exec**: Updates version in iOS/Android/api-server
+4. **@semantic-release/exec**: Updates version in mobile/ios/, mobile/android/, api-server/
 5. **@semantic-release/github**: Creates GitHub release + uploads Android APK
 6. **@semantic-release/git**: Commits version changes with `[skip ci]`
 
@@ -358,7 +411,13 @@ style: format code
 ### Before Pushing
 ```bash
 git pull --rebase origin main  # Check if behind
-npm test && npm run lint && npm run typecheck  # Verify quality
+
+# Verify quality (mobile app)
+cd mobile/
+npm test && npm run lint && npm run typecheck
+
+# Push changes
+cd ..
 git push origin main
 ```
 
@@ -371,10 +430,14 @@ git push origin main
 ## Common Issues
 
 ### Android Build Hangs
-**Problem**: `npm run android` hangs or fails
+**Problem**: `npm run android` hangs or fails (from mobile/ directory)
 **Cause**: Missing JAVA_HOME or ANDROID_HOME, or Java 25+ installed
-**Solution**: Use direnv, wrapper script, or manual export (see Commands section)
-**Diagnosis**: `npx react-native doctor`
+**Solution**:
+```bash
+cd mobile/
+# Use direnv, wrapper script, or manual export (see Commands section)
+```
+**Diagnosis**: `cd mobile/ && npx react-native doctor`
 
 ### TestFlight Upload Fails
 **Problem**: "Invalid credentials" during pilot upload
@@ -395,7 +458,7 @@ git push origin main
 
 ### Test Failures
 **Problem**: Tests fail after changes
-**Solution**: Ensure mocks are up to date in `__mocks__/`. React Native modules must be mocked.
+**Solution**: Ensure mocks are up to date in `mobile/__mocks__/`. React Native modules must be mocked.
 
 **Problem**: Type errors in tests
 **Solution**: Use bracket notation `props['value']` instead of `props.value` for test props
