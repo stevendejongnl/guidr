@@ -12,9 +12,14 @@ const projectRoot = path.resolve(__dirname, '..')
 const configFile = 'default-configuration.toml'
 const sourcePath = path.join(projectRoot, configFile)
 
+// Determine if we're in the new mobile/ structure
+const mobileDir = fs.existsSync(path.join(projectRoot, 'mobile', 'package.json'))
+  ? path.join(projectRoot, 'mobile')
+  : projectRoot
+
 // Target locations
-const androidAssetsDir = path.join(projectRoot, 'android', 'app', 'src', 'main', 'assets')
-const iosGuidrDir = path.join(projectRoot, 'ios', 'guidr')
+const androidAssetsDir = path.join(mobileDir, 'android', 'app', 'src', 'main', 'assets')
+const iosGuidrDir = path.join(mobileDir, 'ios', 'guidr')
 
 function ensureDirectoryExists(dir) {
   if (!fs.existsSync(dir)) {

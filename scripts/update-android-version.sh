@@ -12,10 +12,13 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-BUILD_GRADLE="android/app/build.gradle"
-
-if [ ! -f "$BUILD_GRADLE" ]; then
-  echo "Error: $BUILD_GRADLE not found"
+# Auto-detect location (support both old and new structure)
+if [ -f "mobile/android/app/build.gradle" ]; then
+  BUILD_GRADLE="mobile/android/app/build.gradle"
+elif [ -f "android/app/build.gradle" ]; then
+  BUILD_GRADLE="android/app/build.gradle"
+else
+  echo "Error: build.gradle not found in android/app/ or mobile/android/app/"
   exit 1
 fi
 

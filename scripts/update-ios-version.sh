@@ -12,10 +12,13 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-PROJECT_FILE="ios/guidr.xcodeproj/project.pbxproj"
-
-if [ ! -f "$PROJECT_FILE" ]; then
-  echo "Error: $PROJECT_FILE not found"
+# Auto-detect location (support both old and new structure)
+if [ -f "mobile/ios/guidr.xcodeproj/project.pbxproj" ]; then
+  PROJECT_FILE="mobile/ios/guidr.xcodeproj/project.pbxproj"
+elif [ -f "ios/guidr.xcodeproj/project.pbxproj" ]; then
+  PROJECT_FILE="ios/guidr.xcodeproj/project.pbxproj"
+else
+  echo "Error: project.pbxproj not found in ios/ or mobile/ios/"
   exit 1
 fi
 
