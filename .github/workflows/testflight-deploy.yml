@@ -82,6 +82,7 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true  # Automatically runs bundle install and caches gems
+          working-directory: mobile
 
       # Create API key files from secrets
       - name: Create App Store Connect API Key
