@@ -1,2 +1,2 @@
-npm run lint
-npm run typecheck
+cd mobile && npm run lint
+cd mobile && npm run typecheck

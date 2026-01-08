@@ -1,0 +1,21 @@
+{
+  "name": "guidr-monorepo",
+  "version": "1.23.1",
+  "private": true,
+  "description": "Guidr monorepo - mobile app, API server, and web app",
+  "scripts": {
+    "mobile:lint": "cd mobile && npm run lint",
+    "mobile:test": "cd mobile && npm test",
+    "mobile:typecheck": "cd mobile && npm run typecheck",
+    "mobile:android": "cd mobile && npm run android",
+    "mobile:ios": "cd mobile && npm run ios",
+    "api:test": "cd api-server && poetry run pytest",
+    "api:lint": "cd api-server && poetry run ruff check .",
+    "web:build": "cd web-app && npm run build",
+    "web:dev": "cd web-app && npm run dev",
+    "prepare": "cd mobile && husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
