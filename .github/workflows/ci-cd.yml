@@ -112,6 +112,9 @@ jobs:
   android-build:
     name: Android Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
 
@@ -119,6 +122,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
 
       - uses: actions/setup-java@v4
         with:
@@ -170,12 +174,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
 
   ios-build:
     name: iOS Build
     runs-on: macos-15
+    defaults:
+      run:
+        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
 
@@ -183,6 +190,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -220,5 +228,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-ios
-          path: ios/build/Build/Products/Debug-iphonesimulator/guidr.app
+          path: mobile/ios/build/Build/Products/Debug-iphonesimulator/guidr.app
           retention-days: 7

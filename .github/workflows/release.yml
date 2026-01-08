@@ -16,6 +16,9 @@ jobs:
     name: Semantic Release
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    defaults:
+      run:
+        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,6 +28,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -94,6 +98,7 @@ jobs:
         run: |
           pip install poetry
           poetry config virtualenvs.in-project true
+        working-directory: .
 
       - name: Cache Poetry virtualenv
         uses: actions/cache@v4
@@ -154,7 +159,7 @@ jobs:
         if: env.SHOULD_RELEASE == 'true'
         run: |
           # Extract version from package.json
-          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
           TAG="v${VERSION}"
           COMMIT_SHA=$(git rev-parse HEAD)
 
@@ -169,6 +174,7 @@ jobs:
           echo "✅ Dispatched release-created event for version $VERSION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: .
 
       - name: No release needed
         if: env.SHOULD_RELEASE == 'false'
