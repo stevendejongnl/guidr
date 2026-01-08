@@ -12,10 +12,13 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-PYPROJECT_FILE="api-server/pyproject.toml"
-
-if [ ! -f "$PYPROJECT_FILE" ]; then
-  echo "Error: $PYPROJECT_FILE not found"
+# Auto-detect location (support both old and new structure)
+if [ -f "api-server/pyproject.toml" ]; then
+  PYPROJECT_FILE="api-server/pyproject.toml"
+elif [ -f "../api-server/pyproject.toml" ]; then
+  PYPROJECT_FILE="../api-server/pyproject.toml"
+else
+  echo "Error: pyproject.toml not found in api-server/ or ../api-server/"
   exit 1
 fi
 
