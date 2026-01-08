@@ -158,6 +158,8 @@ jobs:
       - name: Trigger downstream workflows
         if: env.SHOULD_RELEASE == 'true'
         working-directory: .
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Extract version from package.json
           VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
@@ -173,9 +175,6 @@ jobs:
             --field client_payload[commit_sha]="$COMMIT_SHA"
 
           echo "✅ Dispatched release-created event for version $VERSION"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: .
 
       - name: No release needed
         if: env.SHOULD_RELEASE == 'false'
