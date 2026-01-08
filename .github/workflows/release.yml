@@ -157,6 +157,7 @@ jobs:
 
       - name: Trigger downstream workflows
         if: env.SHOULD_RELEASE == 'true'
+        working-directory: .
         run: |
           # Extract version from package.json
           VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')

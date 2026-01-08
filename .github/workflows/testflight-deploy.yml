@@ -165,14 +165,14 @@ jobs:
           VERSION="${{ steps.version.outputs.VERSION }}"
           BUILD_NUM="${{ env.BUILD_NUMBER }}"
 
-          # Extract the latest version's changelog section from CHANGELOG.md
-          if [ -f "CHANGELOG.md" ]; then
+          # Extract the latest version's changelog section from CHANGELOG.md (at root)
+          if [ -f "../CHANGELOG.md" ]; then
             # Get content for the current version (between ## [version] and next ## [)
-            CHANGELOG_TEXT=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+            CHANGELOG_TEXT=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' ../CHANGELOG.md)
 
             # If no exact version match, get the latest section
             if [ -z "$CHANGELOG_TEXT" ]; then
-              CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md)
+              CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' ../CHANGELOG.md)
             fi
 
             # Convert markdown to plain text for TestFlight (doesn't support markdown)
