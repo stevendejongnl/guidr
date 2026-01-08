@@ -50,7 +50,7 @@ updates:
 
   # Gradle (Android)
   - package-ecosystem: "gradle"
-    directory: "/android"
+    directory: "/mobile/android"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -79,7 +79,7 @@ updates:
 
   # Bundler (iOS CocoaPods)
   - package-ecosystem: "bundler"
-    directory: "/ios"
+    directory: "/mobile/ios"
     schedule:
       interval: "weekly"
       day: "tuesday"
@@ -95,7 +95,7 @@ updates:
 
   # Bundler (Fastlane)
   - package-ecosystem: "bundler"
-    directory: "/"
+    directory: "/mobile"
     schedule:
       interval: "weekly"
       day: "wednesday"

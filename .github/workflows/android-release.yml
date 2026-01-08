@@ -100,8 +100,10 @@ jobs:
 
       - name: Update Android version
         run: |
-          chmod +x scripts/update-android-version.sh
-          ./scripts/update-android-version.sh "${{ steps.version.outputs.VERSION }}"
+          chmod +x ../scripts/update-android-version.sh
+          ../scripts/update-android-version.sh "$VERSION"
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
 
       - name: Build Android APK
         run: |
