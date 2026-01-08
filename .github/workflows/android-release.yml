@@ -132,6 +132,7 @@ jobs:
           ls -lh "$NEW_PATH"
 
       - name: Upload APK to GitHub Release
+        working-directory: .
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
           APK_PATH="mobile/android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
@@ -143,7 +144,6 @@ jobs:
           echo "✅ Uploaded APK to release v${VERSION}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: .
 
       - name: Build complete
         run: |
