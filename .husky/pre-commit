@@ -1,2 +1,3 @@
+#!/usr/bin/env bash
 cd mobile && npm run lint
 cd mobile && npm run typecheck
