@@ -4,8 +4,9 @@ export class User {
   private _passwordHash: string
   readonly createdAt: Date
   private _updatedAt: Date
+  private _isAdmin: boolean
 
-  constructor(id: string, email: string, passwordHash: string) {
+  constructor(id: string, email: string, passwordHash: string, isAdmin: boolean = false) {
     if (!id || id.trim() === '') {
       throw new Error('User id cannot be empty')
     }
@@ -23,6 +24,7 @@ export class User {
     this.id = id
     this._email = email.toLowerCase()
     this._passwordHash = passwordHash
+    this._isAdmin = isAdmin
     this.createdAt = new Date()
     this._updatedAt = new Date()
   }
@@ -37,6 +39,10 @@ export class User {
 
   get updatedAt(): Date {
     return this._updatedAt
+  }
+
+  get isAdmin(): boolean {
+    return this._isAdmin
   }
 
   updateEmail(newEmail: string): void {

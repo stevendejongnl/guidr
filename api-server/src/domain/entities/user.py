@@ -18,6 +18,7 @@ class User:
         updated_at: datetime | None = None,
         name: str | None = None,
         interests: list[str] | None = None,
+        is_admin: bool = False,
     ):
         """Initialize a User.
 
@@ -29,6 +30,7 @@ class User:
             updated_at: Optional update timestamp (defaults to now)
             name: Optional display name
             interests: Optional list of interest categories (defaults to empty list)
+            is_admin: Whether user has admin privileges (defaults to False, immutable)
 
         Raises:
             ValidationException: If password_hash is empty
@@ -43,6 +45,7 @@ class User:
         self._updated_at = updated_at or datetime.now(UTC)
         self._name = name
         self._interests = interests if interests is not None else []
+        self._is_admin = is_admin
 
     @property
     def id(self) -> EntityId:
@@ -78,6 +81,11 @@ class User:
     def interests(self) -> list[str]:
         """Get user interests (returns copy to prevent external modification)."""
         return self._interests.copy()
+
+    @property
+    def is_admin(self) -> bool:
+        """Get admin status (immutable after creation)."""
+        return self._is_admin
 
     def update_password_hash(self, new_password_hash: str) -> None:
         """Update password hash.
