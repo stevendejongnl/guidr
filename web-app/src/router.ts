@@ -8,6 +8,7 @@ export const routes: Route[] = [
   { path: '/', component: 'home-page', title: 'Home - Guidr' },
   { path: '/guides', component: 'guides-page', title: 'Guides - Guidr' },
   { path: '/guides/:id', component: 'guide-detail-page', title: 'Guide Detail - Guidr' },
+  { path: '/admin/styleguide', component: 'admin-styleguide-page', title: 'Styleguide - Guidr' },
   { path: '*', component: 'not-found-page', title: 'Not Found - Guidr' }
 ]
 
