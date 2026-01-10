@@ -34,7 +34,6 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["*"]
 
     # App Configuration (loaded from TOML)
-    debug_mode: bool = True
     min_app_version: str | None = None
     max_app_version: str | None = None
 

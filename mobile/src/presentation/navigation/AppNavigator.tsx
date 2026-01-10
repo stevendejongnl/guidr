@@ -11,7 +11,7 @@ import { ServerSetupScreen } from '../screens/ServerSetupScreen'
 import { LoginScreen } from '../screens/LoginScreen'
 import { RegistrationScreen } from '../screens/RegistrationScreen'
 import { HomeScreen } from '../screens/HomeScreen'
-import { DebugScreen } from '../screens/DebugScreen'
+import { AdminScreen } from '../screens/AdminScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
 import { ProfileScreen } from '../screens/ProfileScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
@@ -27,13 +27,13 @@ export const AppNavigator: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [hasAuthToken, setHasAuthToken] = useState(false)
   const [userEmail, setUserEmail] = useState<string>('')
+  const [isAdmin, setIsAdmin] = useState(false)
   const [serverUrl, setServerUrl] = useState<string | null>(null)
   const [serverConfig, setServerConfig] = useState<{
-    debugMode: boolean
     minAppVersion?: string | null
     maxAppVersion?: string | null
   } | null>(null)
-  const [showDebugScreen, setShowDebugScreen] = useState(false)
+  const [showAdminScreen, setShowAdminScreen] = useState(false)
   const [showSettingsScreen, setShowSettingsScreen] = useState(false)
   const [showProfileScreen, setShowProfileScreen] = useState(false)
   const [showServerSetup, setShowServerSetup] = useState(false)
@@ -68,7 +68,7 @@ export const AppNavigator: React.FC = () => {
             })
             console.error('Failed to fetch server config:', error)
             // Set default config on failure
-            const defaultConfig = { debugMode: false }
+            const defaultConfig = {}
             ServerConfigCache.setConfig(defaultConfig)
             setServerConfig(defaultConfig)
           }
@@ -79,10 +79,13 @@ export const AppNavigator: React.FC = () => {
         const hasToken = await authStorage.hasAuthToken()
         setHasAuthToken(hasToken)
 
-        // Load user email if authenticated
+        // Load user email and admin status if authenticated
         if (hasToken) {
           const email = await authStorage.getUserEmail()
           setUserEmail(email || '')
+
+          const adminStatus = await authStorage.getUserIsAdmin()
+          setIsAdmin(adminStatus)
         }
 
         // Check for updates on Android
@@ -146,7 +149,7 @@ export const AppNavigator: React.FC = () => {
           action: 'handleServerSetupComplete',
         })
         console.error('Failed to fetch server config:', error)
-        const defaultConfig = { debugMode: false }
+        const defaultConfig = {}
         ServerConfigCache.setConfig(defaultConfig)
         setServerConfig(defaultConfig)
       }
@@ -155,23 +158,29 @@ export const AppNavigator: React.FC = () => {
     // Clear auth since server changed
     await authStorage.clearAll()
     setHasAuthToken(false)
+    setIsAdmin(false)
   }
 
   const handleLoginComplete = async () => {
     setHasAuthToken(true)
     const email = await authStorage.getUserEmail()
     setUserEmail(email || '')
+
+    const adminStatus = await authStorage.getUserIsAdmin()
+    setIsAdmin(adminStatus)
   }
 
   const handleLogout = async () => {
     try {
       await authStorage.clearAll()
       setHasAuthToken(false)
+      setIsAdmin(false)
     } catch (error) {
       ErrorReporter.capture(error, { component: 'AppNavigator', action: 'logout' })
       console.error('Logout failed:', error)
       // Still update state to log out user even if storage clear fails
       setHasAuthToken(false)
+      setIsAdmin(false)
     }
   }
 
@@ -192,6 +201,9 @@ export const AppNavigator: React.FC = () => {
     setShowRegistration(false)
     const email = await authStorage.getUserEmail()
     setUserEmail(email || '')
+
+    const adminStatus = await authStorage.getUserIsAdmin()
+    setIsAdmin(adminStatus)
   }
 
   if (loading) {
@@ -307,10 +319,10 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
-  if (showDebugScreen && serverUrl) {
+  if (showAdminScreen && serverUrl) {
     return (
-      <DebugScreen
-        onBack={() => setShowDebugScreen(false)}
+      <AdminScreen
+        onBack={() => setShowAdminScreen(false)}
         serverUrl={serverUrl}
       />
     )
@@ -337,15 +349,15 @@ export const AppNavigator: React.FC = () => {
           setShowSettingsScreen(false)
           handleChangeServer()
         }}
-        onOpenDebug={() => {
+        onOpenAdmin={() => {
           setShowSettingsScreen(false)
-          setShowDebugScreen(true)
+          setShowAdminScreen(true)
         }}
         onOpenProfile={() => {
           setShowSettingsScreen(false)
           setShowProfileScreen(true)
         }}
-        debugMode={serverConfig?.debugMode ?? false}
+        adminMode={isAdmin}
         serverUrl={serverUrl}
       />
     )
@@ -354,9 +366,9 @@ export const AppNavigator: React.FC = () => {
   return (
     <HomeScreen
       onLogout={handleLogout}
-      onOpenDebug={() => setShowDebugScreen(true)}
+      onOpenAdmin={() => setShowAdminScreen(true)}
       onOpenSettings={() => setShowSettingsScreen(true)}
-      debugMode={serverConfig?.debugMode ?? false}
+      adminMode={isAdmin}
     />
   )
 }
