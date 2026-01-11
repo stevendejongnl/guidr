@@ -116,6 +116,7 @@ async def register(
                 email=result.email,
                 createdAt=result.created_at,
                 updatedAt=result.updated_at,
+                isAdmin=result.is_admin,
             ),
         )
     except ValidationException as e:
@@ -154,6 +155,7 @@ async def login(
                 email=result.email,
                 createdAt=result.created_at,
                 updatedAt=result.updated_at,
+                isAdmin=result.is_admin,
             ),
         )
     except ValidationException as e:
@@ -247,6 +249,7 @@ async def change_email(
                 email=updated_email,
                 createdAt=current_user.created_at.isoformat(),
                 updatedAt=current_user.updated_at.isoformat(),
+                isAdmin=current_user.is_admin,
             ),
         )
     except ValidationException as e:
@@ -294,6 +297,7 @@ async def update_profile(
             updatedAt=current_user.updated_at.isoformat(),
             name=current_user.name,
             interests=current_user.interests,
+            isAdmin=current_user.is_admin,
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

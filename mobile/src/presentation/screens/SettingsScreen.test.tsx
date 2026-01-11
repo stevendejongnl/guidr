@@ -12,9 +12,9 @@ describe('SettingsScreen', () => {
   const defaultProps = {
     onBack: jest.fn(),
     onChangeServer: jest.fn(),
-    onOpenDebug: jest.fn(),
+    onOpenAdmin: jest.fn(),
     onOpenProfile: jest.fn(),
-    debugMode: false,
+    adminMode: false,
     serverUrl: 'https://api.example.com',
   }
 
@@ -60,42 +60,42 @@ describe('SettingsScreen', () => {
     expect(defaultProps.onChangeServer).toHaveBeenCalledTimes(1)
   })
 
-  it('shows debug section when debugMode is true', () => {
+  it('shows admin section when adminMode is true', () => {
     const { getByText, getByTestId } = render(
-      <SettingsScreen {...defaultProps} debugMode={true} />
+      <SettingsScreen {...defaultProps} adminMode={true} />
     )
-    expect(getByText('Developer')).toBeTruthy()
-    expect(getByTestId('open-debug-button')).toBeTruthy()
+    expect(getByText('Admin')).toBeTruthy()
+    expect(getByTestId('open-admin-button')).toBeTruthy()
   })
 
-  it('hides debug section when debugMode is false', () => {
+  it('hides admin section when adminMode is false', () => {
     const { queryByText, queryByTestId } = render(
-      <SettingsScreen {...defaultProps} debugMode={false} />
+      <SettingsScreen {...defaultProps} adminMode={false} />
     )
-    expect(queryByText('Developer')).toBeNull()
-    expect(queryByTestId('open-debug-button')).toBeNull()
+    expect(queryByText('Admin')).toBeNull()
+    expect(queryByTestId('open-admin-button')).toBeNull()
   })
 
-  it('calls onOpenDebug when debug tools button is pressed', () => {
+  it('calls onOpenAdmin when admin tools button is pressed', () => {
     const { getByTestId } = render(
-      <SettingsScreen {...defaultProps} debugMode={true} />
+      <SettingsScreen {...defaultProps} adminMode={true} />
     )
-    fireEvent.press(getByTestId('open-debug-button'))
-    expect(defaultProps.onOpenDebug).toHaveBeenCalledTimes(1)
+    fireEvent.press(getByTestId('open-admin-button'))
+    expect(defaultProps.onOpenAdmin).toHaveBeenCalledTimes(1)
   })
 
-  it('hides debug section when onOpenDebug is not provided', () => {
-    const propsWithoutDebug = {
+  it('hides admin section when onOpenAdmin is not provided', () => {
+    const propsWithoutAdmin = {
       onBack: jest.fn(),
       onChangeServer: jest.fn(),
       onOpenProfile: jest.fn(),
-      debugMode: true,
+      adminMode: true,
       serverUrl: 'https://api.example.com',
     }
     const { queryByText } = render(
-      <SettingsScreen {...propsWithoutDebug} />
+      <SettingsScreen {...propsWithoutAdmin} />
     )
-    expect(queryByText('Developer')).toBeNull()
+    expect(queryByText('Admin')).toBeNull()
   })
 })
 

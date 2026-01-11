@@ -27,6 +27,7 @@ class UserMapper:
             "updatedAt": user.updated_at,
             "name": user.name,
             "interests": user.interests,
+            "isAdmin": user.is_admin,
         }
 
     @staticmethod
@@ -47,4 +48,5 @@ class UserMapper:
             updated_at=document["updatedAt"],
             name=document.get("name"),
             interests=document.get("interests", []),
+            is_admin=document.get("isAdmin", False),
         )

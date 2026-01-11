@@ -9,12 +9,12 @@ import { commonStyles, colors } from '../theme'
 
 interface HomeScreenProps {
   onLogout: () => void | Promise<void>
-  onOpenDebug: () => void
+  onOpenAdmin: () => void
   onOpenSettings: () => void
-  debugMode: boolean
+  adminMode: boolean
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, onOpenSettings, debugMode }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenAdmin, onOpenSettings, adminMode }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loggingOut, setLoggingOut] = useState(false)
   const authStorage = new AuthStorage()
@@ -65,13 +65,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenDebug, o
             The app is ready. Guide management features coming soon.
           </Text>
 
-          {debugMode && (
+          {adminMode && (
             <TouchableOpacity
               style={[commonStyles.buttonSecondary, { marginBottom: 16 }]}
-              onPress={onOpenDebug}
-              accessibilityLabel="Open debug tools"
+              onPress={onOpenAdmin}
+              accessibilityLabel="Open admin tools"
             >
-              <Text style={commonStyles.buttonText}>⚙ Debug Tools</Text>
+              <Text style={commonStyles.buttonText}>⚙ Admin Tools</Text>
             </TouchableOpacity>
           )}
 

@@ -14,18 +14,18 @@ import { commonStyles, colors, spacing, typography, borderRadius } from '../them
 interface SettingsScreenProps {
   onBack: () => void
   onChangeServer: () => void
-  onOpenDebug?: () => void
+  onOpenAdmin?: () => void
   onOpenProfile: () => void
-  debugMode: boolean
+  adminMode: boolean
   serverUrl: string | null
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onBack,
   onChangeServer,
-  onOpenDebug,
+  onOpenAdmin,
   onOpenProfile,
-  debugMode,
+  adminMode,
   serverUrl,
 }) => {
   const appVersion = DeviceInfo.getVersion()
@@ -91,16 +91,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Debug Section - Only shown in debug mode */}
-          {debugMode && onOpenDebug && (
+          {/* Admin Section - Only shown in admin mode */}
+          {adminMode && onOpenAdmin && (
             <View style={commonStyles.section}>
-              <Text style={commonStyles.sectionTitle}>Developer</Text>
+              <Text style={commonStyles.sectionTitle}>Admin</Text>
               <TouchableOpacity
                 style={[commonStyles.buttonSecondary, styles.sectionButton]}
-                onPress={onOpenDebug}
-                testID="open-debug-button"
+                onPress={onOpenAdmin}
+                testID="open-admin-button"
               >
-                <Text style={commonStyles.buttonText}>Debug Tools</Text>
+                <Text style={commonStyles.buttonText}>Admin Tools</Text>
               </TouchableOpacity>
             </View>
           )}

@@ -211,3 +211,120 @@ class TestUserMapper:
         assert recovered_user.updated_at == original_user.updated_at
         assert recovered_user.name == original_user.name
         assert recovered_user.interests == original_user.interests
+
+    def test_to_document_with_admin_true(self):
+        """Test converting User to document with is_admin=True."""
+        # Arrange
+        user = User(
+            id=EntityId("123e4567-e89b-12d3-a456-426614174000"),
+            email=Email("test@example.com"),
+            password_hash="hashed_password_123",
+            is_admin=True,
+        )
+
+        # Act
+        document = UserMapper.to_document(user)
+
+        # Assert
+        assert document["isAdmin"] is True
+
+    def test_to_document_with_admin_false(self):
+        """Test converting User to document with is_admin=False."""
+        # Arrange
+        user = User(
+            id=EntityId("123e4567-e89b-12d3-a456-426614174000"),
+            email=Email("test@example.com"),
+            password_hash="hashed_password_123",
+            is_admin=False,
+        )
+
+        # Act
+        document = UserMapper.to_document(user)
+
+        # Assert
+        assert document["isAdmin"] is False
+
+    def test_to_entity_with_admin_true(self):
+        """Test converting document to User with isAdmin=True."""
+        # Arrange
+        created_at = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        updated_at = datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC)
+
+        document = {
+            "_id": "123e4567-e89b-12d3-a456-426614174000",
+            "email": "test@example.com",
+            "passwordHash": "hashed_password_123",
+            "createdAt": created_at,
+            "updatedAt": updated_at,
+            "isAdmin": True,
+        }
+
+        # Act
+        user = UserMapper.to_entity(document)
+
+        # Assert
+        assert user.is_admin is True
+
+    def test_to_entity_with_admin_false(self):
+        """Test converting document to User with isAdmin=False."""
+        # Arrange
+        created_at = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        updated_at = datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC)
+
+        document = {
+            "_id": "123e4567-e89b-12d3-a456-426614174000",
+            "email": "test@example.com",
+            "passwordHash": "hashed_password_123",
+            "createdAt": created_at,
+            "updatedAt": updated_at,
+            "isAdmin": False,
+        }
+
+        # Act
+        user = UserMapper.to_entity(document)
+
+        # Assert
+        assert user.is_admin is False
+
+    def test_to_entity_without_admin_field_defaults_to_false(self):
+        """Test converting document to User without isAdmin field defaults to False.
+
+        Maintains backwards compatibility with documents missing the field.
+        """
+        # Arrange
+        created_at = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        updated_at = datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC)
+
+        document = {
+            "_id": "123e4567-e89b-12d3-a456-426614174000",
+            "email": "test@example.com",
+            "passwordHash": "hashed_password_123",
+            "createdAt": created_at,
+            "updatedAt": updated_at,
+            # isAdmin field missing (old documents before admin feature)
+        }
+
+        # Act
+        user = UserMapper.to_entity(document)
+
+        # Assert
+        assert user.is_admin is False
+
+    def test_round_trip_preserves_admin_status(self):
+        """Test that converting User → document → User preserves admin status."""
+        # Arrange
+        original_user = User(
+            id=EntityId("123e4567-e89b-12d3-a456-426614174000"),
+            email=Email("test@example.com"),
+            password_hash="hashed_password_123",
+            name="Admin User",
+            interests=["sports"],
+            is_admin=True,
+        )
+
+        # Act
+        document = UserMapper.to_document(original_user)
+        recovered_user = UserMapper.to_entity(document)
+
+        # Assert
+        assert recovered_user.is_admin == original_user.is_admin

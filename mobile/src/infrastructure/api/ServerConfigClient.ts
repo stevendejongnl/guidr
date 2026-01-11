@@ -1,5 +1,4 @@
 export interface ServerConfigResponse {
-  debugMode: boolean
   minAppVersion: string | null
   maxAppVersion: string | null
 }
@@ -30,13 +29,7 @@ export class ServerConfigClient {
 
       const data = await response.json()
 
-      // Validate response structure
-      if (typeof data.debugMode !== 'boolean') {
-        throw new Error('Invalid response from server')
-      }
-
       return {
-        debugMode: data.debugMode,
         minAppVersion: data.minAppVersion ?? null,
         maxAppVersion: data.maxAppVersion ?? null,
       }

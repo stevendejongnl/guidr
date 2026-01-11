@@ -11,12 +11,12 @@ describe('ServerConfigCache', () => {
     })
 
     it('should return true after config is set', () => {
-      ServerConfigCache.setConfig({ debugMode: true })
+      ServerConfigCache.setConfig({ minAppVersion: '1.0.0', maxAppVersion: null })
       expect(ServerConfigCache.hasConfig()).toBe(true)
     })
 
     it('should return false after config is cleared', () => {
-      ServerConfigCache.setConfig({ debugMode: true })
+      ServerConfigCache.setConfig({ minAppVersion: '1.0.0' })
       ServerConfigCache.clearConfig()
       expect(ServerConfigCache.hasConfig()).toBe(false)
     })
@@ -28,45 +28,48 @@ describe('ServerConfigCache', () => {
     })
 
     it('should return stored config', () => {
-      const config = { debugMode: true }
+      const config = { minAppVersion: '1.0.0', maxAppVersion: '2.0.0' }
       ServerConfigCache.setConfig(config)
       expect(ServerConfigCache.getConfig()).toEqual(config)
     })
 
-    it('should return config with debugMode false', () => {
-      const config = { debugMode: false }
+    it('should return config with version constraints', () => {
+      const config = { minAppVersion: '1.0.0', maxAppVersion: null }
       ServerConfigCache.setConfig(config)
       expect(ServerConfigCache.getConfig()).toEqual(config)
     })
 
     it('should return null after clear', () => {
-      ServerConfigCache.setConfig({ debugMode: true })
+      ServerConfigCache.setConfig({ minAppVersion: '1.0.0' })
       ServerConfigCache.clearConfig()
       expect(ServerConfigCache.getConfig()).toBeNull()
     })
   })
 
   describe('setConfig', () => {
-    it('should store config with debugMode true', () => {
-      ServerConfigCache.setConfig({ debugMode: true })
-      expect(ServerConfigCache.getConfig()).toEqual({ debugMode: true })
+    it('should store config with version constraints', () => {
+      const config = { minAppVersion: '1.0.0', maxAppVersion: null }
+      ServerConfigCache.setConfig(config)
+      expect(ServerConfigCache.getConfig()).toEqual(config)
     })
 
-    it('should store config with debugMode false', () => {
-      ServerConfigCache.setConfig({ debugMode: false })
-      expect(ServerConfigCache.getConfig()).toEqual({ debugMode: false })
+    it('should store config with min and max versions', () => {
+      const config = { minAppVersion: '1.0.0', maxAppVersion: '2.0.0' }
+      ServerConfigCache.setConfig(config)
+      expect(ServerConfigCache.getConfig()).toEqual(config)
     })
 
     it('should overwrite existing config', () => {
-      ServerConfigCache.setConfig({ debugMode: true })
-      ServerConfigCache.setConfig({ debugMode: false })
-      expect(ServerConfigCache.getConfig()).toEqual({ debugMode: false })
+      ServerConfigCache.setConfig({ minAppVersion: '1.0.0' })
+      const newConfig = { minAppVersion: '1.1.0', maxAppVersion: '2.0.0' }
+      ServerConfigCache.setConfig(newConfig)
+      expect(ServerConfigCache.getConfig()).toEqual(newConfig)
     })
   })
 
   describe('clearConfig', () => {
     it('should clear stored config', () => {
-      ServerConfigCache.setConfig({ debugMode: true })
+      ServerConfigCache.setConfig({ minAppVersion: '1.0.0' })
       ServerConfigCache.clearConfig()
       expect(ServerConfigCache.hasConfig()).toBe(false)
       expect(ServerConfigCache.getConfig()).toBeNull()

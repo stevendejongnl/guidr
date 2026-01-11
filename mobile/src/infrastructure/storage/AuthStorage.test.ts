@@ -136,15 +136,73 @@ describe('AuthStorage', () => {
     })
   })
 
+  describe('getUserIsAdmin', () => {
+    it('should return false when no admin status is stored', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue(null)
+
+      const result = await storage.getUserIsAdmin()
+
+      expect(result).toBe(false)
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_UserIsAdmin')
+    })
+
+    it('should return false when admin status is false', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue('false')
+
+      const result = await storage.getUserIsAdmin()
+
+      expect(result).toBe(false)
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_UserIsAdmin')
+    })
+
+    it('should return true when admin status is true', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue('true')
+
+      const result = await storage.getUserIsAdmin()
+
+      expect(result).toBe(true)
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_UserIsAdmin')
+    })
+  })
+
+  describe('setUserIsAdmin', () => {
+    it('should store admin status as true', async () => {
+      mockAsyncStorage.setItem.mockResolvedValue()
+
+      await storage.setUserIsAdmin(true)
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith('Guidr_UserIsAdmin', 'true')
+    })
+
+    it('should store admin status as false', async () => {
+      mockAsyncStorage.setItem.mockResolvedValue()
+
+      await storage.setUserIsAdmin(false)
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith('Guidr_UserIsAdmin', 'false')
+    })
+  })
+
+  describe('clearUserIsAdmin', () => {
+    it('should remove admin status from storage', async () => {
+      mockAsyncStorage.removeItem.mockResolvedValue()
+
+      await storage.clearUserIsAdmin()
+
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserIsAdmin')
+    })
+  })
+
   describe('clearAll', () => {
-    it('should remove both auth token and user email from storage', async () => {
+    it('should remove auth token, user email, and admin status from storage', async () => {
       mockAsyncStorage.removeItem.mockResolvedValue()
 
       await storage.clearAll()
 
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_AuthToken')
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserEmail')
-      expect(mockAsyncStorage.removeItem).toHaveBeenCalledTimes(2)
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserIsAdmin')
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledTimes(3)
     })
   })
 })

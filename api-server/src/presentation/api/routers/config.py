@@ -14,10 +14,9 @@ async def get_config(settings: Settings = Depends(get_settings)) -> ConfigRespon
     """Get server configuration.
 
     Returns:
-        Server configuration including debug mode and version constraints
+        Server configuration including version constraints
     """
     return ConfigResponse(
-        debugMode=settings.debug_mode,
         minAppVersion=settings.min_app_version,
         maxAppVersion=settings.max_app_version,
     )

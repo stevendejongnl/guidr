@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const AUTH_TOKEN_KEY = 'Guidr_AuthToken'
 const USER_EMAIL_KEY = 'Guidr_UserEmail'
+const USER_IS_ADMIN_KEY = 'Guidr_UserIsAdmin'
 
 export class AuthStorage {
   async getAuthToken(): Promise<string | null> {
@@ -39,10 +40,24 @@ export class AuthStorage {
     await AsyncStorage.removeItem(USER_EMAIL_KEY)
   }
 
+  async getUserIsAdmin(): Promise<boolean> {
+    const value = await AsyncStorage.getItem(USER_IS_ADMIN_KEY)
+    return value === 'true'
+  }
+
+  async setUserIsAdmin(isAdmin: boolean): Promise<void> {
+    await AsyncStorage.setItem(USER_IS_ADMIN_KEY, isAdmin.toString())
+  }
+
+  async clearUserIsAdmin(): Promise<void> {
+    await AsyncStorage.removeItem(USER_IS_ADMIN_KEY)
+  }
+
   async clearAll(): Promise<void> {
     await Promise.all([
       AsyncStorage.removeItem(AUTH_TOKEN_KEY),
       AsyncStorage.removeItem(USER_EMAIL_KEY),
+      AsyncStorage.removeItem(USER_IS_ADMIN_KEY),
     ])
   }
 }

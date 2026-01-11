@@ -88,3 +88,25 @@ async def get_current_user(
         )
 
     return user
+
+
+async def get_current_admin_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Extract and validate authenticated admin user from JWT Bearer token.
+
+    Args:
+        current_user: User from JWT token (via get_current_user dependency)
+
+    Returns:
+        User entity for the authenticated admin user
+
+    Raises:
+        HTTPException(403): If user is not an admin
+    """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+    return current_user

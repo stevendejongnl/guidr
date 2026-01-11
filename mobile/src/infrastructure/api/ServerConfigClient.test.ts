@@ -33,12 +33,13 @@ describe('ServerConfigClient', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ debugMode: true }),
+        json: async () => ({ minAppVersion: '1.0.0', maxAppVersion: null }),
       } as Response)
 
       const result = await configClient.getConfig()
 
-      expect(result.debugMode).toBe(true)
+      expect(result.minAppVersion).toBe('1.0.0')
+      expect(result.maxAppVersion).toBeNull()
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/config',
         {
@@ -48,16 +49,17 @@ describe('ServerConfigClient', () => {
       )
     })
 
-    it('should return debugMode false when server returns false', async () => {
+    it('should return null values when server does not return version constraints', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ debugMode: false }),
+        json: async () => ({}),
       } as Response)
 
       const result = await configClient.getConfig()
 
-      expect(result.debugMode).toBe(false)
+      expect(result.minAppVersion).toBeNull()
+      expect(result.maxAppVersion).toBeNull()
     })
 
     it('should throw error on 404 not found', async () => {
@@ -89,27 +91,6 @@ describe('ServerConfigClient', () => {
         .rejects.toThrow('Network request failed')
     })
 
-    it('should throw error when debugMode is not a boolean', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({ debugMode: 'true' }),
-      } as Response)
-
-      await expect(configClient.getConfig())
-        .rejects.toThrow('Invalid response from server')
-    })
-
-    it('should throw error when debugMode is missing', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({}),
-      } as Response)
-
-      await expect(configClient.getConfig())
-        .rejects.toThrow('Invalid response from server')
-    })
 
     it('should handle non-Error exceptions', async () => {
       mockFetch.mockRejectedValue('unexpected error')

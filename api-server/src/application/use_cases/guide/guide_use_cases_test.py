@@ -14,9 +14,13 @@ from src.application.use_cases.guide import (
     GetGuidesByCategory,
     UpdateGuide,
 )
-from src.domain.entities import Category, Guide
-from src.domain.exceptions import EntityNotFoundException, ValidationException
-from src.domain.value_objects import EntityId, GuideTitle
+from src.domain.entities import Category, Guide, User
+from src.domain.exceptions import (
+    AuthorizationException,
+    EntityNotFoundException,
+    ValidationException,
+)
+from src.domain.value_objects import Email, EntityId, GuideTitle
 
 
 @pytest.fixture
@@ -48,6 +52,28 @@ def sample_guide(sample_category):
         category_id=sample_category.id,
         title=GuideTitle("Test Guide"),
         description="Test Description",
+    )
+
+
+@pytest.fixture
+def admin_user():
+    """Create an admin user."""
+    return User(
+        id=EntityId(str(uuid4())),
+        email=Email("admin@example.com"),
+        password_hash="$argon2id$v=19$m=65536,t=3,p=4$...",
+        is_admin=True,
+    )
+
+
+@pytest.fixture
+def non_admin_user():
+    """Create a non-admin user."""
+    return User(
+        id=EntityId(str(uuid4())),
+        email=Email("user@example.com"),
+        password_hash="$argon2id$v=19$m=65536,t=3,p=4$...",
+        is_admin=False,
     )
 
 
@@ -145,35 +171,54 @@ class TestGetGuidesByCategory:
 class TestUpdateGuide:
     """Tests for UpdateGuide use case."""
 
-    async def test_update_guide_title(self, mock_guide_repository, sample_guide):
-        """Test updating guide title."""
+    async def test_update_guide_title(self, mock_guide_repository, sample_guide, admin_user):
+        """Test updating guide title by admin."""
         mock_guide_repository.find_by_id.return_value = sample_guide
         use_case = UpdateGuide(mock_guide_repository)
         dto = GuideUpdateDTO(title="Updated Title")
 
-        result = await use_case.execute(sample_guide.id.value, dto)
+        result = await use_case.execute(sample_guide.id.value, dto, admin_user)
 
         assert result.title == "Updated Title"
         mock_guide_repository.save.assert_called_once()
 
-    async def test_update_guide_not_found(self, mock_guide_repository):
+    async def test_update_guide_not_found(self, mock_guide_repository, admin_user):
         """Test updating non-existent guide."""
         mock_guide_repository.find_by_id.return_value = None
         use_case = UpdateGuide(mock_guide_repository)
         dto = GuideUpdateDTO(title="Updated Title")
 
         with pytest.raises(EntityNotFoundException, match="Guide not found"):
-            await use_case.execute(str(uuid4()), dto)
+            await use_case.execute(str(uuid4()), dto, admin_user)
+
+    async def test_update_guide_non_admin_rejected(
+        self, mock_guide_repository, sample_guide, non_admin_user
+    ):
+        """Test updating guide is rejected for non-admin users."""
+        mock_guide_repository.find_by_id.return_value = sample_guide
+        use_case = UpdateGuide(mock_guide_repository)
+        dto = GuideUpdateDTO(title="Updated Title")
+
+        with pytest.raises(AuthorizationException, match="Admin privileges required"):
+            await use_case.execute(sample_guide.id.value, dto, non_admin_user)
 
 
 class TestDeleteGuide:
     """Tests for DeleteGuide use case."""
 
-    async def test_delete_guide(self, mock_guide_repository):
-        """Test deleting a guide."""
+    async def test_delete_guide(self, mock_guide_repository, admin_user):
+        """Test deleting a guide by admin."""
         use_case = DeleteGuide(mock_guide_repository)
         guide_id = str(uuid4())
 
-        await use_case.execute(guide_id)
+        await use_case.execute(guide_id, admin_user)
 
         mock_guide_repository.delete.assert_called_once()
+
+    async def test_delete_guide_non_admin_rejected(self, mock_guide_repository, non_admin_user):
+        """Test deleting guide is rejected for non-admin users."""
+        use_case = DeleteGuide(mock_guide_repository)
+        guide_id = str(uuid4())
+
+        with pytest.raises(AuthorizationException, match="Admin privileges required"):
+            await use_case.execute(guide_id, non_admin_user)

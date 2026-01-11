@@ -36,6 +36,7 @@ class UserResponse(BaseModel):
     updated_at: str = Field(..., alias="updatedAt")
     name: str | None = None
     interests: list[str] | None = None
+    is_admin: bool = Field(default=False, alias="isAdmin")
 
     class Config:
         """Pydantic config."""

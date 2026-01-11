@@ -1,5 +1,4 @@
 export interface CachedServerConfig {
-  debugMode: boolean
   minAppVersion?: string | null
   maxAppVersion?: string | null
 }

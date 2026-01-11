@@ -257,3 +257,53 @@ class TestUser:
 
         # Original should not be modified
         assert user.interests == ["baking"]
+
+    def test_create_user_with_admin_status_true(self):
+        """Should create user with is_admin=True."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            is_admin=True
+        )
+
+        assert user.is_admin is True
+
+    def test_create_user_with_admin_status_false(self):
+        """Should create user with is_admin=False."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            is_admin=False
+        )
+
+        assert user.is_admin is False
+
+    def test_create_user_defaults_admin_status_to_false(self):
+        """Should default is_admin to False when not provided."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(id=id, email=email, password_hash=password_hash)
+
+        assert user.is_admin is False
+
+    def test_is_admin_property_is_immutable(self):
+        """Should have immutable is_admin property (read-only)."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(id=id, email=email, password_hash=password_hash, is_admin=False)
+
+        with pytest.raises(AttributeError):
+            user.is_admin = True

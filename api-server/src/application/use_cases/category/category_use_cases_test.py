@@ -14,9 +14,13 @@ from src.application.use_cases.category import (
     GetCategory,
     UpdateCategory,
 )
-from src.domain.entities import Category
-from src.domain.exceptions import EntityNotFoundException, ValidationException
-from src.domain.value_objects import EntityId
+from src.domain.entities import Category, User
+from src.domain.exceptions import (
+    AuthorizationException,
+    EntityNotFoundException,
+    ValidationException,
+)
+from src.domain.value_objects import Email, EntityId
 
 
 @pytest.fixture
@@ -31,6 +35,28 @@ def sample_category():
     return Category(
         id=EntityId(str(uuid4())),
         name="Test Category",
+    )
+
+
+@pytest.fixture
+def admin_user():
+    """Create an admin user."""
+    return User(
+        id=EntityId(str(uuid4())),
+        email=Email("admin@example.com"),
+        password_hash="$argon2id$v=19$m=65536,t=3,p=4$...",
+        is_admin=True,
+    )
+
+
+@pytest.fixture
+def non_admin_user():
+    """Create a non-admin user."""
+    return User(
+        id=EntityId(str(uuid4())),
+        email=Email("user@example.com"),
+        password_hash="$argon2id$v=19$m=65536,t=3,p=4$...",
+        is_admin=False,
     )
 
 
@@ -172,36 +198,57 @@ class TestUpdateCategory:
     """Tests for UpdateCategory use case."""
 
     async def test_update_category_name(
-        self, mock_category_repository, sample_category
+        self, mock_category_repository, sample_category, admin_user
     ):
-        """Test updating category name."""
+        """Test updating category name by admin."""
         mock_category_repository.find_by_id.return_value = sample_category
         use_case = UpdateCategory(mock_category_repository)
         dto = CategoryUpdateDTO(name="Updated Name")
 
-        result = await use_case.execute(sample_category.id.value, dto)
+        result = await use_case.execute(sample_category.id.value, dto, admin_user)
 
         assert result.name == "Updated Name"
         mock_category_repository.save.assert_called_once()
 
-    async def test_update_category_not_found(self, mock_category_repository):
+    async def test_update_category_not_found(self, mock_category_repository, admin_user):
         """Test updating non-existent category."""
         mock_category_repository.find_by_id.return_value = None
         use_case = UpdateCategory(mock_category_repository)
         dto = CategoryUpdateDTO(name="Updated Name")
 
         with pytest.raises(EntityNotFoundException, match="Category not found"):
-            await use_case.execute(str(uuid4()), dto)
+            await use_case.execute(str(uuid4()), dto, admin_user)
+
+    async def test_update_category_non_admin_rejected(
+        self, mock_category_repository, sample_category, non_admin_user
+    ):
+        """Test updating category is rejected for non-admin users."""
+        mock_category_repository.find_by_id.return_value = sample_category
+        use_case = UpdateCategory(mock_category_repository)
+        dto = CategoryUpdateDTO(name="Updated Name")
+
+        with pytest.raises(AuthorizationException, match="Admin privileges required"):
+            await use_case.execute(sample_category.id.value, dto, non_admin_user)
 
 
 class TestDeleteCategory:
     """Tests for DeleteCategory use case."""
 
-    async def test_delete_category(self, mock_category_repository):
-        """Test deleting a category."""
+    async def test_delete_category(self, mock_category_repository, admin_user):
+        """Test deleting a category by admin."""
         use_case = DeleteCategory(mock_category_repository)
         category_id = str(uuid4())
 
-        await use_case.execute(category_id)
+        await use_case.execute(category_id, admin_user)
 
         mock_category_repository.delete.assert_called_once()
+
+    async def test_delete_category_non_admin_rejected(
+        self, mock_category_repository, non_admin_user
+    ):
+        """Test deleting category is rejected for non-admin users."""
+        use_case = DeleteCategory(mock_category_repository)
+        category_id = str(uuid4())
+
+        with pytest.raises(AuthorizationException, match="Admin privileges required"):
+            await use_case.execute(category_id, non_admin_user)
