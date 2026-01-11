@@ -22,4 +22,7 @@ class UserMapper:
             email=user.email.value,
             created_at=user.created_at.isoformat(),
             updated_at=user.updated_at.isoformat(),
+            name=user.name,
+            interests=user.interests if user.interests else None,
+            is_admin=user.is_admin,
         )

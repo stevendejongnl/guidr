@@ -27,6 +27,8 @@ class UserResponseDTO:
     email: str
     created_at: str  # ISO format
     updated_at: str  # ISO format
+    name: str | None = None
+    interests: list[str] | None = None
     is_admin: bool = False
 
 
