@@ -103,3 +103,17 @@ jobs:
           echo ""
           echo "Run command:"
           echo "  docker run -p 8000:8000 ghcr.io/${{ github.repository_owner }}/guidr-api-server:latest"
+
+      - name: Deploy to Kubernetes
+        if: steps.version.outputs.VERSION != ''
+        run: |
+          curl -X PATCH \
+            '${{ secrets.KUBECTL_API_URL }}/api/v1/deployments/guidr/guidr-api-server/image' \
+            -H 'accept: application/json' \
+            -H 'Authorization: Bearer ${{ secrets.KUBECTL_API_TOKEN }}' \
+            -H 'Content-Type: application/json' \
+            -d '{
+            "container": "api-server",
+            "image": "ghcr.io/${{ github.repository_owner }}/guidr-api-server:${{ steps.version.outputs.VERSION }}"
+          }'
+          echo "✅ Deployment updated successfully!"
