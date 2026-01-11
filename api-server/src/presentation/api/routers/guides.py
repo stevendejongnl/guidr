@@ -13,8 +13,10 @@ from src.application.use_cases.guide import (
     UpdateGuide,
 )
 from src.container import Container
+from src.domain.entities import User
 from src.domain.exceptions import EntityNotFoundException, ValidationException
 
+from ..dependencies.auth import get_current_user
 from ..models import ErrorResponse, GuideCreate, GuideResponse, GuideUpdate
 
 router = APIRouter(prefix="/guides", tags=["guides"])
@@ -156,11 +158,12 @@ async def update_guide(
     guide_id: str,
     guide: GuideUpdate,
     use_case: UpdateGuide = Depends(get_update_guide_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> GuideResponse:
     """Update a guide (partial update)."""
     try:
         dto = GuideUpdateDTO(title=guide.title, description=guide.description)
-        result = await use_case.execute(guide_id, dto)
+        result = await use_case.execute(guide_id, dto, current_user)
         if result is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -185,6 +188,7 @@ async def update_guide(
 async def delete_guide(
     guide_id: str,
     use_case: DeleteGuide = Depends(get_delete_guide_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     """Delete a guide."""
-    await use_case.execute(guide_id)
+    await use_case.execute(guide_id, current_user)

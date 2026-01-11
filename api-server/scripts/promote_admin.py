@@ -17,7 +17,7 @@ async def promote_user_to_admin(email: str) -> None:
         email: Email address of user to promote
     """
     settings = Settings()
-    client = AsyncIOMotorClient(settings.mongodb_url)
+    client: AsyncIOMotorClient = AsyncIOMotorClient(settings.mongodb_url)
     try:
         db = client[settings.mongodb_database]
         users_collection = db["users"]

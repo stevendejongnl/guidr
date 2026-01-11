@@ -13,8 +13,10 @@ from src.application.use_cases.category import (
     UpdateCategory,
 )
 from src.container import Container
+from src.domain.entities import User
 from src.domain.exceptions import EntityNotFoundException, ValidationException
 
+from ..dependencies.auth import get_current_user
 from ..models import CategoryCreate, CategoryResponse, CategoryUpdate, ErrorResponse
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -152,11 +154,12 @@ async def update_category(
     category_id: str,
     category: CategoryUpdate,
     use_case: UpdateCategory = Depends(get_update_category_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> CategoryResponse:
     """Update a category (partial update)."""
     try:
         dto = CategoryUpdateDTO(name=category.name)
-        result = await use_case.execute(category_id, dto)
+        result = await use_case.execute(category_id, dto, current_user)
         if result is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -179,6 +182,7 @@ async def update_category(
 async def delete_category(
     category_id: str,
     use_case: DeleteCategory = Depends(get_delete_category_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     """Delete a category."""
-    await use_case.execute(category_id)
+    await use_case.execute(category_id, current_user)

@@ -27,6 +27,7 @@ class UserResponseDTO:
     email: str
     created_at: str  # ISO format
     updated_at: str  # ISO format
+    is_admin: bool = False
 
 
 @dataclass
