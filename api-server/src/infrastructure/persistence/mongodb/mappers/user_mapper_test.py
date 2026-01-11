@@ -287,7 +287,10 @@ class TestUserMapper:
         assert user.is_admin is False
 
     def test_to_entity_without_admin_field_defaults_to_false(self):
-        """Test converting document to User without isAdmin field defaults to False (backwards compatibility)."""
+        """Test converting document to User without isAdmin field defaults to False.
+
+        Maintains backwards compatibility with documents missing the field.
+        """
         # Arrange
         created_at = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
         updated_at = datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC)

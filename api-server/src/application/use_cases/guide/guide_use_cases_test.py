@@ -191,7 +191,9 @@ class TestUpdateGuide:
         with pytest.raises(EntityNotFoundException, match="Guide not found"):
             await use_case.execute(str(uuid4()), dto, admin_user)
 
-    async def test_update_guide_non_admin_rejected(self, mock_guide_repository, sample_guide, non_admin_user):
+    async def test_update_guide_non_admin_rejected(
+        self, mock_guide_repository, sample_guide, non_admin_user
+    ):
         """Test updating guide is rejected for non-admin users."""
         mock_guide_repository.find_by_id.return_value = sample_guide
         use_case = UpdateGuide(mock_guide_repository)

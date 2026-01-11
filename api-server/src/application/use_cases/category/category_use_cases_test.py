@@ -219,7 +219,9 @@ class TestUpdateCategory:
         with pytest.raises(EntityNotFoundException, match="Category not found"):
             await use_case.execute(str(uuid4()), dto, admin_user)
 
-    async def test_update_category_non_admin_rejected(self, mock_category_repository, sample_category, non_admin_user):
+    async def test_update_category_non_admin_rejected(
+        self, mock_category_repository, sample_category, non_admin_user
+    ):
         """Test updating category is rejected for non-admin users."""
         mock_category_repository.find_by_id.return_value = sample_category
         use_case = UpdateCategory(mock_category_repository)
@@ -241,7 +243,9 @@ class TestDeleteCategory:
 
         mock_category_repository.delete.assert_called_once()
 
-    async def test_delete_category_non_admin_rejected(self, mock_category_repository, non_admin_user):
+    async def test_delete_category_non_admin_rejected(
+        self, mock_category_repository, non_admin_user
+    ):
         """Test deleting category is rejected for non-admin users."""
         use_case = DeleteCategory(mock_category_repository)
         category_id = str(uuid4())
