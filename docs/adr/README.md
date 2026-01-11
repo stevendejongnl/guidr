@@ -34,6 +34,7 @@ What becomes easier or harder as a result of this change?
 - [ADR-004: Interest Categories for User Personalization](./004-interest-categories-personalization.md) - Proposed
 - [ADR-005: Profile Screen Navigation Structure](./005-profile-screen-navigation.md) - Proposed
 - [ADR-006: Admin User Authorization and Role-Based Access Control](./006-admin-user-authorization.md) - Accepted
+- [ADR-007: User-Based Admin Mode for Mobile App](./007-user-based-admin-mode-mobile.md) - Accepted
 
 ## Updating ADRs
 
