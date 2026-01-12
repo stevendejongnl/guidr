@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from ..exceptions import ValidationException
 from ..value_objects import Email, EntityId, Role, RoleType
 
+
 class User:
     """User entity for authentication and authorization."""
 

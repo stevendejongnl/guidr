@@ -177,7 +177,9 @@ class TestGetGuidesByCategory:
 class TestUpdateGuide:
     """Tests for UpdateGuide use case."""
 
-    async def test_update_guide_title(self, mock_guide_repository, mock_event_persistence_service, sample_guide, admin_user):
+    async def test_update_guide_title(
+        self, mock_guide_repository, mock_event_persistence_service, sample_guide, admin_user
+    ):
         """Test updating guide title by admin."""
         mock_guide_repository.find_by_id.return_value = sample_guide
         use_case = UpdateGuide(mock_guide_repository, mock_event_persistence_service)
@@ -188,7 +190,9 @@ class TestUpdateGuide:
         assert result.title == "Updated Title"
         mock_guide_repository.save.assert_called_once()
 
-    async def test_update_guide_not_found(self, mock_guide_repository, mock_event_persistence_service, admin_user):
+    async def test_update_guide_not_found(
+        self, mock_guide_repository, mock_event_persistence_service, admin_user
+    ):
         """Test updating non-existent guide."""
         mock_guide_repository.find_by_id.return_value = None
         use_case = UpdateGuide(mock_guide_repository, mock_event_persistence_service)
@@ -212,7 +216,9 @@ class TestUpdateGuide:
 class TestDeleteGuide:
     """Tests for DeleteGuide use case."""
 
-    async def test_delete_guide(self, mock_guide_repository, mock_event_persistence_service, admin_user):
+    async def test_delete_guide(
+        self, mock_guide_repository, mock_event_persistence_service, admin_user
+    ):
         """Test deleting a guide by admin."""
         mock_guide_repository.find_by_id.return_value = Guide(
             id=EntityId(str(uuid4())),
@@ -226,7 +232,9 @@ class TestDeleteGuide:
 
         mock_guide_repository.delete.assert_called_once()
 
-    async def test_delete_guide_non_admin_rejected(self, mock_guide_repository, mock_event_persistence_service, non_admin_user):
+    async def test_delete_guide_non_admin_rejected(
+        self, mock_guide_repository, mock_event_persistence_service, non_admin_user
+    ):
         """Test deleting guide is rejected for non-admin users."""
         use_case = DeleteGuide(mock_guide_repository, mock_event_persistence_service)
         guide_id = str(uuid4())

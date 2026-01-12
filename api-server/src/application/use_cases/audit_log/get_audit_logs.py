@@ -7,6 +7,7 @@ from src.application.dtos import AuditLogQueryDTO, AuditLogResponseDTO
 from src.domain.entities import User
 from src.domain.repositories import IAuditLogRepository
 
+
 class GetAuditLogs:
     """Use case for retrieving audit logs (admin only)."""
 

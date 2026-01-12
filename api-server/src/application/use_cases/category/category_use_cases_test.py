@@ -216,7 +216,9 @@ class TestUpdateCategory:
         assert result.name == "Updated Name"
         mock_category_repository.save.assert_called_once()
 
-    async def test_update_category_not_found(self, mock_category_repository, mock_event_persistence_service, admin_user):
+    async def test_update_category_not_found(
+        self, mock_category_repository, mock_event_persistence_service, admin_user
+    ):
         """Test updating non-existent category."""
         mock_category_repository.find_by_id.return_value = None
         use_case = UpdateCategory(mock_category_repository, mock_event_persistence_service)
@@ -226,7 +228,11 @@ class TestUpdateCategory:
             await use_case.execute(str(uuid4()), dto, admin_user)
 
     async def test_update_category_non_admin_rejected(
-        self, mock_category_repository, mock_event_persistence_service, sample_category, non_admin_user
+        self,
+        mock_category_repository,
+        mock_event_persistence_service,
+        sample_category,
+        non_admin_user,
     ):
         """Test updating category is rejected for non-admin users."""
         mock_category_repository.find_by_id.return_value = sample_category
@@ -240,7 +246,9 @@ class TestUpdateCategory:
 class TestDeleteCategory:
     """Tests for DeleteCategory use case."""
 
-    async def test_delete_category(self, mock_category_repository, mock_event_persistence_service, sample_category, admin_user):
+    async def test_delete_category(
+        self, mock_category_repository, mock_event_persistence_service, sample_category, admin_user
+    ):
         """Test deleting a category by admin."""
         mock_category_repository.find_by_id.return_value = sample_category
         use_case = DeleteCategory(mock_category_repository, mock_event_persistence_service)

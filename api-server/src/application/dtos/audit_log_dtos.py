@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Any
 
+
 @dataclass
 class AuditLogResponseDTO:
     """DTO for audit log response."""

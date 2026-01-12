@@ -72,7 +72,11 @@ class TestRegisterUser:
         mock_user_repository.save.assert_called_once()
 
     async def test_register_user_email_exists(
-        self, mock_user_repository, mock_password_hasher, mock_event_persistence_service, sample_user
+        self,
+        mock_user_repository,
+        mock_password_hasher,
+        mock_event_persistence_service,
+        sample_user,
     ):
         """Test registering with existing email."""
         mock_user_repository.find_by_email.return_value = sample_user
@@ -114,7 +118,11 @@ class TestLoginUser:
     """Tests for LoginUser use case."""
 
     async def test_login_user_success(
-        self, mock_user_repository, mock_password_verifier, mock_event_persistence_service, sample_user
+        self,
+        mock_user_repository,
+        mock_password_verifier,
+        mock_event_persistence_service,
+        sample_user,
     ):
         """Test successful user login."""
         mock_user_repository.find_by_email.return_value = sample_user
@@ -145,7 +153,11 @@ class TestLoginUser:
             await use_case.execute(dto)
 
     async def test_login_user_invalid_password(
-        self, mock_user_repository, mock_password_verifier, mock_event_persistence_service, sample_user
+        self,
+        mock_user_repository,
+        mock_password_verifier,
+        mock_event_persistence_service,
+        sample_user,
     ):
         """Test login with invalid password."""
         mock_user_repository.find_by_email.return_value = sample_user

@@ -10,6 +10,7 @@ from src.domain.value_objects import EntityId
 
 from ..mappers import AuditLogMapper
 
+
 class MongoAuditLogRepository(IAuditLogRepository):
     """MongoDB implementation of IAuditLogRepository."""
 

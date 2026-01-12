@@ -2,6 +2,7 @@
 
 from enum import Enum
 
+
 class RoleType(str, Enum):
     """User role types."""
 

@@ -6,6 +6,7 @@ from typing import Any
 
 from ..value_objects import EntityId
 
+
 @dataclass(frozen=True)
 class AuditLog:
     """Audit log entry (immutable record of system events).

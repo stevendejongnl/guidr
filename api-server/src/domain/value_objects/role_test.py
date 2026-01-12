@@ -4,6 +4,7 @@ import pytest
 
 from .role import Role, RoleType
 
+
 def test_role_creation_from_enum():
     """Test creating role from RoleType enum."""
     role = Role(RoleType.ADMIN)
