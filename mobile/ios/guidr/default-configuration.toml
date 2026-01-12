@@ -5,4 +5,4 @@
 # Default server URL - automatically configured on first app launch
 url = "https://guidr.madebysteven.nl"
 # Minimum app version required to use this server
-minAppVersion = "1.11.1"
+minAppVersion = "1.25.0"

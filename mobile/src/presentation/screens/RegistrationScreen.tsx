@@ -125,6 +125,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
+            textContentType="username"
             editable={!loading}
           />
 
@@ -135,6 +136,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
             value={password}
             onChangeText={handlePasswordChange}
             secureTextEntry
+            textContentType="newPassword"
             editable={!loading}
           />
 
@@ -145,6 +147,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
             value={confirmPassword}
             onChangeText={handleConfirmPasswordChange}
             secureTextEntry
+            textContentType="newPassword"
             editable={!loading}
           />
 
