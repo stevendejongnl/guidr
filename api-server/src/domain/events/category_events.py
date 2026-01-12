@@ -28,3 +28,4 @@ class CategoryDeleted(BaseDomainEvent):
     """Event raised when a category is deleted."""
 
     category_id: str
+    name: str

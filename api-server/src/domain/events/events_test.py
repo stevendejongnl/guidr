@@ -121,9 +121,10 @@ class TestCategoryEvents:
 
     def test_category_deleted_event(self):
         """Should create CategoryDeleted event."""
-        event = CategoryDeleted(category_id="cat123")
+        event = CategoryDeleted(category_id="cat123", name="Cooking")
 
         assert event.category_id == "cat123"
+        assert event.name == "Cooking"
         assert event.event_type == "CategoryDeleted"
 
 
@@ -169,9 +170,10 @@ class TestGuideEvents:
 
     def test_guide_deleted_event(self):
         """Should create GuideDeleted event."""
-        event = GuideDeleted(guide_id="guide123")
+        event = GuideDeleted(guide_id="guide123", title="Perfect Pasta")
 
         assert event.guide_id == "guide123"
+        assert event.title == "Perfect Pasta"
         assert event.event_type == "GuideDeleted"
 
     def test_step_added_to_guide_event(self):

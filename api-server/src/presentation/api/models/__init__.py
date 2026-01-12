@@ -1,5 +1,6 @@
 """API models for presentation layer."""
 
+from .audit_log_models import AuditLogResponse
 from .category_models import CategoryCreate, CategoryResponse, CategoryUpdate
 from .config_models import ConfigResponse
 from .error_models import ErrorDetail, ErrorResponse
@@ -21,6 +22,8 @@ __all__ = [
     # Error models
     "ErrorDetail",
     "ErrorResponse",
+    # Audit Log
+    "AuditLogResponse",
     # Category
     "CategoryCreate",
     "CategoryUpdate",

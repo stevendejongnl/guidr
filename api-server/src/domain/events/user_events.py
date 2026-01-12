@@ -50,3 +50,23 @@ class UserDeleted(BaseDomainEvent):
 
     user_id: str
     email: str
+
+
+@dataclass(frozen=True)
+class UserRoleChanged(BaseDomainEvent):
+    """Event raised when a user's role changes."""
+
+    user_id: str
+    old_role: str
+    new_role: str
+    changed_by_user_id: str
+
+
+@dataclass(frozen=True)
+class UserPromotedToAdmin(BaseDomainEvent):
+    """Event raised when a user is promoted to admin (convenience event)."""
+
+    user_id: str
+    email: str
+    promoted_by_user_id: str | None  # None = auto-promotion (first user)
+    reason: str | None = None  # Optional reason for audit

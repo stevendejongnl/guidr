@@ -3,6 +3,7 @@
 from dependency_injector import containers, providers
 
 # Import all use cases
+from .application.use_cases.audit_log import GetAuditLogs
 from .application.use_cases.category import (
     CreateCategory,
     DeleteCategory,
@@ -49,10 +50,12 @@ from .application.use_cases.user import (
     RegisterUser,
     UpdateProfile,
 )
+from .domain.services import EventPersistenceService
 from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
 from .infrastructure.persistence.mongodb.database import Database
 from .infrastructure.persistence.mongodb.repositories import (
+    MongoAuditLogRepository,
     MongoCategoryRepository,
     MongoGuideRepository,
     MongoSessionRepository,
@@ -107,6 +110,17 @@ class Container(containers.DeclarativeContainer):
         database=database.provided.db,
     )
 
+    audit_log_repository = providers.Singleton(
+        MongoAuditLogRepository,
+        database=database.provided.db,
+    )
+
+    # Domain Services
+    event_persistence_service = providers.Singleton(
+        EventPersistenceService,
+        audit_log_repository=audit_log_repository,
+    )
+
     # Category Use Cases (Factories)
     create_category_use_case = providers.Factory(
         CreateCategory,
@@ -131,11 +145,13 @@ class Container(containers.DeclarativeContainer):
     update_category_use_case = providers.Factory(
         UpdateCategory,
         category_repository=category_repository,
+        event_persistence_service=event_persistence_service,
     )
 
     delete_category_use_case = providers.Factory(
         DeleteCategory,
         category_repository=category_repository,
+        event_persistence_service=event_persistence_service,
     )
 
     # Guide Use Cases (Factories)
@@ -164,11 +180,13 @@ class Container(containers.DeclarativeContainer):
         UpdateGuide,
         guide_repository=guide_repository,
         category_repository=category_repository,
+        event_persistence_service=event_persistence_service,
     )
 
     delete_guide_use_case = providers.Factory(
         DeleteGuide,
         guide_repository=guide_repository,
+        event_persistence_service=event_persistence_service,
     )
 
     # Step Use Cases (Factories)
@@ -271,12 +289,14 @@ class Container(containers.DeclarativeContainer):
         RegisterUser,
         user_repository=user_repository,
         password_hasher=password_hasher,
+        event_persistence_service=event_persistence_service,
     )
 
     login_user_use_case = providers.Factory(
         LoginUser,
         user_repository=user_repository,
         password_verifier=password_hasher,
+        event_persistence_service=event_persistence_service,
     )
 
     change_password_use_case = providers.Factory(
@@ -300,4 +320,10 @@ class Container(containers.DeclarativeContainer):
         DeleteAccount,
         user_repository=user_repository,
         password_hasher=password_hasher,
+    )
+
+    # Audit Log Use Cases (Factories)
+    get_audit_logs_use_case = providers.Factory(
+        GetAuditLogs,
+        audit_log_repository=audit_log_repository,
     )

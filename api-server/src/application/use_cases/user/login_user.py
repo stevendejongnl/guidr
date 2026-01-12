@@ -4,8 +4,10 @@ from typing import Protocol
 
 from src.application.dtos import UserLoginDTO, UserResponseDTO
 from src.application.mappers import UserMapper
+from src.domain.events import UserLoggedIn
 from src.domain.exceptions import ValidationException
 from src.domain.repositories import IUserRepository
+from src.domain.services import EventPersistenceService
 from src.domain.value_objects import Email, Password
 
 
@@ -24,15 +26,18 @@ class LoginUser:
         self,
         user_repository: IUserRepository,
         password_verifier: IPasswordVerifier,
+        event_persistence_service: EventPersistenceService,
     ):
         """Initialize use case.
 
         Args:
             user_repository: Repository for user persistence
             password_verifier: Service for password verification
+            event_persistence_service: Service for persisting domain events
         """
         self._repository = user_repository
         self._password_verifier = password_verifier
+        self._event_persistence = event_persistence_service
         self._mapper = UserMapper()
 
     async def execute(self, dto: UserLoginDTO) -> UserResponseDTO | None:
@@ -60,6 +65,16 @@ class LoginUser:
         )
         if not is_valid:
             raise ValidationException("Invalid email or password")
+
+        # Persist UserLoggedIn event
+        login_event = UserLoggedIn(
+            user_id=user.id.value,
+            email=user.email.value,
+        )
+        await self._event_persistence.persist_event(
+            login_event,
+            user_id=user.id.value,
+        )
 
         # Return user
         return self._mapper.to_response_dto(user)

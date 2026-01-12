@@ -1,5 +1,6 @@
 """Application DTOs for external communication."""
 
+from .audit_log_dtos import AuditLogQueryDTO, AuditLogResponseDTO
 from .category_dtos import CategoryCreateDTO, CategoryResponseDTO, CategoryUpdateDTO
 from .guide_dtos import GuideCreateDTO, GuideResponseDTO, GuideUpdateDTO
 from .session_dtos import (
@@ -19,6 +20,9 @@ from .user_dtos import (
 )
 
 __all__ = [
+    # Audit Log
+    "AuditLogQueryDTO",
+    "AuditLogResponseDTO",
     # Category
     "CategoryCreateDTO",
     "CategoryUpdateDTO",

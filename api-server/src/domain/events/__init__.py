@@ -19,7 +19,13 @@ from .session_events import (
     SessionStepChanged,
 )
 from .step_events import StepCreated, StepDeleted, StepUpdated
-from .user_events import UserLoggedIn, UserPasswordChanged, UserRegistered
+from .user_events import (
+    UserLoggedIn,
+    UserPasswordChanged,
+    UserPromotedToAdmin,
+    UserRegistered,
+    UserRoleChanged,
+)
 
 __all__ = [
     "BaseDomainEvent",
@@ -27,6 +33,8 @@ __all__ = [
     "UserRegistered",
     "UserLoggedIn",
     "UserPasswordChanged",
+    "UserRoleChanged",
+    "UserPromotedToAdmin",
     # Category events
     "CategoryCreated",
     "CategoryUpdated",

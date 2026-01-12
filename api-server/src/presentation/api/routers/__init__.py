@@ -1,5 +1,6 @@
 """API routers."""
 
+from .audit_logs import router as audit_logs_router
 from .categories import router as categories_router
 from .config import router as config_router
 from .guides import router as guides_router
@@ -9,6 +10,7 @@ from .system import router as system_router
 from .users import router as users_router
 
 __all__ = [
+    "audit_logs_router",
     "categories_router",
     "guides_router",
     "steps_router",

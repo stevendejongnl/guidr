@@ -33,8 +33,9 @@ What becomes easier or harder as a result of this change?
 - [ADR-003: Password Reset with Email Delivery](./003-password-reset-with-email.md) - Proposed
 - [ADR-004: Interest Categories for User Personalization](./004-interest-categories-personalization.md) - Proposed
 - [ADR-005: Profile Screen Navigation Structure](./005-profile-screen-navigation.md) - Proposed
-- [ADR-006: Admin User Authorization and Role-Based Access Control](./006-admin-user-authorization.md) - Accepted
+- [ADR-006: Admin User Authorization and Role-Based Access Control](./006-admin-user-authorization.md) - Superseded by ADR-008
 - [ADR-007: User-Based Admin Mode for Mobile App](./007-user-based-admin-mode-mobile.md) - Accepted
+- [ADR-008: RBAC and Comprehensive Audit Logging System](./008-rbac-and-audit-logging.md) - Accepted
 
 ## Updating ADRs
 

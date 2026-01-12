@@ -1,4 +1,4 @@
-import { User } from '@domain/entities/User'
+import { User, Role } from '@domain/entities/User'
 import type { UserDto, UserCreateRequest, UserUpdateRequest } from '../api/dtos/UserDto'
 
 /**
@@ -19,11 +19,23 @@ export class UserMapper {
    * IMPORTANT: API does not return passwordHash for security.
    * Uses placeholder passwordHash - reconstructed entity cannot authenticate.
    * Use this only for display/read purposes, not for authentication logic.
+   *
+   * Backward compatibility: If role is not present, derives from isAdmin field.
    */
   static toDomain(dto: UserDto): User {
     // Use a marker to indicate password hash is not available
     const placeholderPasswordHash = '[NOT_AVAILABLE_FROM_API]'
-    return new User(dto.id, dto.email, placeholderPasswordHash)
+
+    // Determine role: prefer role field, fall back to isAdmin
+    let role = Role.USER
+    if (dto.role === 'admin' || dto.role === Role.ADMIN) {
+      role = Role.ADMIN
+    } else if (dto.isAdmin === true) {
+      // Backward compatibility: derive from isAdmin if role not present
+      role = Role.ADMIN
+    }
+
+    return new User(dto.id, dto.email, placeholderPasswordHash, role)
   }
 
   /**
@@ -37,6 +49,8 @@ export class UserMapper {
       email: user.email,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
+      role: user.role,
+      isAdmin: user.isAdmin,
     }
   }
 

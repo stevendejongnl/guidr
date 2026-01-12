@@ -29,6 +29,7 @@ class GuideDeleted(BaseDomainEvent):
     """Event raised when a guide is deleted."""
 
     guide_id: str
+    title: str
 
 
 @dataclass(frozen=True)

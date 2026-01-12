@@ -8,6 +8,9 @@ from .container import Container
 from .presentation.api.app import create_app
 from .presentation.api.dependencies import auth as auth_dependencies
 from .presentation.api.routers import (
+    audit_logs as audit_logs_router,
+)
+from .presentation.api.routers import (
     categories as categories_router,
 )
 from .presentation.api.routers import (
@@ -54,6 +57,7 @@ def create_application() -> FastAPI:
     app.router.lifespan_context = lifespan
 
     # Inject container into routers and dependencies
+    audit_logs_router.set_container(container)
     categories_router.set_container(container)
     guides_router.set_container(container)
     steps_router.set_container(container)

@@ -5,21 +5,29 @@ from src.application.authorization import require_admin
 from src.application.dtos import GuideResponseDTO, GuideUpdateDTO
 from src.application.mappers import GuideMapper
 from src.domain.entities import User
+from src.domain.events import GuideUpdated
 from src.domain.exceptions import EntityNotFoundException
 from src.domain.repositories import IGuideRepository
+from src.domain.services import EventPersistenceService
 from src.domain.value_objects import EntityId, GuideTitle
 
 
 class UpdateGuide:
     """Use case for updating a guide."""
 
-    def __init__(self, guide_repository: IGuideRepository):
+    def __init__(
+        self,
+        guide_repository: IGuideRepository,
+        event_persistence_service: EventPersistenceService,
+    ):
         """Initialize use case.
 
         Args:
             guide_repository: Repository for guide persistence
+            event_persistence_service: Service for persisting domain events
         """
         self._repository = guide_repository
+        self._event_persistence = event_persistence_service
         self._mapper = GuideMapper()
 
     async def execute(
@@ -52,6 +60,18 @@ class UpdateGuide:
         if dto.description is not None:
             guide.update_description(dto.description)
 
-        # Save and return
+        # Save guide
         await self._repository.save(guide)
+
+        # Persist event
+        update_event = GuideUpdated(
+            guide_id=guide_id,
+            title=guide.title.value,
+            description=guide.description,
+        )
+        await self._event_persistence.persist_event(
+            update_event,
+            user_id=current_user.id.value,
+        )
+
         return self._mapper.to_response_dto(guide)

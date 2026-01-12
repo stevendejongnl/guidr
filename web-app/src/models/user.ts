@@ -1,4 +1,12 @@
 /**
+ * User role enumeration
+ */
+export enum Role {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
+/**
  * User DTO matching API response format
  */
 export interface UserDto {
@@ -8,7 +16,8 @@ export interface UserDto {
   updatedAt: string // ISO 8601
   name?: string | null
   interests?: string[] | null
-  isAdmin?: boolean
+  role?: Role | string // 'user' | 'admin'
+  isAdmin?: boolean // Deprecated: use role instead
 }
 
 /**

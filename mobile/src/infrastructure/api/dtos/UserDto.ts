@@ -10,7 +10,8 @@ export interface UserDto {
   updatedAt: string // ISO 8601
   name?: string | null
   interests?: string[] | null
-  isAdmin?: boolean
+  role?: string // 'user' | 'admin'
+  isAdmin?: boolean // Deprecated: use role instead
 }
 
 /**

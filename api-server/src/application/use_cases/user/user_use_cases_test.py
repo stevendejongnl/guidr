@@ -35,6 +35,12 @@ def mock_password_verifier():
 
 
 @pytest.fixture
+def mock_event_persistence_service():
+    """Create mock event persistence service."""
+    return AsyncMock()
+
+
+@pytest.fixture
 def sample_user():
     """Create a sample user."""
     return User(
@@ -48,11 +54,14 @@ class TestRegisterUser:
     """Tests for RegisterUser use case."""
 
     async def test_register_user_success(
-        self, mock_user_repository, mock_password_hasher
+        self, mock_user_repository, mock_password_hasher, mock_event_persistence_service
     ):
         """Test successful user registration."""
         mock_user_repository.find_by_email.return_value = None
-        use_case = RegisterUser(mock_user_repository, mock_password_hasher)
+        mock_user_repository.find_all.return_value = []
+        use_case = RegisterUser(
+            mock_user_repository, mock_password_hasher, mock_event_persistence_service
+        )
         dto = UserCreateDTO(email="newuser@example.com", password="password123")
 
         result = await use_case.execute(dto)
@@ -63,32 +72,38 @@ class TestRegisterUser:
         mock_user_repository.save.assert_called_once()
 
     async def test_register_user_email_exists(
-        self, mock_user_repository, mock_password_hasher, sample_user
+        self, mock_user_repository, mock_password_hasher, mock_event_persistence_service, sample_user
     ):
         """Test registering with existing email."""
         mock_user_repository.find_by_email.return_value = sample_user
-        use_case = RegisterUser(mock_user_repository, mock_password_hasher)
+        use_case = RegisterUser(
+            mock_user_repository, mock_password_hasher, mock_event_persistence_service
+        )
         dto = UserCreateDTO(email="test@example.com", password="password123")
 
         with pytest.raises(ValidationException, match="Email already exists"):
             await use_case.execute(dto)
 
     async def test_register_user_invalid_email(
-        self, mock_user_repository, mock_password_hasher
+        self, mock_user_repository, mock_password_hasher, mock_event_persistence_service
     ):
         """Test registering with invalid email."""
-        use_case = RegisterUser(mock_user_repository, mock_password_hasher)
+        use_case = RegisterUser(
+            mock_user_repository, mock_password_hasher, mock_event_persistence_service
+        )
         dto = UserCreateDTO(email="invalid-email", password="password123")
 
         with pytest.raises(ValidationException, match="Invalid email"):
             await use_case.execute(dto)
 
     async def test_register_user_short_password(
-        self, mock_user_repository, mock_password_hasher
+        self, mock_user_repository, mock_password_hasher, mock_event_persistence_service
     ):
         """Test registering with short password."""
         mock_user_repository.find_by_email.return_value = None
-        use_case = RegisterUser(mock_user_repository, mock_password_hasher)
+        use_case = RegisterUser(
+            mock_user_repository, mock_password_hasher, mock_event_persistence_service
+        )
         dto = UserCreateDTO(email="test@example.com", password="short")
 
         with pytest.raises(ValidationException, match="at least 6 characters"):
@@ -99,11 +114,13 @@ class TestLoginUser:
     """Tests for LoginUser use case."""
 
     async def test_login_user_success(
-        self, mock_user_repository, mock_password_verifier, sample_user
+        self, mock_user_repository, mock_password_verifier, mock_event_persistence_service, sample_user
     ):
         """Test successful user login."""
         mock_user_repository.find_by_email.return_value = sample_user
-        use_case = LoginUser(mock_user_repository, mock_password_verifier)
+        use_case = LoginUser(
+            mock_user_repository, mock_password_verifier, mock_event_persistence_service
+        )
         dto = UserLoginDTO(email="test@example.com", password="password123")
 
         result = await use_case.execute(dto)
@@ -115,23 +132,27 @@ class TestLoginUser:
         )
 
     async def test_login_user_invalid_email(
-        self, mock_user_repository, mock_password_verifier
+        self, mock_user_repository, mock_password_verifier, mock_event_persistence_service
     ):
         """Test login with non-existent email."""
         mock_user_repository.find_by_email.return_value = None
-        use_case = LoginUser(mock_user_repository, mock_password_verifier)
+        use_case = LoginUser(
+            mock_user_repository, mock_password_verifier, mock_event_persistence_service
+        )
         dto = UserLoginDTO(email="nonexistent@example.com", password="password123")
 
         with pytest.raises(ValidationException, match="Invalid email or password"):
             await use_case.execute(dto)
 
     async def test_login_user_invalid_password(
-        self, mock_user_repository, mock_password_verifier, sample_user
+        self, mock_user_repository, mock_password_verifier, mock_event_persistence_service, sample_user
     ):
         """Test login with invalid password."""
         mock_user_repository.find_by_email.return_value = sample_user
         mock_password_verifier.verify_password.return_value = False
-        use_case = LoginUser(mock_user_repository, mock_password_verifier)
+        use_case = LoginUser(
+            mock_user_repository, mock_password_verifier, mock_event_persistence_service
+        )
         dto = UserLoginDTO(email="test@example.com", password="wrongpassword")
 
         with pytest.raises(ValidationException, match="Invalid email or password"):

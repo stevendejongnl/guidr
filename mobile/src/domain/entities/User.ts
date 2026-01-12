@@ -1,12 +1,17 @@
+export enum Role {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 export class User {
   readonly id: string
   private _email: string
   private _passwordHash: string
   readonly createdAt: Date
   private _updatedAt: Date
-  private _isAdmin: boolean
+  private _role: Role
 
-  constructor(id: string, email: string, passwordHash: string, isAdmin: boolean = false) {
+  constructor(id: string, email: string, passwordHash: string, role: Role = Role.USER) {
     if (!id || id.trim() === '') {
       throw new Error('User id cannot be empty')
     }
@@ -24,7 +29,7 @@ export class User {
     this.id = id
     this._email = email.toLowerCase()
     this._passwordHash = passwordHash
-    this._isAdmin = isAdmin
+    this._role = role
     this.createdAt = new Date()
     this._updatedAt = new Date()
   }
@@ -41,8 +46,12 @@ export class User {
     return this._updatedAt
   }
 
+  get role(): Role {
+    return this._role
+  }
+
   get isAdmin(): boolean {
-    return this._isAdmin
+    return this._role === Role.ADMIN
   }
 
   updateEmail(newEmail: string): void {

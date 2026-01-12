@@ -3,6 +3,7 @@
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from ...config.settings import Settings
+from .indexes import create_indexes
 
 
 class Database:
@@ -22,6 +23,9 @@ class Database:
         """Connect to MongoDB."""
         self._client = AsyncIOMotorClient(self._settings.mongodb_url)
         self._database = self._client[self._settings.mongodb_database]
+
+        # Create indexes
+        await create_indexes(self._database)
 
     async def disconnect(self) -> None:
         """Disconnect from MongoDB."""

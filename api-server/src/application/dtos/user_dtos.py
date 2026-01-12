@@ -29,7 +29,8 @@ class UserResponseDTO:
     updated_at: str  # ISO format
     name: str | None = None
     interests: list[str] | None = None
-    is_admin: bool = False
+    role: str | None = None  # "user" or "admin"
+    is_admin: bool = False  # Backward compatibility
 
 
 @dataclass

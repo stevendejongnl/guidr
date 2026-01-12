@@ -30,6 +30,12 @@ def mock_category_repository():
 
 
 @pytest.fixture
+def mock_event_persistence_service():
+    """Create mock event persistence service."""
+    return AsyncMock()
+
+
+@pytest.fixture
 def sample_category():
     """Create a sample category."""
     return Category(
@@ -198,11 +204,11 @@ class TestUpdateCategory:
     """Tests for UpdateCategory use case."""
 
     async def test_update_category_name(
-        self, mock_category_repository, sample_category, admin_user
+        self, mock_category_repository, mock_event_persistence_service, sample_category, admin_user
     ):
         """Test updating category name by admin."""
         mock_category_repository.find_by_id.return_value = sample_category
-        use_case = UpdateCategory(mock_category_repository)
+        use_case = UpdateCategory(mock_category_repository, mock_event_persistence_service)
         dto = CategoryUpdateDTO(name="Updated Name")
 
         result = await use_case.execute(sample_category.id.value, dto, admin_user)
@@ -210,21 +216,21 @@ class TestUpdateCategory:
         assert result.name == "Updated Name"
         mock_category_repository.save.assert_called_once()
 
-    async def test_update_category_not_found(self, mock_category_repository, admin_user):
+    async def test_update_category_not_found(self, mock_category_repository, mock_event_persistence_service, admin_user):
         """Test updating non-existent category."""
         mock_category_repository.find_by_id.return_value = None
-        use_case = UpdateCategory(mock_category_repository)
+        use_case = UpdateCategory(mock_category_repository, mock_event_persistence_service)
         dto = CategoryUpdateDTO(name="Updated Name")
 
         with pytest.raises(EntityNotFoundException, match="Category not found"):
             await use_case.execute(str(uuid4()), dto, admin_user)
 
     async def test_update_category_non_admin_rejected(
-        self, mock_category_repository, sample_category, non_admin_user
+        self, mock_category_repository, mock_event_persistence_service, sample_category, non_admin_user
     ):
         """Test updating category is rejected for non-admin users."""
         mock_category_repository.find_by_id.return_value = sample_category
-        use_case = UpdateCategory(mock_category_repository)
+        use_case = UpdateCategory(mock_category_repository, mock_event_persistence_service)
         dto = CategoryUpdateDTO(name="Updated Name")
 
         with pytest.raises(AuthorizationException, match="Admin privileges required"):
@@ -234,9 +240,10 @@ class TestUpdateCategory:
 class TestDeleteCategory:
     """Tests for DeleteCategory use case."""
 
-    async def test_delete_category(self, mock_category_repository, admin_user):
+    async def test_delete_category(self, mock_category_repository, mock_event_persistence_service, sample_category, admin_user):
         """Test deleting a category by admin."""
-        use_case = DeleteCategory(mock_category_repository)
+        mock_category_repository.find_by_id.return_value = sample_category
+        use_case = DeleteCategory(mock_category_repository, mock_event_persistence_service)
         category_id = str(uuid4())
 
         await use_case.execute(category_id, admin_user)
@@ -244,10 +251,10 @@ class TestDeleteCategory:
         mock_category_repository.delete.assert_called_once()
 
     async def test_delete_category_non_admin_rejected(
-        self, mock_category_repository, non_admin_user
+        self, mock_category_repository, mock_event_persistence_service, non_admin_user
     ):
         """Test deleting category is rejected for non-admin users."""
-        use_case = DeleteCategory(mock_category_repository)
+        use_case = DeleteCategory(mock_category_repository, mock_event_persistence_service)
         category_id = str(uuid4())
 
         with pytest.raises(AuthorizationException, match="Admin privileges required"):

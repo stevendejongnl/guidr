@@ -3,7 +3,7 @@
 from typing import Any
 
 from src.domain.entities import User
-from src.domain.value_objects import Email, EntityId
+from src.domain.value_objects import Email, EntityId, Role, RoleType
 
 
 class UserMapper:
@@ -27,7 +27,8 @@ class UserMapper:
             "updatedAt": user.updated_at,
             "name": user.name,
             "interests": user.interests,
-            "isAdmin": user.is_admin,
+            "role": user.role.value,  # New: Store role string
+            "isAdmin": user.is_admin,  # Keep: Backward compatibility
         }
 
     @staticmethod
@@ -40,6 +41,15 @@ class UserMapper:
         Returns:
             User entity
         """
+        # Migration logic: prefer role field, fall back to isAdmin
+        role_value = document.get("role")
+        if role_value:
+            role = Role(role_value)
+        else:
+            # Backward compatibility: derive role from isAdmin
+            is_admin = document.get("isAdmin", False)
+            role = Role(RoleType.ADMIN if is_admin else RoleType.USER)
+
         return User(
             id=EntityId(str(document["_id"])),
             email=Email(document["email"]),
@@ -48,5 +58,5 @@ class UserMapper:
             updated_at=document["updatedAt"],
             name=document.get("name"),
             interests=document.get("interests", []),
-            is_admin=document.get("isAdmin", False),
+            role=role,
         )

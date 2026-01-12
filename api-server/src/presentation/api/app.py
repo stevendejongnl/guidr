@@ -8,7 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from .middleware import RequestLoggingMiddleware
 from .routers import (
+    audit_logs_router,
     categories_router,
     config_router,
     guides_router,
@@ -55,6 +57,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Request logging middleware (must be added after CORS)
+    app.add_middleware(RequestLoggingMiddleware)
+
     # Register routers with /api/v1 prefix
     app.include_router(system_router, prefix="/api/v1")
     app.include_router(config_router, prefix="/api/v1")
@@ -63,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(steps_router, prefix="/api/v1")
     app.include_router(sessions_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
+    app.include_router(audit_logs_router, prefix="/api/v1")
 
     # Static files for web app (only if dist exists)
     web_app_dist = Path(__file__).parent.parent.parent.parent / "web-app" / "dist"

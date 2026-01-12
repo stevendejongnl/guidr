@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 
 from ..exceptions import ValidationException
-from ..value_objects import Email, EntityId
+from ..value_objects import Email, EntityId, Role, RoleType
 
 
 class User:
@@ -18,6 +18,7 @@ class User:
         updated_at: datetime | None = None,
         name: str | None = None,
         interests: list[str] | None = None,
+        role: Role | None = None,
         is_admin: bool = False,
     ):
         """Initialize a User.
@@ -30,7 +31,8 @@ class User:
             updated_at: Optional update timestamp (defaults to now)
             name: Optional display name
             interests: Optional list of interest categories (defaults to empty list)
-            is_admin: Whether user has admin privileges (defaults to False, immutable)
+            role: User role (defaults to USER if not provided). Preferred over is_admin.
+            is_admin: DEPRECATED - use role instead. Kept for backward compatibility.
 
         Raises:
             ValidationException: If password_hash is empty
@@ -45,7 +47,12 @@ class User:
         self._updated_at = updated_at or datetime.now(UTC)
         self._name = name
         self._interests = interests if interests is not None else []
-        self._is_admin = is_admin
+
+        # Role migration logic: prefer role, fall back to is_admin
+        if role is None:
+            role = Role(RoleType.ADMIN if is_admin else RoleType.USER)
+
+        self._role = role
 
     @property
     def id(self) -> EntityId:
@@ -83,9 +90,14 @@ class User:
         return self._interests.copy()
 
     @property
+    def role(self) -> Role:
+        """Get user role."""
+        return self._role
+
+    @property
     def is_admin(self) -> bool:
-        """Get admin status (immutable after creation)."""
-        return self._is_admin
+        """Get admin status (derived from role for backward compatibility)."""
+        return self._role.is_admin()
 
     def update_password_hash(self, new_password_hash: str) -> None:
         """Update password hash.
