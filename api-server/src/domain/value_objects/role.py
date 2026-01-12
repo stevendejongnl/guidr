@@ -2,13 +2,11 @@
 
 from enum import Enum
 
-
 class RoleType(str, Enum):
     """User role types."""
 
     USER = "user"
     ADMIN = "admin"
-
 
 class Role:
     """Role value object with validation."""

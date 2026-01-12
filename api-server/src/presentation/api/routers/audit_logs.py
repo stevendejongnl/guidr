@@ -6,7 +6,6 @@ from src.application.dtos import AuditLogQueryDTO
 from src.application.use_cases.audit_log import GetAuditLogs
 from src.container import Container
 from src.domain.entities import User
-
 from ..dependencies.auth import get_current_admin_user
 from ..models import AuditLogResponse
 

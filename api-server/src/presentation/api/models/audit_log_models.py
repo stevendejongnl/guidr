@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel, Field
 
-
 class AuditLogResponse(BaseModel):
     """Response model for an audit log entry."""
 

@@ -6,7 +6,6 @@ from datetime import datetime
 from ..entities import AuditLog
 from .base import IRepository
 
-
 class IAuditLogRepository(IRepository[AuditLog]):
     """Repository interface for audit logs."""
 

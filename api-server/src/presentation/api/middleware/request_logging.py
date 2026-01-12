@@ -10,7 +10,6 @@ from starlette.responses import Response
 
 from src.domain.services import IEventPersistenceService
 
-
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware to log HTTP requests to audit trail.
 

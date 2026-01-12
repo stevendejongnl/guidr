@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-
 @dataclass
 class AuditLogResponseDTO:
     """DTO for audit log response."""
@@ -18,7 +17,6 @@ class AuditLogResponseDTO:
     details: dict[str, Any]
     ip_address: str | None
     user_agent: str | None
-
 
 @dataclass
 class AuditLogQueryDTO:

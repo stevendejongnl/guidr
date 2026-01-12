@@ -5,7 +5,6 @@ from typing import Any
 from src.domain.entities import AuditLog
 from src.domain.value_objects import EntityId
 
-
 class AuditLogMapper:
     """Maps between AuditLog entity and MongoDB document."""
 

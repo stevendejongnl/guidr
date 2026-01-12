@@ -143,7 +143,6 @@ class EventPersistenceService:
                 },
             )
 
-
         elif isinstance(event, GuideCreated):
             return AuditLog(
                 **audit_data,
