@@ -1,27 +1,23 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { Menu, MenuItem } from '../components/Menu'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
-import { commonStyles, colors } from '../theme'
+import { commonStyles } from '../theme'
 
 interface HomeScreenProps {
   onLogout: () => void | Promise<void>
   onOpenAdmin: () => void
   onOpenSettings: () => void
+  onOpenProfile: () => void
   adminMode: boolean
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenAdmin, onOpenSettings, adminMode }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenAdmin, onOpenSettings, onOpenProfile, adminMode }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
-  const [loggingOut, setLoggingOut] = useState(false)
   const authStorage = new AuthStorage()
-
-  const menuItems: MenuItem[] = [
-    { id: 'settings', label: 'Settings', onPress: onOpenSettings },
-  ]
 
   useEffect(() => {
     const loadUserEmail = async () => {
@@ -38,17 +34,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenAdmin, o
   }, [])
 
   const handleLogout = async () => {
-    setLoggingOut(true)
     try {
       await onLogout()
     } catch (error) {
       // Error is already handled by parent component (AppNavigator)
-      // Just ensure loading state is reset
       console.error('Logout error:', error)
-    } finally {
-      setLoggingOut(false)
     }
   }
+
+  const menuItems: MenuItem[] = [
+    { id: 'profile', label: 'Profile', onPress: onOpenProfile },
+    { id: 'settings', label: 'Settings', onPress: onOpenSettings },
+    { id: 'logout', label: 'Logout', onPress: handleLogout },
+  ]
 
   return (
     <SafeScreen>
@@ -74,21 +72,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenAdmin, o
               <Text style={commonStyles.buttonText}>⚙ Admin Tools</Text>
             </TouchableOpacity>
           )}
-
-          <TouchableOpacity
-            style={commonStyles.buttonDanger}
-            onPress={handleLogout}
-            disabled={loggingOut}
-          >
-            {loggingOut ? (
-              <>
-                <ActivityIndicator color={colors.textPrimary} size="small" />
-                <Text style={[commonStyles.buttonText, { marginLeft: 8 }]}>Logging out...</Text>
-              </>
-            ) : (
-              <Text style={commonStyles.buttonText}>Logout</Text>
-            )}
-          </TouchableOpacity>
         </View>
         <VersionDisplay />
       </View>

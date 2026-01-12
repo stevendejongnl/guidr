@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { AuthClient } from '@infrastructure/api/AuthClient'
 import { AuthStorage } from '@infrastructure/storage/AuthStorage'
+import { SafeScreen } from '../components/SafeScreen'
 import {
   INTEREST_CATEGORIES,
   type InterestCategory,
@@ -229,224 +230,226 @@ export function ProfileScreen({
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.backButton}
-          testID="back-button">
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile & Account</Text>
+    <SafeScreen>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={onBack}
+            style={styles.backButton}
+            testID="back-button">
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Profile & Account</Text>
+        </View>
+
+        <ScrollView style={styles.content}>
+          {/* Success/Error Messages */}
+          {success ? (
+            <View style={styles.successMessage}>
+              <Text style={styles.successText}>{success}</Text>
+            </View>
+          ) : null}
+
+          {error ? (
+            <View style={styles.errorMessage}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          {/* Profile Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Profile</Text>
+
+            <Text style={styles.label}>Display Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Enter your name (optional)"
+              placeholderTextColor="#999"
+              testID="name-input"
+            />
+
+            <Text style={styles.label}>Interests</Text>
+            <View style={styles.interestsContainer}>
+              {INTEREST_CATEGORIES.map((category: InterestCategory) => (
+                <TouchableOpacity
+                  key={category.id}
+                  style={styles.interestItem}
+                  onPress={() => toggleInterest(category.id)}
+                  testID={`interest-${category.id}`}>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      selectedInterests.includes(category.id) &&
+                        styles.checkboxChecked,
+                    ]}>
+                    {selectedInterests.includes(category.id) ? (
+                      <Text style={styles.checkmark}>✓</Text>
+                    ) : null}
+                  </View>
+                  <Text style={styles.interestLabel}>{category.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleUpdateProfile}
+              disabled={loading}
+              testID="update-profile-button">
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Update Profile</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Account Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Account</Text>
+
+            <View style={styles.accountRow}>
+              <View style={styles.accountInfo}>
+                <Text style={styles.label}>Email</Text>
+                <Text style={styles.valueText}>{userEmail}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.buttonSecondary}
+                onPress={() => setShowEmailForm(!showEmailForm)}
+                testID="change-email-toggle">
+                <Text style={styles.buttonSecondaryText}>
+                  {showEmailForm ? 'Cancel' : 'Change Email'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {showEmailForm ? (
+              <View style={styles.inlineForm}>
+                <Text style={styles.label}>New Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newEmail}
+                  onChangeText={setNewEmail}
+                  placeholder="new.email@example.com"
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  testID="new-email-input"
+                />
+
+                <Text style={styles.label}>Password (for verification)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={emailPassword}
+                  onChangeText={setEmailPassword}
+                  placeholder="Enter your password"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  testID="email-password-input"
+                />
+
+                <TouchableOpacity
+                  style={[styles.button, loading && styles.buttonDisabled]}
+                  onPress={handleChangeEmail}
+                  disabled={loading}
+                  testID="change-email-submit">
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Change Email</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : null}
+
+            <View style={styles.accountRow}>
+              <View style={styles.accountInfo}>
+                <Text style={styles.label}>Password</Text>
+                <Text style={styles.valueText}>••••••••</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.buttonSecondary}
+                onPress={() => setShowPasswordForm(!showPasswordForm)}
+                testID="change-password-toggle">
+                <Text style={styles.buttonSecondaryText}>
+                  {showPasswordForm ? 'Cancel' : 'Change Password'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {showPasswordForm ? (
+              <View style={styles.inlineForm}>
+                <Text style={styles.label}>Current Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={oldPassword}
+                  onChangeText={setOldPassword}
+                  placeholder="Enter current password"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  testID="old-password-input"
+                />
+
+                <Text style={styles.label}>New Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  placeholder="Enter new password"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  testID="new-password-input"
+                />
+
+                <Text style={styles.label}>Confirm New Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="Re-enter new password"
+                  placeholderTextColor="#999"
+                  secureTextEntry
+                  testID="confirm-password-input"
+                />
+
+                <TouchableOpacity
+                  style={[styles.button, loading && styles.buttonDisabled]}
+                  onPress={handleChangePassword}
+                  disabled={loading}
+                  testID="change-password-submit">
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Change Password</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Danger Zone Section */}
+          <View style={[styles.section, styles.dangerZone]}>
+            <Text style={[styles.sectionTitle, styles.dangerTitle]}>
+              Danger Zone
+            </Text>
+            <Text style={styles.dangerWarning}>
+              Once you delete your account, there is no going back. Please be
+              certain.
+            </Text>
+            <TouchableOpacity
+              style={[styles.buttonDanger, loading && styles.buttonDisabled]}
+              onPress={handleDeleteAccount}
+              disabled={loading}
+              testID="delete-account-button">
+              <Text style={styles.buttonDangerText}>Delete My Account</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
-
-      <ScrollView style={styles.content}>
-        {/* Success/Error Messages */}
-        {success ? (
-          <View style={styles.successMessage}>
-            <Text style={styles.successText}>{success}</Text>
-          </View>
-        ) : null}
-
-        {error ? (
-          <View style={styles.errorMessage}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        ) : null}
-
-        {/* Profile Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Profile</Text>
-
-          <Text style={styles.label}>Display Name</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter your name (optional)"
-            placeholderTextColor="#999"
-            testID="name-input"
-          />
-
-          <Text style={styles.label}>Interests</Text>
-          <View style={styles.interestsContainer}>
-            {INTEREST_CATEGORIES.map((category: InterestCategory) => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.interestItem}
-                onPress={() => toggleInterest(category.id)}
-                testID={`interest-${category.id}`}>
-                <View
-                  style={[
-                    styles.checkbox,
-                    selectedInterests.includes(category.id) &&
-                      styles.checkboxChecked,
-                  ]}>
-                  {selectedInterests.includes(category.id) ? (
-                    <Text style={styles.checkmark}>✓</Text>
-                  ) : null}
-                </View>
-                <Text style={styles.interestLabel}>{category.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleUpdateProfile}
-            disabled={loading}
-            testID="update-profile-button">
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Update Profile</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Account Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-
-          <View style={styles.accountRow}>
-            <View style={styles.accountInfo}>
-              <Text style={styles.label}>Email</Text>
-              <Text style={styles.valueText}>{userEmail}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.buttonSecondary}
-              onPress={() => setShowEmailForm(!showEmailForm)}
-              testID="change-email-toggle">
-              <Text style={styles.buttonSecondaryText}>
-                {showEmailForm ? 'Cancel' : 'Change Email'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {showEmailForm ? (
-            <View style={styles.inlineForm}>
-              <Text style={styles.label}>New Email</Text>
-              <TextInput
-                style={styles.input}
-                value={newEmail}
-                onChangeText={setNewEmail}
-                placeholder="new.email@example.com"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                testID="new-email-input"
-              />
-
-              <Text style={styles.label}>Password (for verification)</Text>
-              <TextInput
-                style={styles.input}
-                value={emailPassword}
-                onChangeText={setEmailPassword}
-                placeholder="Enter your password"
-                placeholderTextColor="#999"
-                secureTextEntry
-                testID="email-password-input"
-              />
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleChangeEmail}
-                disabled={loading}
-                testID="change-email-submit">
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Change Email</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          ) : null}
-
-          <View style={styles.accountRow}>
-            <View style={styles.accountInfo}>
-              <Text style={styles.label}>Password</Text>
-              <Text style={styles.valueText}>••••••••</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.buttonSecondary}
-              onPress={() => setShowPasswordForm(!showPasswordForm)}
-              testID="change-password-toggle">
-              <Text style={styles.buttonSecondaryText}>
-                {showPasswordForm ? 'Cancel' : 'Change Password'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {showPasswordForm ? (
-            <View style={styles.inlineForm}>
-              <Text style={styles.label}>Current Password</Text>
-              <TextInput
-                style={styles.input}
-                value={oldPassword}
-                onChangeText={setOldPassword}
-                placeholder="Enter current password"
-                placeholderTextColor="#999"
-                secureTextEntry
-                testID="old-password-input"
-              />
-
-              <Text style={styles.label}>New Password</Text>
-              <TextInput
-                style={styles.input}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                placeholder="Enter new password"
-                placeholderTextColor="#999"
-                secureTextEntry
-                testID="new-password-input"
-              />
-
-              <Text style={styles.label}>Confirm New Password</Text>
-              <TextInput
-                style={styles.input}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholder="Re-enter new password"
-                placeholderTextColor="#999"
-                secureTextEntry
-                testID="confirm-password-input"
-              />
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleChangePassword}
-                disabled={loading}
-                testID="change-password-submit">
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Change Password</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          ) : null}
-        </View>
-
-        {/* Danger Zone Section */}
-        <View style={[styles.section, styles.dangerZone]}>
-          <Text style={[styles.sectionTitle, styles.dangerTitle]}>
-            Danger Zone
-          </Text>
-          <Text style={styles.dangerWarning}>
-            Once you delete your account, there is no going back. Please be
-            certain.
-          </Text>
-          <TouchableOpacity
-            style={[styles.buttonDanger, loading && styles.buttonDisabled]}
-            onPress={handleDeleteAccount}
-            disabled={loading}
-            testID="delete-account-button">
-            <Text style={styles.buttonDangerText}>Delete My Account</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+    </SafeScreen>
   )
 }
 

@@ -9,12 +9,14 @@ describe('HomeScreen', () => {
   let mockOnLogout: jest.Mock
   let mockOnOpenAdmin: jest.Mock
   let mockOnOpenSettings: jest.Mock
+  let mockOnOpenProfile: jest.Mock
   let mockAuthStorage: jest.Mocked<AuthStorage>
 
   beforeEach(() => {
     mockOnLogout = jest.fn()
     mockOnOpenAdmin = jest.fn()
     mockOnOpenSettings = jest.fn()
+    mockOnOpenProfile = jest.fn()
 
     mockAuthStorage = {
       getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
@@ -28,24 +30,25 @@ describe('HomeScreen', () => {
   describe('rendering', () => {
     it('should render title and description', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
       expect(getByText('Guidr')).toBeTruthy()
       expect(getByText('The app is ready. Guide management features coming soon.')).toBeTruthy()
     })
 
-    it('should render logout button', () => {
-      const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+    it('should render logout menu item', () => {
+      const { getByTestId } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
-      expect(getByText('Logout')).toBeTruthy()
+      fireEvent.press(getByTestId('home-menu'))
+      expect(getByTestId('menu-item-logout')).toBeTruthy()
     })
 
     it('should display user email when loaded', async () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
       await waitFor(() => {
@@ -57,7 +60,7 @@ describe('HomeScreen', () => {
       mockAuthStorage.getUserEmail.mockResolvedValue(null)
 
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
       await waitFor(() => {
@@ -66,71 +69,30 @@ describe('HomeScreen', () => {
     })
   })
 
-  describe('logout button', () => {
-    it('should call onLogout when logout button is pressed', () => {
-      const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+  describe('logout menu item', () => {
+    it('should call onLogout when logout menu item is pressed', () => {
+      const { getByTestId } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
-      fireEvent.press(getByText('Logout'))
+      fireEvent.press(getByTestId('home-menu'))
+      fireEvent.press(getByTestId('menu-item-logout'))
 
       expect(mockOnLogout).toHaveBeenCalledTimes(1)
-    })
-
-    it('should show loading indicator during logout', async () => {
-      mockOnLogout.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      )
-
-      const { getByText, queryByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
-      )
-
-      fireEvent.press(getByText('Logout'))
-
-      await waitFor(() => {
-        expect(queryByText('Logging out...')).toBeTruthy()
-      })
-
-      await waitFor(() => {
-        expect(mockOnLogout).toHaveBeenCalledTimes(1)
-      })
-    })
-
-    it('should disable button during logout', async () => {
-      mockOnLogout.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      )
-
-      const { getByText, UNSAFE_getByProps } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
-      )
-
-      fireEvent.press(getByText('Logout'))
-
-      await waitFor(() => {
-        const button = UNSAFE_getByProps({ disabled: true })
-        expect(button).toBeTruthy()
-      })
     })
 
     it('should handle async logout errors', async () => {
       mockOnLogout.mockRejectedValue(new Error('Logout failed'))
 
-      const { getByText, queryByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+      const { getByTestId } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
-      fireEvent.press(getByText('Logout'))
+      fireEvent.press(getByTestId('home-menu'))
+      fireEvent.press(getByTestId('menu-item-logout'))
 
       await waitFor(() => {
         expect(mockOnLogout).toHaveBeenCalledTimes(1)
-      })
-
-      // Should reset loading state even on error
-      await waitFor(() => {
-        expect(queryByText('Logging out...')).toBeNull()
-        expect(getByText('Logout')).toBeTruthy()
       })
     })
   })
@@ -138,7 +100,7 @@ describe('HomeScreen', () => {
   describe('admin button', () => {
     it('should show admin button when adminMode is true', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={true} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={true} />
       )
 
       expect(getByText('⚙ Admin Tools')).toBeTruthy()
@@ -146,7 +108,7 @@ describe('HomeScreen', () => {
 
     it('should not show admin button when adminMode is false', () => {
       const { queryByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
       expect(queryByText('⚙ Admin Tools')).toBeNull()
@@ -154,7 +116,7 @@ describe('HomeScreen', () => {
 
     it('should call onOpenAdmin when admin button is pressed', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={true} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={true} />
       )
 
       fireEvent.press(getByText('⚙ Admin Tools'))
@@ -164,7 +126,7 @@ describe('HomeScreen', () => {
 
     it('should have correct accessibility label for admin button', () => {
       const { getByLabelText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={true} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={true} />
       )
 
       expect(getByLabelText('Open admin tools')).toBeTruthy()
@@ -177,7 +139,7 @@ describe('HomeScreen', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
 
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
       await waitFor(() => {
@@ -196,15 +158,26 @@ describe('HomeScreen', () => {
   describe('menu', () => {
     it('should render menu button', () => {
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
       expect(getByTestId('home-menu')).toBeTruthy()
     })
 
+    it('should call onOpenProfile when profile menu item is pressed', () => {
+      const { getByTestId } = render(
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
+      )
+
+      fireEvent.press(getByTestId('home-menu'))
+      fireEvent.press(getByTestId('menu-item-profile'))
+
+      expect(mockOnOpenProfile).toHaveBeenCalledTimes(1)
+    })
+
     it('should call onOpenSettings when settings menu item is pressed', () => {
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} adminMode={false} />
+        <HomeScreen onLogout={mockOnLogout} onOpenAdmin={mockOnOpenAdmin} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} adminMode={false} />
       )
 
       fireEvent.press(getByTestId('home-menu'))

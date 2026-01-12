@@ -353,10 +353,6 @@ export const AppNavigator: React.FC = () => {
           setShowSettingsScreen(false)
           setShowAdminScreen(true)
         }}
-        onOpenProfile={() => {
-          setShowSettingsScreen(false)
-          setShowProfileScreen(true)
-        }}
         adminMode={isAdmin}
         serverUrl={serverUrl}
       />
@@ -368,6 +364,7 @@ export const AppNavigator: React.FC = () => {
       onLogout={handleLogout}
       onOpenAdmin={() => setShowAdminScreen(true)}
       onOpenSettings={() => setShowSettingsScreen(true)}
+      onOpenProfile={() => setShowProfileScreen(true)}
       adminMode={isAdmin}
     />
   )
