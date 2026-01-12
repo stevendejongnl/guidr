@@ -1,22 +1,30 @@
+import { AuthStorage } from './storage/auth-storage'
+
 export interface Route {
   path: string
   component: string
   title: string
+  requiresAuth?: boolean
+  requiresAdmin?: boolean
 }
 
 export const routes: Route[] = [
-  { path: '/', component: 'home-page', title: 'Home - Guidr' },
-  { path: '/guides', component: 'guides-page', title: 'Guides - Guidr' },
-  { path: '/guides/:id', component: 'guide-detail-page', title: 'Guide Detail - Guidr' },
-  { path: '/admin/styleguide', component: 'admin-styleguide-page', title: 'Styleguide - Guidr' },
+  { path: '/', component: 'home-page', title: 'Home - Guidr', requiresAuth: true },
+  { path: '/login', component: 'login-page', title: 'Login - Guidr' },
+  { path: '/register', component: 'register-page', title: 'Register - Guidr' },
+  { path: '/guides', component: 'guides-page', title: 'Guides - Guidr', requiresAuth: true },
+  { path: '/guides/:id', component: 'guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true },
+  { path: '/admin/styleguide', component: 'admin-styleguide-page', title: 'Styleguide - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '*', component: 'not-found-page', title: 'Not Found - Guidr' }
 ]
 
 export class Router {
   private outlet: HTMLElement
+  private authStorage: AuthStorage
 
   constructor(outlet: HTMLElement) {
     this.outlet = outlet
+    this.authStorage = new AuthStorage()
     window.addEventListener('popstate', () => this.handleRoute())
   }
 
@@ -29,12 +37,37 @@ export class Router {
     const path = window.location.pathname
     const route = this.matchRoute(path)
 
+    // Check auth requirements
+    if (route.requiresAuth && !this.isAuthenticated()) {
+      this.navigateInternal('/login')
+      return
+    }
+
+    // Check admin requirements
+    if (route.requiresAdmin && !this.isAdmin()) {
+      this.navigateInternal('/')
+      return
+    }
+
     document.title = route.title
 
     // Clear outlet and render new component
     this.outlet.innerHTML = ''
     const component = document.createElement(route.component)
     this.outlet.appendChild(component)
+  }
+
+  private isAuthenticated(): boolean {
+    return this.authStorage.hasAuthToken()
+  }
+
+  private isAdmin(): boolean {
+    return this.authStorage.getUserIsAdmin()
+  }
+
+  private navigateInternal(path: string): void {
+    window.history.pushState({}, '', path)
+    this.handleRoute()
   }
 
   private matchRoute(path: string): Route {

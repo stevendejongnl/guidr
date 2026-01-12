@@ -1,6 +1,9 @@
 import { html, LitElement, css } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { customElement, state } from 'lit/decorators.js'
+import { provide } from '@lit/context'
 import { Router } from '../router.js'
+import { authContext, AuthContextValue } from '../contexts/auth-context'
+import { authService } from '../services/auth-service'
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -63,6 +66,38 @@ export class AppRoot extends LitElement {
 
   private router!: Router
 
+  @provide({ context: authContext })
+  @state()
+  private authState: AuthContextValue = {
+    isAuthenticated: authService.isAuthenticated(),
+    isAdmin: authService.isAdmin(),
+    userEmail: authService.getUserEmail(),
+    login: async (email: string, password: string) => {
+      await authService.login(email, password)
+      this.updateAuthState()
+      this.router.navigate('/')
+    },
+    register: async (email: string, password: string) => {
+      await authService.register(email, password)
+      this.updateAuthState()
+      this.router.navigate('/')
+    },
+    logout: () => {
+      authService.logout()
+      this.updateAuthState()
+      this.router.navigate('/login')
+    },
+  }
+
+  private updateAuthState(): void {
+    this.authState = {
+      ...this.authState,
+      isAuthenticated: authService.isAuthenticated(),
+      isAdmin: authService.isAdmin(),
+      userEmail: authService.getUserEmail(),
+    }
+  }
+
   firstUpdated(): void {
     const outlet = this.shadowRoot!.getElementById('outlet')!
     this.router = new Router(outlet)
@@ -75,8 +110,21 @@ export class AppRoot extends LitElement {
         <div class="nav-content">
           <h1 class="logo">Guidr</h1>
           <ul class="nav-links">
-            <li><a href="/" @click=${this.navigate}>Home</a></li>
-            <li><a href="/guides" @click=${this.navigate}>Guides</a></li>
+            ${this.authState.isAuthenticated
+              ? html`
+                  <li><a href="/" @click=${this.navigate}>Home</a></li>
+                  <li><a href="/guides" @click=${this.navigate}>Guides</a></li>
+                  ${this.authState.isAdmin
+                    ? html`<li><a href="/admin/styleguide" @click=${this.navigate}>Admin</a></li>`
+                    : ''}
+                  <li>
+                    <a href="#" @click=${this.handleLogout}>Logout (${this.authState.userEmail})</a>
+                  </li>
+                `
+              : html`
+                  <li><a href="/login" @click=${this.navigate}>Login</a></li>
+                  <li><a href="/register" @click=${this.navigate}>Register</a></li>
+                `}
           </ul>
         </div>
       </nav>
@@ -90,5 +138,10 @@ export class AppRoot extends LitElement {
     e.preventDefault()
     const href = (e.target as HTMLAnchorElement).getAttribute('href')!
     this.router.navigate(href)
+  }
+
+  private handleLogout(e: Event): void {
+    e.preventDefault()
+    this.authState.logout()
   }
 }

@@ -29,7 +29,7 @@ describe('AuthClient', () => {
   })
 
   describe('login', () => {
-    it('should return token and email on successful login', async () => {
+    it('should return token, email, and isAdmin on successful login', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
@@ -41,6 +41,7 @@ describe('AuthClient', () => {
             email: 'test@example.com',
             createdAt: '2024-01-01T00:00:00Z',
             updatedAt: '2024-01-01T00:00:00Z',
+            isAdmin: false,
           },
         }),
       } as Response)
@@ -51,6 +52,7 @@ describe('AuthClient', () => {
       expect(result.tokenType).toBe('bearer')
       expect(result.user.email).toBe('test@example.com')
       expect(result.user.id).toBe('user-123')
+      expect(result.user.isAdmin).toBe(false)
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/auth/login',
         {
@@ -145,10 +147,54 @@ describe('AuthClient', () => {
       await expect(authClient.login('test@example.com', 'password123'))
         .rejects.toThrow('An unexpected error occurred during login')
     })
+
+    it('should handle isAdmin=true in login response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          accessToken: 'mock-token-123',
+          tokenType: 'bearer',
+          user: {
+            id: 'admin-user-123',
+            email: 'admin@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            isAdmin: true,
+          },
+        }),
+      } as Response)
+
+      const result = await authClient.login('admin@example.com', 'password123')
+
+      expect(result.user.isAdmin).toBe(true)
+    })
+
+    it('should default isAdmin to false when missing in login response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          accessToken: 'mock-token-123',
+          tokenType: 'bearer',
+          user: {
+            id: 'user-123',
+            email: 'test@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            // isAdmin is missing
+          },
+        }),
+      } as Response)
+
+      const result = await authClient.login('test@example.com', 'password123')
+
+      expect(result.user.isAdmin).toBe(false)
+    })
   })
 
   describe('register', () => {
-    it('should return token, email, and id on successful registration', async () => {
+    it('should return token, email, id, and isAdmin on successful registration', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 201,
@@ -160,6 +206,7 @@ describe('AuthClient', () => {
             email: 'newuser@example.com',
             createdAt: '2024-01-01T00:00:00Z',
             updatedAt: '2024-01-01T00:00:00Z',
+            isAdmin: false,
           },
         }),
       } as Response)
@@ -170,6 +217,7 @@ describe('AuthClient', () => {
       expect(result.tokenType).toBe('bearer')
       expect(result.user.email).toBe('newuser@example.com')
       expect(result.user.id).toBe('user-123')
+      expect(result.user.isAdmin).toBe(false)
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/auth/register',
         {
@@ -278,6 +326,50 @@ describe('AuthClient', () => {
 
       await expect(authClient.register('test@example.com', 'password123'))
         .rejects.toThrow('An unexpected error occurred during registration')
+    })
+
+    it('should handle isAdmin=true in register response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({
+          accessToken: 'mock-token-456',
+          tokenType: 'bearer',
+          user: {
+            id: 'admin-user-456',
+            email: 'newadmin@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            isAdmin: true,
+          },
+        }),
+      } as Response)
+
+      const result = await authClient.register('newadmin@example.com', 'password123')
+
+      expect(result.user.isAdmin).toBe(true)
+    })
+
+    it('should default isAdmin to false when missing in register response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({
+          accessToken: 'mock-token-456',
+          tokenType: 'bearer',
+          user: {
+            id: 'user-123',
+            email: 'newuser@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            // isAdmin is missing
+          },
+        }),
+      } as Response)
+
+      const result = await authClient.register('newuser@example.com', 'password123')
+
+      expect(result.user.isAdmin).toBe(false)
     })
   })
 

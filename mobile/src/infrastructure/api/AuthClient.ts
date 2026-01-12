@@ -46,6 +46,7 @@ export class AuthClient {
           email: data.user.email,
           createdAt: data.user.createdAt,
           updatedAt: data.user.updatedAt,
+          isAdmin: typeof data.user.isAdmin === 'boolean' ? data.user.isAdmin : false,
         },
       }
     } catch (error) {
@@ -92,6 +93,7 @@ export class AuthClient {
           email: data.user.email,
           createdAt: data.user.createdAt,
           updatedAt: data.user.updatedAt,
+          isAdmin: typeof data.user.isAdmin === 'boolean' ? data.user.isAdmin : false,
         },
       }
     } catch (error) {
@@ -191,6 +193,7 @@ export class AuthClient {
           email: data.user.email,
           createdAt: data.user.createdAt,
           updatedAt: data.user.updatedAt,
+          isAdmin: typeof data.user.isAdmin === 'boolean' ? data.user.isAdmin : false,
         },
       }
     } catch (error) {

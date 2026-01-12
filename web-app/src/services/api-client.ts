@@ -11,9 +11,11 @@ export class ApiError extends Error {
 
 export class ApiClient {
   private baseUrl: string
+  private getAuthToken?: () => string | null
 
-  constructor(baseUrl: string = '/api/v1') {
+  constructor(baseUrl: string = '/api/v1', getAuthToken?: () => string | null) {
     this.baseUrl = baseUrl
+    this.getAuthToken = getAuthToken
   }
 
   async get<T>(path: string): Promise<T> {
@@ -41,6 +43,14 @@ export class ApiClient {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+    }
+
+    // Add auth header if token is available
+    if (this.getAuthToken) {
+      const token = this.getAuthToken()
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
     }
 
     const options: RequestInit = {
@@ -87,5 +97,7 @@ export class ApiClient {
   }
 }
 
-// Export singleton instance
-export const apiClient = new ApiClient()
+// Export singleton instance with auth token getter
+import { AuthStorage } from '../storage/auth-storage'
+const authStorage = new AuthStorage()
+export const apiClient = new ApiClient('/api/v1', () => authStorage.getAuthToken())

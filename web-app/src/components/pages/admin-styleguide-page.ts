@@ -1,9 +1,15 @@
 import { html, LitElement, css } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { customElement, state } from 'lit/decorators.js'
+import { consume } from '@lit/context'
 import { colors, spacing, borderRadius, typography } from '@styles/tokens'
+import { authContext, AuthContextValue } from '../../contexts/auth-context'
 
 @customElement('admin-styleguide-page')
 export class AdminStyleguidePage extends LitElement {
+  @consume({ context: authContext, subscribe: true })
+  @state()
+  private auth?: AuthContextValue
+
   static styles = css`
     :host {
       display: block;
@@ -254,6 +260,11 @@ export class AdminStyleguidePage extends LitElement {
   `
 
   render() {
+    // Auth check (router should prevent this, but double-check)
+    if (!this.auth?.isAdmin) {
+      return html`<div style="padding: 2rem; text-align: center; color: #f44336;">Access denied. Admin only.</div>`
+    }
+
     return html`
       <div
         class="container"

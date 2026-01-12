@@ -74,6 +74,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       const response = await authClient.login(email, password)
       await authStorage.setAuthToken(response.accessToken)
       await authStorage.setUserEmail(response.user.email)
+      await authStorage.setUserIsAdmin(response.user.isAdmin ?? false)
       onComplete()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
