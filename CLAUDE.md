@@ -2,6 +2,18 @@
 
 Project guidance for Claude Code working with the Guidr repository.
 
+## Important: Claude Code Sandbox Behavior
+
+**Issue**: Claude Code's sandbox (bubblewrap) creates empty placeholder files in the working directory:
+- `.bashrc`, `.bash_profile`, `.zshrc`, `.zprofile`, `.profile`, `.ripgreprc`, `.vscode`
+- `.gitconfig`, `.gitmodules`, `.claude/commands`, `.claude/settings.json`
+
+**Root Cause**: Bubblewrap requires files to exist before mounting them with `--ro-bind` (read-only bind mount). These are security mounts that prevent the sandbox from writing to system config files.
+
+**Solution**: Excluded from git status using `.git/info/exclude` (local-only, doesn't affect other developers).
+
+**Proper Fix**: Pending upstream issue with Anthropic to create placeholder files in `/tmp/claude/` instead of PWD. See [Claude Code Issues](https://github.com/anthropics/claude-code/issues/).
+
 ## Important: Architectural Decision Records (ADRs)
 
 **All architectural decisions must be documented in `docs/adr/` following the standard format.**
