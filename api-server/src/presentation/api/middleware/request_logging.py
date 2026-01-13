@@ -1,7 +1,7 @@
 """Request logging middleware for audit trail."""
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from time import time
 
 from fastapi import Request
@@ -32,7 +32,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self._event_persistence_service = event_persistence_service
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Process request and log to audit trail if authenticated.
 
         Args:

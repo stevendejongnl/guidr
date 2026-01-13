@@ -71,15 +71,15 @@ async def query_audit_logs(
     return [
         AuditLogResponse(
             id=log.id,
-            event_type=log.event_type,
-            occurred_at=log.occurred_at,
-            user_id=log.user_id,
-            resource_type=log.resource_type,
-            resource_id=log.resource_id,
+            eventType=log.event_type,
+            occurredAt=log.occurred_at,
+            userId=log.user_id,
+            resourceType=log.resource_type,
+            resourceId=log.resource_id,
             action=log.action,
             details=log.details,
-            ip_address=log.ip_address,
-            user_agent=log.user_agent,
+            ipAddress=log.ip_address,
+            userAgent=log.user_agent,
         )
         for log in logs
     ]
