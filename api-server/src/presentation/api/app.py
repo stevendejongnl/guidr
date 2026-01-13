@@ -1,5 +1,6 @@
 """FastAPI application factory."""
 
+import os
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -22,11 +23,22 @@ from .routers import (
 
 
 def _get_version() -> str:
-    """Get package version from metadata.
+    """Get package version.
+
+    Resolution priority:
+    1. GUIDR_VERSION environment variable (set during Docker build)
+    2. Package metadata (from Poetry installation)
+    3. Fallback: "0.0.0-dev"
 
     Returns:
-        Package version string, or "0.0.0-dev" if not installed.
+        Package version string.
     """
+    # Check environment variable first (production Docker)
+    env_version = os.getenv("GUIDR_VERSION")
+    if env_version:
+        return env_version
+
+    # Fall back to package metadata (local development)
     try:
         return version("guidr-api-server")
     except PackageNotFoundError:
