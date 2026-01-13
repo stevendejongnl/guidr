@@ -104,6 +104,16 @@ jobs:
           echo "Run command:"
           echo "  docker run -p 8000:8000 ghcr.io/${{ github.repository_owner }}/guidr-api-server:latest"
 
+      - name: Bypass Cloudflare for Kubernetes deployment
+        if: steps.version.outputs.VERSION != ''
+        uses: xiaotianxt/bypass-cloudflare-for-github-action@v1
+        with:
+          cf_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          cf_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          cf_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          disable_bot_fight_mode: true
+          bfm_propagation_delay: 15
+
       - name: Deploy to Kubernetes
         if: steps.version.outputs.VERSION != ''
         run: |
