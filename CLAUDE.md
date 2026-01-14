@@ -27,6 +27,13 @@ guidr/
 **Web** (`web-app/`): `npm install && npm run dev`, `npm run build`
 **API Docs**: https://guidr.madebysteven.nl/api/docs (FastAPI Swagger UI)
 
+## Claude Skills (.claude/skills/)
+Custom Claude Code skills for workflow acceleration:
+- **build.md**: Mobile build/run commands (Metro, Android, iOS, APK generation)
+- **test.md**: Test running (Jest, coverage, watch mode, patterns)
+- **tdd.md**: Test-Driven Development workflow (RED-GREEN-REFACTOR-VERIFY)
+- **monorepo-commands**: Comprehensive npm script reference (all packages)
+
 ## Code Patterns
 **Entities**: Private fields with getters (`private _name`, `get name()`)
 **Services**: Constructor injection, async, repository pattern
