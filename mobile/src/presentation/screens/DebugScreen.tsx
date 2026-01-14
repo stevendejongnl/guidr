@@ -13,6 +13,7 @@ import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
+import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { UpdateButton } from '../components/UpdateButton'
@@ -22,11 +23,13 @@ import { commonStyles, colors, spacing, typography, borderRadius } from '../them
 interface DebugScreenProps {
   onBack: () => void
   serverUrl: string
+  healthCheckService: IHealthCheckService
 }
 
 export const DebugScreen: React.FC<DebugScreenProps> = ({
   onBack,
   serverUrl: serverUrlProp,
+  healthCheckService,
 }) => {
   const [storedServerUrl, setStoredServerUrl] = useState<string | null>(null)
   const [authToken, setAuthToken] = useState<string | null>(null)
@@ -101,22 +104,15 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
         throw new Error('No server URL configured')
       }
 
-      const startTime = Date.now()
-      const response = await fetch(`${url}/health`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
-      const endTime = Date.now()
+      const result = await healthCheckService.validateServer(url)
 
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`)
+      if (result.healthy) {
+        setPingResult(`✓ Connected (${result.responseTime}ms)`)
+        setServerVersion('Available')
+      } else {
+        setPingResult('✗ Connection failed')
+        setError(result.error || 'Connection test failed')
       }
-
-      const data = await response.json()
-      const responseTime = endTime - startTime
-
-      setPingResult(`✓ Connected (${responseTime}ms)`)
-      setServerVersion(data.status === 'healthy' ? 'Available' : 'unknown')
     } catch (err) {
       setPingResult('✗ Connection failed')
       setError(err instanceof Error ? err.message : 'Connection test failed')

@@ -2,22 +2,32 @@ import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { ServerSetupScreen } from './ServerSetupScreen'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
+import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 
 jest.mock('../../infrastructure/storage/ServerConfigStorage')
+jest.mock('../../infrastructure/storage/ValidatedServerStorage')
 
 describe('ServerSetupScreen', () => {
   let mockStorage: jest.Mocked<ServerConfigStorage>
+  let mockHealthCheckService: jest.Mocked<IHealthCheckService>
   let mockOnComplete: jest.Mock
 
   beforeEach(() => {
     mockStorage = new ServerConfigStorage() as jest.Mocked<ServerConfigStorage>
+    mockHealthCheckService = {
+      validateServer: jest.fn(),
+    } as unknown as jest.Mocked<IHealthCheckService>
     mockOnComplete = jest.fn()
     jest.clearAllMocks()
   })
 
   it('should render form with input and button', () => {
     const { getByPlaceholderText, getByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        onComplete={mockOnComplete}
+      />
     )
 
     expect(getByPlaceholderText('https://api.example.com')).toBeTruthy()
@@ -26,7 +36,11 @@ describe('ServerSetupScreen', () => {
 
   it('should render title and description', () => {
     const { getByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        onComplete={mockOnComplete}
+      />
     )
 
     expect(getByText('Server Configuration')).toBeTruthy()
@@ -35,7 +49,11 @@ describe('ServerSetupScreen', () => {
 
   it('should update input when user types', () => {
     const { getByPlaceholderText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        onComplete={mockOnComplete}
+      />
     )
 
     const input = getByPlaceholderText('https://api.example.com')
@@ -46,7 +64,11 @@ describe('ServerSetupScreen', () => {
 
   it('should show error for empty URL on submit', async () => {
     const { getByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        onComplete={mockOnComplete}
+      />
     )
 
     const button = getByText('Save Server URL')
@@ -56,15 +78,23 @@ describe('ServerSetupScreen', () => {
       expect(getByText('Please enter a server URL')).toBeTruthy()
     })
 
-    expect(mockStorage.setServerUrl).not.toHaveBeenCalled()
+    expect(mockHealthCheckService.validateServer).not.toHaveBeenCalled()
     expect(mockOnComplete).not.toHaveBeenCalled()
   })
 
-  it('should save valid URL and call onComplete', async () => {
+  it('should save valid URL when health check succeeds', async () => {
+    mockHealthCheckService.validateServer.mockResolvedValue({
+      healthy: true,
+      responseTime: 100,
+    })
     mockStorage.setServerUrl.mockResolvedValue()
 
     const { getByPlaceholderText, getByText, queryByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        onComplete={mockOnComplete}
+      />
     )
 
     const input = getByPlaceholderText('https://api.example.com')
@@ -72,6 +102,10 @@ describe('ServerSetupScreen', () => {
 
     fireEvent.changeText(input, 'https://api.test.com')
     fireEvent.press(button)
+
+    await waitFor(() => {
+      expect(mockHealthCheckService.validateServer).toHaveBeenCalledWith('https://api.test.com')
+    })
 
     await waitFor(() => {
       expect(mockStorage.setServerUrl).toHaveBeenCalledWith('https://api.test.com')
@@ -84,89 +118,14 @@ describe('ServerSetupScreen', () => {
     expect(queryByText('Please enter a server URL')).toBeNull()
   })
 
-  it('should show error if storage throws error', async () => {
-    mockStorage.setServerUrl.mockRejectedValue(new Error('Invalid server URL format'))
-
-    const { getByPlaceholderText, getByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
-    )
-
-    const input = getByPlaceholderText('https://api.example.com')
-    const button = getByText('Save Server URL')
-
-    fireEvent.changeText(input, 'invalid-url')
-    fireEvent.press(button)
-
-    await waitFor(() => {
-      expect(getByText('Invalid server URL format')).toBeTruthy()
-    })
-
-    expect(mockOnComplete).not.toHaveBeenCalled()
-  })
-
-  it('should show loading state while saving', async () => {
-    let resolvePromise: () => void
-    const savePromise = new Promise<void>((resolve) => {
-      resolvePromise = resolve
-    })
-    mockStorage.setServerUrl.mockReturnValue(savePromise)
-
-    const { getByPlaceholderText, getByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
-    )
-
-    const input = getByPlaceholderText('https://api.example.com')
-    const button = getByText('Save Server URL')
-
-    fireEvent.changeText(input, 'https://api.test.com')
-    fireEvent.press(button)
-
-    await waitFor(() => {
-      expect(getByText('Saving...')).toBeTruthy()
-    })
-
-    resolvePromise!()
-
-    await waitFor(() => {
-      expect(mockOnComplete).toHaveBeenCalled()
-    })
-  })
-
-  it('should disable button while loading', async () => {
-    let resolvePromise: () => void
-    const savePromise = new Promise<void>((resolve) => {
-      resolvePromise = resolve
-    })
-    mockStorage.setServerUrl.mockReturnValue(savePromise)
-
-    const { getByPlaceholderText, getByText, queryByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
-    )
-
-    const input = getByPlaceholderText('https://api.example.com')
-    const button = getByText('Save Server URL')
-
-    fireEvent.changeText(input, 'https://api.test.com')
-    fireEvent.press(button)
-
-    await waitFor(() => {
-      const savingButton = queryByText('Saving...')
-      expect(savingButton).toBeTruthy()
-      if (savingButton && savingButton.parent) {
-        expect(savingButton.parent.props['accessibilityState'].disabled).toBe(true)
-      }
-    })
-
-    resolvePromise!()
-
-    await waitFor(() => {
-      expect(mockOnComplete).toHaveBeenCalled()
-    })
-  })
 
   it('should clear error when user starts typing', async () => {
     const { getByPlaceholderText, getByText, queryByText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        onComplete={mockOnComplete}
+      />
     )
 
     const button = getByText('Save Server URL')

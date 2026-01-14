@@ -20,13 +20,31 @@ export class ServerConfigStorage {
         throw new Error('Server URL must use HTTP or HTTPS protocol')
       }
 
-      await AsyncStorage.setItem(SERVER_URL_KEY, url)
+      // Normalize URL: strip /api/v1 suffix and trailing slashes
+      const normalizedUrl = this.normalizeUrl(url)
+
+      await AsyncStorage.setItem(SERVER_URL_KEY, normalizedUrl)
     } catch (error) {
       if (error instanceof Error && error.message.includes('protocol')) {
         throw error
       }
       throw new Error('Invalid server URL format')
     }
+  }
+
+  /**
+   * Normalize server URL by removing /api/v1 suffix and trailing slashes
+   * @param url - The URL to normalize
+   * @returns Normalized URL
+   */
+  private normalizeUrl(url: string): string {
+    // Strip /api/v1 or /api/v1/ suffix (only if at the end)
+    let normalized = url.replace(/\/api\/v1\/?$/, '')
+
+    // Remove trailing slash
+    normalized = normalized.replace(/\/$/, '')
+
+    return normalized
   }
 
   async hasServerUrl(): Promise<boolean> {

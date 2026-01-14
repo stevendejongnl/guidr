@@ -6,6 +6,7 @@ import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { ServerConfigClient } from '../../infrastructure/api/ServerConfigClient'
 import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
+import { HealthCheckService } from '../../domain/services/HealthCheckService'
 import { isVersionSupported } from '../../common/VersionUtils'
 import { ServerSetupScreen } from '../screens/ServerSetupScreen'
 import { LoginScreen } from '../screens/LoginScreen'
@@ -45,6 +46,7 @@ export const AppNavigator: React.FC = () => {
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
+  const healthCheckService = new HealthCheckService()
 
   useEffect(() => {
     const checkConfiguration = async () => {
@@ -53,6 +55,22 @@ export const AppNavigator: React.FC = () => {
 
         const url = await serverStorage.getServerUrl()
         setServerUrl(url)
+
+        // Non-blocking health check on app startup
+        if (url) {
+          try {
+            const healthCheckResult = await healthCheckService.validateServer(url)
+            if (!healthCheckResult.healthy) {
+              console.warn(
+                'Server health check failed on startup:',
+                healthCheckResult.error
+              )
+            }
+          } catch (error) {
+            console.warn('Failed to perform health check on startup:', error)
+            // Don't block app startup on health check failure
+          }
+        }
 
         // Fetch server config if not cached
         if (!ServerConfigCache.hasConfig() && url) {
@@ -218,6 +236,7 @@ export const AppNavigator: React.FC = () => {
     return (
       <ServerSetupScreen
         storage={serverStorage}
+        healthCheckService={healthCheckService}
         onComplete={handleServerSetupComplete}
         {...(serverUrl && { currentUrl: serverUrl })}
       />
@@ -324,6 +343,7 @@ export const AppNavigator: React.FC = () => {
       <AdminScreen
         onBack={() => setShowAdminScreen(false)}
         serverUrl={serverUrl}
+        healthCheckService={healthCheckService}
       />
     )
   }

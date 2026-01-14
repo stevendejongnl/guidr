@@ -9,30 +9,36 @@ import {
   Platform,
 } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
+import { IHealthCheckService, HealthCheckResult } from '../../domain/services/IHealthCheckService'
+import { ValidatedServerStorage } from '../../infrastructure/storage/ValidatedServerStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { commonStyles, colors } from '../theme'
 
 interface ServerSetupScreenProps {
   storage: ServerConfigStorage
+  healthCheckService: IHealthCheckService
   onComplete: () => void
   currentUrl?: string
 }
 
 export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
   storage,
+  healthCheckService,
   onComplete,
   currentUrl,
 }) => {
   const [url, setUrl] = useState(currentUrl || '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [validationResult, setValidationResult] = useState<HealthCheckResult | null>(null)
 
   const handleUrlChange = (text: string) => {
     setUrl(text)
     if (error) {
       setError('')
     }
+    setValidationResult(null)
   }
 
   const handleSave = async () => {
@@ -43,9 +49,22 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
 
     setLoading(true)
     setError('')
+    setValidationResult(null)
 
     try {
-      await storage.setServerUrl(url)
+      // Use ValidatedServerStorage to validate and save
+      const validatedStorage = new ValidatedServerStorage(storage, healthCheckService)
+      const result = await validatedStorage.setServerUrlWithValidation(url)
+
+      // Check validation result
+      if (!result.healthy) {
+        setError(`Server validation failed: ${result.error || 'Unknown error'}`)
+        setValidationResult(result)
+        return
+      }
+
+      // Success - show response time and navigate
+      setValidationResult(result)
       onComplete()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save server URL')
@@ -78,6 +97,12 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
 
           {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
 
+          {validationResult && validationResult.healthy ? (
+            <Text style={commonStyles.successText}>
+              ✓ Connected ({validationResult.responseTime}ms)
+            </Text>
+          ) : null}
+
           <TouchableOpacity
             style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
             onPress={handleSave}
@@ -87,7 +112,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
             {loading ? (
               <>
                 <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
-                <Text style={commonStyles.buttonText}>Saving...</Text>
+                <Text style={commonStyles.buttonText}>Validating server...</Text>
               </>
             ) : (
               <Text style={commonStyles.buttonText}>Save Server URL</Text>

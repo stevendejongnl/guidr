@@ -38,11 +38,11 @@ describe('ServerConfigStorage', () => {
 
   describe('setServerUrl', () => {
     it('should store valid HTTP URL', async () => {
-      await storage.setServerUrl('http://localhost:3000/api/v1')
+      await storage.setServerUrl('http://localhost:3000')
 
       expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
         'Guidr_ServerUrl',
-        'http://localhost:3000/api/v1'
+        'http://localhost:3000'
       )
     })
 
@@ -86,6 +86,51 @@ describe('ServerConfigStorage', () => {
     it('should throw error for FTP protocol', async () => {
       await expect(storage.setServerUrl('ftp://example.com')).rejects.toThrow(
         'Server URL must use HTTP or HTTPS protocol'
+      )
+    })
+
+    it('should strip /api/v1 suffix when setting URL', async () => {
+      await storage.setServerUrl('https://example.com/api/v1')
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        'Guidr_ServerUrl',
+        'https://example.com'
+      )
+    })
+
+    it('should strip /api/v1/ with trailing slash', async () => {
+      await storage.setServerUrl('https://example.com/api/v1/')
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        'Guidr_ServerUrl',
+        'https://example.com'
+      )
+    })
+
+    it('should handle URLs already without /api/v1', async () => {
+      await storage.setServerUrl('https://example.com')
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        'Guidr_ServerUrl',
+        'https://example.com'
+      )
+    })
+
+    it('should not strip /api/v1 from path segments', async () => {
+      await storage.setServerUrl('https://example.com/api/v1/foo')
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        'Guidr_ServerUrl',
+        'https://example.com/api/v1/foo'
+      )
+    })
+
+    it('should strip trailing slash', async () => {
+      await storage.setServerUrl('https://example.com/')
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        'Guidr_ServerUrl',
+        'https://example.com'
       )
     })
   })
