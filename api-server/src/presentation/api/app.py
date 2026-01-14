@@ -73,6 +73,8 @@ def create_app() -> FastAPI:
     app.add_middleware(RequestLoggingMiddleware)
 
     # Register routers with /api/v1 prefix
+    # IMPORTANT: Register API routers BEFORE catch-all to ensure correct routing precedence
+    # FastAPI matches routes by specificity, so these explicit routes take priority over catch-all
     app.include_router(system_router, prefix="/api/v1")
     app.include_router(config_router, prefix="/api/v1")
     app.include_router(categories_router, prefix="/api/v1")
@@ -93,16 +95,27 @@ def create_app() -> FastAPI:
         )
 
         # SPA catch-all route - serves index.html for all non-API routes
-        @app.get("/{full_path:path}")
+        @app.get("/{full_path:path}", include_in_schema=False)
         async def serve_spa(full_path: str):
             """Serve SPA for all non-API routes."""
-            # Don't catch API routes (should never be reached due to router precedence)
-            if full_path.startswith("api/"):
-                raise HTTPException(status_code=404)
+            import logging
+            logger = logging.getLogger(__name__)
 
+            # Explicitly reject ALL API routes (defense in depth)
+            # This should never be reached for API routes due to router precedence,
+            # but provides a safety net if routing order changes
+            if full_path.startswith("api/") or full_path.startswith("api"):
+                logger.warning(f"Catch-all intercepted API route: /{full_path}")
+                raise HTTPException(status_code=404, detail="API endpoint not found")
+
+            logger.debug(f"Serving SPA for path: /{full_path}")
             index_file = web_app_dist / "index.html"
             if index_file.exists():
-                return FileResponse(index_file)
+                return FileResponse(
+                    index_file,
+                    media_type="text/html",
+                    headers={"X-Served-By": "SPA-Catch-All"}
+                )
             raise HTTPException(status_code=404)
 
     return app

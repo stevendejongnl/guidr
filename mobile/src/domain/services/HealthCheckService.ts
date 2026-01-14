@@ -19,6 +19,7 @@ export class HealthCheckService implements IHealthCheckService {
 
       // Construct health endpoint
       const healthUrl = `${normalizedUrl}/api/v1/health`
+      console.log('[HealthCheck] Testing URL:', healthUrl)
 
       // Measure response time
       const startTime = Date.now()
@@ -37,6 +38,11 @@ export class HealthCheckService implements IHealthCheckService {
         clearTimeout(timeoutId)
         const responseTime = Date.now() - startTime
 
+        // Log response details for debugging
+        const contentType = response.headers.get('content-type')
+        console.log('[HealthCheck] Response status:', response.status)
+        console.log('[HealthCheck] Content-Type:', contentType)
+
         // Check HTTP response status
         if (!response.ok) {
           return {
@@ -46,15 +52,36 @@ export class HealthCheckService implements IHealthCheckService {
           }
         }
 
-        // Parse response JSON
+        // Parse response text first to provide better error messages
         let data: unknown
         try {
-          data = await response.json()
-        } catch {
+          const responseText = await response.text()
+          console.log('[HealthCheck] Response text (first 200 chars):', responseText.substring(0, 200))
+
+          // Check content type - if it's not JSON, server is returning HTML
+          if (!contentType?.includes('application/json')) {
+            return {
+              healthy: false,
+              responseTime,
+              error: `Server returned ${contentType || 'unknown content type'} instead of JSON`,
+            }
+          }
+
+          // Parse the JSON
+          try {
+            data = JSON.parse(responseText)
+          } catch (parseError) {
+            return {
+              healthy: false,
+              responseTime,
+              error: `Invalid JSON response: ${parseError instanceof Error ? parseError.message : 'Parse failed'}`,
+            }
+          }
+        } catch (textError) {
           return {
             healthy: false,
             responseTime,
-            error: 'Invalid JSON response from server',
+            error: `Failed to read response: ${textError instanceof Error ? textError.message : 'Unknown error'}`,
           }
         }
 
