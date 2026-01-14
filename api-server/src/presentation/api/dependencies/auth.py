@@ -1,6 +1,7 @@
 """Authentication dependencies for protected endpoints."""
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.container import Container
 from src.domain.entities import User
@@ -31,14 +32,14 @@ def get_user_repository() -> IUserRepository:
 
 
 async def get_current_user(
-    authorization: str = Header(...),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
     jwt_service: JWTService = Depends(get_jwt_service),
     user_repository: IUserRepository = Depends(get_user_repository),
 ) -> User:
     """Extract and validate authenticated user from JWT Bearer token.
 
     Args:
-        authorization: Authorization header (format: "Bearer <token>")
+        credentials: Authorization credentials (Bearer token)
         jwt_service: Service for JWT token validation
         user_repository: Repository to fetch user entity
 
@@ -48,16 +49,8 @@ async def get_current_user(
     Raises:
         HTTPException(401): If token is missing, invalid, expired, or user not found
     """
-    # Validate Authorization header format
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    # Extract token
-    token = authorization[7:]  # Remove "Bearer " prefix
+    # Extract token from credentials (HTTPBearer handles "Bearer " prefix automatically)
+    token = credentials.credentials
 
     # Verify JWT token
     payload = jwt_service.verify_token(token)
