@@ -32,7 +32,12 @@ Custom Claude Code skills for workflow acceleration:
 - **build.md**: Mobile build/run commands (Metro, Android, iOS, APK generation)
 - **test.md**: Test running (Jest, coverage, watch mode, patterns)
 - **tdd.md**: Test-Driven Development workflow (RED-GREEN-REFACTOR-VERIFY)
-- **monorepo-commands**: Comprehensive npm script reference (all packages)
+- **monorepo-commands**: Comprehensive npm script reference
+  - **Global**: `npm run test`, `npm run lint`, `npm run typecheck` (all packages)
+  - **API**: `npm run api:test`, `npm run api:lint`, `npm run api:typecheck` (FastAPI)
+  - **Mobile**: `npm run mobile:test`, `npm run mobile:lint`, `npm run mobile:typecheck`, `npm run mobile:ios`, `npm run mobile:android` (React Native)
+  - **Web**: `npm run web:dev`, `npm run web:build` (React Vite)
+  - Use when: working with monorepo npm scripts across packages
 
 ## Code Patterns
 **Entities**: Private fields with getters (`private _name`, `get name()`)
