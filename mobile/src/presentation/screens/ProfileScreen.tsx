@@ -12,6 +12,7 @@ import {
 import { AuthClient } from '@infrastructure/api/AuthClient'
 import { AuthStorage } from '@infrastructure/storage/AuthStorage'
 import { SafeScreen } from '../components/SafeScreen'
+import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
 import {
   INTEREST_CATEGORIES,
   type InterestCategory,
@@ -231,7 +232,7 @@ export function ProfileScreen({
 
   return (
     <SafeScreen>
-      <View style={styles.container}>
+      <View style={commonStyles.containerTop}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -247,27 +248,27 @@ export function ProfileScreen({
           {/* Success/Error Messages */}
           {success ? (
             <View style={styles.successMessage}>
-              <Text style={styles.successText}>{success}</Text>
+              <Text style={commonStyles.successText}>{success}</Text>
             </View>
           ) : null}
 
           {error ? (
             <View style={styles.errorMessage}>
-              <Text style={styles.errorText}>{error}</Text>
+              <Text style={commonStyles.errorText}>{error}</Text>
             </View>
           ) : null}
 
           {/* Profile Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Profile</Text>
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Profile</Text>
 
             <Text style={styles.label}>Display Name</Text>
             <TextInput
-              style={styles.input}
+              style={commonStyles.input}
               value={name}
               onChangeText={setName}
               placeholder="Enter your name (optional)"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               testID="name-input"
             />
 
@@ -295,21 +296,21 @@ export function ProfileScreen({
             </View>
 
             <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
+              style={[commonStyles.button, loading && commonStyles.buttonDisabled]}
               onPress={handleUpdateProfile}
               disabled={loading}
               testID="update-profile-button">
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.textPrimary} />
               ) : (
-                <Text style={styles.buttonText}>Update Profile</Text>
+                <Text style={commonStyles.buttonText}>Update Profile</Text>
               )}
             </TouchableOpacity>
           </View>
 
           {/* Account Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Account</Text>
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Account</Text>
 
             <View style={styles.accountRow}>
               <View style={styles.accountInfo}>
@@ -330,11 +331,11 @@ export function ProfileScreen({
               <View style={styles.inlineForm}>
                 <Text style={styles.label}>New Email</Text>
                 <TextInput
-                  style={styles.input}
+                  style={commonStyles.input}
                   value={newEmail}
                   onChangeText={setNewEmail}
                   placeholder="new.email@example.com"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   testID="new-email-input"
@@ -342,24 +343,24 @@ export function ProfileScreen({
 
                 <Text style={styles.label}>Password (for verification)</Text>
                 <TextInput
-                  style={styles.input}
+                  style={commonStyles.input}
                   value={emailPassword}
                   onChangeText={setEmailPassword}
                   placeholder="Enter your password"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   secureTextEntry
                   testID="email-password-input"
                 />
 
                 <TouchableOpacity
-                  style={[styles.button, loading && styles.buttonDisabled]}
+                  style={[commonStyles.button, loading && commonStyles.buttonDisabled]}
                   onPress={handleChangeEmail}
                   disabled={loading}
                   testID="change-email-submit">
                   {loading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={colors.textPrimary} />
                   ) : (
-                    <Text style={styles.buttonText}>Change Email</Text>
+                    <Text style={commonStyles.buttonText}>Change Email</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -384,46 +385,46 @@ export function ProfileScreen({
               <View style={styles.inlineForm}>
                 <Text style={styles.label}>Current Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={commonStyles.input}
                   value={oldPassword}
                   onChangeText={setOldPassword}
                   placeholder="Enter current password"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   secureTextEntry
                   testID="old-password-input"
                 />
 
                 <Text style={styles.label}>New Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={commonStyles.input}
                   value={newPassword}
                   onChangeText={setNewPassword}
                   placeholder="Enter new password"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   secureTextEntry
                   testID="new-password-input"
                 />
 
                 <Text style={styles.label}>Confirm New Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={commonStyles.input}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   placeholder="Re-enter new password"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   secureTextEntry
                   testID="confirm-password-input"
                 />
 
                 <TouchableOpacity
-                  style={[styles.button, loading && styles.buttonDisabled]}
+                  style={[commonStyles.button, loading && commonStyles.buttonDisabled]}
                   onPress={handleChangePassword}
                   disabled={loading}
                   testID="change-password-submit">
                   {loading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={colors.textPrimary} />
                   ) : (
-                    <Text style={styles.buttonText}>Change Password</Text>
+                    <Text style={commonStyles.buttonText}>Change Password</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -431,8 +432,8 @@ export function ProfileScreen({
           </View>
 
           {/* Danger Zone Section */}
-          <View style={[styles.section, styles.dangerZone]}>
-            <Text style={[styles.sectionTitle, styles.dangerTitle]}>
+          <View style={[commonStyles.section, styles.dangerZone]}>
+            <Text style={[commonStyles.sectionTitle, styles.dangerTitle]}>
               Danger Zone
             </Text>
             <Text style={styles.dangerWarning}>
@@ -440,7 +441,7 @@ export function ProfileScreen({
               certain.
             </Text>
             <TouchableOpacity
-              style={[styles.buttonDanger, loading && styles.buttonDisabled]}
+              style={[commonStyles.buttonDanger, loading && commonStyles.buttonDisabled]}
               onPress={handleDeleteAccount}
               disabled={loading}
               testID="delete-account-button">
@@ -454,176 +455,146 @@ export function ProfileScreen({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
   },
   backButton: {
-    paddingRight: 12,
+    paddingRight: spacing.md,
   },
   backButtonText: {
-    fontSize: 16,
-    color: '#007AFF',
+    fontSize: typography.sizeMd,
+    color: colors.primary,
+    fontWeight: typography.weightMedium,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: typography.sizeXl,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
     flex: 1,
   },
+
+  // Content
   content: {
     flex: 1,
-    padding: 16,
+    padding: spacing.lg,
   },
-  section: {
-    marginBottom: 24,
-    padding: 16,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
+
+  // Form elements
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 4,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 4,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    marginBottom: spacing.sm,
+    color: colors.textSecondary,
   },
   buttonSecondary: {
-    backgroundColor: '#fff',
-    padding: 8,
-    borderRadius: 4,
+    backgroundColor: colors.surface,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
     borderWidth: 1,
-    borderColor: '#007AFF',
+    borderColor: colors.primary,
   },
   buttonSecondaryText: {
-    color: '#007AFF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: colors.primary,
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
   },
+
+  // Messages with accent borders
   successMessage: {
-    backgroundColor: '#d4edda',
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 16,
-  },
-  successText: {
-    color: '#155724',
-    fontSize: 14,
+    backgroundColor: colors.surfaceLight,
+    padding: spacing.md,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.lg,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.success,
   },
   errorMessage: {
-    backgroundColor: '#f8d7da',
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 16,
+    backgroundColor: colors.surfaceLight,
+    padding: spacing.md,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.lg,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.danger,
   },
-  errorText: {
-    color: '#721c24',
-    fontSize: 14,
-  },
+
+  // Interests/Checkboxes
   interestsContainer: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   interestItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   checkbox: {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#007AFF',
-    borderRadius: 4,
-    marginRight: 12,
+    borderColor: colors.primary,
+    borderRadius: borderRadius.sm,
+    marginRight: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.inputBackground,
   },
   checkboxChecked: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primary,
   },
   checkmark: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: colors.textPrimary,
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightBold,
   },
   interestLabel: {
-    fontSize: 16,
+    fontSize: typography.sizeMd,
+    color: colors.textPrimary,
   },
+
+  // Account management
   accountRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   accountInfo: {
     flex: 1,
   },
   valueText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: typography.sizeMd,
+    color: colors.textSecondary,
   },
   inlineForm: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: '#fff',
-    borderRadius: 4,
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: colors.inputBackground,
+    borderRadius: borderRadius.sm,
   },
+
+  // Danger zone
   dangerZone: {
     borderWidth: 2,
-    borderColor: '#dc3545',
-    backgroundColor: '#fff5f5',
+    borderColor: colors.danger,
+    backgroundColor: colors.surfaceLight,
   },
   dangerTitle: {
-    color: '#dc3545',
+    color: colors.danger,
   },
   dangerWarning: {
-    fontSize: 14,
-    color: '#721c24',
-    marginBottom: 16,
-  },
-  buttonDanger: {
-    backgroundColor: '#dc3545',
-    padding: 12,
-    borderRadius: 4,
-    alignItems: 'center',
+    fontSize: typography.sizeSm,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
   },
   buttonDangerText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightSemibold,
   },
 })
