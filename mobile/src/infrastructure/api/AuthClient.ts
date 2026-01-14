@@ -204,6 +204,48 @@ export class AuthClient {
     }
   }
 
+  async getProfile(authToken: string): Promise<UserDto> {
+    if (!authToken || authToken.trim() === '') {
+      throw new Error('Auth token cannot be empty')
+    }
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/auth/profile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to fetch profile')
+      }
+
+      const data = await response.json()
+
+      if (!data.id || !data.email) {
+        throw new Error('Invalid response from server')
+      }
+
+      return {
+        id: data.id,
+        email: data.email,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        name: data.name,
+        interests: data.interests,
+        isAdmin: typeof data.isAdmin === 'boolean' ? data.isAdmin : false,
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred while fetching profile')
+    }
+  }
+
   async updateProfile(
     name: string | null,
     interests: string[] | null,

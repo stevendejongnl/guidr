@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -50,6 +50,27 @@ export function ProfileScreen({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  // Fetch profile data on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const authToken = await authStorage.getAuthToken()
+        if (!authToken) {
+          return
+        }
+
+        const profile = await authClient.getProfile(authToken)
+        setName(profile.name || '')
+        setSelectedInterests(profile.interests || [])
+      } catch (err) {
+        // Silently fail - user can still manually enter their profile
+        console.error('Failed to fetch profile:', err)
+      }
+    }
+
+    loadProfile()
+  }, [authClient, authStorage])
 
   const toggleInterest = (interestId: string) => {
     setSelectedInterests(prev =>

@@ -256,6 +256,37 @@ async def change_email(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
+@router.get(
+    "/profile",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    responses={401: {"model": ErrorResponse}},
+)
+async def get_profile(
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+    """Get current user profile (requires authentication).
+
+    Args:
+        current_user: Authenticated user from JWT token
+
+    Returns:
+        Current user data including name and interests
+
+    Raises:
+        HTTPException 401: If authentication fails
+    """
+    return UserResponse(
+        id=current_user.id.value,
+        email=current_user.email.value,
+        createdAt=current_user.created_at.isoformat(),
+        updatedAt=current_user.updated_at.isoformat(),
+        name=current_user.name,
+        interests=current_user.interests,
+        isAdmin=current_user.is_admin,
+    )
+
+
 @router.patch(
     "/profile",
     response_model=UserResponse,
