@@ -1,7 +1,7 @@
 """Step API models."""
 
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StepCreate(BaseModel):
@@ -13,10 +13,7 @@ class StepCreate(BaseModel):
     description: str | None = None
     duration: int | None = None  # seconds
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class StepUpdate(BaseModel):
@@ -27,10 +24,7 @@ class StepUpdate(BaseModel):
     description: str | None = None
     duration: int | None = None  # seconds
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class StepResponse(BaseModel):
@@ -45,7 +39,4 @@ class StepResponse(BaseModel):
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)

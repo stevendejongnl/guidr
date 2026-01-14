@@ -1,6 +1,6 @@
 """User API models."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserRegister(BaseModel):
@@ -9,10 +9,7 @@ class UserRegister(BaseModel):
     email: str
     password: str
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class UserLogin(BaseModel):
@@ -21,10 +18,7 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class UserResponse(BaseModel):
@@ -38,10 +32,7 @@ class UserResponse(BaseModel):
     interests: list[str] | None = None
     is_admin: bool = Field(default=False, alias="isAdmin")
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class TokenResponse(BaseModel):
@@ -51,10 +42,7 @@ class TokenResponse(BaseModel):
     token_type: str = Field(..., alias="tokenType")
     user: UserResponse
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ChangePasswordRequest(BaseModel):
@@ -63,10 +51,7 @@ class ChangePasswordRequest(BaseModel):
     old_password: str = Field(..., alias="oldPassword")
     new_password: str = Field(..., alias="newPassword")
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ChangeEmailRequest(BaseModel):
@@ -75,10 +60,7 @@ class ChangeEmailRequest(BaseModel):
     new_email: str = Field(..., alias="newEmail")
     password: str
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class UpdateProfileRequest(BaseModel):
@@ -87,10 +69,7 @@ class UpdateProfileRequest(BaseModel):
     name: str | None = None
     interests: list[str] | None = None
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class DeleteAccountRequest(BaseModel):
@@ -98,7 +77,4 @@ class DeleteAccountRequest(BaseModel):
 
     password: str
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)

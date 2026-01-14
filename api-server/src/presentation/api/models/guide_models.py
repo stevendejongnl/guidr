@@ -1,7 +1,7 @@
 """Guide API models."""
 
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class GuideCreate(BaseModel):
@@ -11,10 +11,7 @@ class GuideCreate(BaseModel):
     title: str
     description: str | None = None
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class GuideUpdate(BaseModel):
@@ -23,10 +20,7 @@ class GuideUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class GuideResponse(BaseModel):
@@ -40,7 +34,4 @@ class GuideResponse(BaseModel):
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)

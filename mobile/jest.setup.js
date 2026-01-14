@@ -77,6 +77,22 @@ console.error = (...args) => {
     return
   }
 
+  // Suppress expected home screen data loading errors in tests
+  if (
+    typeof message === 'string' &&
+    message.includes('Failed to load home screen data:')
+  ) {
+    return
+  }
+
+  // Suppress expected profile loading errors in tests
+  if (
+    typeof message === 'string' &&
+    message.includes('Failed to fetch profile:')
+  ) {
+    return
+  }
+
   // Suppress React act() warnings - these are testing library noise
   // in React Native where proper act() wrapping is often impractical
   if (
@@ -107,17 +123,8 @@ console.warn = (...args) => {
 }
 
 console.log = (...args) => {
-  const message = args[0]
-
-  // Suppress TEST MODE logs from ApkInstaller
-  if (
-    typeof message === 'string' &&
-    message.includes('TEST MODE:')
-  ) {
-    return
-  }
-
-  // Pass through all other logs
-  originalLog(...args)
+  // Suppress all console.log() calls during tests
+  // Real errors will still appear via console.error() and console.warn()
+  return
 }
 

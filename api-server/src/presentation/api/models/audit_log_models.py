@@ -1,10 +1,12 @@
 """Audit log API models."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AuditLogResponse(BaseModel):
     """Response model for an audit log entry."""
+
+    model_config = ConfigDict(populate_by_name=True)
 
     id: str
     event_type: str = Field(..., alias="eventType")
@@ -16,8 +18,3 @@ class AuditLogResponse(BaseModel):
     details: dict = Field(default_factory=dict)
     ip_address: str | None = Field(None, alias="ipAddress")
     user_agent: str | None = Field(None, alias="userAgent")
-
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True

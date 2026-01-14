@@ -4,7 +4,7 @@ import tomllib
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def _load_toml_config() -> dict:
@@ -20,6 +20,11 @@ def _load_toml_config() -> dict:
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables and TOML config."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8"
+    )
 
     # MongoDB
     mongodb_url: str = "mongodb://localhost:27017"
@@ -49,10 +54,6 @@ class Settings(BaseSettings):
             self.min_app_version = server_config["minAppVersion"]
         if "maxAppVersion" in server_config:
             self.max_app_version = server_config["maxAppVersion"]
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
 
 
 @lru_cache

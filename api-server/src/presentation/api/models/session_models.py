@@ -1,7 +1,7 @@
 """Session API models."""
 
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SessionCreate(BaseModel):
@@ -9,10 +9,7 @@ class SessionCreate(BaseModel):
 
     guide_id: str = Field(..., alias="guideId")
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class SessionResponse(BaseModel):
@@ -27,10 +24,7 @@ class SessionResponse(BaseModel):
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class MoveToStepRequest(BaseModel):
@@ -38,7 +32,4 @@ class MoveToStepRequest(BaseModel):
 
     step_id: str = Field(..., alias="stepId")
 
-    class Config:
-        """Pydantic config."""
-
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)

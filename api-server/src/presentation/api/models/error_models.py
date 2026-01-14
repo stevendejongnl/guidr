@@ -1,7 +1,7 @@
 """Error response models."""
 
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ErrorDetail(BaseModel):
@@ -15,14 +15,8 @@ class ErrorDetail(BaseModel):
 class ErrorResponse(BaseModel):
     """Standardized error response."""
 
-    error: str
-    code: str
-    details: list[ErrorDetail] = Field(default_factory=list)
-
-    class Config:
-        """Pydantic config."""
-
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "error": "Validation failed",
                 "code": "VALIDATION_ERROR",
@@ -35,3 +29,8 @@ class ErrorResponse(BaseModel):
                 ],
             }
         }
+    )
+
+    error: str
+    code: str
+    details: list[ErrorDetail] = Field(default_factory=list)
