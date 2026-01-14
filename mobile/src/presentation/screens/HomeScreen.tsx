@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
@@ -57,6 +58,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
 
   const authStorage = new AuthStorage()
+  const serverConfigStorage = new ServerConfigStorage()
 
   const loadData = async () => {
     try {
@@ -67,13 +69,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       setUserEmail(email)
 
       // Get auth token for API calls (will be available from parent component)
-      const authToken = await (authStorage as any).getAuthToken()
+      const authToken = await authStorage.getAuthToken()
       if (!authToken) {
         throw new Error('No auth token found')
       }
 
       // Fetch user profile
-      const serverUrl = await (authStorage as any).getServerUrl()
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) {
+        throw new Error('No server URL configured')
+      }
       const authClient = new AuthClient(serverUrl)
       const profile = await authClient.getProfile(authToken)
       setUserProfile(profile)
@@ -262,9 +267,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </TouchableOpacity>
           </View>
         )}
-
-        <VersionDisplay />
       </ScrollView>
+      <VersionDisplay />
     </SafeScreen>
   )
 }
