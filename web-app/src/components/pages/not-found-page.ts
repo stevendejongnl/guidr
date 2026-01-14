@@ -77,8 +77,10 @@ export class NotFoundPage extends LitElement {
 
   private navigate(e: Event): void {
     e.preventDefault()
-    const href = (e.target as HTMLAnchorElement).getAttribute('href')!
-    window.history.pushState({}, '', href)
-    window.dispatchEvent(new PopStateEvent('popstate'))
+    const href = (e.target as HTMLAnchorElement).getAttribute('href')
+    if (href) {
+      window.history.pushState({}, '', href)
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    }
   }
 }

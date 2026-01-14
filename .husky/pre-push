@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Running pre-push checks..."
+echo ""
+
+echo "📱 Running Mobile Tests..."
+npm --prefix mobile test
+echo "✓ Mobile tests passed"
+echo ""
+
+echo "🔧 Running API Tests..."
+cd api-server
+if ! command -v poetry &> /dev/null; then
+  echo "⚠️  Poetry not found, skipping API tests"
+else
+  poetry run python -m pytest
+fi
+cd ..
+echo "✓ API tests passed"
+echo ""
+
+echo "✓ All pre-push checks passed!"

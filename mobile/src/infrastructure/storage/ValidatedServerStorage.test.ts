@@ -7,20 +7,6 @@ jest.mock('../../domain/services/HealthCheckService')
 
 describe('ValidatedServerStorage', () => {
   let validatedStorage: ValidatedServerStorage
-  let mockStorage: jest.Mocked<ServerConfigStorage>
-  let mockHealthCheck: jest.Mocked<HealthCheckService>
-
-  beforeEach(() => {
-    mockStorage = ServerConfigStorage as jest.Mocked<typeof ServerConfigStorage>
-    mockHealthCheck = HealthCheckService as jest.Mocked<typeof HealthCheckService>
-
-    const storageInstance = new mockStorage()
-    const healthCheckInstance = new mockHealthCheck()
-
-    validatedStorage = new ValidatedServerStorage(storageInstance, healthCheckInstance)
-
-    jest.clearAllMocks()
-  })
 
   describe('setServerUrlWithValidation', () => {
     it('should validate server URL before saving', async () => {

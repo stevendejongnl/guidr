@@ -99,7 +99,10 @@ export class AppRoot extends LitElement {
   }
 
   firstUpdated(): void {
-    const outlet = this.shadowRoot!.getElementById('outlet')!
+    const outlet = this.shadowRoot?.getElementById('outlet')
+    if (!outlet) {
+      throw new Error('Router outlet element not found')
+    }
     this.router = new Router(outlet)
     this.router.start()
   }
@@ -136,8 +139,10 @@ export class AppRoot extends LitElement {
 
   private navigate(e: Event): void {
     e.preventDefault()
-    const href = (e.target as HTMLAnchorElement).getAttribute('href')!
-    this.router.navigate(href)
+    const href = (e.target as HTMLAnchorElement).getAttribute('href')
+    if (href) {
+      this.router.navigate(href)
+    }
   }
 
   private handleLogout(e: Event): void {

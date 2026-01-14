@@ -9,11 +9,17 @@
     "mobile:typecheck": "cd mobile && npm run typecheck",
     "mobile:android": "cd mobile && npm run android",
     "mobile:ios": "cd mobile && npm run ios",
-    "api:test": "cd api-server && poetry run pytest",
+    "api:test": "cd api-server && poetry run python -m pytest",
     "api:lint": "cd api-server && poetry run ruff check .",
+    "api:typecheck": "cd api-server && poetry run python -m mypy src",
+    "web:lint": "cd web-app && npm run lint",
+    "web:typecheck": "cd web-app && npm run typecheck",
     "web:build": "cd web-app && npm run build",
     "web:dev": "cd web-app && npm run dev",
-    "prepare": "cd mobile && husky"
+    "lint": "npm run mobile:lint && npm run web:lint && npm run api:lint",
+    "typecheck": "npm run mobile:typecheck && npm run web:typecheck && npm run api:typecheck",
+    "test": "npm run mobile:test && npm run api:test",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "husky": "^9.1.7"

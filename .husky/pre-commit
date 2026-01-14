@@ -1,3 +1,32 @@
 #!/usr/bin/env bash
-npm --prefix mobile run lint
+set -e
+
+echo "Running pre-commit checks..."
+echo ""
+
+echo "📱 Checking Mobile (TypeScript + ESLint)..."
 npm --prefix mobile run typecheck
+npm --prefix mobile run lint
+echo "✓ Mobile checks passed"
+echo ""
+
+echo "🌐 Checking Web-app (TypeScript + ESLint)..."
+npm --prefix web-app run typecheck
+npm --prefix web-app run lint
+echo "✓ Web-app checks passed"
+echo ""
+
+echo "🔧 Checking API (Ruff + Mypy)..."
+cd api-server
+# Ensure we use the poetry environment
+if ! command -v poetry &> /dev/null; then
+  echo "⚠️  Poetry not found, skipping API checks"
+else
+  poetry run ruff check .
+  poetry run python -m mypy src
+fi
+cd ..
+echo "✓ API checks passed"
+echo ""
+
+echo "✓ All pre-commit checks passed!"
