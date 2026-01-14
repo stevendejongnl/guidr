@@ -1,6 +1,6 @@
 """User/Auth API router."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status
 from fastapi.responses import JSONResponse
 
 from src.application.dtos import (
@@ -31,7 +31,6 @@ from ..models import (
     ErrorResponse,
     TokenResponse,
     UpdateProfileRequest,
-    UserLogin,
     UserRegister,
     UserResponse,
 )
@@ -141,16 +140,21 @@ async def register(
     responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}},
 )
 async def login(
-    user: UserLogin,
+    username: str = Form(...),
+    password: str = Form(...),
     use_case: LoginUser = Depends(get_login_user_use_case),
     jwt_service=Depends(get_jwt_service),
 ):
     """Login and return access token.
 
+    Accepts form data (OAuth2 password grant) for Swagger UI compatibility.
+    The 'username' field is treated as email for login purposes.
+
     Returns both OAuth2-compatible format (for Swagger UI) and client format.
     """
     try:
-        dto = UserLoginDTO(email=user.email, password=user.password)
+        # Use username as email for authentication (OAuth2 standard compliance)
+        dto = UserLoginDTO(email=username, password=password)
         result = await use_case.execute(dto)
 
         if not result:

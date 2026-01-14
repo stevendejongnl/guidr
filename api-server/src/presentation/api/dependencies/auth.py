@@ -13,7 +13,9 @@ from src.infrastructure.auth import JWTService
 _container: Container | None = None
 
 # OAuth2 scheme for automatic Swagger UI authorization
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+# scopes={} explicitly indicates this is Resource Owner Password Credentials flow
+# (not Client Credentials), preventing Swagger UI from showing client_id/client_secret
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", scopes={})
 
 
 def set_container(container):
