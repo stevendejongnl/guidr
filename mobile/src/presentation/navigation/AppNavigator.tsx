@@ -382,10 +382,8 @@ export const AppNavigator: React.FC = () => {
   return (
     <HomeScreen
       onLogout={handleLogout}
-      onOpenAdmin={() => setShowAdminScreen(true)}
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
-      adminMode={isAdmin}
     />
   )
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
@@ -9,13 +9,11 @@ import { commonStyles } from '../theme'
 
 interface HomeScreenProps {
   onLogout: () => void | Promise<void>
-  onOpenAdmin: () => void
   onOpenSettings: () => void
   onOpenProfile: () => void
-  adminMode: boolean
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenAdmin, onOpenSettings, onOpenProfile, adminMode }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenSettings, onOpenProfile }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const authStorage = new AuthStorage()
 
@@ -62,16 +60,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, onOpenAdmin, o
           <Text style={commonStyles.descriptionCentered}>
             The app is ready. Guide management features coming soon.
           </Text>
-
-          {adminMode && (
-            <TouchableOpacity
-              style={[commonStyles.buttonSecondary, { marginBottom: 16 }]}
-              onPress={onOpenAdmin}
-              accessibilityLabel="Open admin tools"
-            >
-              <Text style={commonStyles.buttonText}>⚙ Admin Tools</Text>
-            </TouchableOpacity>
-          )}
         </View>
         <VersionDisplay />
       </View>
