@@ -2,10 +2,12 @@ import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { HomeScreen } from './HomeScreen'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import * as HomeScreenMockDataModule from '../../infrastructure/mocks/HomeScreenMockData'
 
 jest.mock('../../infrastructure/storage/AuthStorage')
+jest.mock('../../infrastructure/storage/ServerConfigStorage')
 jest.mock('../../infrastructure/api/AuthClient')
 jest.mock('../../infrastructure/mocks/HomeScreenMockData')
 
@@ -14,6 +16,7 @@ describe('HomeScreen', () => {
   let mockOnOpenSettings: jest.Mock
   let mockOnOpenProfile: jest.Mock
   let mockAuthStorage: jest.Mocked<AuthStorage>
+  let mockServerConfigStorage: jest.Mocked<ServerConfigStorage>
 
   beforeEach(() => {
     mockOnLogout = jest.fn()
@@ -23,10 +26,14 @@ describe('HomeScreen', () => {
     mockAuthStorage = {
       getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
       getAuthToken: jest.fn().mockResolvedValue('test-token'),
-      getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000'),
     } as unknown as jest.Mocked<AuthStorage>
 
+    mockServerConfigStorage = {
+      getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000'),
+    } as unknown as jest.Mocked<ServerConfigStorage>
+
     ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
+    ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerConfigStorage)
 
     // Default mock implementations for HomeScreenMockData
     jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
@@ -237,10 +244,6 @@ describe('HomeScreen', () => {
 
       ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClient)
 
-      // Mock AuthStorage additional methods
-      ;(mockAuthStorage as any).getAuthToken = jest.fn().mockResolvedValue('test-token')
-      ;(mockAuthStorage as any).getServerUrl = jest.fn().mockResolvedValue('http://localhost:8000')
-
       // Mock HomeScreenMockData functions
       jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
         activeSessions: 2,
@@ -333,8 +336,6 @@ describe('HomeScreen', () => {
       } as unknown as jest.Mocked<AuthClient>
 
       ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
-      ;(mockAuthStorage as any).getAuthToken = jest.fn().mockResolvedValue('test-token')
-      ;(mockAuthStorage as any).getServerUrl = jest.fn().mockResolvedValue('http://localhost:8000')
 
       jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
         activeSessions: 2,
@@ -400,9 +401,6 @@ describe('HomeScreen', () => {
       } as unknown as jest.Mocked<AuthClient>
 
       ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClient)
-
-      ;(mockAuthStorage as any).getAuthToken = jest.fn().mockResolvedValue('test-token')
-      ;(mockAuthStorage as any).getServerUrl = jest.fn().mockResolvedValue('http://localhost:8000')
 
       jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
         activeSessions: 0,
