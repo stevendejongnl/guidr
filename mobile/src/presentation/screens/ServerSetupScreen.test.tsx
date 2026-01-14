@@ -2,6 +2,7 @@ import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { ServerSetupScreen } from './ServerSetupScreen'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
+import { ValidatedServerStorage } from '../../infrastructure/storage/ValidatedServerStorage'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 
 jest.mock('../../infrastructure/storage/ServerConfigStorage')
@@ -10,15 +11,20 @@ jest.mock('../../infrastructure/storage/ValidatedServerStorage')
 describe('ServerSetupScreen', () => {
   let mockStorage: jest.Mocked<ServerConfigStorage>
   let mockHealthCheckService: jest.Mocked<IHealthCheckService>
+  let mockValidatedStorage: any
   let mockOnComplete: jest.Mock
 
   beforeEach(() => {
+    jest.clearAllMocks()
     mockStorage = new ServerConfigStorage() as jest.Mocked<ServerConfigStorage>
     mockHealthCheckService = {
       validateServer: jest.fn(),
     } as unknown as jest.Mocked<IHealthCheckService>
+    mockValidatedStorage = {
+      setServerUrlWithValidation: jest.fn(),
+    }
+    ;(ValidatedServerStorage as jest.Mock).mockImplementation(() => mockValidatedStorage)
     mockOnComplete = jest.fn()
-    jest.clearAllMocks()
   })
 
   it('should render form with input and button', () => {
@@ -83,7 +89,7 @@ describe('ServerSetupScreen', () => {
   })
 
   it('should save valid URL when health check succeeds', async () => {
-    mockHealthCheckService.validateServer.mockResolvedValue({
+    mockValidatedStorage.setServerUrlWithValidation.mockResolvedValue({
       healthy: true,
       responseTime: 100,
     })
@@ -104,11 +110,7 @@ describe('ServerSetupScreen', () => {
     fireEvent.press(button)
 
     await waitFor(() => {
-      expect(mockHealthCheckService.validateServer).toHaveBeenCalledWith('https://api.test.com')
-    })
-
-    await waitFor(() => {
-      expect(mockStorage.setServerUrl).toHaveBeenCalledWith('https://api.test.com')
+      expect(mockValidatedStorage.setServerUrlWithValidation).toHaveBeenCalledWith('https://api.test.com')
     })
 
     await waitFor(() => {
@@ -146,7 +148,7 @@ describe('ServerSetupScreen', () => {
 
   it('should render version display', () => {
     const { getByTestId } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen storage={mockStorage} healthCheckService={mockHealthCheckService} onComplete={mockOnComplete} />
     )
 
     expect(getByTestId('version-display')).toBeTruthy()
@@ -156,6 +158,7 @@ describe('ServerSetupScreen', () => {
     const { getByDisplayValue } = render(
       <ServerSetupScreen
         storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
         onComplete={mockOnComplete}
         currentUrl="https://existing.server.com"
       />
@@ -166,7 +169,7 @@ describe('ServerSetupScreen', () => {
 
   it('should start with empty input when currentUrl is not provided', () => {
     const { getByPlaceholderText } = render(
-      <ServerSetupScreen storage={mockStorage} onComplete={mockOnComplete} />
+      <ServerSetupScreen storage={mockStorage} healthCheckService={mockHealthCheckService} onComplete={mockOnComplete} />
     )
 
     const input = getByPlaceholderText('https://api.example.com')

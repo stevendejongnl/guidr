@@ -62,11 +62,12 @@ describe('ActivityItem', () => {
   })
 
   it('shows resume button for in-progress sessions', () => {
+    const onResume = jest.fn()
     const { getByText } = render(
-      <ActivityItem session={mockSessionInProgress} testID="activity-item" />,
+      <ActivityItem session={mockSessionInProgress} onResume={onResume} testID="activity-item" />,
     )
 
-    const resumeButton = getByText('Resume')
+    const resumeButton = getByText('Resume →')
     expect(resumeButton).toBeDefined()
   })
 
@@ -76,18 +77,19 @@ describe('ActivityItem', () => {
       <ActivityItem session={mockSessionInProgress} onResume={onResume} testID="activity-item" />,
     )
 
-    const resumeButton = getByText('Resume')
+    const resumeButton = getByText('Resume →')
     fireEvent.press(resumeButton)
 
     expect(onResume).toHaveBeenCalledTimes(1)
   })
 
   it('shows resume button for paused sessions', () => {
+    const onResume = jest.fn()
     const { getByText } = render(
-      <ActivityItem session={mockSessionPaused} testID="activity-item" />,
+      <ActivityItem session={mockSessionPaused} onResume={onResume} testID="activity-item" />,
     )
 
-    expect(getByText('Resume')).toBeDefined()
+    expect(getByText('Resume →')).toBeDefined()
   })
 
   it('does not show resume button for completed sessions', () => {

@@ -37,8 +37,8 @@ describe('GuideCard', () => {
     )
 
     expect(getByText(/8 steps/)).toBeDefined()
-    expect(getByText(/180 min/)).toBeDefined()
-    expect(getByText('Baking')).toBeDefined()
+    expect(getByText(/3h 0m/)).toBeDefined()
+    expect(getByText(/Baking/)).toBeDefined()
   })
 
   it('calls onPress callback when pressed', () => {

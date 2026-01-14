@@ -16,12 +16,21 @@ global.fetch = jest.fn()
 
 describe('DebugScreen', () => {
   let mockOnBack: jest.Mock
+  let mockHealthCheckService: any
   const serverUrl = 'http://localhost:8000/api/v1'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
     mockOnBack = jest.fn()
     jest.clearAllMocks()
+
+    // Mock HealthCheckService
+    mockHealthCheckService = {
+      validateServer: jest.fn().mockResolvedValue({
+        healthy: true,
+        responseTime: 100,
+      }),
+    }
 
     // Mock DeviceInfo
     ;(DeviceInfo.getVersion as jest.Mock).mockReturnValue('1.0.0')
@@ -44,7 +53,7 @@ describe('DebugScreen', () => {
   describe('rendering', () => {
     it('should render all sections', () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       expect(getByText('Debug Tools')).toBeTruthy()
@@ -56,7 +65,7 @@ describe('DebugScreen', () => {
 
     it('should render back button', () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       expect(getByText('← Back')).toBeTruthy()
@@ -64,7 +73,7 @@ describe('DebugScreen', () => {
 
     it('should render action buttons', () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       expect(getByText('Test Connection')).toBeTruthy()
@@ -75,7 +84,7 @@ describe('DebugScreen', () => {
   describe('version information', () => {
     it('should display app version and build number', async () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {
@@ -85,7 +94,7 @@ describe('DebugScreen', () => {
 
     it('should display server version as not connected initially', () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       expect(getByText('Server: Not connected')).toBeTruthy()
@@ -95,7 +104,7 @@ describe('DebugScreen', () => {
   describe('stored configuration', () => {
     it('should display stored server URL', async () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {
@@ -105,7 +114,7 @@ describe('DebugScreen', () => {
 
     it('should display masked auth token', async () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {
@@ -115,7 +124,7 @@ describe('DebugScreen', () => {
 
     it('should display user email', async () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {
@@ -136,7 +145,7 @@ describe('DebugScreen', () => {
       ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {
@@ -150,7 +159,7 @@ describe('DebugScreen', () => {
   describe('back button', () => {
     it('should call onBack when back button is pressed', () => {
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       fireEvent.press(getByText('← Back'))
@@ -165,10 +174,12 @@ describe('DebugScreen', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       const testButton = getByText('Test Connection')
@@ -179,20 +190,20 @@ describe('DebugScreen', () => {
         expect(getByText('Server: Available')).toBeTruthy()
       })
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/health',
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
+      expect(mockHealthCheckService.validateServer).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1'
       )
     })
 
     it('should show failure message on connection error', async () => {
-      mockFetch.mockRejectedValue(new Error('Network request failed'))
+      mockHealthCheckService.validateServer.mockResolvedValue({
+        healthy: false,
+        responseTime: 0,
+        error: 'Network request failed',
+      })
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       const testButton = getByText('Test Connection')
@@ -211,7 +222,7 @@ describe('DebugScreen', () => {
       ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerStorage)
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl="" />
+        <DebugScreen onBack={mockOnBack} serverUrl="" healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {
@@ -233,7 +244,7 @@ describe('DebugScreen', () => {
       (AsyncStorage.clear as jest.Mock).mockResolvedValue(undefined)
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       const clearButton = getByText('Clear All Cache')
@@ -250,7 +261,7 @@ describe('DebugScreen', () => {
       (AsyncStorage.clear as jest.Mock).mockRejectedValue(new Error('Clear failed'))
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       const clearButton = getByText('Clear All Cache')
@@ -275,7 +286,7 @@ describe('DebugScreen', () => {
       mockFetch.mockReturnValue(promise)
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       const testButton = getByText('Test Connection')
@@ -302,7 +313,7 @@ describe('DebugScreen', () => {
       ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {
@@ -318,7 +329,7 @@ describe('DebugScreen', () => {
       ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
 
       const { getByText } = render(
-        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} />
+        <DebugScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
       await waitFor(() => {

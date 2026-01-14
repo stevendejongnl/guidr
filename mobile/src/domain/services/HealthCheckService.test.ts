@@ -23,6 +23,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       await healthCheckService.validateServer('https://example.com')
@@ -41,6 +43,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -55,6 +59,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       await healthCheckService.validateServer('https://example.com/api/v1')
@@ -70,6 +76,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       await healthCheckService.validateServer('https://example.com/api/v1/')
@@ -85,6 +93,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       await healthCheckService.validateServer('https://example.com/')
@@ -109,6 +119,8 @@ describe('HealthCheckService', () => {
         ok: false,
         status: 404,
         json: async () => ({}),
+        text: async () => '{}',
+        headers: new Headers(),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -122,6 +134,8 @@ describe('HealthCheckService', () => {
         ok: false,
         status: 503,
         json: async () => ({}),
+        text: async () => '{}',
+        headers: new Headers(),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -137,7 +151,9 @@ describe('HealthCheckService', () => {
         json: async () => {
           throw new Error('Invalid JSON')
         },
-      } as Response)
+        text: async () => 'invalid json',
+        headers: new Headers({ 'content-type': 'application/json' }),
+      } as unknown as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
 
@@ -150,6 +166,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -163,6 +181,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       const result = await healthCheckService.validateServer('http://example.com')
@@ -179,6 +199,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -191,6 +213,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'degraded' }),
+        text: async () => JSON.stringify({ status: 'degraded' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -204,6 +228,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({}),
+        text: async () => '{}',
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -241,6 +267,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       // Note: /api/v1/foo should normalize to /api/v1/foo (not strip /api/v1)
@@ -259,6 +287,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       await healthCheckService.validateServer('http://localhost:8000')
@@ -274,6 +304,8 @@ describe('HealthCheckService', () => {
         ok: true,
         status: 200,
         json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
       } as Response)
 
       await healthCheckService.validateServer('https://api.example.com')
@@ -298,6 +330,8 @@ describe('HealthCheckService', () => {
         ok: false,
         status: 502,
         json: async () => ({}),
+        text: async () => '{}',
+        headers: new Headers(),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
@@ -311,6 +345,8 @@ describe('HealthCheckService', () => {
         ok: false,
         status: 500,
         json: async () => ({ detail: 'Internal server error' }),
+        text: async () => JSON.stringify({ detail: 'Internal server error' }),
+        headers: new Headers(),
       } as Response)
 
       const result = await healthCheckService.validateServer('https://example.com')
