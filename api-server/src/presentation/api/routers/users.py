@@ -1,6 +1,7 @@
 """User/Auth API router."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 
 from src.application.dtos import (
     ChangeEmailDTO,
@@ -91,7 +92,6 @@ def get_delete_account_use_case() -> DeleteAccount:
 
 @router.post(
     "/register",
-    response_model=TokenResponse,
     status_code=status.HTTP_201_CREATED,
     responses={400: {"model": ErrorResponse}},
 )
@@ -99,8 +99,11 @@ async def register(
     user: UserRegister,
     use_case: RegisterUser = Depends(get_register_user_use_case),
     jwt_service=Depends(get_jwt_service),
-) -> TokenResponse:
-    """Register a new user and return access token."""
+):
+    """Register a new user and return access token.
+
+    Returns both OAuth2-compatible format (for Swagger UI) and client format.
+    """
     try:
         dto = UserCreateDTO(email=user.email, password=user.password)
         result = await use_case.execute(dto)
@@ -108,34 +111,44 @@ async def register(
         # Generate JWT token
         token = jwt_service.create_access_token(data={"sub": result.id})
 
-        return TokenResponse(
-            accessToken=token,
-            tokenType="bearer",
-            user=UserResponse(
-                id=result.id,
-                email=result.email,
-                createdAt=result.created_at,
-                updatedAt=result.updated_at,
-                name=result.name,
-                interests=result.interests,
-                isAdmin=result.is_admin,
-            ),
+        # Return response with both OAuth2 format and client format
+        user_response = UserResponse(
+            id=result.id,
+            email=result.email,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
+            name=result.name,
+            interests=result.interests,
+            isAdmin=result.is_admin,
         )
+
+        # Build response dict with OAuth2 format (snake_case) and client format (camelCase)
+        response_data = {
+            "access_token": token,  # OAuth2 format for Swagger UI
+            "token_type": "bearer",  # OAuth2 format for Swagger UI
+            "accessToken": token,  # Client format (backward compatibility)
+            "tokenType": "bearer",  # Client format (backward compatibility)
+            "user": user_response.model_dump(by_alias=True),
+        }
+
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content=response_data)
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post(
     "/login",
-    response_model=TokenResponse,
     responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}},
 )
 async def login(
     user: UserLogin,
     use_case: LoginUser = Depends(get_login_user_use_case),
     jwt_service=Depends(get_jwt_service),
-) -> TokenResponse:
-    """Login and return access token."""
+):
+    """Login and return access token.
+
+    Returns both OAuth2-compatible format (for Swagger UI) and client format.
+    """
     try:
         dto = UserLoginDTO(email=user.email, password=user.password)
         result = await use_case.execute(dto)
@@ -149,19 +162,27 @@ async def login(
         # Generate JWT token
         token = jwt_service.create_access_token(data={"sub": result.id})
 
-        return TokenResponse(
-            accessToken=token,
-            tokenType="bearer",
-            user=UserResponse(
-                id=result.id,
-                email=result.email,
-                createdAt=result.created_at,
-                updatedAt=result.updated_at,
-                name=result.name,
-                interests=result.interests,
-                isAdmin=result.is_admin,
-            ),
+        # Return response with both OAuth2 format and client format
+        user_response = UserResponse(
+            id=result.id,
+            email=result.email,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
+            name=result.name,
+            interests=result.interests,
+            isAdmin=result.is_admin,
         )
+
+        # Build response dict with OAuth2 format (snake_case) and client format (camelCase)
+        response_data = {
+            "access_token": token,  # OAuth2 format for Swagger UI
+            "token_type": "bearer",  # OAuth2 format for Swagger UI
+            "accessToken": token,  # Client format (backward compatibility)
+            "tokenType": "bearer",  # Client format (backward compatibility)
+            "user": user_response.model_dump(by_alias=True),
+        }
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content=response_data)
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 

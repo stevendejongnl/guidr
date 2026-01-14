@@ -35,6 +35,13 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class Token(BaseModel):
+    """OAuth2 token response model (for Swagger UI authorization)."""
+
+    access_token: str
+    token_type: str
+
+
 class TokenResponse(BaseModel):
     """Response model for authentication token."""
 

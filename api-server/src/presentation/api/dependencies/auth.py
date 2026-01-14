@@ -1,7 +1,7 @@
 """Authentication dependencies for protected endpoints."""
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import OAuth2PasswordBearer
 
 from src.container import Container
 from src.domain.entities import User
@@ -11,6 +11,9 @@ from src.infrastructure.auth import JWTService
 
 # Container reference (set by router initialization)
 _container: Container | None = None
+
+# OAuth2 scheme for automatic Swagger UI authorization
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def set_container(container):
@@ -32,14 +35,14 @@ def get_user_repository() -> IUserRepository:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    token: str = Depends(oauth2_scheme),
     jwt_service: JWTService = Depends(get_jwt_service),
     user_repository: IUserRepository = Depends(get_user_repository),
 ) -> User:
     """Extract and validate authenticated user from JWT Bearer token.
 
     Args:
-        credentials: Authorization credentials (Bearer token)
+        token: JWT Bearer token from Authorization header
         jwt_service: Service for JWT token validation
         user_repository: Repository to fetch user entity
 
@@ -49,9 +52,6 @@ async def get_current_user(
     Raises:
         HTTPException(401): If token is missing, invalid, expired, or user not found
     """
-    # Extract token from credentials (HTTPBearer handles "Bearer " prefix automatically)
-    token = credentials.credentials
-
     # Verify JWT token
     payload = jwt_service.verify_token(token)
     if payload is None:

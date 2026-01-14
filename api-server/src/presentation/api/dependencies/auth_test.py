@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import HTTPException
-from fastapi.security import HTTPAuthorizationCredentials
 
 from src.domain.entities import User
 from src.domain.value_objects import Email, EntityId
@@ -41,13 +40,13 @@ class TestGetCurrentUser:
     ):
         """Should return user when token is valid."""
         # Arrange
-        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="valid_token_here")
+        token = "valid_token_here"
         mock_jwt_service.verify_token.return_value = {"sub": "550e8400-e29b-41d4-a716-446655440000"}
         mock_user_repository.find_by_id.return_value = valid_user
 
         # Act
         result = await get_current_user(
-            credentials=credentials,
+            token=token,
             jwt_service=mock_jwt_service,
             user_repository=mock_user_repository,
         )
@@ -62,44 +61,18 @@ class TestGetCurrentUser:
         assert call_args[0].value == "550e8400-e29b-41d4-a716-446655440000"
 
     @pytest.mark.asyncio
-    async def test_get_current_user_with_invalid_scheme(
-        self, mock_jwt_service, mock_user_repository
-    ):
-        """Should raise 401 when Authorization scheme is not Bearer.
-
-        Note: HTTPBearer validates the scheme at the FastAPI dependency level,
-        so this tests the behavior when the function receives invalid credentials.
-        """
-        # Arrange
-        credentials = HTTPAuthorizationCredentials(scheme="Basic", credentials="token_here")
-        mock_jwt_service.verify_token.return_value = None
-
-        # Act & Assert
-        # Since we're testing the function directly (not via FastAPI),
-        # the function will process any HTTPAuthorizationCredentials.
-        # In practice, HTTPBearer prevents invalid schemes from reaching this function.
-        with pytest.raises(HTTPException) as exc_info:
-            await get_current_user(
-                credentials=credentials,
-                jwt_service=mock_jwt_service,
-                user_repository=mock_user_repository,
-            )
-
-        assert exc_info.value.status_code == 401
-
-    @pytest.mark.asyncio
     async def test_get_current_user_with_invalid_token(
         self, mock_jwt_service, mock_user_repository
     ):
         """Should raise 401 when token is invalid or expired."""
         # Arrange
-        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="invalid_token")
+        token = "invalid_token"
         mock_jwt_service.verify_token.return_value = None  # Invalid token
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
             await get_current_user(
-                credentials=credentials,
+                token=token,
                 jwt_service=mock_jwt_service,
                 user_repository=mock_user_repository,
             )
@@ -113,13 +86,13 @@ class TestGetCurrentUser:
     ):
         """Should raise 401 when token payload is missing 'sub' field."""
         # Arrange
-        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="valid_token")
+        token = "valid_token"
         mock_jwt_service.verify_token.return_value = {}  # Missing 'sub' field
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
             await get_current_user(
-                credentials=credentials,
+                token=token,
                 jwt_service=mock_jwt_service,
                 user_repository=mock_user_repository,
             )
@@ -133,14 +106,14 @@ class TestGetCurrentUser:
     ):
         """Should raise 401 when user no longer exists (deleted)."""
         # Arrange
-        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="valid_token")
+        token = "valid_token"
         mock_jwt_service.verify_token.return_value = {"sub": "550e8400-e29b-41d4-a716-446655440000"}
         mock_user_repository.find_by_id.return_value = None  # User not found
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
             await get_current_user(
-                credentials=credentials,
+                token=token,
                 jwt_service=mock_jwt_service,
                 user_repository=mock_user_repository,
             )
@@ -152,18 +125,18 @@ class TestGetCurrentUser:
     async def test_get_current_user_extracts_token_correctly(
         self, mock_jwt_service, mock_user_repository, valid_user
     ):
-        """Should correctly extract token from credentials object."""
+        """Should correctly extract and verify token."""
         # Arrange
-        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="abc123xyz")
+        token = "abc123xyz"
         mock_jwt_service.verify_token.return_value = {"sub": "550e8400-e29b-41d4-a716-446655440000"}
         mock_user_repository.find_by_id.return_value = valid_user
 
         # Act
         await get_current_user(
-            credentials=credentials,
+            token=token,
             jwt_service=mock_jwt_service,
             user_repository=mock_user_repository,
         )
 
-        # Assert - Token extracted from credentials.credentials
+        # Assert - Token verified correctly
         mock_jwt_service.verify_token.assert_called_once_with("abc123xyz")
