@@ -65,7 +65,14 @@ jobs:
           chmod 600 ~/.ssh/gitea_key
           echo "✅ SSH private key installed"
 
-      # Step 6: Configure SSH with cloudflared access proxy (without known_hosts initially)
+      # Step 6: Install SSH known hosts
+      - name: Install SSH known hosts
+        run: |
+          echo "${{ secrets.GITEA_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          echo "✅ SSH known hosts installed"
+
+      # Step 7: Configure SSH with cloudflared access proxy
       - name: Configure SSH with cloudflared access proxy
         run: |
           cat > ~/.ssh/config <<'SSHEOF'
@@ -74,29 +81,13 @@ jobs:
             User gitea
             Port 22
             IdentityFile ~/.ssh/gitea_key
-            StrictHostKeyChecking accept-new
+            StrictHostKeyChecking yes
             UserKnownHostsFile ~/.ssh/known_hosts
             ProxyCommand /usr/bin/cloudflared access ssh --hostname %h
           SSHEOF
 
           chmod 600 ~/.ssh/config
           echo "✅ SSH config configured with cloudflared access proxy"
-
-      # Step 7: Capture SSH host key on first connection
-      - name: Capture SSH host key
-        run: |
-          echo "Connecting to capture SSH host key..."
-          ssh -T gitea@gitaccess.madebysteven.nl 2>&1 | tee /tmp/ssh_first_connect.log || true
-
-          echo ""
-          echo "=========================================="
-          echo "CAPTURED SSH HOST KEY - Save this!"
-          echo "=========================================="
-          cat ~/.ssh/known_hosts
-          echo "=========================================="
-          echo ""
-          echo "Copy the line above and set it as your GITEA_SSH_KNOWN_HOSTS secret"
-          echo ""
 
       # Step 8: Verify SSH connection through cloudflared
       - name: Verify SSH connection to Gitea
@@ -285,5 +276,4 @@ jobs:
           echo "  - CLOUDFLARE_ZONE_ID"
           echo "  - CLOUDFLARE_API_TOKEN"
           echo "  - GITEA_SSH_PRIVATE_KEY"
-          echo ""
-          echo "Note: SSH host key is auto-captured on first connection"
+          echo "  - GITEA_SSH_KNOWN_HOSTS"
