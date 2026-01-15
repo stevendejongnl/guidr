@@ -18,6 +18,7 @@ import { SafeScreen } from '../components/SafeScreen'
 import { CountdownTimer } from '../components/CountdownTimer'
 import { StepNavigationControls } from '../components/StepNavigationControls'
 import { AutoAdvanceToggle } from '../components/AutoAdvanceToggle'
+import { SessionProgressIndicator } from '../components/SessionProgressIndicator'
 import { colors, spacing, typography, commonStyles } from '../theme'
 import { Session } from '../../domain/entities/Session'
 import { Guide } from '../../domain/entities/Guide'
@@ -339,17 +340,37 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
     <SafeScreen>
       <ScrollView style={commonStyles.container} contentContainerStyle={styles.scrollContent}>
         {/* Progress Indicator */}
-        <View style={styles.progressSection}>
-          <Text style={styles.guideTitle}>{guide.title}</Text>
-          <Text style={styles.stepIndicator}>
-            Step {currentStepIndex + 1} of {steps.length}
-          </Text>
-        </View>
+        <SessionProgressIndicator
+          currentStepIndex={currentStepIndex}
+          totalSteps={steps.length}
+          guideTitle={guide.title}
+          testID="session-progress"
+        />
 
         {/* Current Step */}
-        <View style={styles.stepSection}>
-          <Text style={styles.stepTitle}>{currentStep.title}</Text>
-          {currentStep.description && <Text style={styles.stepDescription}>{currentStep.description}</Text>}
+        <View
+          style={styles.stepSection}
+          accessible
+          accessibilityRole="header"
+          accessibilityLabel={`Current step: ${currentStep.title}`}
+        >
+          <Text
+            style={styles.stepTitle}
+            accessible
+            accessibilityRole="header"
+            accessibilityLabel={`Step title: ${currentStep.title}`}
+          >
+            {currentStep.title}
+          </Text>
+          {currentStep.description && (
+            <Text
+              style={styles.stepDescription}
+              accessible
+              accessibilityLabel={`Step description: ${currentStep.description}`}
+            >
+              {currentStep.description}
+            </Text>
+          )}
         </View>
 
         {/* Error Message */}
@@ -374,17 +395,35 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
         {/* Session Control Buttons */}
         <View style={styles.controlsSection}>
           {!isTimerRunning && session.status === 'NotStarted' && (
-            <TouchableOpacity style={commonStyles.button} onPress={handleStart}>
+            <TouchableOpacity
+              style={commonStyles.button}
+              onPress={handleStart}
+              accessibilityRole="button"
+              accessibilityLabel="Start session timer"
+              accessible
+            >
               <Text style={commonStyles.buttonText}>Start Session</Text>
             </TouchableOpacity>
           )}
           {isTimerRunning && (
-            <TouchableOpacity style={[commonStyles.button, styles.pauseButton]} onPress={handlePause}>
+            <TouchableOpacity
+              style={[commonStyles.button, styles.pauseButton]}
+              onPress={handlePause}
+              accessibilityRole="button"
+              accessibilityLabel="Pause session timer"
+              accessible
+            >
               <Text style={commonStyles.buttonText}>Pause</Text>
             </TouchableOpacity>
           )}
           {!isTimerRunning && session.status === 'Paused' && (
-            <TouchableOpacity style={commonStyles.button} onPress={handleResume}>
+            <TouchableOpacity
+              style={commonStyles.button}
+              onPress={handleResume}
+              accessibilityRole="button"
+              accessibilityLabel="Resume session timer"
+              accessible
+            >
               <Text style={commonStyles.buttonText}>Resume</Text>
             </TouchableOpacity>
           )}
@@ -403,14 +442,32 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
         {/* Complete/Cancel Buttons */}
         <View style={styles.actionButtonsSection}>
           {currentStepIndex === steps.length - 1 && !isTimerRunning && (
-            <TouchableOpacity style={[commonStyles.button, styles.successButton]} onPress={handleComplete}>
+            <TouchableOpacity
+              style={[commonStyles.button, styles.successButton]}
+              onPress={handleComplete}
+              accessibilityRole="button"
+              accessibilityLabel="Complete session"
+              accessible
+            >
               <Text style={commonStyles.buttonText}>Complete Session</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={[commonStyles.button, styles.cancelButton]} onPress={handleCancel}>
+          <TouchableOpacity
+            style={[commonStyles.button, styles.cancelButton]}
+            onPress={handleCancel}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel session, this action cannot be undone"
+            accessible
+          >
             <Text style={commonStyles.buttonText}>Cancel Session</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[commonStyles.button, styles.backButton]} onPress={handleBackButton}>
+          <TouchableOpacity
+            style={[commonStyles.button, styles.backButton]}
+            onPress={handleBackButton}
+            accessibilityRole="button"
+            accessibilityLabel="Pause and go back to home"
+            accessible
+          >
             <Text style={commonStyles.buttonText}>Back</Text>
           </TouchableOpacity>
         </View>
@@ -430,19 +487,6 @@ const styles = StyleSheet.create({
   centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  progressSection: {
-    marginBottom: spacing.xl,
-  },
-  guideTitle: {
-    fontSize: typography.sizeLg,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  stepIndicator: {
-    fontSize: typography.sizeSm,
-    color: colors.textSecondary,
   },
   stepSection: {
     backgroundColor: colors.surface,

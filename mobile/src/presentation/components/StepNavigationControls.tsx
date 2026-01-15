@@ -66,28 +66,43 @@ export const StepNavigationControls: React.FC<StepNavigationControlsProps> = ({
     }
   }
 
+  const isPreviousDisabled = disabled || isFirstStep
+  const isNextDisabled = disabled || isLastStep
+
   return (
-    <View style={styles.container} testID={testID}>
+    <View
+      style={styles.container}
+      testID={testID}
+      accessible
+      accessibilityLabel="Step navigation"
+    >
       <TouchableOpacity
         style={[
           styles.button,
-          (disabled || isFirstStep) && styles.buttonDisabled,
+          isPreviousDisabled && styles.buttonDisabled,
         ]}
         onPress={handlePrevious}
-        disabled={disabled || isFirstStep}
+        disabled={isPreviousDisabled}
         testID="previous-button"
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`Previous step${isPreviousDisabled ? ', disabled on first step' : ''}`}
       >
         <Text
           style={[
             styles.buttonText,
-            (disabled || isFirstStep) && styles.buttonTextDisabled,
+            isPreviousDisabled && styles.buttonTextDisabled,
           ]}
         >
           ← Previous
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.stepIndicator}>
+      <View
+        style={styles.stepIndicator}
+        accessible
+        accessibilityLabel={`Step ${currentStepIndex + 1} of ${totalSteps}`}
+      >
         <Text style={styles.stepText} testID="step-indicator">
           {currentStepIndex + 1} of {totalSteps}
         </Text>
@@ -96,16 +111,19 @@ export const StepNavigationControls: React.FC<StepNavigationControlsProps> = ({
       <TouchableOpacity
         style={[
           styles.button,
-          (disabled || isLastStep) && styles.buttonDisabled,
+          isNextDisabled && styles.buttonDisabled,
         ]}
         onPress={handleNext}
-        disabled={disabled || isLastStep}
+        disabled={isNextDisabled}
         testID="next-button"
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`Next step${isNextDisabled ? ', disabled on last step' : ''}`}
       >
         <Text
           style={[
             styles.buttonText,
-            (disabled || isLastStep) && styles.buttonTextDisabled,
+            isNextDisabled && styles.buttonTextDisabled,
           ]}
         >
           Next →

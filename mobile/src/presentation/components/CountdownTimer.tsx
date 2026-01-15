@@ -141,12 +141,19 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   const useAnimatedStyles = !!Animated && !!Animated.View
 
   return (
-    <View style={styles.container} testID={testID}>
+    <View
+      style={styles.container}
+      testID={testID}
+      accessible
+      accessibilityRole="timer"
+      accessibilityLabel={`Timer: ${formattedTime} remaining`}
+    >
       <TimerDisplay
         style={[
           styles.timerDisplay,
           useAnimatedStyles ? { transform: [{ scale: pulseAnim }], borderColor: getTimerColor() } : { borderColor: getTimerColor() },
         ]}
+        accessible={false}
       >
         <Text
           style={[
@@ -156,6 +163,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             },
           ]}
           testID="timer-text"
+          accessible={false}
         >
           {formattedTime}
         </Text>
