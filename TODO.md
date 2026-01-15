@@ -19,14 +19,15 @@ This document tracks ongoing development and future enhancements for the Guidr p
 - 🐳 Docker images published to GitHub Container Registry
 - 🌐 Production deployment at https://guidr.madebysteven.nl/api
 
-**Mobile App**: React Native core implemented with:
+**Mobile App**: React Native core and Phase 1.4 Session Execution implemented with:
 - Domain layer complete (entities, services, repositories)
 - Authentication flow (login, logout, token management)
 - Server configuration screen
 - Admin mode with user-based authorization (ADR-007)
 - Health check validation (ADR-009)
+- **Session Execution** (Phase 1.4): Countdown timer, step navigation, pause/resume, auto-advance, cross-device timer persistence
 - TestFlight deployment pipeline
-- 870 tests passing (49 test suites)
+- 893 tests passing (54 test suites)
 
 **Web App**: React + Lit web application with:
 - Vite build tooling
@@ -60,13 +61,13 @@ This document tracks ongoing development and future enhancements for the Guidr p
 - [ ] Reorder steps (drag-and-drop or buttons)
 - [ ] Step editor with duration input
 
-### 1.4 Session Execution (Core Feature)
-- [ ] Session execution screen with countdown timer
-- [ ] Step navigation (previous/next)
-- [ ] Pause/resume functionality
-- [ ] Session completion tracking
-- [ ] Auto-advance option (configurable)
-- [ ] Step completion notifications
+### 1.4 Session Execution (Core Feature) ✅ COMPLETE
+- [x] Session execution screen with countdown timer
+- [x] Step navigation (previous/next)
+- [x] Pause/resume functionality
+- [x] Session completion tracking
+- [x] Auto-advance option (configurable)
+- [ ] Step completion notifications (Phase 3 feature)
 
 ### 1.5 Session History
 - [ ] List all sessions (active and completed)
@@ -135,12 +136,12 @@ This document tracks ongoing development and future enhancements for the Guidr p
 - [ ] Category CRUD flows (create, read, update, delete, hierarchy)
 - [ ] Guide CRUD flows
 - [ ] Step CRUD flows and reordering
-- [ ] Full session execution cycle:
-  - [ ] Start guide
-  - [ ] Pause/resume session
-  - [ ] Navigate between steps
-  - [ ] Complete session
-  - [ ] Cancel session
+- [x] Full session execution cycle:
+  - [x] Start guide
+  - [x] Pause/resume session
+  - [x] Navigate between steps
+  - [x] Complete session
+  - [x] Cancel session
 - [ ] Authentication flows:
   - [ ] Login
   - [ ] Logout
@@ -221,13 +222,14 @@ This document tracks ongoing development and future enhancements for the Guidr p
 | Phase | Tasks | Effort | Status |
 |-------|-------|--------|--------|
 | API Server (Complete) | All API endpoints, DDD, RBAC | ✅ Done | Production |
-| Phase 1: Mobile UI | 4 major screens, session execution | 2-3 weeks | Pending |
+| Phase 1.4: Session Execution | Countdown timer, step nav, pause/resume, auto-advance | ✅ Done (3-4 days) | Complete |
+| Phase 1.1-1.3, 1.5: Remaining Mobile UI | Category/Guide/Step/History screens | 1-2 weeks | Pending |
 | Phase 2: UX Polish | Error handling, loading states | 1 week | Pending |
 | Phase 3: Advanced | Offline, notifications, sharing | 2-3 weeks | Pending |
 | Phase 4: Testing | Device testing, manual QA | 1-2 weeks | Pending |
 | Phase 5: Production | Deployment, monitoring, performance | 1 week | Pending |
 
-**Total Estimate**: ~8-10 weeks for complete MVP with all mobile screens
+**Total Estimate**: ~7-9 weeks for complete MVP with all mobile screens (Phase 1.4 now complete)
 
 ---
 
