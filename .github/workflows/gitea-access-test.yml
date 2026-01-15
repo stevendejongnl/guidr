@@ -109,13 +109,16 @@ jobs:
           echo "   Client Secret prefix: ${CF_ACCESS_CLIENT_SECRET:0:20}..."
 
           # Create a wrapper script for cloudflared that includes the service tokens
-          # Use cat with variable substitution instead of sed to avoid escaping issues
-          cat > ~/.ssh/cloudflared-wrapper.sh <<WRAPPER
-#!/bin/bash
-export CF_ACCESS_CLIENT_ID="${CF_ACCESS_CLIENT_ID}"
-export CF_ACCESS_CLIENT_SECRET="${CF_ACCESS_CLIENT_SECRET}"
-exec /usr/bin/cloudflared access ssh "\$@"
-WRAPPER
+          cat > ~/.ssh/cloudflared-wrapper.sh <<'EOF'
+          #!/bin/bash
+          export CF_ACCESS_CLIENT_ID="CF_CLIENT_ID_PLACEHOLDER"
+          export CF_ACCESS_CLIENT_SECRET="CF_CLIENT_SECRET_PLACEHOLDER"
+          exec /usr/bin/cloudflared access ssh "$@"
+          EOF
+
+          # Replace placeholders with actual credentials
+          sed -i "s|CF_CLIENT_ID_PLACEHOLDER|${CF_ACCESS_CLIENT_ID}|g" ~/.ssh/cloudflared-wrapper.sh
+          sed -i "s|CF_CLIENT_SECRET_PLACEHOLDER|${CF_ACCESS_CLIENT_SECRET}|g" ~/.ssh/cloudflared-wrapper.sh
 
           chmod +x ~/.ssh/cloudflared-wrapper.sh
 
