@@ -63,6 +63,19 @@ jobs:
         run: |
           echo "${{ secrets.GITEA_SSH_PRIVATE_KEY }}" > ~/.ssh/gitea_key
           chmod 600 ~/.ssh/gitea_key
+
+          # Debug: Check key format and permissions
+          echo "SSH key file permissions:"
+          ls -la ~/.ssh/gitea_key
+
+          echo ""
+          echo "SSH key file format check:"
+          head -n 1 ~/.ssh/gitea_key
+
+          echo ""
+          echo "SSH key validation:"
+          ssh-keygen -l -f ~/.ssh/gitea_key || echo "⚠️ Key validation failed - check key format"
+
           echo "✅ SSH private key installed"
 
       # Step 6: Install SSH known hosts
@@ -70,11 +83,50 @@ jobs:
         run: |
           echo "${{ secrets.GITEA_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+
+          # Debug: Check known_hosts format
+          echo "Known hosts file:"
+          cat ~/.ssh/known_hosts
+          echo ""
           echo "✅ SSH known hosts installed"
 
       # Step 7: Configure SSH with cloudflared access proxy
       - name: Configure SSH with cloudflared access proxy
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
+          # Debug: Check if secrets are loaded
+          if [ -z "$CF_ACCESS_CLIENT_ID" ] || [ -z "$CF_ACCESS_CLIENT_SECRET" ]; then
+            echo "❌ ERROR: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is empty!"
+            echo "CF_ACCESS_CLIENT_ID is set: $([ -n "$CF_ACCESS_CLIENT_ID" ] && echo "YES" || echo "NO")"
+            echo "CF_ACCESS_CLIENT_SECRET is set: $([ -n "$CF_ACCESS_CLIENT_SECRET" ] && echo "YES" || echo "NO")"
+            exit 1
+          fi
+
+          echo "✅ Cloudflare Access credentials are loaded"
+          echo "   Client ID prefix: ${CF_ACCESS_CLIENT_ID:0:20}..."
+          echo "   Client Secret prefix: ${CF_ACCESS_CLIENT_SECRET:0:20}..."
+
+          # Create a wrapper script for cloudflared that includes the service tokens
+          cat > ~/.ssh/cloudflared-wrapper.sh <<'EOF'
+          #!/bin/bash
+          export CF_ACCESS_CLIENT_ID="CF_CLIENT_ID_PLACEHOLDER"
+          export CF_ACCESS_CLIENT_SECRET="CF_CLIENT_SECRET_PLACEHOLDER"
+          exec /usr/bin/cloudflared access ssh "$@"
+          EOF
+
+          # Replace placeholders with actual credentials
+          sed -i "s|CF_CLIENT_ID_PLACEHOLDER|${CF_ACCESS_CLIENT_ID}|g" ~/.ssh/cloudflared-wrapper.sh
+          sed -i "s|CF_CLIENT_SECRET_PLACEHOLDER|${CF_ACCESS_CLIENT_SECRET}|g" ~/.ssh/cloudflared-wrapper.sh
+
+          chmod +x ~/.ssh/cloudflared-wrapper.sh
+
+          echo ""
+          echo "Wrapper script created (credentials masked):"
+          sed 's/CLIENT_ID=".*"/CLIENT_ID="***MASKED***"/g; s/CLIENT_SECRET=".*"/CLIENT_SECRET="***MASKED***"/g' ~/.ssh/cloudflared-wrapper.sh
+
+          # Configure SSH to use the wrapper
           cat > ~/.ssh/config <<'SSHEOF'
           Host gitaccess.madebysteven.nl
             HostName gitaccess.madebysteven.nl
@@ -83,23 +135,75 @@ jobs:
             IdentityFile ~/.ssh/gitea_key
             StrictHostKeyChecking yes
             UserKnownHostsFile ~/.ssh/known_hosts
-            ProxyCommand /usr/bin/cloudflared access ssh --hostname %h
+            ProxyCommand ~/.ssh/cloudflared-wrapper.sh --hostname %h
           SSHEOF
 
           chmod 600 ~/.ssh/config
+
+          echo ""
+          echo "SSH config:"
+          cat ~/.ssh/config
+          echo ""
           echo "✅ SSH config configured with cloudflared access proxy"
+
+      # Step 7b: Verify cloudflared wrapper and test authentication
+      - name: Verify cloudflared wrapper and test authentication
+        run: |
+          echo "Verifying cloudflared wrapper script..."
+          if [ -x ~/.ssh/cloudflared-wrapper.sh ]; then
+            echo "✅ Cloudflared wrapper is executable"
+          else
+            echo "❌ Cloudflared wrapper is not executable"
+            exit 1
+          fi
+
+          echo ""
+          echo "Testing cloudflared access authentication..."
+          echo "Running: ~/.ssh/cloudflared-wrapper.sh --hostname gitaccess.madebysteven.nl"
+
+          # Try to run the wrapper to see if cloudflared can authenticate
+          # This should fail with connection but show auth status
+          timeout 5 ~/.ssh/cloudflared-wrapper.sh --hostname gitaccess.madebysteven.nl 2>&1 | head -20 || true
+
+          echo ""
+          echo "✅ Cloudflared wrapper test complete (connection attempt made)"
 
       # Step 8: Verify SSH connection through cloudflared
       - name: Verify SSH connection to Gitea
         run: |
-          echo "Testing SSH connection to Gitea through cloudflared access..."
-          ssh -T gitea@gitaccess.madebysteven.nl 2>&1 | tee /tmp/ssh_test.log || true
+          echo "Verifying SSH connection to Gitea through cloudflared access..."
+          echo ""
+          echo "Debug: Testing SSH connection with verbose output..."
+          ssh -vvv -T gitea@gitaccess.madebysteven.nl 2>&1 | tee /tmp/ssh_test.log || true
+
+          echo ""
+          echo "=========================================="
+          echo "SSH Connection Test Results"
+          echo "=========================================="
 
           # Gitea returns exit code 1 for successful auth with "Hi there, You've successfully authenticated"
           if grep -q "successfully authenticated" /tmp/ssh_test.log; then
             echo "✅ SSH authentication successful through cloudflared"
           else
             echo "❌ SSH authentication failed"
+            echo ""
+            echo "Error details:"
+            if grep -q "Permission denied" /tmp/ssh_test.log; then
+              echo "  - Permission denied: SSH key might not be authorized on Gitea server"
+              echo "  - Check that the public key is added to your Gitea user account"
+            fi
+            if grep -q "Connection refused" /tmp/ssh_test.log; then
+              echo "  - Connection refused: cloudflared tunnel might not be working"
+            fi
+            if grep -q "No such identity" /tmp/ssh_test.log; then
+              echo "  - SSH key file issue detected"
+            fi
+            if grep -q "Access" /tmp/ssh_test.log && grep -q "denied\|unauthorized" /tmp/ssh_test.log; then
+              echo "  - Cloudflare Access authentication failed"
+              echo "  - You may need to configure CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET"
+            fi
+            echo ""
+            echo "Full connection output:"
             cat /tmp/ssh_test.log
             exit 1
           fi
@@ -250,6 +354,7 @@ jobs:
           rm -f ~/.ssh/gitea_key
           rm -f ~/.ssh/known_hosts
           rm -f ~/.ssh/config
+          rm -f ~/.ssh/cloudflared-wrapper.sh
           rm -rf /tmp/guidr-certificates
           rm -f /tmp/ssh_test.log
           sudo apt-get remove -y cloudflared || true
@@ -274,5 +379,7 @@ jobs:
           echo "  - CLOUDFLARE_ACCOUNT_ID"
           echo "  - CLOUDFLARE_ZONE_ID"
           echo "  - CLOUDFLARE_API_TOKEN"
+          echo "  - CF_ACCESS_CLIENT_ID (for cloudflared SSH tunneling)"
+          echo "  - CF_ACCESS_CLIENT_SECRET (for cloudflared SSH tunneling)"
           echo "  - GITEA_SSH_PRIVATE_KEY"
           echo "  - GITEA_SSH_KNOWN_HOSTS"
