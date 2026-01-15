@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -6,10 +6,10 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native'
-import DeviceInfo from 'react-native-device-info'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
+import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 
 interface SettingsScreenProps {
   onBack: () => void
@@ -17,6 +17,7 @@ interface SettingsScreenProps {
   onOpenAdmin?: () => void
   adminMode: boolean
   serverUrl: string | null
+  healthCheckService: IHealthCheckService
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -25,9 +26,27 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onOpenAdmin,
   adminMode,
   serverUrl,
+  healthCheckService,
 }) => {
-  const appVersion = DeviceInfo.getVersion()
-  const buildNumber = DeviceInfo.getBuildNumber()
+  const [serverVersion, setServerVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchServerVersion = async () => {
+      if (serverUrl) {
+        try {
+          const result = await healthCheckService.validateServer(serverUrl)
+          if (result.healthy && result.version) {
+            setServerVersion(result.version)
+          } else {
+            setServerVersion(null)
+          }
+        } catch {
+          setServerVersion(null)
+        }
+      }
+    }
+    fetchServerVersion()
+  }, [serverUrl, healthCheckService])
 
   return (
     <SafeScreen>
@@ -46,19 +65,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </View>
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-          {/* App Information Section */}
-          <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>App Information</Text>
-            <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Version</Text>
-              <Text style={styles.settingValue}>{appVersion}</Text>
-            </View>
-            <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Build</Text>
-              <Text style={styles.settingValue}>{buildNumber}</Text>
-            </View>
-          </View>
-
           {/* Server Section */}
           <View style={commonStyles.section}>
             <Text style={commonStyles.sectionTitle}>Server</Text>
@@ -66,6 +72,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               <Text style={styles.settingLabel}>Server URL</Text>
               <Text style={styles.settingValueSmall} numberOfLines={1}>
                 {serverUrl || 'Not configured'}
+              </Text>
+            </View>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Server Version</Text>
+              <Text style={styles.settingValue}>
+                {serverVersion || 'Not available'}
               </Text>
             </View>
             <TouchableOpacity
@@ -92,7 +104,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           )}
         </ScrollView>
 
-        <VersionDisplay />
+        <VersionDisplay isVisible={adminMode} />
       </View>
     </SafeScreen>
   )

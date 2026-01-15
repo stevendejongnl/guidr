@@ -37,6 +37,7 @@ interface HomeScreenProps {
   onViewSessions?: () => void
   onViewSessionDetail?: (sessionId: string) => void
   onViewGuideDetail?: (guideId: string) => void
+  isAdmin: boolean
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -48,6 +49,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onViewSessions,
   onViewSessionDetail,
   onViewGuideDetail,
+  isAdmin,
 }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
@@ -268,7 +270,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         )}
       </ScrollView>
-      <VersionDisplay />
+      <VersionDisplay isVisible={isAdmin} />
     </SafeScreen>
   )
 }

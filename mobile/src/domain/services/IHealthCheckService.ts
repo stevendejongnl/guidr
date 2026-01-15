@@ -16,6 +16,11 @@ export interface HealthCheckResult {
    * Error message if validation failed
    */
   error?: string
+
+  /**
+   * Server version if available
+   */
+  version?: string
 }
 
 /**

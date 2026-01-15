@@ -4,7 +4,11 @@ import DeviceInfo from 'react-native-device-info'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { colors, spacing, typography } from '../theme'
 
-export const VersionDisplay: React.FC = () => {
+interface VersionDisplayProps {
+  isVisible?: boolean
+}
+
+export const VersionDisplay: React.FC<VersionDisplayProps> = ({ isVisible = true }) => {
   const [version, setVersion] = useState<string>('0.0.0')
   const [buildNumber, setBuildNumber] = useState<string>('0')
   const [loading, setLoading] = useState<boolean>(true)
@@ -23,6 +27,10 @@ export const VersionDisplay: React.FC = () => {
       setLoading(false)
     }
   }, [])
+
+  if (!isVisible) {
+    return null
+  }
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + spacing.sm }]} testID="version-display">

@@ -176,7 +176,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
             <Text style={commonStyles.linkText}>Already have an account? Sign in</Text>
           </TouchableOpacity>
         </View>
-        <VersionDisplay />
+        <VersionDisplay isVisible={false} />
       </View>
     </SafeScreen>
   )

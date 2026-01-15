@@ -59,4 +59,32 @@ describe('VersionDisplay', () => {
       ])
     )
   })
+
+  it('should render when isVisible is true', () => {
+    (DeviceInfo.getVersion as jest.Mock).mockReturnValue('1.2.0');
+    (DeviceInfo.getBuildNumber as jest.Mock).mockReturnValue('123')
+
+    const { getByText } = render(<VersionDisplay isVisible={true} />)
+
+    expect(getByText('v1.2.0 (123)')).toBeTruthy()
+  })
+
+  it('should not render when isVisible is false', () => {
+    (DeviceInfo.getVersion as jest.Mock).mockReturnValue('1.2.0');
+    (DeviceInfo.getBuildNumber as jest.Mock).mockReturnValue('123')
+
+    const { queryByText, queryByTestId } = render(<VersionDisplay isVisible={false} />)
+
+    expect(queryByText('v1.2.0 (123)')).toBeNull()
+    expect(queryByTestId('version-display')).toBeNull()
+  })
+
+  it('should render by default when isVisible prop is omitted', () => {
+    (DeviceInfo.getVersion as jest.Mock).mockReturnValue('1.2.0');
+    (DeviceInfo.getBuildNumber as jest.Mock).mockReturnValue('123')
+
+    const { getByText } = render(<VersionDisplay />)
+
+    expect(getByText('v1.2.0 (123)')).toBeTruthy()
+  })
 })

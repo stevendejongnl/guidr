@@ -146,12 +146,12 @@ describe('ServerSetupScreen', () => {
     expect(queryByText('Please enter a server URL')).toBeNull()
   })
 
-  it('should render version display', () => {
-    const { getByTestId } = render(
+  it('should not render version display (hidden for non-admin users)', () => {
+    const { queryByTestId } = render(
       <ServerSetupScreen storage={mockStorage} healthCheckService={mockHealthCheckService} onComplete={mockOnComplete} />
     )
 
-    expect(getByTestId('version-display')).toBeTruthy()
+    expect(queryByTestId('version-display')).toBeNull()
   })
 
   it('should pre-populate input with current URL when provided', () => {

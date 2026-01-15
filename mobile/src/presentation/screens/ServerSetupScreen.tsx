@@ -119,7 +119,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
             )}
           </TouchableOpacity>
         </View>
-        <VersionDisplay />
+        <VersionDisplay isVisible={false} />
       </KeyboardAvoidingView>
     </SafeScreen>
   )

@@ -354,5 +354,50 @@ describe('HealthCheckService', () => {
       expect(result.healthy).toBe(false)
       expect(result.error).toContain('500')
     })
+
+    it('should extract version from health response when present', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ status: 'healthy', version: '1.23.2' }),
+        text: async () => JSON.stringify({ status: 'healthy', version: '1.23.2' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
+      } as Response)
+
+      const result = await healthCheckService.validateServer('https://example.com')
+
+      expect(result.healthy).toBe(true)
+      expect(result.version).toBe('1.23.2')
+    })
+
+    it('should handle version=undefined when not in response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ status: 'healthy' }),
+        text: async () => JSON.stringify({ status: 'healthy' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
+      } as Response)
+
+      const result = await healthCheckService.validateServer('https://example.com')
+
+      expect(result.healthy).toBe(true)
+      expect(result.version).toBeUndefined()
+    })
+
+    it('should extract version with different version format', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ status: 'healthy', version: '2.0.0-beta' }),
+        text: async () => JSON.stringify({ status: 'healthy', version: '2.0.0-beta' }),
+        headers: new Headers({ 'content-type': 'application/json' }),
+      } as Response)
+
+      const result = await healthCheckService.validateServer('https://example.com')
+
+      expect(result.healthy).toBe(true)
+      expect(result.version).toBe('2.0.0-beta')
+    })
   })
 })

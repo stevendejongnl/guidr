@@ -109,7 +109,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
       if (result.healthy) {
         setPingResult(`✓ Connected (${result.responseTime}ms)`)
         setSuccessMessage(`Successfully connected to: ${url}/api/v1/health`)
-        setServerVersion('Available')
+        setServerVersion(result.version || 'Not available')
       } else {
         setPingResult('✗ Connection failed')
         setError(`${result.error || 'Connection test failed'}\n\nTested URL: ${url}/api/v1/health`)

@@ -86,8 +86,8 @@ describe('LoginScreen', () => {
       expect(passwordInput.props['secureTextEntry']).toBe(true)
     })
 
-    it('should render version display', () => {
-      const { getByTestId } = render(
+    it('should not render version display (hidden for non-admin users)', () => {
+      const { queryByTestId } = render(
         <LoginScreen
           authStorage={mockAuthStorage}
           authClient={mockAuthClient}
@@ -97,7 +97,7 @@ describe('LoginScreen', () => {
         />
       )
 
-      expect(getByTestId('version-display')).toBeTruthy()
+      expect(queryByTestId('version-display')).toBeNull()
     })
   })
 

@@ -4,6 +4,8 @@ import os
 from importlib.metadata import PackageNotFoundError
 from unittest.mock import patch
 
+from fastapi.testclient import TestClient
+
 from src.presentation.api.app import _get_version, create_app
 
 
@@ -51,3 +53,36 @@ class TestVersionResolution:
             ):
                 app = create_app()
                 assert app.version == "1.23.2"
+
+
+class TestHealthEndpoint:
+    """Test health check endpoint."""
+
+    def test_health_endpoint_returns_status_and_version(self) -> None:
+        """Health endpoint should return status and version."""
+        with patch.dict(os.environ, {"GUIDR_VERSION": "1.23.2"}):
+            app = create_app()
+            client = TestClient(app)
+
+            response = client.get("/api/v1/health")
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["status"] == "healthy"
+            assert data["version"] == "1.23.2"
+
+    def test_health_endpoint_version_from_app(self) -> None:
+        """Health endpoint should use version from FastAPI app."""
+        with patch.dict(os.environ, {}, clear=True):
+            with patch(
+                "src.presentation.api.app.version", return_value="2.0.0"
+            ):
+                app = create_app()
+                client = TestClient(app)
+
+                response = client.get("/api/v1/health")
+
+                assert response.status_code == 200
+                data = response.json()
+                assert data["status"] == "healthy"
+                assert data["version"] == "2.0.0"

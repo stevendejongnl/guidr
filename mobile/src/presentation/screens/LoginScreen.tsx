@@ -151,7 +151,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <Text style={commonStyles.linkText}>Don&apos;t have an account? Register</Text>
           </TouchableOpacity>
         </View>
-        <VersionDisplay />
+        <VersionDisplay isVisible={false} />
       </View>
     </SafeScreen>
   )

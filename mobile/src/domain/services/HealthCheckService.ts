@@ -95,6 +95,7 @@ export class HealthCheckService implements IHealthCheckService {
           return {
             healthy: true,
             responseTime,
+            version: (data as any).version, // Extract version if present
           }
         }
 

@@ -375,6 +375,7 @@ export const AppNavigator: React.FC = () => {
         }}
         adminMode={isAdmin}
         serverUrl={serverUrl}
+        healthCheckService={healthCheckService}
       />
     )
   }
@@ -384,6 +385,7 @@ export const AppNavigator: React.FC = () => {
       onLogout={handleLogout}
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
+      isAdmin={isAdmin}
     />
   )
 }

@@ -169,16 +169,14 @@ describe('AdminScreen', () => {
   })
 
   describe('connection test', () => {
-    it('should show success message on successful connection', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({ status: 'healthy' }),
-        text: async () => JSON.stringify({ status: 'healthy' }),
-        headers: new Headers({ 'content-type': 'application/json' }),
-      } as Response)
+    it('should show success message on successful connection with version', async () => {
+      mockHealthCheckService.validateServer.mockResolvedValue({
+        healthy: true,
+        responseTime: 100,
+        version: '1.23.2',
+      })
 
-      const { getByText } = render(
+      const { getByText, queryByText } = render(
         <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
@@ -187,12 +185,33 @@ describe('AdminScreen', () => {
 
       await waitFor(() => {
         expect(getByText(/✓ Connected/)).toBeTruthy()
-        expect(getByText('Server: Available')).toBeTruthy()
+        // The version is displayed as "Server: 1.23.2"
+        expect(queryByText(/Server:\s+1\.23\.2/)).toBeTruthy()
       })
 
       expect(mockHealthCheckService.validateServer).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1'
       )
+    })
+
+    it('should show "Not available" when connection succeeds but no version', async () => {
+      mockHealthCheckService.validateServer.mockResolvedValue({
+        healthy: true,
+        responseTime: 100,
+      })
+
+      const { getByText, queryByText } = render(
+        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+      )
+
+      const testButton = getByText('Test Connection')
+      fireEvent.press(testButton)
+
+      await waitFor(() => {
+        expect(getByText(/✓ Connected/)).toBeTruthy()
+        // Check that version is set to "Not available" after successful connection
+        expect(queryByText(/Server:\s+Not available/)).toBeTruthy()
+      })
     })
 
     it('should show failure message on connection error', async () => {
