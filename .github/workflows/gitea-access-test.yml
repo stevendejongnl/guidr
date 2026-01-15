@@ -285,4 +285,5 @@ jobs:
           echo "  - CLOUDFLARE_ZONE_ID"
           echo "  - CLOUDFLARE_API_TOKEN"
           echo "  - GITEA_SSH_PRIVATE_KEY"
-          echo "  - GITEA_SSH_KNOWN_HOSTS"
+          echo ""
+          echo "Note: SSH host key is auto-captured on first connection"
