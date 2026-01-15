@@ -111,15 +111,38 @@ jobs:
           echo ""
           echo "✅ SSH config configured with cloudflared access proxy"
 
-      # Step 7b: Test cloudflared connectivity
-      - name: Test cloudflared access tunnel
+      # Step 7b: Configure cloudflared service token authentication
+      - name: Configure cloudflared service token
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
+          # Check if service tokens are configured
+          if [ -z "$CF_ACCESS_CLIENT_ID" ] || [ -z "$CF_ACCESS_CLIENT_SECRET" ]; then
+            echo "⚠️ WARNING: Cloudflare Access service tokens not configured"
+            echo "   If authentication fails, you may need to set:"
+            echo "   - CLOUDFLARE_ACCESS_CLIENT_ID"
+            echo "   - CLOUDFLARE_ACCESS_CLIENT_SECRET"
+            echo ""
+            echo "Proceeding without service token authentication..."
+          else
+            echo "✅ Cloudflare Access service tokens are configured"
+            echo "   Client ID: ${CF_ACCESS_CLIENT_ID:0:10}..."
+
+            # Export tokens for cloudflared to use
+            export CF_ACCESS_CLIENT_ID
+            export CF_ACCESS_CLIENT_SECRET
+          fi
+
           echo "Testing cloudflared access tunnel connectivity..."
           timeout 10 cloudflared access ssh --hostname gitaccess.madebysteven.nl --help 2>&1 || echo "cloudflared command check complete"
           echo "✅ cloudflared is configured"
 
       # Step 8: Verify SSH connection through cloudflared
       - name: Verify SSH connection to Gitea
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           echo "Verifying SSH connection to Gitea through cloudflared access..."
           echo ""
@@ -148,6 +171,10 @@ jobs:
             if grep -q "No such identity" /tmp/ssh_test.log; then
               echo "  - SSH key file issue detected"
             fi
+            if grep -q "Access" /tmp/ssh_test.log && grep -q "denied\|unauthorized" /tmp/ssh_test.log; then
+              echo "  - Cloudflare Access authentication failed"
+              echo "  - You may need to configure CLOUDFLARE_ACCESS_CLIENT_ID and CLOUDFLARE_ACCESS_CLIENT_SECRET"
+            fi
             echo ""
             echo "Full connection output:"
             cat /tmp/ssh_test.log
@@ -156,6 +183,9 @@ jobs:
 
       # Step 9: Clone the Gitea repository
       - name: Clone guidr-certificates repository
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           git clone gitea@gitaccess.madebysteven.nl:stevendejong/guidr-certificates.git /tmp/guidr-certificates
           cd /tmp/guidr-certificates
@@ -222,6 +252,9 @@ jobs:
 
       # Step 13: Push changes to Gitea
       - name: Push changes to Gitea
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           cd /tmp/guidr-certificates
 
@@ -234,6 +267,9 @@ jobs:
 
       # Step 14: Pull latest changes to verify round-trip
       - name: Verify round-trip by pulling latest
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           cd /tmp/guidr-certificates
           git fetch origin
@@ -324,5 +360,7 @@ jobs:
           echo "  - CLOUDFLARE_ACCOUNT_ID"
           echo "  - CLOUDFLARE_ZONE_ID"
           echo "  - CLOUDFLARE_API_TOKEN"
+          echo "  - CLOUDFLARE_ACCESS_CLIENT_ID (for cloudflared SSH tunneling)"
+          echo "  - CLOUDFLARE_ACCESS_CLIENT_SECRET (for cloudflared SSH tunneling)"
           echo "  - GITEA_SSH_PRIVATE_KEY"
           echo "  - GITEA_SSH_KNOWN_HOSTS"
