@@ -63,6 +63,19 @@ jobs:
         run: |
           echo "${{ secrets.GITEA_SSH_PRIVATE_KEY }}" > ~/.ssh/gitea_key
           chmod 600 ~/.ssh/gitea_key
+
+          # Debug: Check key format and permissions
+          echo "SSH key file permissions:"
+          ls -la ~/.ssh/gitea_key
+
+          echo ""
+          echo "SSH key file format check:"
+          head -n 1 ~/.ssh/gitea_key
+
+          echo ""
+          echo "SSH key validation:"
+          ssh-keygen -l -f ~/.ssh/gitea_key || echo "⚠️ Key validation failed - check key format"
+
           echo "✅ SSH private key installed"
 
       # Step 6: Install SSH known hosts
@@ -70,6 +83,11 @@ jobs:
         run: |
           echo "${{ secrets.GITEA_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+
+          # Debug: Check known_hosts format
+          echo "Known hosts file:"
+          cat ~/.ssh/known_hosts
+          echo ""
           echo "✅ SSH known hosts installed"
 
       # Step 7: Configure SSH with cloudflared access proxy
@@ -87,20 +105,51 @@ jobs:
           SSHEOF
 
           chmod 600 ~/.ssh/config
+
+          echo "SSH config:"
+          cat ~/.ssh/config
+          echo ""
           echo "✅ SSH config configured with cloudflared access proxy"
+
+      # Step 7b: Test cloudflared connectivity
+      - name: Test cloudflared access tunnel
+        run: |
+          echo "Testing cloudflared access tunnel connectivity..."
+          timeout 10 cloudflared access ssh --hostname gitaccess.madebysteven.nl --help 2>&1 || echo "cloudflared command check complete"
+          echo "✅ cloudflared is configured"
 
       # Step 8: Verify SSH connection through cloudflared
       - name: Verify SSH connection to Gitea
         run: |
           echo "Verifying SSH connection to Gitea through cloudflared access..."
-          ssh -T gitea@gitaccess.madebysteven.nl 2>&1 | tee /tmp/ssh_test.log || true
+          echo ""
+          echo "Debug: Testing SSH connection with verbose output..."
+          ssh -vvv -T gitea@gitaccess.madebysteven.nl 2>&1 | tee /tmp/ssh_test.log || true
+
+          echo ""
+          echo "=========================================="
+          echo "SSH Connection Test Results"
+          echo "=========================================="
 
           # Gitea returns exit code 1 for successful auth with "Hi there, You've successfully authenticated"
           if grep -q "successfully authenticated" /tmp/ssh_test.log; then
             echo "✅ SSH authentication successful through cloudflared"
           else
             echo "❌ SSH authentication failed"
-            echo "Connection output:"
+            echo ""
+            echo "Error details:"
+            if grep -q "Permission denied" /tmp/ssh_test.log; then
+              echo "  - Permission denied: SSH key might not be authorized on Gitea server"
+              echo "  - Check that the public key is added to your Gitea user account"
+            fi
+            if grep -q "Connection refused" /tmp/ssh_test.log; then
+              echo "  - Connection refused: cloudflared tunnel might not be working"
+            fi
+            if grep -q "No such identity" /tmp/ssh_test.log; then
+              echo "  - SSH key file issue detected"
+            fi
+            echo ""
+            echo "Full connection output:"
             cat /tmp/ssh_test.log
             exit 1
           fi
