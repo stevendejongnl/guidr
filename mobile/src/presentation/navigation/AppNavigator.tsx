@@ -15,6 +15,7 @@ import { HomeScreen } from '../screens/HomeScreen'
 import { AdminScreen } from '../screens/AdminScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
 import { ProfileScreen } from '../screens/ProfileScreen'
+import { SessionExecutionScreen } from '../screens/SessionExecutionScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -43,6 +44,8 @@ export const AppNavigator: React.FC = () => {
   const [updateCheckResult, setUpdateCheckResult] = useState<UpdateCheckResult | null>(null)
   const [showUpdateDownload, setShowUpdateDownload] = useState(false)
   const [dismissedOptionalUpdate, setDismissedOptionalUpdate] = useState(false)
+  const [showSessionExecution, setShowSessionExecution] = useState(false)
+  const [executingSessionId, setExecutingSessionId] = useState<string | null>(null)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -224,6 +227,26 @@ export const AppNavigator: React.FC = () => {
     setIsAdmin(adminStatus)
   }
 
+  const handleViewSessionDetail = (sessionId: string) => {
+    setExecutingSessionId(sessionId)
+    setShowSessionExecution(true)
+  }
+
+  const handleSessionComplete = () => {
+    setShowSessionExecution(false)
+    setExecutingSessionId(null)
+  }
+
+  const handleSessionCancel = () => {
+    setShowSessionExecution(false)
+    setExecutingSessionId(null)
+  }
+
+  const handleSessionBack = () => {
+    setShowSessionExecution(false)
+    setExecutingSessionId(null)
+  }
+
   if (loading) {
     return (
       <View style={commonStyles.loadingContainer}>
@@ -380,11 +403,23 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (showSessionExecution && executingSessionId) {
+    return (
+      <SessionExecutionScreen
+        sessionId={executingSessionId}
+        onComplete={handleSessionComplete}
+        onCancel={handleSessionCancel}
+        onBack={handleSessionBack}
+      />
+    )
+  }
+
   return (
     <HomeScreen
       onLogout={handleLogout}
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
+      onViewSessionDetail={handleViewSessionDetail}
       isAdmin={isAdmin}
     />
   )
