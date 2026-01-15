@@ -36,9 +36,20 @@ jobs:
       # Step 3: Install cloudflared
       - name: Install cloudflared
         run: |
-          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-x86_64.deb -o cloudflared.deb
-          sudo dpkg -i cloudflared.deb
-          echo "✅ cloudflared installed"
+          # Add Cloudflare GPG key and repository
+          sudo mkdir -p --mode=0755 /usr/share/keyrings
+          curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+
+          # Add Cloudflare apt repository
+          echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
+
+          # Update package list and install cloudflared
+          sudo apt-get update
+          sudo apt-get install -y cloudflared
+
+          # Verify installation
+          cloudflared --version
+          echo "✅ cloudflared installed successfully"
 
       # Step 4: Setup SSH directory with proper permissions
       - name: Setup SSH directory
