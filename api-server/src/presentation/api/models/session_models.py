@@ -21,8 +21,17 @@ class SessionResponse(BaseModel):
     started_at: str | None = Field(None, alias="startedAt")
     completed_at: str | None = Field(None, alias="completedAt")
     current_step_id: str | None = Field(None, alias="currentStepId")
+    step_elapsed_seconds: int = Field(default=0, alias="stepElapsedSeconds")
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class PauseSessionRequest(BaseModel):
+    """Request model for pausing a session."""
+
+    step_elapsed_seconds: int = Field(..., alias="stepElapsedSeconds")
 
     model_config = ConfigDict(populate_by_name=True)
 

@@ -19,11 +19,14 @@ class PauseSession:
         self._repository = session_repository
         self._mapper = SessionMapper()
 
-    async def execute(self, session_id: str) -> SessionResponseDTO:
+    async def execute(
+        self, session_id: str, step_elapsed_seconds: int | None = None
+    ) -> SessionResponseDTO:
         """Pause a session.
 
         Args:
             session_id: Session ID
+            step_elapsed_seconds: Optional elapsed seconds to save for current step
 
         Returns:
             SessionResponseDTO with updated session data
@@ -36,6 +39,10 @@ class PauseSession:
         session = await self._repository.find_by_id(EntityId(session_id))
         if not session:
             raise EntityNotFoundException(f"Session not found: {session_id}")
+
+        # Set elapsed seconds if provided
+        if step_elapsed_seconds is not None:
+            session.set_step_elapsed_seconds(step_elapsed_seconds)
 
         # Pause session
         session.pause()

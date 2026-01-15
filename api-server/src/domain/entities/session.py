@@ -20,6 +20,7 @@ class Session:
         started_at: datetime | None = None,
         completed_at: datetime | None = None,
         current_step_id: EntityId | None = None,
+        step_elapsed_seconds: int = 0,
         created_at: datetime | None = None,
         updated_at: datetime | None = None,
     ):
@@ -32,6 +33,7 @@ class Session:
             started_at: Optional start timestamp
             completed_at: Optional completion timestamp
             current_step_id: Optional current step ID
+            step_elapsed_seconds: Elapsed seconds in current step (defaults to 0)
             created_at: Optional creation timestamp (defaults to now)
             updated_at: Optional update timestamp (defaults to now)
         """
@@ -41,6 +43,7 @@ class Session:
         self._started_at = started_at
         self._completed_at = completed_at
         self._current_step_id = current_step_id
+        self._step_elapsed_seconds = step_elapsed_seconds
         self._created_at = created_at or datetime.now(UTC)
         self._updated_at = updated_at or datetime.now(UTC)
 
@@ -75,6 +78,30 @@ class Session:
         return self._current_step_id
 
     @property
+    def step_elapsed_seconds(self) -> int:
+        """Get elapsed seconds in current step."""
+        return self._step_elapsed_seconds
+
+    def set_step_elapsed_seconds(self, seconds: int) -> None:
+        """Set elapsed seconds in current step.
+
+        Args:
+            seconds: Elapsed seconds (must be non-negative)
+
+        Raises:
+            ValidationException: If seconds is negative
+        """
+        if seconds < 0:
+            raise ValidationException("Elapsed seconds must be non-negative")
+        self._step_elapsed_seconds = seconds
+        self._updated_at = datetime.now(UTC)
+
+    def reset_step_elapsed_seconds(self) -> None:
+        """Reset elapsed seconds to 0 (e.g., when moving to next step)."""
+        self._step_elapsed_seconds = 0
+        self._updated_at = datetime.now(UTC)
+
+    @property
     def created_at(self) -> datetime:
         """Get creation timestamp."""
         return self._created_at
@@ -97,6 +124,7 @@ class Session:
 
         self._status = SessionStatus.IN_PROGRESS
         self._started_at = datetime.now(UTC)
+        self._step_elapsed_seconds = 0  # Reset elapsed time when starting
         self._updated_at = datetime.now(UTC)
 
     def pause(self) -> None:
@@ -170,6 +198,7 @@ class Session:
             raise ValidationException("Cannot move to step when session is not active")
 
         self._current_step_id = step_id
+        self._step_elapsed_seconds = 0  # Reset elapsed time for new step
         self._updated_at = datetime.now(UTC)
 
     def is_active(self) -> bool:

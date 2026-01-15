@@ -26,6 +26,7 @@ class SessionMapper:
             "startedAt": session.started_at,
             "completedAt": session.completed_at,
             "currentStepId": session.current_step_id.value if session.current_step_id else None,
+            "stepElapsedSeconds": session.step_elapsed_seconds,
             "createdAt": session.created_at,
             "updatedAt": session.updated_at,
         }
@@ -49,6 +50,7 @@ class SessionMapper:
             current_step_id=(
                 EntityId(str(document["currentStepId"])) if document.get("currentStepId") else None
             ),
+            step_elapsed_seconds=document.get("stepElapsedSeconds", 0),
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
         )

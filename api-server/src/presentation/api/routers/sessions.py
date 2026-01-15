@@ -24,6 +24,7 @@ from src.domain.exceptions import EntityNotFoundException, ValidationException
 from ..models import (
     ErrorResponse,
     MoveToStepRequest,
+    PauseSessionRequest,
     SessionCreate,
     SessionResponse,
 )
@@ -123,6 +124,7 @@ async def create_session(
             startedAt=result.started_at,
             completedAt=result.completed_at,
             currentStepId=result.current_step_id,
+            stepElapsedSeconds=result.step_elapsed_seconds,
             createdAt=result.created_at,
             updatedAt=result.updated_at,
         )
@@ -184,6 +186,7 @@ async def list_sessions(
             startedAt=r.started_at,
             completedAt=r.completed_at,
             currentStepId=r.current_step_id,
+            stepElapsedSeconds=r.step_elapsed_seconds,
             createdAt=r.created_at,
             updatedAt=r.updated_at,
         )
@@ -211,6 +214,7 @@ async def start_session(
             startedAt=result.started_at,
             completedAt=result.completed_at,
             currentStepId=result.current_step_id,
+            stepElapsedSeconds=result.step_elapsed_seconds,
             createdAt=result.created_at,
             updatedAt=result.updated_at,
         )
@@ -227,11 +231,12 @@ async def start_session(
 )
 async def pause_session(
     session_id: str,
+    request: PauseSessionRequest,
     use_case: PauseSession = Depends(get_pause_session_use_case),
 ) -> SessionResponse:
     """Pause a session."""
     try:
-        result = await use_case.execute(session_id)
+        result = await use_case.execute(session_id, request.step_elapsed_seconds)
         return SessionResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -239,6 +244,7 @@ async def pause_session(
             startedAt=result.started_at,
             completedAt=result.completed_at,
             currentStepId=result.current_step_id,
+            stepElapsedSeconds=result.step_elapsed_seconds,
             createdAt=result.created_at,
             updatedAt=result.updated_at,
         )
@@ -267,6 +273,7 @@ async def resume_session(
             startedAt=result.started_at,
             completedAt=result.completed_at,
             currentStepId=result.current_step_id,
+            stepElapsedSeconds=result.step_elapsed_seconds,
             createdAt=result.created_at,
             updatedAt=result.updated_at,
         )
@@ -295,6 +302,7 @@ async def complete_session(
             startedAt=result.started_at,
             completedAt=result.completed_at,
             currentStepId=result.current_step_id,
+            stepElapsedSeconds=result.step_elapsed_seconds,
             createdAt=result.created_at,
             updatedAt=result.updated_at,
         )
@@ -323,6 +331,7 @@ async def cancel_session(
             startedAt=result.started_at,
             completedAt=result.completed_at,
             currentStepId=result.current_step_id,
+            stepElapsedSeconds=result.step_elapsed_seconds,
             createdAt=result.created_at,
             updatedAt=result.updated_at,
         )
@@ -352,6 +361,7 @@ async def move_to_step(
             startedAt=result.started_at,
             completedAt=result.completed_at,
             currentStepId=result.current_step_id,
+            stepElapsedSeconds=result.step_elapsed_seconds,
             createdAt=result.created_at,
             updatedAt=result.updated_at,
         )

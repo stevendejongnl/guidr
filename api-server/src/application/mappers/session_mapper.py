@@ -28,6 +28,7 @@ class SessionMapper:
             current_step_id=session.current_step_id.value
             if session.current_step_id
             else None,
+            step_elapsed_seconds=session.step_elapsed_seconds,
             created_at=session.created_at.isoformat(),
             updated_at=session.updated_at.isoformat(),
         )
