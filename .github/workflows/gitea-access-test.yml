@@ -96,19 +96,32 @@ jobs:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
-          # Create a wrapper script for cloudflared that includes the service tokens
-          cat > ~/.ssh/cloudflared-wrapper.sh <<'WRAPPER'
-          #!/bin/bash
-          export CF_ACCESS_CLIENT_ID="CF_CLIENT_ID_PLACEHOLDER"
-          export CF_ACCESS_CLIENT_SECRET="CF_CLIENT_SECRET_PLACEHOLDER"
-          exec /usr/bin/cloudflared access ssh "$@"
-          WRAPPER
+          # Debug: Check if secrets are loaded
+          if [ -z "$CF_ACCESS_CLIENT_ID" ] || [ -z "$CF_ACCESS_CLIENT_SECRET" ]; then
+            echo "❌ ERROR: CF_ACCESS_CLIENT_ID or CF_ACCESS_CLIENT_SECRET is empty!"
+            echo "CF_ACCESS_CLIENT_ID is set: $([ -n "$CF_ACCESS_CLIENT_ID" ] && echo "YES" || echo "NO")"
+            echo "CF_ACCESS_CLIENT_SECRET is set: $([ -n "$CF_ACCESS_CLIENT_SECRET" ] && echo "YES" || echo "NO")"
+            exit 1
+          fi
 
-          # Replace placeholders with actual values
-          sed -i "s|CF_CLIENT_ID_PLACEHOLDER|${CF_ACCESS_CLIENT_ID}|g" ~/.ssh/cloudflared-wrapper.sh
-          sed -i "s|CF_CLIENT_SECRET_PLACEHOLDER|${CF_ACCESS_CLIENT_SECRET}|g" ~/.ssh/cloudflared-wrapper.sh
+          echo "✅ Cloudflare Access credentials are loaded"
+          echo "   Client ID prefix: ${CF_ACCESS_CLIENT_ID:0:20}..."
+          echo "   Client Secret prefix: ${CF_ACCESS_CLIENT_SECRET:0:20}..."
+
+          # Create a wrapper script for cloudflared that includes the service tokens
+          # Use cat with variable substitution instead of sed to avoid escaping issues
+          cat > ~/.ssh/cloudflared-wrapper.sh <<WRAPPER
+#!/bin/bash
+export CF_ACCESS_CLIENT_ID="${CF_ACCESS_CLIENT_ID}"
+export CF_ACCESS_CLIENT_SECRET="${CF_ACCESS_CLIENT_SECRET}"
+exec /usr/bin/cloudflared access ssh "\$@"
+WRAPPER
 
           chmod +x ~/.ssh/cloudflared-wrapper.sh
+
+          echo ""
+          echo "Wrapper script created (credentials masked):"
+          sed 's/CLIENT_ID=".*"/CLIENT_ID="***MASKED***"/g; s/CLIENT_SECRET=".*"/CLIENT_SECRET="***MASKED***"/g' ~/.ssh/cloudflared-wrapper.sh
 
           # Configure SSH to use the wrapper
           cat > ~/.ssh/config <<'SSHEOF'
@@ -124,13 +137,14 @@ jobs:
 
           chmod 600 ~/.ssh/config
 
+          echo ""
           echo "SSH config:"
           cat ~/.ssh/config
           echo ""
           echo "✅ SSH config configured with cloudflared access proxy"
 
-      # Step 7b: Verify cloudflared wrapper
-      - name: Verify cloudflared wrapper
+      # Step 7b: Verify cloudflared wrapper and test authentication
+      - name: Verify cloudflared wrapper and test authentication
         run: |
           echo "Verifying cloudflared wrapper script..."
           if [ -x ~/.ssh/cloudflared-wrapper.sh ]; then
@@ -139,6 +153,17 @@ jobs:
             echo "❌ Cloudflared wrapper is not executable"
             exit 1
           fi
+
+          echo ""
+          echo "Testing cloudflared access authentication..."
+          echo "Running: ~/.ssh/cloudflared-wrapper.sh --hostname gitaccess.madebysteven.nl"
+
+          # Try to run the wrapper to see if cloudflared can authenticate
+          # This should fail with connection but show auth status
+          timeout 5 ~/.ssh/cloudflared-wrapper.sh --hostname gitaccess.madebysteven.nl 2>&1 | head -20 || true
+
+          echo ""
+          echo "✅ Cloudflared wrapper test complete (connection attempt made)"
 
       # Step 8: Verify SSH connection through cloudflared
       - name: Verify SSH connection to Gitea
