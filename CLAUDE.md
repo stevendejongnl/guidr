@@ -7,8 +7,8 @@ Guidr monorepo: Mobile (React Native) + API (FastAPI) + Web (React). DDD/TDD arc
 **ADRs**: All architectural decisions in `docs/adr/NNN-name.md` with Status, Context, Decision, Consequences
 
 ## Project Overview
-**Status**: 171 tests passing, Admin auth (ADR-006, ADR-007), Android Gradle 8.13
-**Stack**: Mobile RN 0.83.1 | API FastAPI 3.11+ | Web React | TypeScript strict | Jest
+**Status**: 870 tests passing (49 test suites), Admin auth (ADR-006, ADR-007, ADR-008), Android Gradle 8.13
+**Stack**: Mobile RN 0.83.1 | API FastAPI 3.12+ | Web React | TypeScript strict | Jest
 **Domain**: Category → Guide → Steps (duration) → Session (state machine)
 
 ## Structure

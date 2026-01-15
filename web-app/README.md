@@ -16,8 +16,8 @@ The Guidr web application is a single-page application (SPA) that provides a web
 
 ## Prerequisites
 
-- **Node.js**: 24+ (LTS)
-- **npm**: 11.6+
+- **Node.js**: 24.11.0+ (LTS)
+- **npm**: 11.6.0+
 
 ## Quick Start
 

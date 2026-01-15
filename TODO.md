@@ -1,362 +1,317 @@
-# Guidr - Application Completion Roadmap
+# Guidr - Development Roadmap
 
-This document tracks the remaining work to complete the Guidr application. The core domain logic and deployment infrastructure are complete. This roadmap focuses on implementing the remaining features to create a fully functional guide execution app.
-
----
-
-## 🔄 In Progress: Dependabot PR Merges (PARKED)
-
-**Status**: Waiting for Dependabot to finish rebasing PRs after merging #7
-
-**Plan**: `/home/stevendejong/.claude/plans/graceful-tickling-sutton.md`
-
-**Summary**: 8 Dependabot PRs need to be reviewed and merged. Some have CI failures that need investigation.
-
-**Progress**:
-- ✅ PR #7: ruff 0.3.7 → 0.14.10 (MERGED 2025-12-31)
-- ⏳ Waiting for Dependabot rebase of remaining PRs
-- ⏸️ PR #8: pytest 8.4.2 → 9.0.2 (ready to merge after rebase)
-- ⏸️ PRs #2, #3, #5, #6: Need workflow re-runs (transient Android failures)
-- ⏸️ PR #1: @typescript-eslint 7→8 (needs parser update in package.json)
-- ⏸️ PR #4: semantic-release 24→25 (needs npm plugin removed from .releaserc.json)
-
-**Next Actions** (when resuming):
-1. Merge PR #8 after rebase completes
-2. Re-run failed workflows for PRs #2, #3, #5, #6
-3. Fix PR #1: Update @typescript-eslint/parser to v8.51.0 in package.json
-4. Fix PR #4: Remove `@semantic-release/npm` from .releaserc.json line 42
-
-**Key Findings**:
-- PR #1 has peer dependency conflict (plugin v8 requires parser v8)
-- PR #4 fails because npm plugin interferes with React Native builds in semantic-release v25
-- PRs #2, #3, #5, #6 have Android-only failures (likely environmental, not dependency-related)
+This document tracks ongoing development and future enhancements for the Guidr project. The core infrastructure and API server are complete and production-ready.
 
 ---
 
-## Current Status
+## 📊 Project Status
 
-✅ **Completed:**
-- Domain layer (Category, Guide, Step, Session entities + services) - 172 tests passing
-- Authentication flow (login screen, token storage, logout)
+### ✅ Completed Core Infrastructure
+
+**API Server**: FastAPI backend fully deployed with comprehensive features:
+- 🏗️ Domain-Driven Design (DDD) architecture
+- 🗄️ MongoDB persistence with repository pattern
+- 🔐 Real authentication (Argon2 + JWT tokens)
+- 🛒 Full CRUD for Categories, Guides, Steps, Sessions
+- 📋 RBAC (Role-Based Access Control) with admin authorization
+- 📝 Comprehensive audit logging system
+- 🧪 Full test coverage (870 tests passing across monorepo)
+- 🐳 Docker images published to GitHub Container Registry
+- 🌐 Production deployment at https://guidr.madebysteven.nl/api
+
+**Mobile App**: React Native core implemented with:
+- Domain layer complete (entities, services, repositories)
+- Authentication flow (login, logout, token management)
 - Server configuration screen
+- Admin mode with user-based authorization (ADR-007)
+- Health check validation (ADR-009)
 - TestFlight deployment pipeline
-- Android and iOS builds working
+- 870 tests passing (49 test suites)
 
-❌ **Missing:**
-- Backend API server
-- Repository implementations (API integration)
-- All core feature screens (Category/Guide/Step CRUD, Session execution)
+**Web App**: React + Lit web application with:
+- Vite build tooling
+- TypeScript strict mode
+- Component architecture ready
 
----
-
-## Prerequisites: Backend API Server
-
-**IMPORTANT**: The backend API must be implemented before the frontend features can work. The app expects a REST API with the following endpoints:
-
-### Authentication Endpoints
-- ✅ `POST /login` - Already supported by AuthClient
-  - Request: `{ email: string, password: string }`
-  - Response: `{ token: string, email: string }`
-
-### Category Endpoints
-- [ ] `GET /categories` - List all categories
-- [ ] `GET /categories/:id` - Get category by ID
-- [ ] `POST /categories` - Create category
-  - Request: `{ name: string, description: string, parentId?: string }`
-- [ ] `PUT /categories/:id` - Update category
-  - Request: `{ name?: string, description?: string }`
-- [ ] `DELETE /categories/:id` - Delete category
-
-### Guide Endpoints
-- [ ] `GET /guides` - List all guides
-- [ ] `GET /guides/:id` - Get guide by ID (include steps)
-- [ ] `GET /categories/:categoryId/guides` - List guides in category
-- [ ] `POST /guides` - Create guide
-  - Request: `{ categoryId: string, title: string, description: string }`
-- [ ] `PUT /guides/:id` - Update guide
-  - Request: `{ title?: string, description?: string }`
-- [ ] `DELETE /guides/:id` - Delete guide
-
-### Step Endpoints
-- [ ] `GET /guides/:guideId/steps` - List steps for a guide
-- [ ] `GET /steps/:id` - Get step by ID
-- [ ] `POST /steps` - Create step
-  - Request: `{ guideId: string, order: number, title: string, description: string, durationSeconds: number }`
-- [ ] `PUT /steps/:id` - Update step
-  - Request: `{ order?: number, title?: string, description?: string, durationSeconds?: number }`
-- [ ] `DELETE /steps/:id` - Delete step
-
-### Session Endpoints
-- [ ] `GET /sessions` - List all sessions
-- [ ] `GET /sessions/:id` - Get session by ID
-- [ ] `POST /sessions` - Create session
-  - Request: `{ guideId: string }`
-- [ ] `PUT /sessions/:id` - Update session state
-  - Request: `{ state?: string, currentStepId?: string, completedStepIds?: string[] }`
-- [ ] `DELETE /sessions/:id` - Delete session
-
-**All endpoints (except `/login`) must accept `Authorization: Bearer <token>` header.**
+**Tests**: 870 tests passing across all packages:
+- 49 test suites
+- Domain, application, integration, and e2e tests
+- Full coverage for core business logic
 
 ---
 
-## Phase 1: API Integration
+## 🚀 Phase 1: Mobile UI Enhancement
 
-### 1.1 Base HTTP Client
-- [ ] Create `src/infrastructure/api/BaseHttpClient.ts`
-  - Fetch-based HTTP client with auth token injection
-  - Read token from AuthStorage
-  - Add `Authorization: Bearer <token>` header to all requests
-  - Handle 401 (redirect to login)
-  - Timeout handling (30s default)
-  - Follow pattern from AuthClient.ts
+### 1.1 Category Management UI
+- [ ] Display category list with hierarchy
+- [ ] Create/edit/delete categories
+- [ ] Category filtering and navigation
+- [ ] Empty state messages
 
-### 1.2 API Clients
-- [ ] Create `src/infrastructure/api/CategoryClient.ts`
-  - CRUD methods: `getAll()`, `getById()`, `create()`, `update()`, `delete()`
-  - Follow AuthClient pattern
-- [ ] Create `src/infrastructure/api/GuideClient.ts`
-  - CRUD methods + `getByCategory()`
-- [ ] Create `src/infrastructure/api/StepClient.ts`
-  - CRUD methods + `getByGuide()`
-- [ ] Create `src/infrastructure/api/SessionClient.ts`
-  - CRUD methods + `updateState()`
+### 1.2 Guide Management UI
+- [ ] Display guide list (filtered by category)
+- [ ] Create/edit/delete guides
+- [ ] Search and filtering
+- [ ] Guide detail view
 
-### 1.3 Repository Implementations
-- [ ] Create `src/infrastructure/repositories/CategoryRepository.ts`
-  - Implement ICategoryRepository interface
-  - Use CategoryClient for API calls
-  - Map API responses to domain entities
-- [ ] Create `src/infrastructure/repositories/GuideRepository.ts`
-  - Implement IGuideRepository interface
-- [ ] Create `src/infrastructure/repositories/StepRepository.ts`
-  - Implement IStepRepository interface
-- [ ] Create `src/infrastructure/repositories/SessionRepository.ts`
-  - Implement ISessionRepository interface
+### 1.3 Step Management UI
+- [ ] Display steps for a guide
+- [ ] Create/edit/delete steps
+- [ ] Reorder steps (drag-and-drop or buttons)
+- [ ] Step editor with duration input
 
-### 1.4 Dependency Injection Setup
-- [ ] Update `src/common/DependencyInjection.ts`
-  - Register repository implementations
-  - Register services with real repositories (not mocks)
-  - Provide global access pattern for screens
+### 1.4 Session Execution (Core Feature)
+- [ ] Session execution screen with countdown timer
+- [ ] Step navigation (previous/next)
+- [ ] Pause/resume functionality
+- [ ] Session completion tracking
+- [ ] Auto-advance option (configurable)
+- [ ] Step completion notifications
+
+### 1.5 Session History
+- [ ] List all sessions (active and completed)
+- [ ] Filter by status
+- [ ] Delete sessions
+- [ ] View session details/statistics
 
 ---
 
-## Phase 2: CRUD Screens
+## 🎯 Phase 2: UX Polish
 
-### 2.1 Category Management
-- [ ] Create `src/presentation/screens/CategoryListScreen.tsx`
-  - Display list of categories
-  - Show category hierarchy (parent-child)
-  - Add "Create Category" button
-  - Tap category → navigate to CategoryDetailScreen
-  - Pull-to-refresh
-  - Loading/error states
-- [ ] Create `src/presentation/screens/CategoryDetailScreen.tsx`
-  - Display category name and description
-  - List guides in this category
-  - "Edit Category" button
-  - "Delete Category" button (with confirmation)
-  - Tap guide → navigate to GuideDetailScreen
-- [ ] Create `src/presentation/screens/CategoryFormScreen.tsx`
-  - Form for create/edit category
-  - Fields: name, description, parent category (optional)
-  - Validation (name required, description required)
-  - Save button
+### 2.1 Consistent UI/UX
+- [ ] Add loading spinners across screens
+- [ ] Add error messages with retry buttons
+- [ ] Add empty state messages ("No guides yet")
+- [ ] Add confirmation dialogs for destructive actions
+- [ ] Disable buttons appropriately
+- [ ] Add accessibility labels
 
-### 2.2 Guide Management
-- [ ] Create `src/presentation/screens/GuideListScreen.tsx`
-  - Display all guides (across all categories)
-  - Filter by category dropdown
-  - Search by title
-  - "Create Guide" button
-  - Tap guide → navigate to GuideDetailScreen
-  - Pull-to-refresh
-- [ ] Create `src/presentation/screens/GuideDetailScreen.tsx`
-  - Display guide title, description
-  - Display category name
-  - List all steps (ordered)
-  - Show step: order, title, duration
-  - "Edit Guide" button
-  - "Delete Guide" button
-  - "Start Guide" button → create session → navigate to SessionExecutionScreen
-  - "Manage Steps" button → navigate to StepListScreen
-- [ ] Create `src/presentation/screens/GuideFormScreen.tsx`
-  - Form for create/edit guide
-  - Fields: title, description, category (dropdown)
-  - Validation
+### 2.2 Error Handling
+- [ ] Network error handling with graceful fallbacks
+- [ ] 401 error handling (redirect to login)
+- [ ] Offline detection (show banner)
+- [ ] Validation error display
 
-### 2.3 Step Management
-- [ ] Create `src/presentation/screens/StepListScreen.tsx`
-  - Display steps for a guide (editable list)
-  - Reorder steps (drag-and-drop or up/down buttons)
-  - Edit step inline or navigate to form
-  - Delete step button
-  - "Add Step" button
-- [ ] Create `src/presentation/screens/StepFormScreen.tsx`
-  - Form for create/edit step
-  - Fields: title, description, duration (seconds or minutes:seconds)
-  - Validation (title required, duration > 0)
-
-### 2.4 Navigation Updates
-- [ ] Update `src/presentation/navigation/AppNavigator.tsx`
-  - Add all new screens to stack navigator
-  - Configure navigation params (IDs, edit mode, etc.)
-  - Update HomeScreen to navigate to CategoryListScreen
+### 2.3 Pull-to-Refresh
+- [ ] Implement pull-to-refresh for list screens
+- [ ] Add refresh indicators
 
 ---
 
-## Phase 3: Session Execution (Core Feature)
+## 🔄 Phase 3: Advanced Features
 
-### 3.1 Session Execution Screen
-- [ ] Create `src/presentation/screens/SessionExecutionScreen.tsx`
-  - **Layout:**
-    - Current step title (large, prominent)
-    - Current step description
-    - Countdown timer (MM:SS format, large font)
-    - Progress indicator (e.g., "Step 3 of 10")
-  - **Controls:**
-    - Start button (when NotStarted)
-    - Pause button (when InProgress)
-    - Resume button (when Paused)
-    - Previous Step button (if not first step)
-    - Next Step button (if not last step)
-    - Complete button (when on last step)
-    - Cancel button (with confirmation)
-  - **Timer Logic:**
-    - Use React hooks (useState, useEffect) for countdown
-    - Update every second
-    - Visual/audio alert when step completes
-    - Auto-advance to next step option (configurable)
-  - **State Management:**
-    - Use SessionService for state transitions
-    - Update session state in backend (PUT /sessions/:id)
-    - Handle errors gracefully
+### 3.1 Offline Support
+- [ ] Cache guides/categories locally
+- [ ] Queue mutations for sync
+- [ ] Show sync status indicator
+- [ ] Offline mode detection
 
-### 3.2 Session History
-- [ ] Create `src/presentation/screens/SessionHistoryScreen.tsx`
-  - List all sessions (past and active)
-  - Show: guide title, state, start time, end time
-  - Filter by state (InProgress, Completed, Cancelled)
-  - Tap session → navigate to SessionDetailScreen or SessionExecutionScreen (if in progress)
-  - Delete session button
+### 3.2 Notifications
+- [ ] Local notifications for step completion
+- [ ] Customizable notification sounds
+- [ ] Do-not-disturb mode
 
-### 3.3 Session Detail Screen (Optional)
-- [ ] Create `src/presentation/screens/SessionDetailScreen.tsx`
-  - View completed session details
-  - Show all steps with completion times
-  - Total duration
-  - Completion percentage
+### 3.3 Guide Sharing
+- [ ] Export guides as JSON
+- [ ] Import guides from JSON
+- [ ] Deep linking for guide sharing
+
+### 3.4 Analytics & Progress
+- [ ] Session completion tracking
+- [ ] Average duration statistics
+- [ ] User progress dashboard
 
 ---
 
-## Phase 4: Polish & Testing
+## 📱 Phase 4: Cross-Platform Testing
 
-### 4.1 Consistent UI/UX
-- [ ] Add consistent loading spinners across all screens
-- [ ] Add consistent error messages (e.g., "Failed to load categories. Try again.")
-- [ ] Add empty state messages (e.g., "No guides yet. Create one!")
-- [ ] Add confirmation dialogs for destructive actions (delete, cancel)
-- [ ] Ensure all buttons have proper disabled states
-- [ ] Add accessibility labels (accessibilityLabel, accessibilityHint)
+### 4.1 Device Testing
+- [ ] Test on Android devices (multiple API levels)
+- [ ] Test on iOS devices (multiple versions)
+- [ ] Test on tablets (landscape mode)
+- [ ] Test with slow network conditions
 
-### 4.2 Error Handling
-- [ ] Handle network errors gracefully (show retry button)
-- [ ] Handle 401 errors (redirect to login, clear token)
-- [ ] Handle 404 errors (show "Not found" message)
-- [ ] Handle validation errors from backend (display field-specific errors)
-- [ ] Add offline detection (show banner when offline)
-
-### 4.3 Manual Testing Checklist
-- [ ] Test full category CRUD flow (create, edit, delete, hierarchy)
-- [ ] Test full guide CRUD flow (create, edit, delete, category assignment)
-- [ ] Test full step CRUD flow (create, edit, delete, reordering)
-- [ ] Test session execution flow:
+### 4.2 Manual Testing Checklist
+- [ ] Category CRUD flows (create, read, update, delete, hierarchy)
+- [ ] Guide CRUD flows
+- [ ] Step CRUD flows and reordering
+- [ ] Full session execution cycle:
   - [ ] Start guide
-  - [ ] Pause and resume
-  - [ ] Move to previous/next step
+  - [ ] Pause/resume session
+  - [ ] Navigate between steps
   - [ ] Complete session
   - [ ] Cancel session
-- [ ] Test authentication flow:
+- [ ] Authentication flows:
   - [ ] Login
   - [ ] Logout
-  - [ ] Token expiration (401 handling)
-- [ ] Test edge cases:
-  - [ ] Empty lists (no categories, guides, steps)
+  - [ ] Token expiration
+- [ ] Edge cases:
+  - [ ] Empty lists
   - [ ] Network errors
   - [ ] Offline mode
-- [ ] Test on both Android and iOS
-
-### 4.4 Automated Testing
-- [ ] Write integration tests for repository implementations
-- [ ] Write screen tests for new components (React Native Testing Library)
-- [ ] Update existing tests if needed
+  - [ ] Large data sets
 
 ---
 
-## Phase 5: Optional Future Enhancements
+## 🏗️ Technical Debt & Improvements
 
-These are not required for a functional MVP but would improve the user experience:
+### 4.1 Code Quality
+- [ ] Increase test coverage to 90%+
+- [ ] Add integration tests for repository implementations
+- [ ] Add screen component tests
+- [ ] Add E2E tests with Detox
 
-### 5.1 Notifications
-- [ ] Add push notifications for step completion
-- [ ] Add local notifications (iOS/Android background timers)
-- [ ] Allow users to customize notification sounds
+### 4.2 Performance Optimization
+- [ ] Analyze bundle size
+- [ ] Optimize image loading
+- [ ] Add lazy loading for lists
+- [ ] Profile memory usage
 
-### 5.2 Offline Support
-- [ ] Cache guides and categories locally (AsyncStorage or SQLite)
-- [ ] Queue mutations for sync when online
-- [ ] Show sync status indicator
-
-### 5.3 Guide Sharing
-- [ ] Export guide as JSON
-- [ ] Import guide from JSON
-- [ ] Share guide link (deep linking)
-
-### 5.4 Analytics & Progress Tracking
-- [ ] Track session completion rate
-- [ ] Track average session duration
-- [ ] Show user statistics screen
-
-### 5.5 Advanced Features
-- [ ] Guide templates (pre-built guides)
-- [ ] Step notes/comments during execution
-- [ ] Custom step durations (user can adjust during session)
-- [ ] Multi-user support (teams, shared guides)
+### 4.3 Documentation
+- [ ] Add component storybook
+- [ ] Document API integration patterns
+- [ ] Add ADRs for UI decisions
+- [ ] Update mobile development guide
 
 ---
 
-## Completion Checklist
+## 🔐 Security
 
-Before considering the app complete:
-- [ ] Backend API fully implemented and tested
-- [ ] All repository implementations working
+### 5.1 Security Hardening
+- [ ] Add certificate pinning for API calls
+- [ ] Secure local storage (token encryption)
+- [ ] Add rate limiting for login attempts
+- [ ] Implement refresh token rotation
+- [ ] Security audit of mobile app
+
+### 5.2 Compliance
+- [ ] GDPR compliance review
+- [ ] Data deletion mechanisms
+- [ ] Privacy policy implementation
+
+---
+
+## 📋 Known Issues & Limitations
+
+### Current Limitations
+1. **No offline data persistence** - Guides/categories not cached locally
+2. **Limited notifications** - No background timer notifications
+3. **No guide sharing** - Can't export/import guides
+4. **No analytics** - No session statistics/dashboard
+5. **No dark mode** - Light theme only
+
+### Known Bugs
+*None currently reported - system is stable in production*
+
+---
+
+## 🎓 Learning & Architecture
+
+### ADRs (Architectural Decision Records)
+- [ADR-006](./docs/adr/006-admin-user-authorization.md): Admin User Authorization (Superseded by ADR-008)
+- [ADR-007](./docs/adr/007-user-based-admin-mode-mobile.md): User-Based Admin Mode
+- [ADR-008](./docs/adr/008-rbac-and-audit-logging.md): RBAC and Audit Logging
+- [ADR-009](./docs/adr/009-server-health-validation.md): Server Health Validation
+- [ADR-010](./docs/adr/010-strict-type-safety-rules.md): Strict Type Safety and Imports
+
+---
+
+## 📊 Development Effort Estimates
+
+| Phase | Tasks | Effort | Status |
+|-------|-------|--------|--------|
+| API Server (Complete) | All API endpoints, DDD, RBAC | ✅ Done | Production |
+| Phase 1: Mobile UI | 4 major screens, session execution | 2-3 weeks | Pending |
+| Phase 2: UX Polish | Error handling, loading states | 1 week | Pending |
+| Phase 3: Advanced | Offline, notifications, sharing | 2-3 weeks | Pending |
+| Phase 4: Testing | Device testing, manual QA | 1-2 weeks | Pending |
+| Phase 5: Production | Deployment, monitoring, performance | 1 week | Pending |
+
+**Total Estimate**: ~8-10 weeks for complete MVP with all mobile screens
+
+---
+
+## 🏁 Completion Checklist
+
+### Before MVP Release
 - [ ] All CRUD screens implemented and tested
-- [ ] Session execution screen working with real-time timer
+- [ ] Session execution working with real timer
 - [ ] Navigation flows tested end-to-end
 - [ ] Error handling consistent across all screens
-- [ ] App tested on both Android and iOS devices
-- [ ] No critical bugs or crashes
-- [ ] User can create guides, add steps, and execute sessions successfully
+- [ ] App tested on Android devices (3+ different API levels)
+- [ ] App tested on iOS devices (2+ versions)
+- [ ] No crashes or critical bugs
+- [ ] User can complete full workflow: create guide → add steps → execute session
+
+### Before Production Release
+- [ ] Security audit completed
+- [ ] Performance optimization completed
+- [ ] Battery usage optimized
+- [ ] Network usage optimized
+- [ ] App Store/Play Store submission ready
+- [ ] Release notes prepared
+- [ ] User documentation complete
 
 ---
 
-## Estimated Effort
+## 📚 Resources & References
 
-**Phase 1 (API Integration)**: 1-2 days
-**Phase 2 (CRUD Screens)**: 2-3 days
-**Phase 3 (Session Execution)**: 2-3 days
-**Phase 4 (Polish & Testing)**: 1-2 days
-
-**Total**: ~1-2 weeks for a fully functional application
-
-**Backend Development**: 2-3 days (if starting from scratch)
-
----
-
-## Resources
-
-- **Domain Architecture**: See `CLAUDE.md` sections on Domain-Driven Design
-- **Testing Patterns**: See existing tests in `src/domain/__tests__/`
+### Development
+- **Domain Architecture**: See `CLAUDE.md` for DDD principles
+- **Testing Patterns**: See tests in `mobile/src/domain/__tests__/`
 - **API Client Pattern**: See `src/infrastructure/api/AuthClient.ts`
 - **Screen Pattern**: See `src/presentation/screens/LoginScreen.tsx`
 - **Navigation**: See `src/presentation/navigation/AppNavigator.tsx`
+
+### External
+- [React Native Docs](https://reactnative.dev)
+- [FastAPI Docs](https://fastapi.tiangolo.com)
+- [Lit Docs](https://lit.dev)
+- [Domain-Driven Design](https://www.domainlanguage.com/ddd/)
+
+---
+
+## 🔄 Release Process
+
+### Versioning
+- Uses semantic versioning (MAJOR.MINOR.PATCH)
+- `feat:` commits trigger minor version bump
+- `fix:`/`refactor:`/`perf:` commits trigger patch bump
+- `BREAKING CHANGE:` triggers major version bump
+
+### Deployment
+1. Commit changes using conventional commits
+2. Push to `main` branch
+3. Semantic-release automatically:
+   - Determines new version
+   - Updates version numbers across monorepo
+   - Creates git tags and GitHub releases
+   - Builds and publishes Docker images
+   - Deploys to TestFlight (iOS) and internal testing (Android)
+
+---
+
+## 🤝 Contributing
+
+### Guidelines
+- Follow DDD principles (domain → application → infrastructure → presentation)
+- Write tests first (TDD)
+- Use conventional commits
+- Keep functions small and focused
+- Document complex behavior
+- No `any` types in production code (see ADR-010)
+- All imports at module level (see ADR-010)
+
+### Code Review Checklist
+- [ ] Tests included and passing
+- [ ] Type safety enforced (no `any`)
+- [ ] Linting passes (`npm run lint`)
+- [ ] Type checking passes (`npm run typecheck`)
+- [ ] Code follows patterns in codebase
+- [ ] Documentation updated if needed
+- [ ] ADR created for architectural decisions
+
+---
+
+**Last Updated**: 2026-01-15
+**Maintainer**: Steven de Jong

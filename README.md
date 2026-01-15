@@ -32,10 +32,10 @@ guidr/
 
 ## Prerequisites
 
-- **Node.js**: 24.12.0 LTS+ | **npm**: 11.6.2+
+- **Node.js**: 24.11.0+ LTS | **npm**: 11.6.0+
 - **Android**: Java 17, Android SDK
 - **iOS**: macOS + Xcode 15+
-- **API**: Python 3.11+, Poetry
+- **API**: Python 3.12+, Poetry
 
 ## Quick Start
 

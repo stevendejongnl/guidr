@@ -9,7 +9,7 @@ A FastAPI-based API server for the Guidr mobile app, built with Domain-Driven De
 - **Real authentication** - Argon2 password hashing + JWT tokens
 - **Dependency Injection** - Comprehensive DI container with dependency-injector
 - **Full CRUD operations** for all domain entities (Categories, Guides, Steps, Sessions)
-- **Comprehensive test coverage** - 297+ tests (domain, application, integration)
+- **Comprehensive test coverage** - Full test coverage with 870 tests passing across the monorepo
 - **RESTful API design** - Query parameter filtering, PATCH updates, action endpoints
 - **CORS enabled** for React Native development
 - **Interactive API documentation** (Swagger/ReDoc)
@@ -86,11 +86,18 @@ tests/
 
 ### Test Coverage
 
-- **297+ tests** covering all layers:
-  - 191 domain tests (entities, value objects, aggregates)
-  - 47 application tests (use cases with mocked repositories)
-  - 106 integration tests (MongoDB repositories)
-  - Additional e2e tests planned
+The full Guidr monorepo includes **870 tests passing** across all packages (mobile, api-server, web-app) covering:
+- Domain layer tests (entities, value objects, aggregates)
+- Application layer tests (use cases with mocked repositories)
+- Integration tests (MongoDB repositories)
+- End-to-end tests (API endpoints)
+- Mobile component tests
+- Web component tests
+
+Run tests across all packages:
+```bash
+npm test  # Runs tests in all packages with coverage
+```
 
 ---
 
@@ -285,7 +292,7 @@ JWT_ALGORITHM=HS256
 JWT_EXPIRATION_MINUTES=10080  # 7 days
 
 # Application
-GUIDR_VERSION=1.15.3
+GUIDR_VERSION=1.29.0  # Match the version in package.json/mobile
 ```
 
 **Generate a secure JWT secret**:
@@ -667,7 +674,7 @@ docker-compose up -d
 | `JWT_SECRET_KEY` | `dev-secret-key-change-in-production-min-32-characters` | JWT signing secret (minimum 32 characters) |
 | `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
 | `JWT_EXPIRATION_MINUTES` | `10080` | JWT token expiration (7 days) |
-| `GUIDR_VERSION` | `1.15.3` | Server version (set automatically in Docker image) |
+| `GUIDR_VERSION` | `1.29.0` | Server version (set automatically in Docker image, must match mobile app version) |
 | `ROOT_PATH` | `` | FastAPI root path for reverse proxy deployments |
 
 ---

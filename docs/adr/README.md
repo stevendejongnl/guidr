@@ -36,6 +36,8 @@ What becomes easier or harder as a result of this change?
 - [ADR-006: Admin User Authorization and Role-Based Access Control](./006-admin-user-authorization.md) - Superseded by ADR-008
 - [ADR-007: User-Based Admin Mode for Mobile App](./007-user-based-admin-mode-mobile.md) - Accepted
 - [ADR-008: RBAC and Comprehensive Audit Logging System](./008-rbac-and-audit-logging.md) - Accepted
+- [ADR-009: Server Health Validation and URL Normalization](./009-server-health-validation.md) - Accepted
+- [ADR-010: Strict Type Safety and Import Rules](./010-strict-type-safety-rules.md) - Accepted
 
 ## Updating ADRs
 

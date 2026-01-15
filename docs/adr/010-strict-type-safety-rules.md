@@ -1,4 +1,4 @@
-# ADR 008: Strict Type Safety and Import Rules
+# ADR 010: Strict Type Safety and Import Rules
 
 ## Status
 Accepted
