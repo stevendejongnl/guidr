@@ -26,6 +26,11 @@ export class SessionMapper {
     // We cannot preserve the API state without violating encapsulation
     // This is acceptable for new sessions, but cached sessions should use DTO format
 
+    // Set elapsed seconds from DTO
+    if (dto.stepElapsedSeconds > 0) {
+      session.setStepElapsedSeconds(dto.stepElapsedSeconds)
+    }
+
     return session
   }
 
@@ -41,6 +46,7 @@ export class SessionMapper {
       startedAt: session.startedAt?.toISOString() ?? null,
       completedAt: session.completedAt?.toISOString() ?? null,
       currentStepId: session.currentStepId ?? null,
+      stepElapsedSeconds: session.stepElapsedSeconds,
       createdAt: session.createdAt.toISOString(),
       updatedAt: session.updatedAt.toISOString(),
     }

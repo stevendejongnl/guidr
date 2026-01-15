@@ -19,6 +19,7 @@ describe('SessionRepository', () => {
     guideId: 'guide-1',
     status: 'NotStarted',
     currentStepId: null,
+    stepElapsedSeconds: 0,
     startedAt: null,
     completedAt: null,
     createdAt: '2024-01-01T00:00:00Z',
@@ -30,6 +31,7 @@ describe('SessionRepository', () => {
     guideId: 'guide-1',
     status: 'InProgress',
     currentStepId: 'step-1',
+    stepElapsedSeconds: 0,
     startedAt: '2024-01-01T10:00:00Z',
     completedAt: null,
     createdAt: '2024-01-01T00:00:00Z',
@@ -377,7 +379,7 @@ describe('SessionRepository', () => {
       const pausedDto = {
         ...mockInProgressSessionDto,
         status: 'Paused',
-        pausedAt: '2024-01-01T11:00:00Z',
+        stepElapsedSeconds: 150,
       }
 
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -386,7 +388,7 @@ describe('SessionRepository', () => {
         json: async () => pausedDto,
       })
 
-      const result = await repository.pause('session-2', authToken)
+      const result = await repository.pause('session-2', 150, authToken)
 
       expect(result).toBeInstanceOf(Session)
       expect(global.fetch).toHaveBeenCalledWith(
@@ -397,6 +399,7 @@ describe('SessionRepository', () => {
             'Authorization': 'Bearer mock-auth-token',
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ stepElapsedSeconds: 150 }),
         }
       )
     })

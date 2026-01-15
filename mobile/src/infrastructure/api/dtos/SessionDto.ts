@@ -9,6 +9,7 @@ export interface SessionDto {
   startedAt: string | null // ISO 8601
   completedAt: string | null // ISO 8601
   currentStepId: string | null
+  stepElapsedSeconds: number // Elapsed seconds in current step
   createdAt: string // ISO 8601
   updatedAt: string // ISO 8601
 }
@@ -25,4 +26,11 @@ export interface SessionCreateRequest {
  */
 export interface MoveToStepRequest {
   stepId: string
+}
+
+/**
+ * Request body for pause action.
+ */
+export interface PauseSessionRequest {
+  stepElapsedSeconds: number
 }

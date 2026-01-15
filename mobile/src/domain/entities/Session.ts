@@ -13,6 +13,7 @@ export class Session {
   private _startedAt: Date | undefined
   private _completedAt: Date | undefined
   private _currentStepId: string | undefined
+  private _stepElapsedSeconds: number
   readonly createdAt: Date
   private _updatedAt: Date
 
@@ -30,6 +31,7 @@ export class Session {
     this._startedAt = undefined
     this._completedAt = undefined
     this._currentStepId = undefined
+    this._stepElapsedSeconds = 0
     this.createdAt = new Date()
     this._updatedAt = new Date()
   }
@@ -48,6 +50,10 @@ export class Session {
 
   get currentStepId(): string | undefined {
     return this._currentStepId
+  }
+
+  get stepElapsedSeconds(): number {
+    return this._stepElapsedSeconds
   }
 
   get updatedAt(): Date {
@@ -111,6 +117,14 @@ export class Session {
       throw new Error('Cannot move to step when session is not active')
     }
     this._currentStepId = stepId
+    this._updatedAt = new Date()
+  }
+
+  setStepElapsedSeconds(seconds: number): void {
+    if (seconds < 0) {
+      throw new Error('Elapsed seconds must be non-negative')
+    }
+    this._stepElapsedSeconds = seconds
     this._updatedAt = new Date()
   }
 

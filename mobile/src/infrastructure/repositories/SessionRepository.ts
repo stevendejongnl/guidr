@@ -2,7 +2,12 @@ import { Session, SessionStatus } from '@domain/entities/Session'
 import { ISessionRepository } from '@domain/repositories/ISessionRepository'
 import { EntityCache } from '../storage/EntityCache'
 import { SessionMapper } from '../mappers/SessionMapper'
-import type { SessionDto, SessionCreateRequest, MoveToStepRequest } from '../api/dtos/SessionDto'
+import type {
+  SessionDto,
+  SessionCreateRequest,
+  MoveToStepRequest,
+  PauseSessionRequest,
+} from '../api/dtos/SessionDto'
 
 /**
  * HTTP-based implementation of ISessionRepository with AsyncStorage caching.
@@ -313,15 +318,19 @@ export class SessionRepository implements ISessionRepository {
   /**
    * Pause a session using the dedicated action endpoint.
    * POST /sessions/{id}/pause
+   * Includes elapsed seconds for server-side timer persistence.
    */
-  async pause(id: string, authToken: string): Promise<Session> {
+  async pause(id: string, stepElapsedSeconds: number, authToken: string): Promise<Session> {
     try {
+      const request: PauseSessionRequest = { stepElapsedSeconds }
+
       const response = await fetch(`${this.apiBaseUrl}/sessions/${id}/pause`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(request),
       })
 
       if (!response.ok) {
