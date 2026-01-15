@@ -60,6 +60,33 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json",
     )
 
+    # Custom OpenAPI schema to remove client credentials from OAuth2
+    original_openapi = app.openapi
+
+    def custom_openapi() -> dict:  # type: ignore[return]
+        """Generate OpenAPI schema with OAuth2 password grant (no client credentials)."""
+        if app.openapi_schema:
+            return app.openapi_schema
+
+        openapi_schema = original_openapi()
+
+        # Customize OAuth2 password flow to hide client credentials
+        if "components" in openapi_schema and "securitySchemes" in openapi_schema["components"]:
+            for scheme_name, scheme in openapi_schema["components"]["securitySchemes"].items():
+                if scheme.get("type") == "oauth2" and "password" in scheme.get("flows", {}):
+                    # For password flow, remove clientId and clientSecret to hide them in Swagger UI
+                    password_flow = scheme["flows"]["password"]
+                    # Keep only tokenUrl and scopes
+                    scheme["flows"]["password"] = {
+                        "tokenUrl": password_flow.get("tokenUrl"),
+                        "scopes": password_flow.get("scopes", {}),
+                    }
+
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+
+    app.openapi = custom_openapi  # type: ignore[assignment]
+
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
