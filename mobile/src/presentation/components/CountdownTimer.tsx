@@ -49,7 +49,16 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   testID,
 }) => {
   const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds)
-  const pulseAnim = useMemo(() => new Animated.Value(1), [])
+  // Create animated value if available (production), fallback for tests
+  const pulseAnim = useMemo(() => {
+    if (Animated?.Value) {
+      return new Animated.Value(1)
+    }
+    // Test environment fallback - create mock object with required methods
+    return {
+      setValue: () => {},
+    } as unknown as Animated.Value
+  }, [])
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Determine timer color based on remaining time percentage
@@ -60,8 +69,10 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     return colors.danger // Red
   }
 
-  // Pulsing animation for last 10 seconds
+  // Pulsing animation for last 10 seconds (only in production with Animated available)
   useEffect(() => {
+    if (!Animated?.loop) return // Skip in test environments
+
     if (remainingSeconds < 10 && remainingSeconds > 0 && isRunning) {
       Animated.loop(
         Animated.sequence([
@@ -77,7 +88,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           }),
         ])
       ).start()
-    } else {
+    } else if (pulseAnim?.setValue) {
       pulseAnim.setValue(1)
     }
   }, [remainingSeconds, isRunning, pulseAnim])
@@ -125,15 +136,16 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   const seconds = remainingSeconds % 60
   const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 
+  // Use Animated.View in production, fallback to regular View in tests
+  const TimerDisplay = Animated && Animated.View ? Animated.View : View
+  const useAnimatedStyles = !!Animated && !!Animated.View
+
   return (
     <View style={styles.container} testID={testID}>
-      <Animated.View
+      <TimerDisplay
         style={[
           styles.timerDisplay,
-          {
-            transform: [{ scale: pulseAnim }],
-            borderColor: getTimerColor(),
-          },
+          useAnimatedStyles ? { transform: [{ scale: pulseAnim }], borderColor: getTimerColor() } : { borderColor: getTimerColor() },
         ]}
       >
         <Text
@@ -147,7 +159,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         >
           {formattedTime}
         </Text>
-      </Animated.View>
+      </TimerDisplay>
     </View>
   )
 }

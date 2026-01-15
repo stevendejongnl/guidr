@@ -128,3 +128,16 @@ console.log = (...args) => {
   return
 }
 
+// Mock React Native Animated.Value class for tests
+const ReactNative = require('react-native')
+const mockAnimatedValue = function(initialValue) {
+  this._value = initialValue
+}
+mockAnimatedValue.prototype.setValue = function(value) {
+  this._value = value
+}
+
+if (ReactNative.Animated && !ReactNative.Animated._isOriginal) {
+  ReactNative.Animated.Value = mockAnimatedValue
+}
+
