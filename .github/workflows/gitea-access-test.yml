@@ -92,7 +92,25 @@ jobs:
 
       # Step 7: Configure SSH with cloudflared access proxy
       - name: Configure SSH with cloudflared access proxy
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
+          # Create a wrapper script for cloudflared that includes the service tokens
+          cat > ~/.ssh/cloudflared-wrapper.sh <<'WRAPPER'
+          #!/bin/bash
+          export CF_ACCESS_CLIENT_ID="CF_CLIENT_ID_PLACEHOLDER"
+          export CF_ACCESS_CLIENT_SECRET="CF_CLIENT_SECRET_PLACEHOLDER"
+          exec /usr/bin/cloudflared access ssh "$@"
+          WRAPPER
+
+          # Replace placeholders with actual values
+          sed -i "s|CF_CLIENT_ID_PLACEHOLDER|${CF_ACCESS_CLIENT_ID}|g" ~/.ssh/cloudflared-wrapper.sh
+          sed -i "s|CF_CLIENT_SECRET_PLACEHOLDER|${CF_ACCESS_CLIENT_SECRET}|g" ~/.ssh/cloudflared-wrapper.sh
+
+          chmod +x ~/.ssh/cloudflared-wrapper.sh
+
+          # Configure SSH to use the wrapper
           cat > ~/.ssh/config <<'SSHEOF'
           Host gitaccess.madebysteven.nl
             HostName gitaccess.madebysteven.nl
@@ -101,7 +119,7 @@ jobs:
             IdentityFile ~/.ssh/gitea_key
             StrictHostKeyChecking yes
             UserKnownHostsFile ~/.ssh/known_hosts
-            ProxyCommand /usr/bin/cloudflared access ssh --hostname %h
+            ProxyCommand ~/.ssh/cloudflared-wrapper.sh --hostname %h
           SSHEOF
 
           chmod 600 ~/.ssh/config
@@ -111,38 +129,19 @@ jobs:
           echo ""
           echo "✅ SSH config configured with cloudflared access proxy"
 
-      # Step 7b: Configure cloudflared service token authentication
-      - name: Configure cloudflared service token
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
+      # Step 7b: Verify cloudflared wrapper
+      - name: Verify cloudflared wrapper
         run: |
-          # Check if service tokens are configured
-          if [ -z "$CF_ACCESS_CLIENT_ID" ] || [ -z "$CF_ACCESS_CLIENT_SECRET" ]; then
-            echo "⚠️ WARNING: Cloudflare Access service tokens not configured"
-            echo "   If authentication fails, you may need to set:"
-            echo "   - CLOUDFLARE_ACCESS_CLIENT_ID"
-            echo "   - CLOUDFLARE_ACCESS_CLIENT_SECRET"
-            echo ""
-            echo "Proceeding without service token authentication..."
+          echo "Verifying cloudflared wrapper script..."
+          if [ -x ~/.ssh/cloudflared-wrapper.sh ]; then
+            echo "✅ Cloudflared wrapper is executable"
           else
-            echo "✅ Cloudflare Access service tokens are configured"
-            echo "   Client ID: ${CF_ACCESS_CLIENT_ID:0:10}..."
-
-            # Export tokens for cloudflared to use
-            export CF_ACCESS_CLIENT_ID
-            export CF_ACCESS_CLIENT_SECRET
+            echo "❌ Cloudflared wrapper is not executable"
+            exit 1
           fi
-
-          echo "Testing cloudflared access tunnel connectivity..."
-          timeout 10 cloudflared access ssh --hostname gitaccess.madebysteven.nl --help 2>&1 || echo "cloudflared command check complete"
-          echo "✅ cloudflared is configured"
 
       # Step 8: Verify SSH connection through cloudflared
       - name: Verify SSH connection to Gitea
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           echo "Verifying SSH connection to Gitea through cloudflared access..."
           echo ""
@@ -183,9 +182,6 @@ jobs:
 
       # Step 9: Clone the Gitea repository
       - name: Clone guidr-certificates repository
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           git clone gitea@gitaccess.madebysteven.nl:stevendejong/guidr-certificates.git /tmp/guidr-certificates
           cd /tmp/guidr-certificates
@@ -252,9 +248,6 @@ jobs:
 
       # Step 13: Push changes to Gitea
       - name: Push changes to Gitea
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           cd /tmp/guidr-certificates
 
@@ -267,9 +260,6 @@ jobs:
 
       # Step 14: Pull latest changes to verify round-trip
       - name: Verify round-trip by pulling latest
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           cd /tmp/guidr-certificates
           git fetch origin
@@ -336,6 +326,7 @@ jobs:
           rm -f ~/.ssh/gitea_key
           rm -f ~/.ssh/known_hosts
           rm -f ~/.ssh/config
+          rm -f ~/.ssh/cloudflared-wrapper.sh
           rm -rf /tmp/guidr-certificates
           rm -f /tmp/ssh_test.log
           sudo apt-get remove -y cloudflared || true
