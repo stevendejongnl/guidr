@@ -1,5 +1,6 @@
 """FastAPI application factory."""
 
+import logging
 import os
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -125,7 +126,6 @@ def create_app() -> FastAPI:
         @app.get("/{full_path:path}", include_in_schema=False)
         async def serve_spa(full_path: str):
             """Serve SPA for all non-API routes."""
-            import logging
             logger = logging.getLogger(__name__)
 
             # Explicitly reject ALL API routes (defense in depth)

@@ -97,7 +97,7 @@ export class UserRepository implements IUserRepository {
       const dtos: UserDto[] = await response.json()
 
       // Cache the list
-      await this.cache.set('List_all', dtos as any)
+      await this.cache.set('List_all', dtos)
 
       // Also cache individual items (by ID and email)
       for (const dto of dtos) {

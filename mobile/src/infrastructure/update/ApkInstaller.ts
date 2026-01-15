@@ -106,8 +106,11 @@ export class ApkInstaller {
   }
 
   async cancelDownload(): Promise<void> {
-    if (this.downloadJob && 'stopDownload' in this.downloadJob) {
-      (this.downloadJob as any).stopDownload()
+    if (this.downloadJob) {
+      const downloadTask = this.downloadJob as unknown as { stopDownload(): void }
+      if ('stopDownload' in this.downloadJob) {
+        downloadTask.stopDownload()
+      }
       this.downloadJob = null
     }
   }

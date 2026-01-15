@@ -44,6 +44,8 @@ Custom Claude Code skills for workflow acceleration:
 **Services**: Constructor injection, async, repository pattern
 **Tests**: Jest + mocks | Bracket notation (`props['value']` not `props.value`)
 **TDD**: RED → GREEN → REFACTOR → VERIFY
+**Type Safety**: No `any`/`Any` types (except MongoDB `dict[str, Any]`, test mocks with warnings)
+**Imports**: Always top-level (no conditional/lazy imports inside functions)
 
 ## Build & Deploy
 **Android**: Gradle 8.13, Java 17 (NOT 25+), NDK 27.1, SDK 36, Package: com.guidr

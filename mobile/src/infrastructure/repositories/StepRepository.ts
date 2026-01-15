@@ -95,7 +95,7 @@ export class StepRepository implements IStepRepository {
       const dtos: StepDto[] = await response.json()
 
       // Cache the list
-      await this.cache.set('List_all', dtos as any)
+      await this.cache.set('List_all', dtos)
 
       // Also cache individual items
       for (const dto of dtos) {
@@ -138,7 +138,7 @@ export class StepRepository implements IStepRepository {
       const dtos: StepDto[] = await response.json()
 
       // Cache the list (API returns sorted by order field)
-      await this.cache.set(cacheKey, dtos as any)
+      await this.cache.set(cacheKey, dtos)
 
       // Also cache individual items
       for (const dto of dtos) {

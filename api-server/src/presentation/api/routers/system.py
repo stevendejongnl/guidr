@@ -1,15 +1,16 @@
 """System API router."""
 
+import logging
+
 from fastapi import APIRouter, Request
 
 router = APIRouter(tags=["system"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("/health")
 async def health_check(request: Request):
     """Health check endpoint."""
-    import logging
-    logger = logging.getLogger(__name__)
     logger.debug("Health check endpoint called")
 
     # Get version from app

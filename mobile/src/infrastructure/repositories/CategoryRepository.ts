@@ -94,7 +94,7 @@ export class CategoryRepository implements ICategoryRepository {
       const dtos: CategoryDto[] = await response.json()
 
       // Cache the list
-      await this.cache.set('List_all', dtos as any)
+      await this.cache.set('List_all', dtos)
 
       // Also cache individual items
       for (const dto of dtos) {
@@ -141,7 +141,7 @@ export class CategoryRepository implements ICategoryRepository {
       const dtos: CategoryDto[] = await response.json()
 
       // Cache the list
-      await this.cache.set(cacheKey, dtos as any)
+      await this.cache.set(cacheKey, dtos)
 
       // Also cache individual items
       for (const dto of dtos) {

@@ -1,6 +1,14 @@
 import { HealthCheckResult, IHealthCheckService } from './IHealthCheckService'
 
 /**
+ * Health check API response format
+ */
+interface HealthCheckResponse {
+  status: 'healthy' | 'unhealthy'
+  version?: string
+}
+
+/**
  * Service for validating server health and connectivity
  * Checks server availability via the /api/v1/health endpoint
  */
@@ -89,13 +97,18 @@ export class HealthCheckService implements IHealthCheckService {
         if (
           typeof data === 'object' &&
           data !== null &&
-          'status' in data &&
-          (data as any).status === 'healthy'
+          'status' in data
         ) {
-          return {
-            healthy: true,
-            responseTime,
-            version: (data as any).version, // Extract version if present
+          const response = data as HealthCheckResponse
+          if (response.status === 'healthy') {
+            const result: HealthCheckResult = {
+              healthy: true,
+              responseTime,
+            }
+            if (response.version) {
+              result.version = response.version
+            }
+            return result
           }
         }
 

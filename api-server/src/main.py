@@ -2,6 +2,7 @@
 
 from contextlib import asynccontextmanager
 
+import uvicorn
 from fastapi import FastAPI
 
 from .container import Container
@@ -74,5 +75,4 @@ app = create_application()
 
 def main():
     """Run the server with uvicorn."""
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -54,12 +54,13 @@ export class EntityCache<T> {
   }
 
   /**
-   * Store entity in cache with timestamp and TTL.
+   * Store entity or array of entities in cache with timestamp and TTL.
+   * Supports both single items (T) and arrays (T[]) for convenience.
    */
-  async set(key: string, value: T): Promise<void> {
+  async set(key: string, value: T | T[]): Promise<void> {
     try {
       const cacheKey = this.buildCacheKey(key)
-      const entry: CacheEntry<T> = {
+      const entry: CacheEntry<T | T[]> = {
         data: value,
         timestamp: Date.now(),
         ttl: this.ttlMs,
