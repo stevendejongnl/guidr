@@ -80,7 +80,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     } else {
       pulseAnim.setValue(1)
     }
-  }, [remainingSeconds, isRunning])
+  }, [remainingSeconds, isRunning, pulseAnim])
 
   // Main countdown logic
   useEffect(() => {
