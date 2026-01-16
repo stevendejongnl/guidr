@@ -51,10 +51,10 @@ jobs:
           cloudflared --version
           echo "✅ cloudflared installed successfully"
 
-      # Step 4: Clone the Gitea repository (HTTPS)
+      # Step 4: Clone the Gitea repository (HTTPS with token)
       - name: Clone guidr-certificates repository
         run: |
-          git clone https://git.madebysteven.nl/stevendejong/guidr-certificates.git /tmp/guidr-certificates
+          git clone https://stevendejong:${{ secrets.GITEA_TOKEN }}@git.madebysteven.nl/stevendejong/guidr-certificates.git /tmp/guidr-certificates
           cd /tmp/guidr-certificates
           echo "✅ Repository cloned successfully"
           echo "Repository contents:"
@@ -119,10 +119,13 @@ jobs:
 
       # Step 13: Push changes to Gitea
       - name: Push changes to Gitea
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
         run: |
           cd /tmp/guidr-certificates
 
           if [ "${{ env.TEST_COMMITTED }}" = "true" ]; then
+            git remote set-url origin https://stevendejong:${GITEA_TOKEN}@git.madebysteven.nl/stevendejong/guidr-certificates.git
             git push origin main
             echo "✅ Changes pushed to Gitea successfully"
           else
@@ -216,3 +219,4 @@ jobs:
           echo "  - CLOUDFLARE_ACCOUNT_ID"
           echo "  - CLOUDFLARE_ZONE_ID"
           echo "  - CLOUDFLARE_API_TOKEN"
+          echo "  - GITEA_TOKEN"
