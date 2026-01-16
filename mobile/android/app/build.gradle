@@ -93,8 +93,8 @@ android {
         applicationId "com.guidr"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 44
-        versionName "1.31.0"
+        versionCode 45
+        versionName "1.32.0"
     }
     signingConfigs {
         debug {
