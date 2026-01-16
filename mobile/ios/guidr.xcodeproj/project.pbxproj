@@ -315,7 +315,6 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				DEVELOPMENT_TEAM = $(APPLE_TEAM_ID);
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 			};
 			name = Debug;
@@ -346,7 +345,6 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				DEVELOPMENT_TEAM = $(APPLE_TEAM_ID);
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 			};
 			name = Release;
