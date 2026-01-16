@@ -1,6 +1,6 @@
 git_url("https://git.madebysteven.nl/stevendejong/guidr-certificates.git")
-# Gitea requires basic auth in username:token format
-git_basic_authorization("stevendejong:#{ENV['GITEA_TOKEN']}")
+# Git credentials will be configured via git credential helper in the workflow
+# This avoids hardcoding credentials and works reliably with Gitea
 
 storage_mode("git")
 type("appstore")

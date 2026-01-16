@@ -53,6 +53,22 @@ jobs:
           git config --global http.lowSpeedTime 0
           echo "✅ Git configured for Gitea + Cloudflare access"
 
+      - name: Configure git credentials for Gitea (fastlane match)
+        run: |
+          # Set up git credential helper to store Gitea credentials
+          git config --global credential.helper store
+
+          # Add Gitea credentials to git credential store
+          # Format: https://username:token@host
+          echo "https://stevendejong:${GITEA_TOKEN}@git.madebysteven.nl" >> ~/.git-credentials
+
+          # Restrict permissions on credentials file
+          chmod 600 ~/.git-credentials
+
+          echo "✅ Git credentials configured for fastlane match"
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+
       - name: Get version
         id: version_check
         run: |
@@ -295,6 +311,29 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+      - name: Get failure details
+        if: failure()
+        id: error_details
+        run: |
+          # Fetch logs from GitHub API and extract last lines of errors
+          gh run view ${{ github.run_id }} --log-failed > /tmp/error.txt 2>&1 || echo "Failed to fetch logs" > /tmp/error.txt
+
+          # Extract last 15 lines of error output
+          ERROR=$(tail -20 /tmp/error.txt | head -10 | sed 's/"/\\"/g')
+          echo "ERROR_MSG<<EOF" >> $GITHUB_OUTPUT
+          echo "$ERROR" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Get failed step name from logs
+          FAILED_STEP=$(grep -oP "##\[error\].*" /tmp/error.txt | head -1 | sed 's/##\[error\]//' | sed 's/^[ \t]*//' | cut -d' ' -f1-5)
+          if [ -z "$FAILED_STEP" ]; then
+            FAILED_STEP="Build and Deploy to TestFlight"
+          fi
+          echo "FAILED_STEP=$FAILED_STEP" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
+
       - name: Notify TestFlight failure
         if: failure()
         run: |
@@ -304,7 +343,9 @@ jobs:
             --version "${{ steps.version.outputs.VERSION }}" \
             --branch "${{ github.ref_name }}" \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --commit "${{ github.sha }}"
+            --commit "${{ github.sha }}" \
+            --step "${{ steps.error_details.outputs.FAILED_STEP || 'Build and Deploy to TestFlight' }}" \
+            --error "${{ steps.error_details.outputs.ERROR_MSG || 'Check logs for details' }}"
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

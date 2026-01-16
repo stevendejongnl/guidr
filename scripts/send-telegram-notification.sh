@@ -36,6 +36,10 @@ parse_arguments() {
         ERROR_MSG="$2"
         shift 2
         ;;
+      --step)
+        FAILED_STEP="$2"
+        shift 2
+        ;;
       --metadata)
         METADATA="$2"
         shift 2
@@ -123,7 +127,30 @@ EOF
 EOF
       ;;
     android_failure)
-      cat <<EOF
+      if [ -n "${FAILED_STEP}" ] || [ -n "${ERROR_MSG}" ]; then
+        cat <<EOF
+<b>📦 Android Build Failed</b>
+
+<b>Status:</b> ❌ Failure
+<b>Branch:</b> ${escaped_branch}
+<b>Commit:</b> <code>${commit_short}</code>
+EOF
+        if [ -n "${FAILED_STEP}" ]; then
+          echo "<b>Failed Step:</b> ${FAILED_STEP}"
+        fi
+        if [ -n "${ERROR_MSG}" ]; then
+          local error_truncated=$(truncate_string "$ERROR_MSG" 500)
+          local escaped_error_msg=$(escape_html "$error_truncated")
+          echo ""
+          echo "<b>Error:</b>"
+          echo "<pre>${escaped_error_msg}</pre>"
+        fi
+        cat <<EOF
+
+<a href="${RUN_URL}">View Build Logs</a>
+EOF
+      else
+        cat <<EOF
 <b>📦 Android Build Failed</b>
 
 <b>Status:</b> ❌ Failure
@@ -132,6 +159,7 @@ EOF
 
 <a href="${RUN_URL}">View Build Logs</a>
 EOF
+      fi
       ;;
     testflight_success)
       cat <<EOF
@@ -145,7 +173,30 @@ EOF
 EOF
       ;;
     testflight_failure)
-      cat <<EOF
+      if [ -n "${FAILED_STEP}" ] || [ -n "${ERROR_MSG}" ]; then
+        cat <<EOF
+<b>✈️ TestFlight Deployment Failed</b>
+
+<b>Status:</b> ❌ Failure
+<b>Branch:</b> ${escaped_branch}
+<b>Commit:</b> <code>${commit_short}</code>
+EOF
+        if [ -n "${FAILED_STEP}" ]; then
+          echo "<b>Failed Step:</b> ${FAILED_STEP}"
+        fi
+        if [ -n "${ERROR_MSG}" ]; then
+          local error_truncated=$(truncate_string "$ERROR_MSG" 500)
+          local escaped_error_msg=$(escape_html "$error_truncated")
+          echo ""
+          echo "<b>Error:</b>"
+          echo "<pre>${escaped_error_msg}</pre>"
+        fi
+        cat <<EOF
+
+<a href="${RUN_URL}">View Build Logs</a>
+EOF
+      else
+        cat <<EOF
 <b>✈️ TestFlight Deployment Failed</b>
 
 <b>Status:</b> ❌ Failure
@@ -154,6 +205,7 @@ EOF
 
 <a href="${RUN_URL}">View Build Logs</a>
 EOF
+      fi
       ;;
     docker_success)
       cat <<EOF
@@ -169,7 +221,30 @@ EOF
 EOF
       ;;
     docker_failure)
-      cat <<EOF
+      if [ -n "${FAILED_STEP}" ] || [ -n "${ERROR_MSG}" ]; then
+        cat <<EOF
+<b>🐳 Docker Deployment Failed</b>
+
+<b>Status:</b> ❌ Failure
+<b>Branch:</b> ${escaped_branch}
+<b>Commit:</b> <code>${commit_short}</code>
+EOF
+        if [ -n "${FAILED_STEP}" ]; then
+          echo "<b>Failed Step:</b> ${FAILED_STEP}"
+        fi
+        if [ -n "${ERROR_MSG}" ]; then
+          local error_truncated=$(truncate_string "$ERROR_MSG" 500)
+          local escaped_error_msg=$(escape_html "$error_truncated")
+          echo ""
+          echo "<b>Error:</b>"
+          echo "<pre>${escaped_error_msg}</pre>"
+        fi
+        cat <<EOF
+
+<a href="${RUN_URL}">View Build Logs</a>
+EOF
+      else
+        cat <<EOF
 <b>🐳 Docker Deployment Failed</b>
 
 <b>Status:</b> ❌ Failure
@@ -178,9 +253,33 @@ EOF
 
 <a href="${RUN_URL}">View Build Logs</a>
 EOF
+      fi
       ;;
     pr_check_failure)
-      cat <<EOF
+      if [ -n "${FAILED_STEP}" ] || [ -n "${ERROR_MSG}" ]; then
+        cat <<EOF
+<b>⚠️ PR Check Failed</b>
+
+<b>Status:</b> ❌ Failure
+<b>Branch:</b> ${escaped_branch}
+<b>Commit:</b> <code>${commit_short}</code>
+EOF
+        if [ -n "${FAILED_STEP}" ]; then
+          echo "<b>Failed Step:</b> ${FAILED_STEP}"
+        fi
+        if [ -n "${ERROR_MSG}" ]; then
+          local error_truncated=$(truncate_string "$ERROR_MSG" 500)
+          local escaped_error_msg=$(escape_html "$error_truncated")
+          echo ""
+          echo "<b>Error:</b>"
+          echo "<pre>${escaped_error_msg}</pre>"
+        fi
+        cat <<EOF
+
+<a href="${RUN_URL}">View Failed Checks</a>
+EOF
+      else
+        cat <<EOF
 <b>⚠️ PR Check Failed</b>
 
 <b>Status:</b> ❌ Failure
@@ -189,6 +288,7 @@ EOF
 
 <a href="${RUN_URL}">View Failed Checks</a>
 EOF
+      fi
       ;;
     *)
       echo "Error: Unknown notification type: $type"

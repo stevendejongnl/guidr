@@ -296,6 +296,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get failure details
+        id: error_details
+        run: |
+          # Fetch logs from GitHub API and extract last lines of errors
+          gh run view ${{ github.run_id }} --log-failed > /tmp/error.txt 2>&1 || echo "Failed to fetch logs" > /tmp/error.txt
+
+          # Extract last 10 lines of error output
+          ERROR=$(tail -20 /tmp/error.txt | head -10 | sed 's/"/\\"/g')
+          echo "ERROR_MSG<<EOF" >> $GITHUB_OUTPUT
+          echo "$ERROR" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Get failed step name from logs
+          FAILED_STEP=$(grep -oP "##\[error\].*" /tmp/error.txt | head -1 | sed 's/##\[error\]//' | sed 's/^[ \t]*//' | cut -d' ' -f1-5)
+          if [ -z "$FAILED_STEP" ]; then
+            FAILED_STEP="PR Checks"
+          fi
+          echo "FAILED_STEP=$FAILED_STEP" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
+
       - name: Send failure notification
         run: |
           chmod +x scripts/send-telegram-notification.sh
@@ -303,7 +325,9 @@ jobs:
             --type pr_check_failure \
             --branch "${{ github.head_ref }}" \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --commit "${{ github.event.pull_request.head.sha }}"
+            --commit "${{ github.event.pull_request.head.sha }}" \
+            --step "${{ steps.error_details.outputs.FAILED_STEP || 'PR Checks' }}" \
+            --error "${{ steps.error_details.outputs.ERROR_MSG || 'Check logs for details' }}"
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
