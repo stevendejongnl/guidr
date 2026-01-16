@@ -155,6 +155,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
+      - name: Notify release success
+        if: env.SHOULD_RELEASE == 'true'
+        working-directory: .
+        run: |
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
+            --type release_success \
+            --version "$NEXT_VERSION" \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
       - name: Trigger downstream workflows
         if: env.SHOULD_RELEASE == 'true'
         working-directory: .
@@ -178,6 +193,7 @@ jobs:
 
       - name: No release needed
         if: env.SHOULD_RELEASE == 'false'
+        working-directory: .
         run: |
           echo "ℹ️  No release will be created"
           echo "Reason: No relevant commits since last release"
@@ -186,3 +202,14 @@ jobs:
           echo "  feat: for new features (minor version bump)"
           echo "  fix: for bug fixes (patch version bump)"
           echo "  BREAKING CHANGE: for breaking changes (major version bump)"
+
+          # Send Telegram notification
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
+            --type release_skip \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

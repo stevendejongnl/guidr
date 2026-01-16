@@ -145,6 +145,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Notify Android success
+        if: success()
+        run: |
+          chmod +x ../scripts/send-telegram-notification.sh
+          ../scripts/send-telegram-notification.sh \
+            --type android_success \
+            --version "${{ steps.version.outputs.VERSION }}" \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Notify Android failure
+        if: failure()
+        run: |
+          chmod +x ../scripts/send-telegram-notification.sh
+          ../scripts/send-telegram-notification.sh \
+            --type android_failure \
+            --version "${{ steps.version.outputs.VERSION }}" \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
       - name: Build complete
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"

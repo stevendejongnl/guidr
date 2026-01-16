@@ -129,3 +129,31 @@ jobs:
             "image": "ghcr.io/${{ github.repository_owner }}/guidr-api-server:${{ steps.version.outputs.VERSION }}"
           }'
           echo "✅ Deployment updated successfully!"
+
+      - name: Notify Docker success
+        if: success() && steps.version.outputs.VERSION != ''
+        run: |
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
+            --type docker_success \
+            --version "${{ steps.version.outputs.VERSION }}" \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Notify Docker failure
+        if: failure()
+        run: |
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
+            --type docker_failure \
+            --version "${{ steps.version.outputs.VERSION }}" \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

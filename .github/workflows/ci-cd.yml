@@ -286,3 +286,24 @@ jobs:
           name: app-debug-ios
           path: mobile/ios/build/Build/Products/Debug-iphonesimulator/guidr.app
           retention-days: 7
+
+  notify-pr-failure:
+    name: Notify PR Check Failure
+    runs-on: ubuntu-latest
+    if: failure()
+    needs: [lint, test, typecheck, api-server-test, api-server-lint, web-app-lint, web-app-test, android-build, ios-build]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Send failure notification
+        run: |
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
+            --type pr_check_failure \
+            --branch "${{ github.head_ref }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.event.pull_request.head.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

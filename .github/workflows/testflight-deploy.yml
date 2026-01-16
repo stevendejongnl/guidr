@@ -40,7 +40,18 @@ jobs:
           cf_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           cf_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           disable_bot_fight_mode: 'true'
-          bfm_propagation_delay: 15
+          bfm_propagation_delay: 30
+
+      - name: Configure git for Gitea access
+        run: |
+          # Disable SSL verification for Gitea behind Cloudflare (using bypass)
+          git config --global http.sslVerify false
+          # Increase connection timeout for Gitea clone
+          git config --global http.connectTimeout 60
+          # Disable low-speed timeout that could kill slow clones
+          git config --global http.lowSpeedLimit 0
+          git config --global http.lowSpeedTime 0
+          echo "✅ Git configured for Gitea + Cloudflare access"
 
       - name: Get version
         id: version_check
@@ -269,6 +280,34 @@ jobs:
           name: guidr-testflight-v${{ steps.version.outputs.VERSION }}-build${{ env.BUILD_NUMBER }}
           path: mobile/ios/build/guidr.ipa
           retention-days: 30
+
+      - name: Notify TestFlight success
+        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        run: |
+          chmod +x ../scripts/send-telegram-notification.sh
+          ../scripts/send-telegram-notification.sh \
+            --type testflight_success \
+            --version "${{ steps.version.outputs.VERSION }}" \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Notify TestFlight failure
+        if: failure()
+        run: |
+          chmod +x ../scripts/send-telegram-notification.sh
+          ../scripts/send-telegram-notification.sh \
+            --type testflight_failure \
+            --version "${{ steps.version.outputs.VERSION }}" \
+            --branch "${{ github.ref_name }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --commit "${{ github.sha }}"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       # Cleanup API key files
       - name: Cleanup API key

@@ -1,5 +1,6 @@
 git_url("https://git.madebysteven.nl/stevendejong/guidr-certificates.git")
-git_basic_authorization(ENV['GITEA_TOKEN'])
+# Gitea requires basic auth in username:token format
+git_basic_authorization("stevendejong:#{ENV['GITEA_TOKEN']}")
 
 storage_mode("git")
 type("appstore")
