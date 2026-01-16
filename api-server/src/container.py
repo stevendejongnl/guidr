@@ -53,6 +53,7 @@ from .application.use_cases.user import (
 from .domain.services import EventPersistenceService
 from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
+from .infrastructure.coordination import MongoStartupCoordinator
 from .infrastructure.notifications import TelegramNotificationService
 from .infrastructure.persistence.mongodb.database import Database
 from .infrastructure.persistence.mongodb.repositories import (
@@ -89,6 +90,12 @@ class Container(containers.DeclarativeContainer):
     telegram_notification_service = providers.Singleton(
         TelegramNotificationService,
         settings=config,
+    )
+
+    # Infrastructure - Coordination
+    startup_coordinator = providers.Singleton(
+        MongoStartupCoordinator,
+        database=database.provided.db,
     )
 
     # Repositories (Singletons)

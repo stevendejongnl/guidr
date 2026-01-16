@@ -1,6 +1,8 @@
 """Application entry point."""
 
+import logging
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 
 import uvicorn
 from fastapi import FastAPI
@@ -27,6 +29,8 @@ from .presentation.api.routers import (
     users as users_router,
 )
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,9 +39,23 @@ async def lifespan(app: FastAPI):
     container = app.state.container
     await container.database().connect()
 
-    # Send startup notification
-    telegram_service = container.telegram_notification_service()
-    await telegram_service.send_startup_notification(app.version)
+    # Ensure coordination indexes exist
+    coordinator = container.startup_coordinator()
+    await coordinator.ensure_indexes()
+
+    # Coordinate startup notification to prevent duplicates in Kubernetes
+    config = container.config()
+    deployment_id = config.deployment_id or datetime.now(UTC).isoformat()
+    should_notify = await coordinator.should_send_startup_notification(deployment_id)
+
+    if should_notify:
+        telegram_service = container.telegram_notification_service()
+        await telegram_service.send_startup_notification(app.version)
+    else:
+        logger.info(
+            f"Skipping startup notification (already sent by another pod for "
+            f"deployment: {deployment_id})"
+        )
 
     yield
     # Shutdown: Disconnect from database

@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     telegram_bot_token: str | None = None
     telegram_chat_id: str | None = None
 
+    # Deployment Configuration
+    deployment_id: str | None = None
+
     def __init__(self, **kwargs):
         """Initialize settings with TOML config overlay."""
         super().__init__(**kwargs)
