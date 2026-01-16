@@ -57,12 +57,31 @@ jobs:
           bundler-cache: true
           working-directory: mobile
 
+      - name: Create App Store Connect API Key
+        run: |
+          mkdir -p $HOME/private_keys
+
+          # Create .p8 file for xcodebuild
+          P8_PATH="$HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8"
+          echo "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" > "$P8_PATH"
+
+          # Create JSON file for Fastlane with embedded key content
+          JSON_PATH="$HOME/private_keys/api_key.json"
+          jq -n \
+            --arg key_id "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" \
+            --arg issuer_id "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" \
+            --arg key "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}" \
+            '{key_id: $key_id, issuer_id: $issuer_id, key: $key}' > "$JSON_PATH"
+
+          echo "APP_STORE_CONNECT_API_KEY_JSON_PATH=$JSON_PATH" >> $GITHUB_ENV
+
       - name: Renew iOS certificates via fastlane match
         env:
           GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
+          APP_STORE_CONNECT_API_KEY_JSON_PATH: ${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}
         run: |
           bundle install --retry=3
 
@@ -72,6 +91,12 @@ jobs:
           else
             cd ios && bundle exec fastlane generate_certificates
           fi
+
+      - name: Cleanup API key
+        if: always()
+        run: |
+          rm -f $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          rm -f $HOME/private_keys/api_key.json
 
       - name: Notify certificate renewal success
         if: success()
