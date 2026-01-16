@@ -92,39 +92,18 @@ jobs:
 
       # Step 7: Configure SSH with cloudflared access proxy
       - name: Configure SSH with cloudflared access proxy
-        env:
-          CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
-          CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
-          # Debug: Check if secrets are loaded
-          if [ -z "$CLOUDFLARE_ACCESS_CLIENT_ID" ] || [ -z "$CLOUDFLARE_ACCESS_CLIENT_SECRET" ]; then
-            echo "❌ ERROR: CLOUDFLARE_ACCESS_CLIENT_ID or CLOUDFLARE_ACCESS_CLIENT_SECRET is empty!"
-            echo "CLOUDFLARE_ACCESS_CLIENT_ID is set: $([ -n "$CLOUDFLARE_ACCESS_CLIENT_ID" ] && echo "YES" || echo "NO")"
-            echo "CLOUDFLARE_ACCESS_CLIENT_SECRET is set: $([ -n "$CLOUDFLARE_ACCESS_CLIENT_SECRET" ] && echo "YES" || echo "NO")"
-            exit 1
-          fi
-
-          echo "✅ Cloudflare Access credentials are loaded"
-          echo "   Client ID prefix: ${CLOUDFLARE_ACCESS_CLIENT_ID:0:20}..."
-          echo "   Client Secret prefix: ${CLOUDFLARE_ACCESS_CLIENT_SECRET:0:20}..."
-
-          # Create a wrapper script for cloudflared that includes the service tokens
+          # Create a simple wrapper script for cloudflared
           cat > ~/.ssh/cloudflared-wrapper.sh <<'EOF'
           #!/bin/bash
-          export CLOUDFLARE_ACCESS_CLIENT_ID="CF_CLIENT_ID_PLACEHOLDER"
-          export CLOUDFLARE_ACCESS_CLIENT_SECRET="CF_CLIENT_SECRET_PLACEHOLDER"
-          exec /usr/bin/cloudflared access ssh "$@"
+          exec /usr/bin/cloudflared access ssh --hostname "$@"
           EOF
-
-          # Replace placeholders with actual credentials
-          sed -i "s|CF_CLIENT_ID_PLACEHOLDER|${CLOUDFLARE_ACCESS_CLIENT_ID}|g" ~/.ssh/cloudflared-wrapper.sh
-          sed -i "s|CF_CLIENT_SECRET_PLACEHOLDER|${CLOUDFLARE_ACCESS_CLIENT_SECRET}|g" ~/.ssh/cloudflared-wrapper.sh
 
           chmod +x ~/.ssh/cloudflared-wrapper.sh
 
+          echo "Wrapper script created:"
+          cat ~/.ssh/cloudflared-wrapper.sh
           echo ""
-          echo "Wrapper script created (credentials masked):"
-          sed 's/CLIENT_ID=".*"/CLIENT_ID="***MASKED***"/g; s/CLIENT_SECRET=".*"/CLIENT_SECRET="***MASKED***"/g' ~/.ssh/cloudflared-wrapper.sh
 
           # Configure SSH to use the wrapper
           cat > ~/.ssh/config <<'SSHEOF'
@@ -140,33 +119,10 @@ jobs:
 
           chmod 600 ~/.ssh/config
 
-          echo ""
           echo "SSH config:"
           cat ~/.ssh/config
           echo ""
           echo "✅ SSH config configured with cloudflared access proxy"
-
-      # Step 7b: Verify cloudflared wrapper and test authentication
-      - name: Verify cloudflared wrapper and test authentication
-        run: |
-          echo "Verifying cloudflared wrapper script..."
-          if [ -x ~/.ssh/cloudflared-wrapper.sh ]; then
-            echo "✅ Cloudflared wrapper is executable"
-          else
-            echo "❌ Cloudflared wrapper is not executable"
-            exit 1
-          fi
-
-          echo ""
-          echo "Testing cloudflared access authentication..."
-          echo "Running: ~/.ssh/cloudflared-wrapper.sh --hostname gitaccess.madebysteven.nl"
-
-          # Try to run the wrapper to see if cloudflared can authenticate
-          # This should fail with connection but show auth status
-          timeout 5 ~/.ssh/cloudflared-wrapper.sh --hostname gitaccess.madebysteven.nl 2>&1 | head -20 || true
-
-          echo ""
-          echo "✅ Cloudflared wrapper test complete (connection attempt made)"
 
       # Step 8: Verify SSH connection through cloudflared
       - name: Verify SSH connection to Gitea
@@ -379,7 +335,5 @@ jobs:
           echo "  - CLOUDFLARE_ACCOUNT_ID"
           echo "  - CLOUDFLARE_ZONE_ID"
           echo "  - CLOUDFLARE_API_TOKEN"
-          echo "  - CLOUDFLARE_ACCESS_CLIENT_ID (for cloudflared SSH tunneling)"
-          echo "  - CLOUDFLARE_ACCESS_CLIENT_SECRET (for cloudflared SSH tunneling)"
           echo "  - GITEA_SSH_PRIVATE_KEY"
           echo "  - GITEA_SSH_KNOWN_HOSTS"
