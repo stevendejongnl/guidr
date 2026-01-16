@@ -96,7 +96,7 @@ jobs:
           # Create a simple wrapper script for cloudflared
           cat > ~/.ssh/cloudflared-wrapper.sh <<'EOF'
           #!/bin/bash
-          exec /usr/bin/cloudflared access ssh --hostname "$@"
+          exec /usr/bin/cloudflared access ssh "$@"
           EOF
 
           chmod +x ~/.ssh/cloudflared-wrapper.sh
