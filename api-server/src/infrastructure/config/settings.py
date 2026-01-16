@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     min_app_version: str | None = None
     max_app_version: str | None = None
 
+    # Telegram Notifications (optional)
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
+
     def __init__(self, **kwargs):
         """Initialize settings with TOML config overlay."""
         super().__init__(**kwargs)

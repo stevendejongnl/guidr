@@ -676,6 +676,114 @@ docker-compose up -d
 | `JWT_EXPIRATION_MINUTES` | `10080` | JWT token expiration (7 days) |
 | `GUIDR_VERSION` | `1.29.0` | Server version (set automatically in Docker image, must match mobile app version) |
 | `ROOT_PATH` | `` | FastAPI root path for reverse proxy deployments |
+| `TELEGRAM_BOT_TOKEN` | `` | (Optional) Telegram bot authentication token for startup notifications |
+| `TELEGRAM_CHAT_ID` | `` | (Optional) Telegram chat/channel ID to receive startup notifications |
+
+### Telegram Startup Notifications (Optional)
+
+The API server can send startup notifications to Telegram when the service successfully starts. This is useful for monitoring deployments and receiving instant alerts when the server is up and running.
+
+#### Setup
+
+1. **Create a Telegram Bot**:
+   - Open Telegram and chat with [@BotFather](https://t.me/botfather)
+   - Send `/newbot` and follow instructions
+   - Copy your bot token (format: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
+
+2. **Get Your Chat ID**:
+   - Chat with your bot
+   - Open: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+   - Send a message to your bot
+   - Your chat ID will appear in the response (e.g., `123456789`)
+
+3. **Set Environment Variables**:
+   ```bash
+   export TELEGRAM_BOT_TOKEN="your_bot_token_here"
+   export TELEGRAM_CHAT_ID="your_chat_id_here"
+   ```
+
+#### Using with Docker
+
+```bash
+docker run -p 8000:8000 \
+  -e TELEGRAM_BOT_TOKEN="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" \
+  -e TELEGRAM_CHAT_ID="123456789" \
+  ghcr.io/stevendejongnl/guidr-api-server:latest
+```
+
+#### Using with Docker Compose
+
+Update `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+services:
+  guidr-api-server:
+    image: ghcr.io/stevendejongnl/guidr-api-server:latest
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - MONGODB_URL=mongodb://mongo:27017
+      - MONGODB_DATABASE=guidr
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+```
+
+Then create `.env`:
+```bash
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
+```
+
+Run with: `docker-compose up`
+
+#### Using with Kubernetes
+
+Add to your Kubernetes secret:
+
+```bash
+kubectl create secret generic guidr-telegram-secret \
+  --from-literal=telegram-bot-token='123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11' \
+  --from-literal=telegram-chat-id='123456789' \
+  -n guidr
+```
+
+Then reference in your deployment manifest:
+```yaml
+env:
+  - name: TELEGRAM_BOT_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: guidr-telegram-secret
+        key: telegram-bot-token
+  - name: TELEGRAM_CHAT_ID
+    valueFrom:
+      secretKeyRef:
+        name: guidr-telegram-secret
+        key: telegram-chat-id
+```
+
+#### Features
+
+- **Automatic**: Sends notification automatically when server starts successfully
+- **Optional**: Completely optional - server works perfectly without Telegram configured
+- **Safe**: Gracefully handles network failures without affecting server startup
+- **Formatted**: Messages include version, timestamp, and link to API documentation
+- **Reliable**: Never prevents server from starting if notification fails
+
+#### Message Format
+
+The notification message includes:
+- Status indicator (✅ Running)
+- API version
+- Timestamp (UTC)
+- Link to API documentation
 
 ---
 

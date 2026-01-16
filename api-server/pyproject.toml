@@ -17,11 +17,11 @@ argon2-cffi = "^25.1.0"
 pydantic-settings = "^2.0.0"
 dependency-injector = "^4.41.0"
 python-multipart = "^0.0.21"
+httpx = "^0.28.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
 pytest-asyncio = ">=0.26.0"
-httpx = "^0.28.1"
 ruff = "^0.14.10"
 mypy = "^1.9.0"
 mongomock-motor = "^0.0.36"

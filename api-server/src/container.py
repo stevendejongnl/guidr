@@ -53,6 +53,7 @@ from .application.use_cases.user import (
 from .domain.services import EventPersistenceService
 from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
+from .infrastructure.notifications import TelegramNotificationService
 from .infrastructure.persistence.mongodb.database import Database
 from .infrastructure.persistence.mongodb.repositories import (
     MongoAuditLogRepository,
@@ -81,6 +82,12 @@ class Container(containers.DeclarativeContainer):
 
     jwt_service = providers.Singleton(
         JWTService,
+        settings=config,
+    )
+
+    # Infrastructure - Notifications
+    telegram_notification_service = providers.Singleton(
+        TelegramNotificationService,
         settings=config,
     )
 

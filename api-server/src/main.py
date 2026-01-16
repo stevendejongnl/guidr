@@ -34,6 +34,11 @@ async def lifespan(app: FastAPI):
     # Startup: Connect to database
     container = app.state.container
     await container.database().connect()
+
+    # Send startup notification
+    telegram_service = container.telegram_notification_service()
+    await telegram_service.send_startup_notification(app.version)
+
     yield
     # Shutdown: Disconnect from database
     await container.database().disconnect()
