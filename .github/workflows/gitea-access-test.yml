@@ -51,123 +51,10 @@ jobs:
           cloudflared --version
           echo "✅ cloudflared installed successfully"
 
-      # Step 4: Setup SSH directory with proper permissions
-      - name: Setup SSH directory
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "✅ SSH directory created"
-
-      # Step 5: Install SSH private key from secrets
-      - name: Install SSH private key
-        run: |
-          echo "${{ secrets.GITEA_SSH_PRIVATE_KEY }}" > ~/.ssh/gitea_key
-          chmod 600 ~/.ssh/gitea_key
-
-          # Debug: Check key format and permissions
-          echo "SSH key file permissions:"
-          ls -la ~/.ssh/gitea_key
-
-          echo ""
-          echo "SSH key file format check:"
-          head -n 1 ~/.ssh/gitea_key
-
-          echo ""
-          echo "SSH key validation:"
-          ssh-keygen -l -f ~/.ssh/gitea_key || echo "⚠️ Key validation failed - check key format"
-
-          echo "✅ SSH private key installed"
-
-      # Step 6: Install SSH known hosts
-      - name: Install SSH known hosts
-        run: |
-          echo "${{ secrets.GITEA_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
-          # Debug: Check known_hosts format
-          echo "Known hosts file:"
-          cat ~/.ssh/known_hosts
-          echo ""
-          echo "✅ SSH known hosts installed"
-
-      # Step 7: Configure SSH with cloudflared access proxy
-      - name: Configure SSH with cloudflared access proxy
-        run: |
-          # Create a simple wrapper script for cloudflared
-          cat > ~/.ssh/cloudflared-wrapper.sh <<'EOF'
-          #!/bin/bash
-          exec /usr/bin/cloudflared access ssh "$@"
-          EOF
-
-          chmod +x ~/.ssh/cloudflared-wrapper.sh
-
-          echo "Wrapper script created:"
-          cat ~/.ssh/cloudflared-wrapper.sh
-          echo ""
-
-          # Configure SSH to use the wrapper
-          cat > ~/.ssh/config <<'SSHEOF'
-          Host gitaccess.madebysteven.nl
-            HostName gitaccess.madebysteven.nl
-            User gitea
-            Port 22
-            IdentityFile ~/.ssh/gitea_key
-            StrictHostKeyChecking yes
-            UserKnownHostsFile ~/.ssh/known_hosts
-            ProxyCommand ~/.ssh/cloudflared-wrapper.sh --hostname %h
-          SSHEOF
-
-          chmod 600 ~/.ssh/config
-
-          echo "SSH config:"
-          cat ~/.ssh/config
-          echo ""
-          echo "✅ SSH config configured with cloudflared access proxy"
-
-      # Step 8: Verify SSH connection through cloudflared
-      - name: Verify SSH connection to Gitea
-        run: |
-          echo "Verifying SSH connection to Gitea through cloudflared access..."
-          echo ""
-          echo "Debug: Testing SSH connection with verbose output..."
-          ssh -vvv -T gitea@gitaccess.madebysteven.nl 2>&1 | tee /tmp/ssh_test.log || true
-
-          echo ""
-          echo "=========================================="
-          echo "SSH Connection Test Results"
-          echo "=========================================="
-
-          # Gitea returns exit code 1 for successful auth with "Hi there, You've successfully authenticated"
-          if grep -q "successfully authenticated" /tmp/ssh_test.log; then
-            echo "✅ SSH authentication successful through cloudflared"
-          else
-            echo "❌ SSH authentication failed"
-            echo ""
-            echo "Error details:"
-            if grep -q "Permission denied" /tmp/ssh_test.log; then
-              echo "  - Permission denied: SSH key might not be authorized on Gitea server"
-              echo "  - Check that the public key is added to your Gitea user account"
-            fi
-            if grep -q "Connection refused" /tmp/ssh_test.log; then
-              echo "  - Connection refused: cloudflared tunnel might not be working"
-            fi
-            if grep -q "No such identity" /tmp/ssh_test.log; then
-              echo "  - SSH key file issue detected"
-            fi
-            if grep -q "Access" /tmp/ssh_test.log && grep -q "denied\|unauthorized" /tmp/ssh_test.log; then
-              echo "  - Cloudflare Access authentication failed"
-              echo "  - You may need to configure CLOUDFLARE_ACCESS_CLIENT_ID and CLOUDFLARE_ACCESS_CLIENT_SECRET"
-            fi
-            echo ""
-            echo "Full connection output:"
-            cat /tmp/ssh_test.log
-            exit 1
-          fi
-
-      # Step 9: Clone the Gitea repository
+      # Step 4: Clone the Gitea repository (HTTPS)
       - name: Clone guidr-certificates repository
         run: |
-          git clone gitea@gitaccess.madebysteven.nl:stevendejong/guidr-certificates.git /tmp/guidr-certificates
+          git clone https://git.madebysteven.nl/stevendejong/guidr-certificates.git /tmp/guidr-certificates
           cd /tmp/guidr-certificates
           echo "✅ Repository cloned successfully"
           echo "Repository contents:"
@@ -201,7 +88,7 @@ jobs:
           Test message: TEST_MESSAGE_PLACEHOLDER
 
           This file is automatically generated by the Gitea Access Test workflow
-          to verify SSH access and git operations through Cloudflare protection.
+          to verify HTTPS access and git operations through Cloudflare protection.
           TESTEOF
 
           # Replace placeholders with actual values to prevent injection
@@ -291,9 +178,8 @@ jobs:
           echo ""
           echo "Verified operations:"
           echo "  ✅ Cloudflare IP whitelisting"
-          echo "  ✅ cloudflared installed and configured"
-          echo "  ✅ SSH authentication to Gitea via cloudflared tunnel"
-          echo "  ✅ Repository clone"
+          echo "  ✅ HTTPS repository access through Cloudflare"
+          echo "  ✅ Repository clone via HTTPS"
           echo "  ✅ File creation/modification"
           echo "  ✅ Git commit"
           echo "  ✅ Git push"
@@ -302,17 +188,12 @@ jobs:
           echo ""
           echo "All Gitea access operations completed successfully!"
 
-      # Step 17: Cleanup (always runs, even on failure)
+      # Step 13: Cleanup (always runs, even on failure)
       - name: Cleanup
         if: always()
         run: |
-          echo "Cleaning up SSH keys and temporary files..."
-          rm -f ~/.ssh/gitea_key
-          rm -f ~/.ssh/known_hosts
-          rm -f ~/.ssh/config
-          rm -f ~/.ssh/cloudflared-wrapper.sh
+          echo "Cleaning up temporary files..."
           rm -rf /tmp/guidr-certificates
-          rm -f /tmp/ssh_test.log
           sudo apt-get remove -y cloudflared || true
           echo "✅ Cleanup completed"
 
@@ -326,7 +207,7 @@ jobs:
           echo ""
           echo "The test failed at one of the following stages:"
           echo "  1. Cloudflare bypass"
-          echo "  2. SSH authentication"
+          echo "  2. HTTPS repository access"
           echo "  3. Repository operations (clone/commit/push/pull)"
           echo "  4. File validation"
           echo ""
@@ -335,5 +216,3 @@ jobs:
           echo "  - CLOUDFLARE_ACCOUNT_ID"
           echo "  - CLOUDFLARE_ZONE_ID"
           echo "  - CLOUDFLARE_API_TOKEN"
-          echo "  - GITEA_SSH_PRIVATE_KEY"
-          echo "  - GITEA_SSH_KNOWN_HOSTS"
