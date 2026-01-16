@@ -1,9 +1,4 @@
 app_identifier("com.guidr")
 apple_id(ENV['APPLE_ID'])
 team_id(ENV['APPLE_TEAM_ID'])
-
-# App Store Connect API credentials
 itc_team_id(ENV['APPLE_TEAM_ID'])
-
-# Use App Store Connect API Key for authentication
-api_key_path(ENV['APP_STORE_CONNECT_API_KEY_JSON_PATH'])

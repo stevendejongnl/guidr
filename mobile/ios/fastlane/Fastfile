@@ -6,7 +6,8 @@ platform :ios do
     match(
       type: "appstore",
       readonly: true,
-      verbose: true
+      verbose: true,
+      api_key_path: ENV['APP_STORE_CONNECT_API_KEY_JSON_PATH']
     )
   end
 
@@ -16,7 +17,8 @@ platform :ios do
       type: "appstore",
       readonly: false,
       force_for_new_devices: true,
-      verbose: true
+      verbose: true,
+      api_key_path: ENV['APP_STORE_CONNECT_API_KEY_JSON_PATH']
     )
   end
 
