@@ -109,33 +109,6 @@ jobs:
           # Install dependencies
           pod install
 
-      - name: Sync code signing with fastlane match
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        env:
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APP_STORE_CONNECT_API_KEY_JSON_PATH: ${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}
-        run: |
-          # Ensure gems are installed
-          bundle install --retry=3
-          # Run fastlane from ios directory
-          cd ios
-          bundle exec fastlane sync_certificates
-
-      - name: Create Sentry properties file
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          cat > ios/sentry.properties <<EOF
-          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
-          EOF
-
-          echo "✅ Created iOS Sentry properties file"
-
       - name: Setup Ruby and Bundler
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: ruby/setup-ruby@v1
@@ -163,6 +136,33 @@ jobs:
             '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' > "$JSON_PATH"
 
           echo "APP_STORE_CONNECT_API_KEY_JSON_PATH=$JSON_PATH" >> $GITHUB_ENV
+
+      - name: Sync code signing with fastlane match
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APP_STORE_CONNECT_API_KEY_JSON_PATH: ${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}
+        run: |
+          # Ensure gems are installed
+          bundle install --retry=3
+          # Run fastlane from ios directory
+          cd ios
+          bundle exec fastlane sync_certificates
+
+      - name: Create Sentry properties file
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          cat > ios/sentry.properties <<EOF
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          defaults.org=madebysteven
+          defaults.project=guidr
+          defaults.url=https://sentry.io/
+          EOF
+
+          echo "✅ Created iOS Sentry properties file"
 
       # Auto-increment build number with timestamp
       - name: Increment build number
