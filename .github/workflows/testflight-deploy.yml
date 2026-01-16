@@ -86,6 +86,9 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
         run: |
+          # Ensure gems are installed
+          bundle install --retry=3
+          # Run fastlane from ios directory
           cd ios
           bundle exec fastlane sync_certificates
 
