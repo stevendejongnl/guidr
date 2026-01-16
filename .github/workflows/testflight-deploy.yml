@@ -25,6 +25,10 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'repository_dispatch'
+    # Serialize Cloudflare bypass operations to avoid rate limiting
+    concurrency:
+      group: cloudflare-bypass
+      cancel-in-progress: false
     defaults:
       run:
         working-directory: mobile
@@ -40,7 +44,7 @@ jobs:
           cf_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           cf_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           disable_bot_fight_mode: 'true'
-          bfm_propagation_delay: 30
+          bfm_propagation_delay: 60
 
       - name: Configure git for Gitea access
         run: |
