@@ -64,14 +64,13 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
         run: |
-          cd ios
           bundle install --retry=3
 
           # Force regenerate if requested, otherwise just generate new cert if needed
           if [ "${{ github.event.inputs.force_regenerate }}" == "true" ]; then
-            bundle exec fastlane generate_certificates force:true
+            cd ios && bundle exec fastlane generate_certificates force:true
           else
-            bundle exec fastlane generate_certificates
+            cd ios && bundle exec fastlane generate_certificates
           fi
 
       - name: Notify certificate renewal success
