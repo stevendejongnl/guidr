@@ -109,6 +109,19 @@ jobs:
           # Install dependencies
           pod install
 
+      - name: Generate iOS certificates (first-time setup)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+        run: |
+          cd mobile/ios
+          bundle install --retry=3
+          bundle exec fastlane generate_certificates
+        continue-on-error: true
+
       - name: Sync code signing with fastlane match
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         env:
