@@ -25,21 +25,21 @@ jobs:
 
       - name: Test cloudflared access authentication
         env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           echo "Step 1: Check if credentials are loaded"
-          if [ -z "$CF_ACCESS_CLIENT_ID" ] || [ -z "$CF_ACCESS_CLIENT_SECRET" ]; then
+          if [ -z "$CLOUDFLARE_ACCESS_CLIENT_ID" ] || [ -z "$CLOUDFLARE_ACCESS_CLIENT_SECRET" ]; then
             echo "❌ Credentials not loaded"
             exit 1
           fi
           echo "✅ Credentials loaded"
-          echo "   Client ID: ${CF_ACCESS_CLIENT_ID:0:20}..."
+          echo "   Client ID: ${CLOUDFLARE_ACCESS_CLIENT_ID:0:20}..."
           echo ""
 
           echo "Step 2: Export credentials for cloudflared"
-          export CF_ACCESS_CLIENT_ID
-          export CF_ACCESS_CLIENT_SECRET
+          export CLOUDFLARE_ACCESS_CLIENT_ID
+          export CLOUDFLARE_ACCESS_CLIENT_SECRET
           echo "✅ Credentials exported"
           echo ""
 
@@ -72,12 +72,12 @@ jobs:
 
       - name: Test raw TCP connection through cloudflared
         env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+          CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
         run: |
           echo "Testing if we can establish TCP connection to Gitea SSH port..."
-          export CF_ACCESS_CLIENT_ID
-          export CF_ACCESS_CLIENT_SECRET
+          export CLOUDFLARE_ACCESS_CLIENT_ID
+          export CLOUDFLARE_ACCESS_CLIENT_SECRET
 
           # Try to get SSH banner through cloudflared
           timeout 10 sh -c 'cloudflared access ssh --hostname gitaccess.madebysteven.nl 2>&1 &
