@@ -1,0 +1,7 @@
+git_url("https://git.madebysteven.nl/stevendejong/guidr-certificates.git")
+git_basic_authorization(ENV['GITEA_TOKEN'])
+storage_mode("git")
+type("appstore")
+app_identifier(["com.guidr"])
+team_id(ENV['APPLE_TEAM_ID'])
+verbose(true)
