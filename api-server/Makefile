@@ -1,8 +1,11 @@
-.PHONY: install test run docker-build docker-run clean lint typecheck up up-detached down logs build ps restart help
+.PHONY: install lock test run docker-build docker-run clean lint typecheck up up-detached down logs build ps restart help
 
 # Install dependencies
 install:
 	poetry install
+
+lock:
+	poetry lock
 
 # Run tests
 test:
