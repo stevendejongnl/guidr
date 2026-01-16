@@ -33,6 +33,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Bypass Cloudflare for Gitea access
+        uses: xiaotianxt/bypass-cloudflare-for-github-action@v2.1.0
+        with:
+          cf_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          cf_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          cf_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          disable_bot_fight_mode: 'true'
+          bfm_propagation_delay: 15
+
       - name: Get version
         id: version_check
         run: |
@@ -63,6 +72,17 @@ jobs:
         run: |
           cd ios
           pod install
+
+      - name: Sync code signing with fastlane match
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+        run: |
+          cd ios
+          bundle exec fastlane sync_certificates
 
       - name: Create Sentry properties file
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -113,7 +133,7 @@ jobs:
           echo "Build number set to: $BUILD_NUM"
           echo "BUILD_NUMBER=$BUILD_NUM" >> $GITHUB_ENV
 
-      # Build archive with automatic signing
+      # Build archive with manual signing via fastlane match
       - name: Build iOS archive
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
@@ -124,12 +144,10 @@ jobs:
             -sdk iphoneos \
             -configuration Release \
             -archivePath ./build/guidr.xcarchive \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8 \
-            -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
-            -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
-            CODE_SIGN_STYLE=Automatic \
+            PROVISIONING_PROFILE_SPECIFIER="match AppStore com.guidr" \
             archive
 
       # Export signed IPA
@@ -141,12 +159,7 @@ jobs:
             -exportArchive \
             -archivePath ./build/guidr.xcarchive \
             -exportPath ./build \
-            -exportOptionsPlist ./ExportOptions.plist \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8 \
-            -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
-            -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }} \
-            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}"
+            -exportOptionsPlist ./ExportOptions.plist
 
       # Get version info
       - name: Get version information

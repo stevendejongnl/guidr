@@ -1,0 +1,50 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Sync code signing certificates and profiles using match"
+  lane :sync_certificates do
+    match(
+      type: "appstore",
+      readonly: true,
+      verbose: true
+    )
+  end
+
+  desc "Generate new certificates (first-time setup only)"
+  lane :generate_certificates do
+    match(
+      type: "appstore",
+      readonly: false,
+      force_for_new_devices: true,
+      verbose: true
+    )
+  end
+
+  desc "Build for TestFlight"
+  lane :build_for_testflight do
+    # Sync certificates first
+    sync_certificates
+
+    # Increment build number with timestamp
+    build_number = Time.now.strftime("%Y%m%d%H%M%S")
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: "guidr.xcodeproj"
+    )
+
+    # Build the app
+    build_app(
+      workspace: "guidr.xcworkspace",
+      scheme: "guidr",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        provisioningProfiles: {
+          "com.guidr" => "match AppStore com.guidr"
+        }
+      }
+    )
+  end
+end

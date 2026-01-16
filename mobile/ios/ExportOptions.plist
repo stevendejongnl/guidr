@@ -5,7 +5,12 @@
 	<key>method</key>
 	<string>app-store-connect</string>
 	<key>signingStyle</key>
-	<string>automatic</string>
+	<string>manual</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.guidr</key>
+		<string>match AppStore com.guidr</string>
+	</dict>
 	<key>stripSwiftSymbols</key>
 	<true/>
 	<key>uploadSymbols</key>

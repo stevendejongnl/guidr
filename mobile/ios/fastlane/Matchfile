@@ -1,0 +1,18 @@
+git_url("https://git.madebysteven.nl/stevendejong/guidr-certificates.git")
+git_basic_authorization(ENV['GITEA_TOKEN'])
+
+storage_mode("git")
+type("appstore")
+
+app_identifier(["com.guidr"])
+username(ENV['APPLE_ID'])
+team_id(ENV['APPLE_TEAM_ID'])
+
+# Certificate repo branch
+git_branch("main")
+
+# Shallow clone for faster operations
+shallow_clone(true)
+
+# Verbose logging for debugging
+verbose(true)

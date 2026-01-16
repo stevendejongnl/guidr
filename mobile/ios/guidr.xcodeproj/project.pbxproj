@@ -313,6 +313,10 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				DEVELOPMENT_TEAM = $(APPLE_TEAM_ID);
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 			};
 			name = Debug;
 		};
@@ -340,6 +344,10 @@
 				PRODUCT_NAME = guidr;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				DEVELOPMENT_TEAM = $(APPLE_TEAM_ID);
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 			};
 			name = Release;
 		};
