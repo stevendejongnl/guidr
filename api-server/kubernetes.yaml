@@ -54,6 +54,11 @@ spec:
           value: "HS256"
         - name: JWT_EXPIRATION_MINUTES
           value: "10080"
+        # Deployment Coordination (prevents duplicate startup notifications)
+        - name: DEPLOYMENT_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['pod-template-hash']
         resources:
           requests:
             memory: "128Mi"
