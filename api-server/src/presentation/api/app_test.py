@@ -2,10 +2,11 @@
 
 import os
 from importlib.metadata import PackageNotFoundError
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
 
+from src.main import create_application
 from src.presentation.api.app import _get_version, create_app
 
 
@@ -61,10 +62,16 @@ class TestHealthEndpoint:
     def test_health_endpoint_returns_status_and_version(self) -> None:
         """Health endpoint should return status and version."""
         with patch.dict(os.environ, {"GUIDR_VERSION": "1.23.2"}):
-            app = create_app()
+            app = create_application()
             client = TestClient(app)
 
-            response = client.get("/api/v1/health")
+            # Mock the database ping
+            with patch("src.presentation.api.routers.system.container") as mock_container:
+                mock_db_service = MagicMock()
+                mock_db_service.db.command = AsyncMock(return_value=None)
+                mock_container.database.return_value = mock_db_service
+
+                response = client.get("/api/v1/health")
 
             assert response.status_code == 200
             data = response.json()
@@ -77,10 +84,16 @@ class TestHealthEndpoint:
             with patch(
                 "src.presentation.api.app.version", return_value="2.0.0"
             ):
-                app = create_app()
+                app = create_application()
                 client = TestClient(app)
 
-                response = client.get("/api/v1/health")
+                # Mock the database ping
+                with patch("src.presentation.api.routers.system.container") as mock_container:
+                    mock_db_service = MagicMock()
+                    mock_db_service.db.command = AsyncMock(return_value=None)
+                    mock_container.database.return_value = mock_db_service
+
+                    response = client.get("/api/v1/health")
 
                 assert response.status_code == 200
                 data = response.json()
