@@ -134,6 +134,60 @@ Semantic-release automatically:
 - Creates release
 - Builds and publishes IPA
 
+## Issue Tracking
+
+This project uses GitHub Projects for tracking work: https://github.com/users/stevendejongnl/projects/3
+
+**Statuses**: Todo → In Progress → Done
+
+### Workflow
+
+1. **Before Starting Work**
+   ```bash
+   # Assign yourself to the issue
+   gh issue edit <number> --add-assignee @me
+
+   # Move to "In Progress"
+   gh issue edit <number> --add-project "Guidr" --project-field "Status" --project-value "In Progress"
+   ```
+
+2. **During Development**
+   - Keep ticket status updated
+   - Link commits to the ticket (include issue number in commit message: `#123`)
+   - Update ticket with progress notes if needed using `gh issue comment <number> --body "progress update"`
+
+3. **After Completing Work**
+   ```bash
+   # Reference ticket in PR description (e.g., "Closes #123")
+   # Move to "Done" when PR is merged (automatic if using "Closes #123")
+   gh issue edit <number> --add-project "Guidr" --project-field "Status" --project-value "Done"
+   ```
+
+### Common Commands
+
+```bash
+# Assign yourself to an issue
+gh issue edit 123 --add-assignee @me
+
+# Update issue status
+gh issue edit 123 --add-project "Guidr" --project-field "Status" --project-value "In Progress"
+gh issue edit 123 --add-project "Guidr" --project-field "Status" --project-value "Done"
+
+# Add a comment
+gh issue comment 123 --body "Progress update: completed step 1"
+
+# View issue details
+gh issue view 123
+```
+
+### For Claude Code
+
+When working on tickets:
+- Always assign yourself to the ticket before starting work
+- Update ticket status through the development lifecycle using gh CLI
+- Include ticket references in commit messages (e.g., `feat: add timer #123`)
+- Use gh CLI commands to keep the project board current
+
 ## Commit Message Tips
 
 ### ✅ Good Commit Messages

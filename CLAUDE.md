@@ -6,6 +6,14 @@ Guidr monorepo: Mobile (React Native) + API (FastAPI) + Web (React). DDD/TDD arc
 **Sandbox**: Placeholder files in `.git/info/exclude` (local-only, not committed)
 **ADRs**: All architectural decisions in `docs/adr/NNN-name.md` with Status, Context, Decision, Consequences
 
+## Project Tracking
+**Board**: https://github.com/users/stevendejongnl/projects/3
+**Statuses**: Todo → In Progress → Done
+**Workflow**:
+- Assign yourself: `gh issue edit <number> --add-assignee @me`
+- Update status: `gh issue edit <number> --add-project "Guidr" --project-field "Status" --project-value "In Progress"`
+- Link commits/PRs to tickets (use issue number in commit messages)
+
 ## Project Overview
 **Status**: 870 tests passing (49 test suites), Admin auth (ADR-006, ADR-007, ADR-008), Android Gradle 8.13
 **Stack**: Mobile RN 0.83.1 | API FastAPI 3.12+ | Web React | TypeScript strict | Jest
