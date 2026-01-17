@@ -48,6 +48,7 @@ class Settings(BaseSettings):
 
     # Deployment Configuration
     deployment_id: str | None = None
+    pod_name: str | None = None
 
     def __init__(self, **kwargs):
         """Initialize settings with TOML config overlay."""

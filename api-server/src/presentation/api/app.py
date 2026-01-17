@@ -5,9 +5,9 @@ import os
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .middleware import RequestLoggingMiddleware
@@ -99,6 +99,31 @@ def create_app() -> FastAPI:
 
     # Request logging middleware (must be added after CORS)
     app.add_middleware(RequestLoggingMiddleware)
+
+    # Global exception handler for unhandled exceptions
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        """Catch unhandled exceptions and send Telegram notification."""
+        logger = logging.getLogger(__name__)
+        logger.exception("Unhandled exception")
+
+        # Send crash notification (non-blocking, don't fail if Telegram fails)
+        try:
+            container = request.app.state.container
+            telegram_service = container.telegram_notification_service()
+            pod_name = os.getenv("POD_NAME")
+            await telegram_service.send_crash_notification(
+                error=exc,
+                version=request.app.version,
+                pod_name=pod_name
+            )
+        except Exception as notification_error:
+            logger.error(f"Failed to send crash notification: {notification_error}")
+
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"}
+        )
 
     # Register routers with /api/v1 prefix
     # IMPORTANT: Register API routers BEFORE catch-all to ensure correct routing precedence

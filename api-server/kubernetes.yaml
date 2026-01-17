@@ -59,6 +59,11 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.labels['pod-template-hash']
+        # Pod identification (for crash notifications)
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         resources:
           requests:
             memory: "128Mi"

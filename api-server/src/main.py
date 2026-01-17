@@ -1,6 +1,7 @@
 """Application entry point."""
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
@@ -46,6 +47,7 @@ async def lifespan(app: FastAPI):
     # Coordinate startup notification to prevent duplicates in Kubernetes
     config = container.config()
     deployment_id = config.deployment_id or datetime.now(UTC).isoformat()
+    pod_name = config.pod_name or os.getenv("POD_NAME")
     should_notify = await coordinator.should_send_startup_notification(deployment_id)
 
     if should_notify:
@@ -57,9 +59,28 @@ async def lifespan(app: FastAPI):
             f"deployment: {deployment_id})"
         )
 
-    yield
-    # Shutdown: Disconnect from database
-    await container.database().disconnect()
+    shutdown_reason = "graceful"
+
+    try:
+        yield
+    except Exception as e:
+        # Track if shutdown is due to an error
+        shutdown_reason = f"error: {type(e).__name__}"
+        raise
+    finally:
+        # Shutdown: Send notification before disconnecting
+        try:
+            telegram_service = container.telegram_notification_service()
+            await telegram_service.send_shutdown_notification(
+                version=app.version,
+                pod_name=pod_name,
+                reason=shutdown_reason
+            )
+        except Exception as notification_error:
+            logger.error(f"Failed to send shutdown notification: {notification_error}")
+
+        # Disconnect from database
+        await container.database().disconnect()
 
 
 def create_application() -> FastAPI:
