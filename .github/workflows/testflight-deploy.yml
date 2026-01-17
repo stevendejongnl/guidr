@@ -110,8 +110,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd ios
-          # Install dependencies (skipping repo update for faster builds)
-          pod install --repo-update
+          # Install dependencies from cache (skip repo update to avoid 10-20min delay)
+          pod install
 
       - name: Setup Ruby and Bundler
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -125,7 +125,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('mobile/ios/Podfile.lock', 'mobile/ios/guidr.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('mobile/ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-xcode-derived-data-
 
