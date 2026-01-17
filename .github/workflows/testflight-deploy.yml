@@ -98,16 +98,20 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: npm ci
 
+      - name: Restore CocoaPods cache
+        uses: actions/cache@v4
+        with:
+          path: mobile/ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('mobile/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Install CocoaPods dependencies
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd ios
-          # Clear CocoaPods cache to avoid compatibility issues
-          rm -rf Pods Podfile.lock
-          # Update pod repository specs
-          pod repo update
-          # Install dependencies
-          pod install
+          # Install dependencies (skipping repo update for faster builds)
+          pod install --repo-update
 
       - name: Setup Ruby and Bundler
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -116,6 +120,14 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true  # Automatically runs bundle install and caches gems
           working-directory: mobile
+
+      - name: Restore Xcode DerivedData cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('mobile/ios/Podfile.lock', 'mobile/ios/guidr.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-derived-data-
 
       # Create API key files from secrets
       - name: Create App Store Connect API Key
@@ -176,8 +188,12 @@ jobs:
       # Build archive with manual signing via fastlane match
       - name: Build iOS archive
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        timeout-minutes: 120
         run: |
           cd ios
+          echo "ℹ️ Starting iOS archive build..."
+          date "+Build started at %T"
+
           xcodebuild \
             -workspace guidr.xcworkspace \
             -scheme guidr \
@@ -188,7 +204,20 @@ jobs:
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             PROVISIONING_PROFILE_SPECIFIER="match AppStore com.guidr" \
-            archive
+            -verbose \
+            archive 2>&1 | tee build.log
+
+          BUILD_STATUS=$?
+          date "+Build finished at %T"
+
+          if [ $BUILD_STATUS -ne 0 ]; then
+            echo "❌ Build failed with status $BUILD_STATUS"
+            echo "Last 50 lines of build log:"
+            tail -50 build.log
+            exit $BUILD_STATUS
+          fi
+
+          echo "✅ Build completed successfully"
 
       # Export signed IPA
       - name: Export IPA
