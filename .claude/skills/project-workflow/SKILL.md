@@ -1,3 +1,8 @@
+---
+name: project-workflow
+description: Quick reference for the Guidr GitHub Projects workflow. Learn status transitions (Todo → In Progress → Done), linking commits/PRs to tickets, and best practices for tracking work through development.
+---
+
 # Project Workflow Skill
 
 Quick reference for the Guidr GitHub Projects workflow.

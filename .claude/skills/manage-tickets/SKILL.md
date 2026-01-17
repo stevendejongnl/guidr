@@ -1,3 +1,8 @@
+---
+name: manage-tickets
+description: Commands for viewing, assigning, and updating ticket status on the Guidr GitHub Projects board. Includes workflows for starting, progressing, and completing tickets.
+---
+
 # Manage Tickets Skill
 
 Commands for viewing, assigning, and updating ticket status on the Guidr GitHub Projects board.

@@ -1,3 +1,8 @@
+---
+name: build
+description: Build and run the Guidr React Native application on Metro, Android, and iOS platforms. Includes development commands, debug/release builds, common troubleshooting, and CI/CD workflows.
+---
+
 # Build Skill
 
 Build and run the Guidr React Native application.

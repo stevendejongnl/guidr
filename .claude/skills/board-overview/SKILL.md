@@ -1,3 +1,8 @@
+---
+name: board-overview
+description: Commands for viewing the Guidr GitHub Projects board and tracking progress. Includes filtering by status, assignee, labels, and board health checks to understand project status.
+---
+
 # Board Overview Skill
 
 Commands for viewing the Guidr GitHub Projects board and tracking progress.

@@ -1,3 +1,8 @@
+---
+name: test
+description: Run tests for the Guidr React Native application. Includes Jest commands, coverage reports, watch mode, and test structure overview with current test counts across entities, services, and screens.
+---
+
 # Test Skill
 
 Run tests for the Guidr React Native application.

@@ -1,3 +1,8 @@
+---
+name: create-issue
+description: Commands for creating new issues and managing priority on the Guidr GitHub Projects board. Includes issue templates for features, bugs, documentation, and technical debt.
+---
+
 # Create Issue Skill
 
 Commands for creating new issues and managing priority on the Guidr GitHub Projects board.

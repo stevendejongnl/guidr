@@ -1,3 +1,8 @@
+---
+name: tdd
+description: Test-Driven Development workflow for Guidr. Learn the RED-GREEN-REFACTOR-VERIFY cycle with examples for entities, services, and screens. Includes common mistakes to avoid and benefits of TDD.
+---
+
 # TDD Skill
 
 Guide for Test-Driven Development workflow in Guidr.
