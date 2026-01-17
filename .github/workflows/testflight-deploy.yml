@@ -196,6 +196,14 @@ jobs:
           echo "ℹ️ Starting iOS archive build (Sentry upload disabled)..."
           BUILD_START=$(date +%s)
 
+          # Start background process to monitor build progress
+          (
+            sleep 3600  # Wait 1 hour
+            echo "⚠️ Build has been running for 60+ minutes, checking progress..."
+            tail -20 build.log
+          ) &
+          MONITOR_PID=$!
+
           xcodebuild \
             -workspace guidr.xcworkspace \
             -scheme guidr \
@@ -203,6 +211,9 @@ jobs:
             -configuration Release \
             -archivePath ./build/guidr.xcarchive \
             -hideShellScriptEnvironment \
+            ONLY_ACTIVE_ARCH=NO \
+            VALIDATE_WORKSPACE=NO \
+            DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
@@ -212,6 +223,9 @@ jobs:
           BUILD_STATUS=$?
           BUILD_END=$(date +%s)
           BUILD_DURATION=$((BUILD_END - BUILD_START))
+
+          # Kill monitor if build completes
+          kill $MONITOR_PID 2>/dev/null || true
 
           if [ $BUILD_STATUS -ne 0 ]; then
             echo "❌ Build failed after $((BUILD_DURATION / 60))m $((BUILD_DURATION % 60))s"
