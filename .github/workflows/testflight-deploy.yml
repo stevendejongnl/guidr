@@ -44,7 +44,7 @@ jobs:
           cf_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           cf_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           disable_bot_fight_mode: 'true'
-          bfm_propagation_delay: 60
+          bfm_propagation_delay: 30
 
       - name: Configure git for Gitea access
         run: |
@@ -189,10 +189,12 @@ jobs:
       - name: Build iOS archive
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         timeout-minutes: 120
+        env:
+          SENTRY_DISABLE_XCODE_DEBUG_UPLOAD: true
         run: |
           cd ios
-          echo "ℹ️ Starting iOS archive build..."
-          date "+Build started at %T"
+          echo "ℹ️ Starting iOS archive build (Sentry upload disabled)..."
+          BUILD_START=$(date +%s)
 
           xcodebuild \
             -workspace guidr.xcworkspace \
@@ -200,24 +202,52 @@ jobs:
             -sdk iphoneos \
             -configuration Release \
             -archivePath ./build/guidr.xcarchive \
+            -hideShellScriptEnvironment \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             PROVISIONING_PROFILE_SPECIFIER="match AppStore com.guidr" \
-            -verbose \
             archive 2>&1 | tee build.log
 
           BUILD_STATUS=$?
-          date "+Build finished at %T"
+          BUILD_END=$(date +%s)
+          BUILD_DURATION=$((BUILD_END - BUILD_START))
 
           if [ $BUILD_STATUS -ne 0 ]; then
-            echo "❌ Build failed with status $BUILD_STATUS"
-            echo "Last 50 lines of build log:"
-            tail -50 build.log
+            echo "❌ Build failed after $((BUILD_DURATION / 60))m $((BUILD_DURATION % 60))s"
+            echo "Last 100 lines of build log:"
+            tail -100 build.log
             exit $BUILD_STATUS
           fi
 
-          echo "✅ Build completed successfully"
+          echo "✅ Build completed in $((BUILD_DURATION / 60))m $((BUILD_DURATION % 60))s"
+
+      # Upload debug symbols to Sentry after successful build
+      - name: Upload debug symbols to Sentry
+        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        continue-on-error: true
+        working-directory: mobile
+        run: |
+          cd ios
+
+          # Extract dSYM from archive
+          DSYM_PATH="./build/guidr.xcarchive/dSYMs/guidr.app.dSYM"
+
+          if [ ! -d "$DSYM_PATH" ]; then
+            echo "⚠️ Warning: dSYM not found at $DSYM_PATH"
+            exit 0
+          fi
+
+          echo "📤 Uploading debug symbols to Sentry..."
+
+          # Upload using sentry-cli
+          npx @sentry/cli debug-files upload \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr \
+            "$DSYM_PATH"
+
+          echo "✅ Debug symbols uploaded to Sentry"
 
       # Export signed IPA
       - name: Export IPA
