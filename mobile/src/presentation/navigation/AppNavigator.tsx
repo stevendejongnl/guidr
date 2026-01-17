@@ -16,6 +16,8 @@ import { AdminScreen } from '../screens/AdminScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
 import { ProfileScreen } from '../screens/ProfileScreen'
 import { SessionExecutionScreen } from '../screens/SessionExecutionScreen'
+import { CategoryListScreen } from '../screens/CategoryListScreen'
+import { CategoryFormScreen } from '../screens/CategoryFormScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -46,6 +48,10 @@ export const AppNavigator: React.FC = () => {
   const [dismissedOptionalUpdate, setDismissedOptionalUpdate] = useState(false)
   const [showSessionExecution, setShowSessionExecution] = useState(false)
   const [executingSessionId, setExecutingSessionId] = useState<string | null>(null)
+  const [showCategoryList, setShowCategoryList] = useState(false)
+  const [categoryFormMode, setCategoryFormMode] = useState<'create' | 'edit' | null>(null)
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
+  const [selectedCategoryParentId, setSelectedCategoryParentId] = useState<string | null>(null)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -247,6 +253,37 @@ export const AppNavigator: React.FC = () => {
     setExecutingSessionId(null)
   }
 
+  const handleBrowseCategories = () => {
+    setShowCategoryList(true)
+    setEditingCategoryId(null)
+    setCategoryFormMode(null)
+  }
+
+  const handleCreateCategory = () => {
+    setCategoryFormMode('create')
+    setEditingCategoryId(null)
+    setSelectedCategoryParentId(null)
+  }
+
+  const handleEditCategory = (categoryId: string) => {
+    setEditingCategoryId(categoryId)
+    setCategoryFormMode('edit')
+  }
+
+  const handleCategoryFormSave = () => {
+    setCategoryFormMode(null)
+    setEditingCategoryId(null)
+  }
+
+  const handleCategoryFormCancel = () => {
+    setCategoryFormMode(null)
+    setEditingCategoryId(null)
+  }
+
+  const handleCategoryListBack = () => {
+    setShowCategoryList(false)
+  }
+
   if (loading) {
     return (
       <View style={commonStyles.loadingContainer}>
@@ -414,11 +451,34 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (categoryFormMode && serverUrl) {
+    return (
+      <CategoryFormScreen
+        mode={categoryFormMode}
+        {...(editingCategoryId && { categoryId: editingCategoryId })}
+        parentId={selectedCategoryParentId}
+        onSave={handleCategoryFormSave}
+        onCancel={handleCategoryFormCancel}
+      />
+    )
+  }
+
+  if (showCategoryList) {
+    return (
+      <CategoryListScreen
+        onCreateCategory={handleCreateCategory}
+        onEditCategory={handleEditCategory}
+        onBack={handleCategoryListBack}
+      />
+    )
+  }
+
   return (
     <HomeScreen
       onLogout={handleLogout}
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
+      onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
       isAdmin={isAdmin}
     />

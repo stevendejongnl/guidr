@@ -33,6 +33,7 @@ interface HomeScreenProps {
   onOpenSettings: () => void
   onOpenProfile: () => void
   onBrowseGuides?: () => void
+  onBrowseCategories?: () => void
   onStartSession?: () => void
   onViewSessions?: () => void
   onViewSessionDetail?: (sessionId: string) => void
@@ -45,6 +46,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenSettings,
   onOpenProfile,
   onBrowseGuides,
+  onBrowseCategories,
   onStartSession,
   onViewSessions,
   onViewSessionDetail,
@@ -127,6 +129,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       onBrowseGuides()
     } else {
       Alert.alert('Browse Guides', 'Feature coming soon!')
+    }
+  }
+
+  const handleBrowseCategories = () => {
+    if (onBrowseCategories) {
+      onBrowseCategories()
+    } else {
+      Alert.alert('Browse Categories', 'Feature coming soon!')
     }
   }
 
@@ -219,6 +229,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* Quick Actions */}
         <View style={styles.actionsSection}>
+          <QuickActionButton
+            icon="📁"
+            label="Browse Categories"
+            onPress={handleBrowseCategories}
+          />
           <QuickActionButton
             icon="🔍"
             label="Browse Guides"
