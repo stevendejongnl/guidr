@@ -162,7 +162,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
           # Get failed step name from logs
-          FAILED_STEP=$(grep -oP "##\[error\].*" /tmp/error.txt | head -1 | sed 's/##\[error\]//' | sed 's/^[ \t]*//' | cut -d' ' -f1-5)
+          FAILED_STEP=$(grep -oE "##\\[error\\].*" /tmp/error.txt | head -1 | sed 's/##\[error\]//' | sed 's/^[ \t]*//' | cut -d' ' -f1-5)
           if [ -z "$FAILED_STEP" ]; then
             FAILED_STEP="Build and Push Docker Image"
           fi
