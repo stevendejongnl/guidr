@@ -215,13 +215,57 @@ jobs:
           bundler-cache: true  # Automatically runs bundle install and caches gems
           working-directory: mobile
 
-      - name: Restore Xcode DerivedData cache
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('mobile/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-xcode-derived-data-
+      - name: Create and configure temporary keychain
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          # Generate a random password for the temporary keychain
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+          KEYCHAIN_PATH="$HOME/Library/Keychains/build.keychain-db"
+
+          # Delete keychain if it exists from previous runs
+          security delete-keychain "$KEYCHAIN_PATH" 2>/dev/null || true
+
+          # Create a new keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Set the new keychain as the default
+          security default-keychain -s "$KEYCHAIN_PATH"
+
+          # Unlock the keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Set keychain timeout to 2 hours (longer than job)
+          security set-keychain-settings -t 7200 -u "$KEYCHAIN_PATH"
+
+          # Add to the search list
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed -e s/\"//g)
+
+          # Configure to allow codesign to access without password prompt
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          echo "✅ Temporary keychain created and configured"
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+
+      # DISABLED: DerivedData caching can cause stale keychain references
+      # - name: Restore Xcode DerivedData cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/Library/Developer/Xcode/DerivedData
+      #     key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('mobile/ios/Podfile.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-xcode-derived-data-
+
+      - name: Verify keychain setup
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          echo "📋 Keychain configuration:"
+          security list-keychains
+          echo ""
+          security default-keychain
+          echo ""
+          echo "📋 Certificates in build keychain:"
+          security find-identity -v -p codesigning "${{ env.KEYCHAIN_PATH }}"
 
       # Create API key files from secrets
       - name: Create App Store Connect API Key
@@ -251,6 +295,8 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APP_STORE_CONNECT_API_KEY_JSON_PATH: ${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}
+          KEYCHAIN_NAME: build.keychain-db
+          KEYCHAIN_PASSWORD: ${{ env.KEYCHAIN_PASSWORD }}
         run: |
           # Ensure gems are installed
           bundle install --retry=3
@@ -282,30 +328,52 @@ jobs:
       # Build archive with manual signing via fastlane match
       - name: Build iOS archive
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        timeout-minutes: 120
+        timeout-minutes: 60
         env:
           SENTRY_DISABLE_XCODE_DEBUG_UPLOAD: true
-          COCOAPODS_PARALLEL_CODE_SIGN: true
         run: |
           cd ios
           echo "ℹ️ Starting iOS archive build (Sentry upload disabled)..."
           BUILD_START=$(date +%s)
 
-          # Start background process to monitor build progress
+          # Start background watchdog to kill orphan codesign processes
           (
-            sleep 3600  # Wait 1 hour
-            echo "⚠️ Build has been running for 60+ minutes, checking progress..."
-            tail -20 build.log
-          ) &
-          MONITOR_PID=$!
+            while true; do
+              sleep 300  # Check every 5 minutes
 
-          xcodebuild \
+              # Find codesign processes older than 10 minutes
+              ps -ax -o pid,etime,comm | grep codesign | while read -r pid etime comm; do
+                # Parse elapsed time (format: MM:SS or HH:MM:SS or DD-HH:MM:SS)
+                elapsed_seconds=0
+                if [[ $etime =~ ^([0-9]+)-([0-9]+):([0-9]+):([0-9]+)$ ]]; then
+                  # DD-HH:MM:SS
+                  elapsed_seconds=$((${BASH_REMATCH[1]} * 86400 + ${BASH_REMATCH[2]} * 3600 + ${BASH_REMATCH[3]} * 60 + ${BASH_REMATCH[4]}))
+                elif [[ $etime =~ ^([0-9]+):([0-9]+):([0-9]+)$ ]]; then
+                  # HH:MM:SS
+                  elapsed_seconds=$((${BASH_REMATCH[1]} * 3600 + ${BASH_REMATCH[2]} * 60 + ${BASH_REMATCH[3]}))
+                elif [[ $etime =~ ^([0-9]+):([0-9]+)$ ]]; then
+                  # MM:SS
+                  elapsed_seconds=$((${BASH_REMATCH[1]} * 60 + ${BASH_REMATCH[2]}))
+                fi
+
+                if [ $elapsed_seconds -gt 600 ]; then
+                  echo "⚠️ Killing stuck codesign process $pid (running for $etime)"
+                  kill -9 $pid 2>/dev/null || true
+                fi
+              done
+            done
+          ) &
+          WATCHDOG_PID=$!
+
+          # Run xcodebuild with timeout (45 minutes = 2700 seconds)
+          timeout 2700 xcodebuild \
             -workspace guidr.xcworkspace \
             -scheme guidr \
             -sdk iphoneos \
             -configuration Release \
             -archivePath ./build/guidr.xcarchive \
             -hideShellScriptEnvironment \
+            -quiet \
             ONLY_ACTIVE_ARCH=NO \
             VALIDATE_WORKSPACE=NO \
             DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES \
@@ -313,16 +381,22 @@ jobs:
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             PROVISIONING_PROFILE_SPECIFIER="match AppStore com.guidr" \
-            archive 2>&1 | tee build.log
+            OTHER_CODE_SIGN_FLAGS="--keychain ${{ env.KEYCHAIN_PATH }}" \
+            archive 2>&1 | tee build.log || BUILD_STATUS=$?
 
-          BUILD_STATUS=$?
+          BUILD_STATUS=${BUILD_STATUS:-0}
           BUILD_END=$(date +%s)
           BUILD_DURATION=$((BUILD_END - BUILD_START))
 
-          # Kill monitor if build completes
-          kill $MONITOR_PID 2>/dev/null || true
+          # Kill watchdog
+          kill $WATCHDOG_PID 2>/dev/null || true
 
-          if [ $BUILD_STATUS -ne 0 ]; then
+          if [ $BUILD_STATUS -eq 124 ]; then
+            echo "❌ Build timed out after 45 minutes"
+            echo "Last 100 lines of build log:"
+            tail -100 build.log
+            exit 1
+          elif [ $BUILD_STATUS -ne 0 ]; then
             echo "❌ Build failed after $((BUILD_DURATION / 60))m $((BUILD_DURATION % 60))s"
             echo "Last 100 lines of build log:"
             tail -100 build.log
@@ -330,6 +404,12 @@ jobs:
           fi
 
           echo "✅ Build completed in $((BUILD_DURATION / 60))m $((BUILD_DURATION % 60))s"
+
+          # Verify archive was created
+          if [ ! -d "./build/guidr.xcarchive" ]; then
+            echo "❌ Archive not found at ./build/guidr.xcarchive"
+            exit 1
+          fi
 
       # Upload debug symbols to Sentry after successful build
       - name: Upload debug symbols to Sentry
@@ -529,3 +609,12 @@ jobs:
         run: |
           rm -f $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
           rm -f $HOME/private_keys/api_key.json
+
+      - name: Cleanup temporary keychain
+        if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        run: |
+          # Delete the temporary keychain
+          security delete-keychain "${{ env.KEYCHAIN_PATH }}" 2>/dev/null || true
+          # Reset to default keychain
+          security default-keychain -s login.keychain-db
+          echo "✅ Temporary keychain cleaned up"
