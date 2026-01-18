@@ -20,7 +20,7 @@ permissions:
 jobs:
   testflight-build:
     name: Build and Deploy to TestFlight
-    runs-on: macos-15
+    runs-on: macos-26
     # Only run if manual trigger or release-created event
     if: |
       github.event_name == 'workflow_dispatch' ||
@@ -36,6 +36,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Verify Xcode version
+        run: |
+          echo "🔍 Checking Xcode version on macos-26 runner..."
+          xcodebuild -version
+          echo ""
+          echo "🔍 Checking iOS SDK versions available..."
+          xcodebuild -showsdks | grep iphoneos
+          echo ""
+          echo "✅ Expected: Xcode 26.x with iOS 26 SDK (or Xcode 16.x as fallback)"
 
       - name: Bypass Cloudflare for Gitea access
         uses: xiaotianxt/bypass-cloudflare-for-github-action@v2.1.0
