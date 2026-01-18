@@ -215,34 +215,20 @@ jobs:
           bundler-cache: true  # Automatically runs bundle install and caches gems
           working-directory: mobile
 
-      - name: Create and configure temporary keychain
+      - name: Unlock default keychain and configure for codesign
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          # Generate a random password for the temporary keychain
-          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
-          KEYCHAIN_PATH="$HOME/Library/Keychains/build.keychain-db"
-
-          # Delete keychain if it exists from previous runs
-          security delete-keychain "$KEYCHAIN_PATH" 2>/dev/null || true
-
-          # Create a new keychain
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-
-          # Set the new keychain as the default
-          security default-keychain -s "$KEYCHAIN_PATH"
-
-          # Unlock the keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          # Unlock the default login keychain for CI/CD operations
+          security unlock-keychain -p "" /Users/runner/Library/Keychains/login.keychain-db 2>/dev/null || true
 
           # Set keychain timeout to 2 hours (longer than job)
-          security set-keychain-settings -t 7200 -u "$KEYCHAIN_PATH"
+          security set-keychain-settings -t 7200 -u /Users/runner/Library/Keychains/login.keychain-db
 
-          # Add to the search list
-          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed -e s/\"//g)
+          # Configure partition list to allow codesign without password prompts
+          # This allows Apple tools to access signing certificates automatically
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" /Users/runner/Library/Keychains/login.keychain-db 2>/dev/null || true
 
-          echo "✅ Temporary keychain created and configured"
-          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
-          echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+          echo "✅ Login keychain unlocked and configured for codesign"
 
       # DISABLED: DerivedData caching can cause stale keychain references
       # - name: Restore Xcode DerivedData cache
@@ -259,10 +245,8 @@ jobs:
           echo "📋 Keychain configuration:"
           security list-keychains
           echo ""
-          security default-keychain
-          echo ""
-          echo "📋 Certificates in build keychain:"
-          security find-identity -v -p codesigning "${{ env.KEYCHAIN_PATH }}"
+          echo "📋 Available signing identities:"
+          security find-identity -v -p codesigning
 
       # Create API key files from secrets
       - name: Create App Store Connect API Key
@@ -292,21 +276,12 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APP_STORE_CONNECT_API_KEY_JSON_PATH: ${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}
-          KEYCHAIN_NAME: build.keychain-db
-          KEYCHAIN_PASSWORD: ${{ env.KEYCHAIN_PASSWORD }}
         run: |
           # Ensure gems are installed
           bundle install --retry=3
           # Run fastlane from ios directory
           cd ios
           bundle exec fastlane sync_certificates
-
-      - name: Configure keychain partition list for codesign
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          # Configure to allow codesign to access imported certificates without password prompt
-          security set-key-partition-list -S apple-tool:,apple: -s -k "${{ env.KEYCHAIN_PASSWORD }}" "${{ env.KEYCHAIN_PATH }}" 2>/dev/null || true
-          echo "✅ Keychain partition list configured for codesign"
 
       - name: Create Sentry properties file
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -392,7 +367,6 @@ jobs:
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             PROVISIONING_PROFILE_SPECIFIER="match AppStore com.guidr" \
-            OTHER_CODE_SIGN_FLAGS="--keychain ${{ env.KEYCHAIN_PATH }}" \
             archive 2>&1 | tee build.log || BUILD_STATUS=$?
 
           BUILD_STATUS=${BUILD_STATUS:-0}
@@ -620,12 +594,3 @@ jobs:
         run: |
           rm -f $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
           rm -f $HOME/private_keys/api_key.json
-
-      - name: Cleanup temporary keychain
-        if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
-        run: |
-          # Delete the temporary keychain
-          security delete-keychain "${{ env.KEYCHAIN_PATH }}" 2>/dev/null || true
-          # Reset to default keychain
-          security default-keychain -s login.keychain-db
-          echo "✅ Temporary keychain cleaned up"
