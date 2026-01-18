@@ -1,0 +1,60 @@
+Incident Identifier: 63CB93CD-9F9D-4592-9D1A-1E39C48926D2
+Distributor ID:      com.apple.TestFlight
+Hardware Model:      iPhone14,5
+Process:             guidr [9402]
+Path:                /private/var/containers/Bundle/Application/696587EB-D287-43C3-80FC-22F1CEFE4AE3/guidr.app/guidr
+Identifier:          com.guidr
+Version:             1.36.13 (20260118154609)
+AppStoreTools:       17C53
+AppVariant:          1:iPhone14,5:26
+Beta:                YES
+Code Type:           ARM-64 (Native)
+Role:                Foreground
+Parent Process:      launchd [1]
+Coalition:           com.guidr [1615]
+
+Date/Time:           2026-01-18 17:32:36.8700 +0100
+Launch Time:         2026-01-18 17:32:36.7548 +0100
+OS Version:          iPhone OS 26.2 (23C55)
+Release Type:        User
+Baseband Version:    5.20.02
+Report Version:      104
+
+Exception Type:  EXC_CRASH (SIGABRT)
+Exception Codes: 0x0000000000000000, 0x0000000000000000
+Termination Reason: DYLD 1 Library missing
+Library not loaded: @rpath/hermesvm.framework/hermesvm
+Referenced from: <07C383F9-B900-399E-AD41-62D4599EF10E> /Volumes/VOLUME/*/guidr.app/guidr
+Reason: tried: '/usr/lib/swift/hermesvm.framework/hermesvm' (no such file, not in dyld cache), '/private/preboot/Cryptexes/OS/usr/lib/swift/hermesvm.framework/hermesvm' (no such file), '/private/var/containers/Bundle/Application/696587EB-D287-43C3-80FC-22F1CEFE4AE3/guidr.app/Frameworks/hermesvm.framework/hermesvm' (no such file), '/private/var/containers/Bundle/Application/696587EB-D287-43C3-80FC-22F1CEFE4AE3/guidr.app/Frameworks/hermesvm.framework/hermesvm' (no such file), '/usr/lib/swift/hermesvm.framework/hermesvm' (no such file, not in dyld cache), '/private/preboot/Cryptexes/OS/usr/lib/swift/hermesvm.framework/hermesvm' (no such file), '/private/var/containers/Bundle/Application/696587EB-D287-43C3-80FC-22F1CEFE4AE3/guidr.app/Frameworks/hermesvm.framework/hermesvm' (no such file), '/private/var/co
+(terminated at launch; ignore backtrace)
+
+Triggered by Thread:  0
+
+
+Thread 0 Crashed:
+0   dyld                          	0x000000019d760d94 __abort_with_payload + 8 (:-1)
+1   dyld                          	0x000000019d7a1f34 abort_with_payload_wrapper_internal + 104 (terminate_with_reason.c:102)
+2   dyld                          	0x000000019d7a1f68 abort_with_payload + 16 (terminate_with_reason.c:124)
+3   dyld                          	0x000000019d72904c dyld4::halt(char const*, dyld4::StructuredError const*) + 312 (DyldProcessConfig.cpp:3334)
+4   dyld                          	0x000000019d72bb34 dyld4::prepare(dyld4::APIs&, mach_o::Header const*) + 3984 (dyldMain.cpp:0)
+5   dyld                          	0x000000019d71add8 start + 7036 (dyldMain.cpp:1453)
+
+
+Thread 0 crashed with ARM Thread State (64-bit):
+    x0: 0x0000000000000006   x1: 0x0000000000000001   x2: 0x000000016bcca7d0   x3: 0x0000000000000097
+    x4: 0x000000016bcca3d0   x5: 0x0000000000000000   x6: 0x0000000000000000   x7: 0x0000000000000000
+    x8: 0x0000000000000020   x9: 0x657f206cf17e00f3  x10: 0x00000000000029a0  x11: 0x000000020a9e80a0
+   x12: 0x0000000000020000  x13: 0x000000019d716000  x14: 0x0000000000000001  x15: 0x0000000000000076
+   x16: 0x0000000000000209  x17: 0xcadd00016bcca0c8  x18: 0x0000000000000000  x19: 0x0000000000000000
+   x20: 0x000000016bcca3d0  x21: 0x0000000000000097  x22: 0x000000016bcca7d0  x23: 0x0000000000000001
+   x24: 0x0000000000000006  x25: 0x000000001f070004  x26: 0x000000020ad1e1d8  x27: 0x0000000000000000
+   x28: 0x0000000000000000   fp: 0x000000016bcca3a0   lr: 0x000000019d7a1f34
+    sp: 0x000000016bcca360   pc: 0x000000019d760d94 cpsr: 0x80001000
+   esr: 0x56000080 (Syscall)
+
+
+Binary Images:
+        0x104134000 -         0x104757fff guidr arm64  <07c383f9b900399ead4162d4599ef10e> /var/containers/Bundle/Application/696587EB-D287-43C3-80FC-22F1CEFE4AE3/guidr.app/guidr
+        0x19d716000 -         0x19d7b4b37 dyld arm64e  <a4040d49944638e5842beb8f9c971c22> /usr/lib/dyld
+
+EOF

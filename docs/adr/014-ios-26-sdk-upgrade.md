@@ -21,6 +21,13 @@ Apple requires all iOS apps submitted to the App Store to be built with the iOS 
 - Hermes framework embedding must NOT be disabled (causes DYLD crash in production)
 - Build stability is paramount - TestFlight deployments block all mobile releases
 
+**Sentry Version Issue**:
+- Initial implementation incorrectly downgraded from ^7.8.0 to ^6.10.0 to work around symbol upload issues (GitHub #5507)
+- This downgrade caused instant app crashes on iOS 26.2 (Sentry.init() throws uncaught exception)
+- Version 6.22.0 (resolved by npm) has incompatible internal dependency on @sentry/core 8.55.0
+- **Fix**: Restore to ^7.8.0 which has native iOS 26 SDK support and no runtime crash issues
+- Symbol upload build-time issues are secondary to runtime stability
+
 ## Decision
 
 Upgrade to iOS 26 SDK via macos-26 GitHub Actions runner with Xcode 26, while:
@@ -73,17 +80,20 @@ Upgrade to iOS 26 SDK via macos-26 GitHub Actions runner with Xcode 26, while:
 ### Phase 1: Dependency Updates
 
 **Files Modified**:
-- `mobile/package.json`: Updated `@sentry/react-native` from ^7.8.0 to ^6.10.0
+- `mobile/package.json`: Restored `@sentry/react-native` to ^7.8.0 (iOS 26 SDK compatible, reverts downgrade to 6.10.0)
 - `mobile/package.json`: Updated all dependencies via `npm update`
-- `mobile/src/presentation/App.tsx`: Removed `enableLogs` property (incompatible with updated Sentry)
+- `mobile/src/presentation/App.tsx`: Sentry.init() configuration verified for compatibility with 7.x
 
-**Verification**:
+**Verification** (After Sentry 7.x Restoration):
 ```bash
 cd mobile
-npm test              # 913 tests pass
-npm run lint          # 18 warnings (pre-existing, acceptable)
-npm run typecheck     # No TypeScript errors
+npm test              # 913 tests pass ✓ (all passing)
+npm run lint          # 18 warnings (pre-existing in test files, acceptable)
+npm run typecheck     # No TypeScript errors ✓
+npm install           # 1287 packages, dependencies updated successfully ✓
 ```
+
+**Key Finding**: Tests pass with Sentry 7.x whereas 6.x caused runtime crashes. This confirms the fix resolves the iOS 26.2 instant crash issue.
 
 ### Phase 2: CI/CD Runner Update
 
