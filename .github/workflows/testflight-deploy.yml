@@ -215,21 +215,6 @@ jobs:
           bundler-cache: true  # Automatically runs bundle install and caches gems
           working-directory: mobile
 
-      - name: Unlock default keychain and configure for codesign
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          # Unlock the default login keychain for CI/CD operations
-          security unlock-keychain -p "" /Users/runner/Library/Keychains/login.keychain-db 2>/dev/null || true
-
-          # Set keychain timeout to 2 hours (longer than job)
-          security set-keychain-settings -t 7200 -u /Users/runner/Library/Keychains/login.keychain-db
-
-          # Configure partition list to allow codesign without password prompts
-          # This allows Apple tools to access signing certificates automatically
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" /Users/runner/Library/Keychains/login.keychain-db 2>/dev/null || true
-
-          echo "✅ Login keychain unlocked and configured for codesign"
-
       # DISABLED: DerivedData caching can cause stale keychain references
       # - name: Restore Xcode DerivedData cache
       #   uses: actions/cache@v4
@@ -238,15 +223,6 @@ jobs:
       #     key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('mobile/ios/Podfile.lock') }}
       #     restore-keys: |
       #       ${{ runner.os }}-xcode-derived-data-
-
-      - name: Verify keychain setup
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          echo "📋 Keychain configuration:"
-          security list-keychains
-          echo ""
-          echo "📋 Available signing identities:"
-          security find-identity -v -p codesigning
 
       # Create API key files from secrets
       - name: Create App Store Connect API Key
@@ -282,6 +258,14 @@ jobs:
           # Run fastlane from ios directory
           cd ios
           bundle exec fastlane sync_certificates
+
+      - name: Configure keychain for codesign access
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          # After fastlane match imports certificates, configure keychain partition list
+          # This allows codesign to access them without password prompts
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/login.keychain-db 2>/dev/null || true
+          echo "✅ Keychain configured for codesign access"
 
       - name: Create Sentry properties file
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
