@@ -253,6 +253,30 @@ jobs:
 
           echo "APP_STORE_CONNECT_API_KEY_JSON_PATH=$JSON_PATH" >> $GITHUB_ENV
 
+      - name: Create temporary keychain for code signing
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="temp_password_$(uuidgen)"
+
+          # Create keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Set keychain timeout (2 hours = 7200 seconds)
+          security set-keychain-settings -t 7200 -u "$KEYCHAIN_PATH"
+
+          # Unlock keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Add to search list (prepend so it's found first)
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed s/\"//g)
+
+          # Export for fastlane match
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+
+          echo "✅ Temporary keychain created at $KEYCHAIN_PATH"
+
       - name: Sync code signing with fastlane match
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         env:
@@ -261,27 +285,14 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APP_STORE_CONNECT_API_KEY_JSON_PATH: ${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}
+          MATCH_KEYCHAIN_NAME: ${{ env.KEYCHAIN_PATH }}
+          MATCH_KEYCHAIN_PASSWORD: ${{ env.KEYCHAIN_PASSWORD }}
         run: |
           # Ensure gems are installed
           bundle install --retry=3
           # Run fastlane from ios directory
           cd ios
           bundle exec fastlane sync_certificates
-
-      - name: Unlock default keychain and configure for codesign
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: |
-          # Unlock the default login keychain for CI/CD operations
-          security unlock-keychain -p "" /Users/runner/Library/Keychains/login.keychain-db 2>/dev/null || true
-
-          # Set keychain timeout to 2 hours (longer than job)
-          security set-keychain-settings -t 7200 -u /Users/runner/Library/Keychains/login.keychain-db
-
-          # Configure partition list to allow codesign without password prompts
-          # This allows Apple tools to access signing certificates automatically
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" /Users/runner/Library/Keychains/login.keychain-db 2>/dev/null || true
-
-          echo "✅ Login keychain unlocked and configured for codesign"
 
       - name: Create Sentry properties file
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -518,23 +529,33 @@ jobs:
         if: failure()
         id: error_details
         run: |
-          # Fetch logs from GitHub API and extract last lines of errors
-          gh run view ${{ github.run_id }} --log-failed > /tmp/error.txt 2>&1 || echo "Failed to fetch logs" > /tmp/error.txt
+          # Extract version from package.json (don't rely on previous step)
+          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/' || echo "unknown")
 
-          # Extract last 15 lines of error output
-          ERROR=$(tail -20 /tmp/error.txt | head -10 | sed 's/"/\\"/g')
+          # Get build log if it exists, otherwise use generic error
+          if [ -f "ios/build.log" ]; then
+            ERROR=$(tail -50 ios/build.log | grep -E "(error|Error|ERROR|failed|Failed|FAILED)" | head -5 | sed 's/"/\\"/g' || echo "Build failed - check logs")
+          else
+            ERROR="Build failed before log file was created"
+          fi
+
           echo "ERROR_MSG<<EOF" >> $GITHUB_OUTPUT
           echo "$ERROR" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          # Get failed step name from logs
-          FAILED_STEP=$(grep -oE "##\\[error\\].*" /tmp/error.txt | head -1 | sed 's/##\[error\]//' | sed 's/^[ \t]*//' | cut -d' ' -f1-5)
-          if [ -z "$FAILED_STEP" ]; then
+          # Determine failed step based on log content
+          if [ -f "ios/build.log" ]; then
+            if grep -q "codesign" ios/build.log; then
+              FAILED_STEP="Build iOS archive (code signing)"
+            elif grep -q "xcodebuild" ios/build.log; then
+              FAILED_STEP="Build iOS archive (xcodebuild)"
+            else
+              FAILED_STEP="Build iOS archive"
+            fi
+          else
             FAILED_STEP="Build and Deploy to TestFlight"
           fi
           echo "FAILED_STEP=$FAILED_STEP" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ github.token }}
         continue-on-error: true
 
       - name: Notify TestFlight failure
@@ -552,6 +573,15 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      # Cleanup signing keychain
+      - name: Cleanup signing keychain
+        if: always()
+        run: |
+          if [ -n "$KEYCHAIN_PATH" ] && [ -f "$KEYCHAIN_PATH" ]; then
+            security delete-keychain "$KEYCHAIN_PATH" || true
+            echo "✅ Temporary keychain cleaned up"
+          fi
 
       # Cleanup API key files
       - name: Cleanup API key
