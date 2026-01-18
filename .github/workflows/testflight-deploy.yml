@@ -321,35 +321,6 @@ jobs:
           echo "ℹ️ Starting iOS archive build (Sentry upload disabled)..."
           BUILD_START=$(date +%s)
 
-          # Start background watchdog to kill orphan codesign processes
-          (
-            while true; do
-              sleep 300  # Check every 5 minutes
-
-              # Find codesign processes older than 10 minutes
-              ps -ax -o pid,etime,comm | grep codesign | while read -r pid etime comm; do
-                # Parse elapsed time (format: MM:SS or HH:MM:SS or DD-HH:MM:SS)
-                elapsed_seconds=0
-                if [[ $etime =~ ^([0-9]+)-([0-9]+):([0-9]+):([0-9]+)$ ]]; then
-                  # DD-HH:MM:SS
-                  elapsed_seconds=$((${BASH_REMATCH[1]} * 86400 + ${BASH_REMATCH[2]} * 3600 + ${BASH_REMATCH[3]} * 60 + ${BASH_REMATCH[4]}))
-                elif [[ $etime =~ ^([0-9]+):([0-9]+):([0-9]+)$ ]]; then
-                  # HH:MM:SS
-                  elapsed_seconds=$((${BASH_REMATCH[1]} * 3600 + ${BASH_REMATCH[2]} * 60 + ${BASH_REMATCH[3]}))
-                elif [[ $etime =~ ^([0-9]+):([0-9]+)$ ]]; then
-                  # MM:SS
-                  elapsed_seconds=$((${BASH_REMATCH[1]} * 60 + ${BASH_REMATCH[2]}))
-                fi
-
-                if [ $elapsed_seconds -gt 600 ]; then
-                  echo "⚠️ Killing stuck codesign process $pid (running for $etime)"
-                  kill -9 $pid 2>/dev/null || true
-                fi
-              done
-            done
-          ) &
-          WATCHDOG_PID=$!
-
           # Run xcodebuild with timeout (45 minutes = 2700 seconds)
           # Use gtimeout from coreutils (GNU timeout for macOS)
           gtimeout 2700 xcodebuild \
@@ -359,7 +330,6 @@ jobs:
             -configuration Release \
             -archivePath ./build/guidr.xcarchive \
             -hideShellScriptEnvironment \
-            -quiet \
             ONLY_ACTIVE_ARCH=NO \
             VALIDATE_WORKSPACE=NO \
             DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES \
@@ -367,23 +337,18 @@ jobs:
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             PROVISIONING_PROFILE_SPECIFIER="match AppStore com.guidr" \
-            archive 2>&1 | tee build.log || BUILD_STATUS=$?
+            archive 2>&1 | tee build.log
 
-          BUILD_STATUS=${BUILD_STATUS:-0}
+          BUILD_STATUS=$?
           BUILD_END=$(date +%s)
           BUILD_DURATION=$((BUILD_END - BUILD_START))
 
-          # Kill watchdog
-          kill $WATCHDOG_PID 2>/dev/null || true
-
           if [ $BUILD_STATUS -eq 124 ]; then
             echo "❌ Build timed out after 45 minutes"
-            echo "Last 100 lines of build log:"
             tail -100 build.log
             exit 1
           elif [ $BUILD_STATUS -ne 0 ]; then
             echo "❌ Build failed after $((BUILD_DURATION / 60))m $((BUILD_DURATION % 60))s"
-            echo "Last 100 lines of build log:"
             tail -100 build.log
             exit $BUILD_STATUS
           fi
