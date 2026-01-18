@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
-  Alert,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { CategoryService } from '../../domain/services/CategoryService'
@@ -98,41 +97,6 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
     }
   }
 
-  const handleDeleteCategory = (category: Category) => {
-    Alert.alert(
-      'Delete Category',
-      `Are you sure you want to delete "${category.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const authToken = await authStorage.getAuthToken()
-              if (!authToken) throw new Error('No auth token found')
-
-              const serverUrl = await serverConfigStorage.getServerUrl()
-              if (!serverUrl) throw new Error('No server URL configured')
-
-              const repository = new CategoryRepository(serverUrl)
-              const service = new CategoryService(repository)
-              await service.deleteCategory(category.id, authToken)
-
-              await loadCategories()
-            } catch (err) {
-              ErrorReporter.capture(err, {
-                component: 'CategoryListScreen',
-                action: 'deleteCategory',
-              })
-              Alert.alert('Error', 'Failed to delete category')
-            }
-          },
-        },
-      ]
-    )
-  }
-
   return (
     <SafeScreen testID="category-list-screen">
       <ScrollView
@@ -168,12 +132,7 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
                   hasChildren={(childrenCount[category.id] ?? 0) > 0}
                   onPress={handleCategoryPress}
                 />
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => handleDeleteCategory(category)}
-                >
-                  <Text style={styles.deleteButtonText}>✕</Text>
-                </TouchableOpacity>
+                <Text>{category.name}</Text>
               </View>
             ))}
           </View>
