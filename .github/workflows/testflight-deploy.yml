@@ -113,6 +113,20 @@ jobs:
           # Install dependencies from cache (skip repo update to avoid 10-20min delay)
           pod install
 
+      - name: Remove CocoaPods Build System File Lists (Fix Timeout)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          # CRITICAL: pod install regenerates inputFileListPaths and outputFileListPaths
+          # These cause 60-minute hangs in the [CP] Embed Pods Frameworks phase on CI
+          # This step removes them after pod install, before the build starts
+          cd ios
+
+          # Use sed to remove inputFileListPaths and outputFileListPaths blocks
+          sed -i '/inputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
+          sed -i '/outputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
+
+          echo "✅ Removed CocoaPods build system file lists to prevent timeout"
+
       - name: Setup Ruby and Bundler
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: ruby/setup-ruby@v1

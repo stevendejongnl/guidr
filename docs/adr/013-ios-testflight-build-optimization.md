@@ -334,20 +334,36 @@ The "[CP] Embed Pods Frameworks" script phase uses Xcode New Build System input/
 
 ### Solution 4A: Remove CocoaPods Build Phase Input/Output File Lists
 
-**Changes to `mobile/ios/guidr.xcodeproj/project.pbxproj`**:
+**CRITICAL DISCOVERY**: `pod install` regenerates the project.pbxproj file with inputFileListPaths and outputFileListPaths. Removing them only from the committed file is insufficient - they must be removed in the CI workflow after pod install runs.
 
-Remove the following lines from the "[CP] Embed Pods Frameworks" script phase (ID: `00EEFC60759A1932668264C0`):
+**Two-part solution**:
 
-```
-inputFileListPaths = (
-  "${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-);
-outputFileListPaths = (
-  "${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-);
-```
+1. **Local Development** - Changes to `mobile/ios/guidr.xcodeproj/project.pbxproj`:
+   Remove from "[CP] Embed Pods Frameworks" script phase (ID: `00EEFC60759A1932668264C0`):
+   ```
+   inputFileListPaths = (
+     "${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+   );
+   outputFileListPaths = (
+     "${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+   );
+   ```
 
-**Rationale**: Most documented fix for this exact issue in CircleCI, GitHub Actions, and other CI environments. Forces the script to always run, ignoring Xcode's dependency tracking (acceptable since CI builds are clean).
+2. **CI/CD Pipeline** - New step in `.github/workflows/testflight-deploy.yml` (after pod install):
+   ```yaml
+   - name: Remove CocoaPods Build System File Lists (Fix Timeout)
+     if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+     run: |
+       cd ios
+       sed -i '/inputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
+       sed -i '/outputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
+       echo "✅ Removed CocoaPods build system file lists to prevent timeout"
+   ```
+
+**Rationale**:
+- Most documented fix for this exact issue in CircleCI, GitHub Actions, and other CI environments
+- Forces the script to always run, ignoring Xcode's dependency tracking (acceptable since CI builds are clean)
+- Two-step approach ensures pod install doesn't undo the fix
 
 **Impact**: Eliminates 60-minute hangs at this phase, completes in < 5 minutes
 
