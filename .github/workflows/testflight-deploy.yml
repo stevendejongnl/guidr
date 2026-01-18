@@ -298,6 +298,7 @@ jobs:
         timeout-minutes: 60
         env:
           SENTRY_DISABLE_XCODE_DEBUG_UPLOAD: true
+          SENTRY_ALLOW_FAILURE: true
         run: |
           cd ios
           echo "ℹ️ Starting iOS archive build (Sentry upload disabled)..."
