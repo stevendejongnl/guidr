@@ -122,8 +122,9 @@ jobs:
           cd ios
 
           # Use sed to remove inputFileListPaths and outputFileListPaths blocks
-          sed -i '/inputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
-          sed -i '/outputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
+          # Note: macOS/BSD sed requires -i '' syntax (empty extension arg)
+          sed -i '' '/inputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
+          sed -i '' '/outputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
 
           echo "✅ Removed CocoaPods build system file lists to prevent timeout"
 
