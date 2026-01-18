@@ -240,9 +240,6 @@ jobs:
           # Add to the search list
           security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed -e s/\"//g)
 
-          # Configure to allow codesign to access without password prompt
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-
           echo "✅ Temporary keychain created and configured"
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
           echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
@@ -303,6 +300,13 @@ jobs:
           # Run fastlane from ios directory
           cd ios
           bundle exec fastlane sync_certificates
+
+      - name: Configure keychain partition list for codesign
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          # Configure to allow codesign to access imported certificates without password prompt
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${{ env.KEYCHAIN_PASSWORD }}" "${{ env.KEYCHAIN_PATH }}" 2>/dev/null || true
+          echo "✅ Keychain partition list configured for codesign"
 
       - name: Create Sentry properties file
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
