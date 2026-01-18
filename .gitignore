@@ -36,6 +36,7 @@ mobile/android/local.properties
 # iOS
 ios/Pods/
 ios/build/
+mobile/ios/build/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -52,6 +53,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 ios/.xcode.env.local
+mobile/ios/.xcode.env.local
 
 # macOS
 .DS_Store
