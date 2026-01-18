@@ -113,20 +113,99 @@ jobs:
           # Install dependencies from cache (skip repo update to avoid 10-20min delay)
           pod install
 
-      - name: Remove CocoaPods Build System File Lists (Fix Timeout)
+      - name: Check for Vendored Frameworks
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          # CRITICAL: pod install regenerates inputFileListPaths and outputFileListPaths
-          # These cause 60-minute hangs in the [CP] Embed Pods Frameworks phase on CI
-          # This step removes them after pod install, before the build starts
+          cd ios/Pods
+
+          echo "🔍 Checking for .framework files in Pods..."
+          FRAMEWORK_COUNT=$(find . -name "*.framework" -type d 2>/dev/null | wc -l)
+          echo "  Found $FRAMEWORK_COUNT .framework directories"
+
+          if [ $FRAMEWORK_COUNT -gt 0 ]; then
+            echo "  Frameworks:"
+            find . -name "*.framework" -type d 2>/dev/null | head -20
+          else
+            echo "  No frameworks found"
+          fi
+
+          echo ""
+          echo "🔍 Checking xcfilelist for frameworks to embed..."
+          if [ -f "Target Support Files/Pods-guidr/Pods-guidr-frameworks-Release-input-files.xcfilelist" ]; then
+            echo "  📋 Input files for embedding:"
+            cat "Target Support Files/Pods-guidr/Pods-guidr-frameworks-Release-input-files.xcfilelist" | head -10
+            FILELIST_SIZE=$(wc -l < "Target Support Files/Pods-guidr/Pods-guidr-frameworks-Release-input-files.xcfilelist")
+            echo "  Total lines in filelist: $FILELIST_SIZE"
+          else
+            echo "  ℹ️ No input filelist found - no frameworks to embed"
+          fi
+
+      - name: Verify and Remove CocoaPods Build System File Lists
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
           cd ios
 
-          # Use sed to remove inputFileListPaths and outputFileListPaths blocks
-          # Note: macOS/BSD sed requires -i '' syntax (empty extension arg)
+          echo "📋 Checking for file lists BEFORE removal..."
+          INPUT_COUNT=$(grep -c "inputFileListPaths" guidr.xcodeproj/project.pbxproj || echo "0")
+          OUTPUT_COUNT=$(grep -c "outputFileListPaths" guidr.xcodeproj/project.pbxproj || echo "0")
+          echo "  Found $INPUT_COUNT inputFileListPaths entries"
+          echo "  Found $OUTPUT_COUNT outputFileListPaths entries"
+
+          echo "🔧 Removing file lists..."
+          # macOS/BSD sed requires -i '' syntax
           sed -i '' '/inputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
           sed -i '' '/outputFileListPaths = (/,/);$/d' guidr.xcodeproj/project.pbxproj
 
-          echo "✅ Removed CocoaPods build system file lists to prevent timeout"
+          echo "✅ Checking for file lists AFTER removal..."
+          if grep -q "inputFileListPaths" guidr.xcodeproj/project.pbxproj || grep -q "outputFileListPaths" guidr.xcodeproj/project.pbxproj; then
+            echo "❌ ERROR: File lists still present after sed removal!"
+            echo "Remaining inputFileListPaths entries:"
+            grep -A 3 "inputFileListPaths" guidr.xcodeproj/project.pbxproj || echo "  (none)"
+            echo "Remaining outputFileListPaths entries:"
+            grep -A 3 "outputFileListPaths" guidr.xcodeproj/project.pbxproj || echo "  (none)"
+            exit 1
+          else
+            echo "✅ File lists successfully removed - no entries remaining"
+          fi
+
+      - name: Disable Embed Pods Frameworks Script Phase
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          cd ios
+
+          echo "🔧 Disabling [CP] Embed Pods Frameworks script phase for CI build..."
+
+          # Find the script phase and replace the shellScript with a no-op echo
+          # This prevents the script from running at all, eliminating the timeout
+          sed -i '' 's|shellScript = "\\"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks.sh\\"\\n";|shellScript = "echo \\"Skipping Embed Pods Frameworks in CI build\\";\\n";|' guidr.xcodeproj/project.pbxproj
+
+          # Verify the change was made
+          if grep -q 'echo "Skipping Embed Pods Frameworks' guidr.xcodeproj/project.pbxproj; then
+            echo "✅ Script phase disabled successfully"
+            echo "Build system will skip framework embedding in CI (not needed for static libraries)"
+          else
+            echo "⚠️ Warning: Script phase replacement may not have worked as expected"
+            echo "Checking current script content:"
+            grep "Pods-guidr-frameworks" guidr.xcodeproj/project.pbxproj | head -3
+          fi
+
+      - name: Patch Frameworks Script with Timeout (Failsafe)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          cd ios
+
+          # Only apply timeout if the script phase wasn't disabled
+          if grep -q "Pods-guidr-frameworks.sh" guidr.xcodeproj/project.pbxproj; then
+            echo "⏰ Adding 10-minute timeout wrapper to frameworks script..."
+
+            # Wrap the original script with timeout and logging
+            # This is a failsafe in case the disable step didn't work
+            sed -i '' 's|shellScript = "\\"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks.sh\\"\\n";|shellScript = "set -x\\necho \\\"[$(date +%T)] Starting Embed Pods Frameworks phase\\\"\\ntimeout 600 \\"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks.sh\\" || { echo \\\"[ERROR] Framework embedding timed out after 10 minutes\\\"; exit 1; }\\necho \\\"[$(date +%T)] Completed Embed Pods Frameworks phase\\\"\\n";|' guidr.xcodeproj/project.pbxproj
+
+            echo "✅ Timeout wrapper added - will fail after 10 minutes instead of hanging indefinitely"
+          else
+            echo "ℹ️ Script phase already disabled - timeout wrapper not needed"
+          fi
 
       - name: Setup Ruby and Bundler
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
