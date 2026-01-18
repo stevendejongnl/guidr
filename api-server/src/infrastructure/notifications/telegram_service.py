@@ -54,6 +54,7 @@ class TelegramNotificationService:
                         "chat_id": self._chat_id,
                         "text": message,
                         "parse_mode": "HTML",
+                        "disable_notification": True,
                     },
                     timeout=10.0,
                 )
@@ -156,7 +157,7 @@ class TelegramNotificationService:
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message += f"\n\n<a href=\"{api_docs_url}\">API Documentation</a>"
 
-            await self._send_message(message)
+            await self._send_message(message, disable_notification=True)
         except httpx.TimeoutException:
             self._logger.warning("Telegram shutdown notification timeout")
         except httpx.RequestError as e:
@@ -201,7 +202,7 @@ class TelegramNotificationService:
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message += f"\n\n<a href=\"{api_docs_url}\">API Documentation</a>"
 
-            await self._send_message(message)
+            await self._send_message(message, disable_notification=True)
         except httpx.TimeoutException:
             self._logger.warning("Telegram health failure notification timeout")
         except httpx.RequestError as e:
@@ -209,11 +210,12 @@ class TelegramNotificationService:
         except Exception as e:
             self._logger.warning(f"Unexpected error sending health failure notification: {e}")
 
-    async def _send_message(self, message: str) -> None:
+    async def _send_message(self, message: str, disable_notification: bool = False) -> None:
         """Send a message to Telegram.
 
         Args:
             message: Message text with HTML formatting
+            disable_notification: If True, send silently without vibration/sound
 
         Raises:
             httpx.TimeoutException: If request times out
@@ -227,6 +229,7 @@ class TelegramNotificationService:
                     "chat_id": self._chat_id,
                     "text": message,
                     "parse_mode": "HTML",
+                    "disable_notification": disable_notification,
                 },
                 timeout=10.0,
             )
