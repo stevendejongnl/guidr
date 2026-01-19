@@ -11,11 +11,7 @@ echo ""
 
 echo "🔧 Running API Tests..."
 cd api-server
-if ! command -v poetry &> /dev/null; then
-  echo "⚠️  Poetry not found, skipping API tests"
-else
-  poetry run python -m pytest
-fi
+.venv/bin/python -m pytest
 cd ..
 echo "✓ API tests passed"
 echo ""

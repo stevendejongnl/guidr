@@ -18,13 +18,8 @@ echo ""
 
 echo "🔧 Checking API (Ruff + Mypy)..."
 cd api-server
-# Ensure we use the poetry environment
-if ! command -v poetry &> /dev/null; then
-  echo "⚠️  Poetry not found, skipping API checks"
-else
-  poetry run ruff check .
-  poetry run python -m mypy src
-fi
+.venv/bin/ruff check .
+.venv/bin/python -m mypy src
 cd ..
 echo "✓ API checks passed"
 echo ""
