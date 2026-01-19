@@ -32,10 +32,11 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: 8,
   },
   content: {
     flexDirection: 'row',
@@ -44,12 +45,13 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: typography.sizeMd,
+    fontWeight: typography.weightMedium,
     color: colors.textPrimary,
     flex: 1,
   },
   indicator: {
     fontSize: typography.sizeMd,
-    color: colors.textSecondary,
+    color: colors.primary,
     marginLeft: spacing.md,
   },
 })

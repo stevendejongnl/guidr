@@ -126,14 +126,12 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
         ) : (
           <View style={styles.listContainer}>
             {categories.map(category => (
-              <View key={category.id} style={styles.categoryItem}>
-                <CategoryListItem
-                  category={category}
-                  hasChildren={(childrenCount[category.id] ?? 0) > 0}
-                  onPress={handleCategoryPress}
-                />
-                <Text>{category.name}</Text>
-              </View>
+              <CategoryListItem
+                key={category.id}
+                category={category}
+                hasChildren={(childrenCount[category.id] ?? 0) > 0}
+                onPress={handleCategoryPress}
+              />
             ))}
           </View>
         )}
@@ -155,21 +153,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   listContainer: {
-    backgroundColor: colors.surface,
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    borderRadius: 8,
-  },
-  categoryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  deleteButton: {
-    padding: spacing.md,
-    paddingRight: spacing.lg,
-  },
-  deleteButtonText: {
-    fontSize: 18,
-    color: colors.danger,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
 })
