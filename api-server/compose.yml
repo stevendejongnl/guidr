@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: mongo:8.0
+    image: mongo:latest
     container_name: guidr-mongodb
     ports:
       - "27017:27017"
@@ -32,7 +32,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-key-change-in-production-min-32-characters}
       JWT_ALGORITHM: HS256
       JWT_EXPIRATION_MINUTES: 10080
-      GUIDR_VERSION: ${GUIDR_VERSION:-1.15.3}
+      GUIDR_VERSION: ${GUIDR_VERSION:-dev}
     depends_on:
       mongodb:
         condition: service_healthy
