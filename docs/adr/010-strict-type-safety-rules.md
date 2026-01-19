@@ -98,7 +98,7 @@ files: ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"]
 **Local Development**:
 ```bash
 # Python
-cd api-server && poetry run ruff check . && poetry run mypy src
+cd api-server && uv run ruff check . && uv run mypy src
 
 # TypeScript Mobile
 cd mobile && npm run lint && npm run typecheck

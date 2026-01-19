@@ -94,35 +94,37 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Poetry
-        run: |
-          pip install poetry
-          poetry config virtualenvs.in-project true
+      - name: Install UV
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
         working-directory: .
 
-      - name: Cache Poetry virtualenv
+      - name: Add UV to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+        working-directory: .
+
+      - name: Cache UV dependencies
         uses: actions/cache@v4
         with:
           path: api-server/.venv
-          key: ${{ runner.os }}-poetry-${{ hashFiles('api-server/poetry.lock') }}
+          key: ${{ runner.os }}-uv-${{ hashFiles('api-server/uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-poetry-
+            ${{ runner.os }}-uv-
 
       - name: Install API server dependencies
         working-directory: api-server
-        run: poetry install
+        run: uv sync
 
       - name: Run API server tests
         working-directory: api-server
-        run: poetry run pytest
+        run: uv run pytest
 
       - name: Run API server lint
         working-directory: api-server
-        run: poetry run ruff check .
+        run: uv run ruff check .
 
       - name: Run API server type check
         working-directory: api-server
-        run: poetry run mypy src
+        run: uv run mypy src
 
       - name: Build Web App
         working-directory: web-app

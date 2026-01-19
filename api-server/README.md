@@ -141,24 +141,24 @@ docker-compose up -d
 ### Prerequisites
 
 - **Python**: 3.12 or newer
-- **Poetry**: 1.8+ ([installation guide](https://python-poetry.org/docs/#installation))
+- **UV**: Latest version ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
 
 ### Installation
 
 1. Install dependencies:
 ```bash
 cd api-server
-poetry install
+uv sync
 ```
 
 2. Run the server:
 ```bash
-poetry run guidr-server
+uv run guidr-server
 ```
 
-**Alternative (using uvicorn directly)**:
+**Alternative (if you prefer manual activation)**:
 ```bash
-poetry shell  # Activate virtual environment
+source .venv/bin/activate  # Activate the venv
 uvicorn src.main:app --reload
 ```
 
@@ -166,33 +166,32 @@ uvicorn src.main:app --reload
 
 ```bash
 # Install dependencies
-poetry install
+uv sync
 
 # Run server
-poetry run guidr-server
+uv run guidr-server
 
 # Run tests
-poetry run pytest
+uv run pytest
 
-# Run specific test suite
-poetry run pytest tests/unit/domain/  # Domain tests
-poetry run pytest tests/unit/application/  # Application tests
-poetry run pytest tests/integration/  # Integration tests
+# Run specific test suites
+uv run pytest tests/unit/domain/
+uv run pytest tests/integration/
 
 # Lint code
-poetry run ruff check .
+uv run ruff check .
 
 # Type check
-poetry run mypy src/
+uv run mypy src/
 
 # Add a new dependency
-poetry add <package-name>
+uv add <package-name>
 
 # Add a dev dependency
-poetry add --group dev <package-name>
+uv add --dev <package-name>
 
 # Update dependencies
-poetry update
+uv lock --upgrade
 ```
 
 ### Using Makefile
@@ -880,18 +879,15 @@ cat api-server/pyproject.toml | grep version
 docker pull ghcr.io/stevendejongnl/guidr-api-server:<version>
 ```
 
-### Poetry Installation Issues
+### UV Installation Issues
 
-If Poetry is not installed:
+If UV is not installed:
 ```bash
-# Install Poetry (Unix/macOS)
-curl -sSL https://install.python-poetry.org | python3 -
+# Install UV (Unix/macOS/Linux)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install Poetry (Windows PowerShell)
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
-
-# Add Poetry to PATH
-export PATH="$HOME/.local/bin:$PATH"  # Add to ~/.bashrc or ~/.zshrc
+# Add UV to PATH
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ---
@@ -901,8 +897,8 @@ export PATH="$HOME/.local/bin:$PATH"  # Add to ~/.bashrc or ~/.zshrc
 The following files are kept for reference but are no longer used:
 
 - `server_legacy.py` - Original monolithic server (archived, will be removed in future version)
-- `run.sh` - Use `poetry run guidr-server` or `make run` instead
-- `requirements.txt` - Dependencies managed by Poetry in `pyproject.toml`
+- `run.sh` - Use `uv run guidr-server` or `make run` instead
+- `requirements.txt` - Dependencies managed by UV in `pyproject.toml`
 
 ---
 

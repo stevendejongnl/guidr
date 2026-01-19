@@ -2,14 +2,14 @@
 
 # Install dependencies
 install:
-	poetry install
+	uv sync
 
 lock:
-	poetry lock
+	uv lock
 
 # Run tests
 test:
-	poetry run pytest
+	uv run pytest
 
 # Start all services with docker-compose
 up:
@@ -35,18 +35,18 @@ ps:
 restart:
 	docker compose restart
 
-# Run server locally with Poetry
+# Run server locally with UV
 run:
 	@VERSION=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
-	GUIDR_VERSION=$$VERSION poetry run guidr-server
+	GUIDR_VERSION=$$VERSION uv run guidr-server
 
 # Lint with ruff
 lint:
-	poetry run ruff check .
+	uv run ruff check .
 
 # Type check with mypy
 typecheck:
-	poetry run mypy src/
+	uv run mypy src/
 
 # Build Docker image
 docker-build:
@@ -82,8 +82,8 @@ help:
 	@echo "  restart             Restart all services"
 	@echo ""
 	@echo "Local Development:"
-	@echo "  install             Install dependencies with Poetry"
-	@echo "  run                 Run server locally with Poetry (requires MongoDB running)"
+	@echo "  install             Install dependencies with UV"
+	@echo "  run                 Run server locally with UV (requires MongoDB running)"
 	@echo "  test                Run tests with pytest"
 	@echo "  lint                Run ruff linter"
 	@echo "  typecheck           Run mypy type checker"

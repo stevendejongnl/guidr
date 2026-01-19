@@ -25,9 +25,6 @@ tests/
 *.swn
 .DS_Store
 
-# Poetry
-poetry.lock
-
 # Git
 .git/
 .gitignore

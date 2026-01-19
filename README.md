@@ -56,7 +56,7 @@ docker run -p 8000:8000 ghcr.io/stevendejongnl/guidr-api-server:latest
 
 Or locally:
 ```bash
-cd api-server/ && poetry install && poetry run guidr-server
+cd api-server/ && uv sync && uv run guidr-server
 ```
 
 **Web** (from `web-app/`):

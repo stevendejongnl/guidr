@@ -18,28 +18,29 @@ RUN npm run build
 # Stage 2: Build Python Dependencies
 FROM python:3.12-slim AS python-builder
 
-# Install Poetry
-RUN pip install --no-cache-dir poetry==1.8.2
+# Install UV
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
 # Copy dependency files
-COPY api-server/pyproject.toml api-server/poetry.lock* ./
+COPY api-server/pyproject.toml api-server/uv.lock ./
 
-# Configure Poetry for Docker
-RUN poetry config virtualenvs.create false
-
-# Install dependencies only
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install dependencies
+RUN uv sync --frozen --no-dev --no-install-project
 
 # Stage 3: Runtime - Minimal image
 FROM python:3.12-slim
 
+# Copy UV from builder
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
 # Copy installed packages from python-builder
-COPY --from=python-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=python-builder /usr/local/bin /usr/local/bin
+COPY --from=python-builder /app/.venv /app/.venv
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application code
 COPY api-server/src ./src

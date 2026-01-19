@@ -48,7 +48,7 @@ We will implement **admin-only authorization** using a simple boolean `is_admin`
 5. **Bootstrap Script**: `promote_admin.py` migration script
    - Promotes existing user to admin by email
    - Enables initial admin creation without code changes
-   - Usage: `poetry run python scripts/promote_admin.py admin@example.com`
+   - Usage: `uv run python scripts/promote_admin.py admin@example.com`
 
 ### Implementation
 

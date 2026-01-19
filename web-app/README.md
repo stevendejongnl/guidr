@@ -37,7 +37,7 @@ Make sure the API server is running on port 8000:
 
 ```bash
 cd ../api-server
-poetry run guidr-server
+uv run guidr-server
 ```
 
 ### Production Build
@@ -105,7 +105,7 @@ The recommended development workflow uses two separate servers:
 **Terminal 1 - API Server:**
 ```bash
 cd api-server
-poetry run guidr-server
+uv run guidr-server
 # Runs on http://localhost:8000
 ```
 
