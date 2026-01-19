@@ -5,6 +5,16 @@ import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import * as HomeScreenMockDataModule from '../../infrastructure/mocks/HomeScreenMockData'
+import { SessionStatus } from '../../infrastructure/mocks/HomeScreenMockData'
+
+// Define interface for mock user profile
+interface MockUserProfile {
+  id: string
+  email: string
+  name: string
+  interests: string[]
+  isAdmin: boolean
+}
 
 jest.mock('../../infrastructure/storage/AuthStorage')
 jest.mock('../../infrastructure/storage/ServerConfigStorage')
@@ -227,7 +237,7 @@ describe('HomeScreen', () => {
 
   describe('dashboard sections', () => {
     let mockAuthClient: jest.Mocked<AuthClient>
-    let mockUserProfile: any
+    let mockUserProfile: MockUserProfile
 
     beforeEach(() => {
       mockUserProfile = {
@@ -257,7 +267,7 @@ describe('HomeScreen', () => {
           id: 's1',
           guideId: 'g1',
           guideTitle: 'Perfect Sourdough',
-          status: 'in-progress' as any,
+          status: SessionStatus.InProgress,
           startedAt: new Date(),
           currentStepTitle: 'Shaping',
           progress: 65,

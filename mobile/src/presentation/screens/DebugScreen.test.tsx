@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 
 jest.mock('@react-native-async-storage/async-storage')
 jest.mock('react-native-device-info')
@@ -16,7 +17,7 @@ global.fetch = jest.fn()
 
 describe('DebugScreen', () => {
   let mockOnBack: jest.Mock
-  let mockHealthCheckService: any
+  let mockHealthCheckService: jest.Mocked<IHealthCheckService>
   const serverUrl = 'http://localhost:8000/api/v1'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 

@@ -4,6 +4,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { LoginScreen } from './LoginScreen'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
+import { AuthResponse } from '../../infrastructure/api/dtos/UserDto'
 
 jest.mock('../../infrastructure/storage/AuthStorage')
 jest.mock('../../infrastructure/api/AuthClient')
@@ -390,7 +391,7 @@ describe('LoginScreen', () => {
 
   describe('loading states', () => {
     it('should show loading state while logging in', async () => {
-      let resolveLogin: (value: any) => void
+      let resolveLogin: (value: AuthResponse) => void
       mockAuthClient.login.mockReturnValue(
         new Promise((resolve) => {
           resolveLogin = resolve
@@ -432,7 +433,7 @@ describe('LoginScreen', () => {
     })
 
     it('should disable inputs while loading', async () => {
-      let resolveLogin: (value: any) => void
+      let resolveLogin: (value: AuthResponse) => void
       mockAuthClient.login.mockReturnValue(
         new Promise((resolve) => {
           resolveLogin = resolve
@@ -475,7 +476,7 @@ describe('LoginScreen', () => {
     })
 
     it('should show activity indicator while loading', async () => {
-      let resolveLogin: (value: any) => void
+      let resolveLogin: (value: AuthResponse) => void
       mockAuthClient.login.mockReturnValue(
         new Promise((resolve) => {
           resolveLogin = resolve
@@ -581,7 +582,7 @@ describe('LoginScreen', () => {
     })
 
     it('should not be disabled during loading', async () => {
-      let resolveLogin: (value: any) => void
+      let resolveLogin: (value: AuthResponse) => void
       mockAuthClient.login.mockReturnValue(
         new Promise((resolve) => {
           resolveLogin = resolve

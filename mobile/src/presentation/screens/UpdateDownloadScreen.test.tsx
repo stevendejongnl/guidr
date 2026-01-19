@@ -39,7 +39,7 @@ describe('UpdateDownloadScreen', () => {
           installApk: mockInstallApk,
           cancelDownload: mockCancelDownload,
           deleteDownloadedApk: mockDeleteDownloadedApk,
-        }) as any
+        }) as unknown as ApkInstaller
     )
   })
 

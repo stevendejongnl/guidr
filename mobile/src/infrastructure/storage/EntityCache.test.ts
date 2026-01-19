@@ -2,6 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { EntityCache } from './EntityCache'
 import { Category } from '@domain/entities/Category'
 
+// Define interface for cached Category JSON
+interface CategoryJSON {
+  id: string
+  _name: string
+  parentId: string | null
+}
+
 jest.mock('@react-native-async-storage/async-storage')
 
 describe('EntityCache', () => {
@@ -38,7 +45,7 @@ describe('EntityCache', () => {
       expect(result?.id).toBe('cat-1')
       // Note: Deserialized object is plain JSON, not Category instance
       // Mappers will convert back to domain entities
-      expect((result as any)._name).toBe('Cooking')
+      expect(((result as unknown) as CategoryJSON)._name).toBe('Cooking')
     })
 
     it('should return null when cache is empty', async () => {

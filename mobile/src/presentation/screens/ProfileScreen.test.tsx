@@ -28,14 +28,14 @@ describe('ProfileScreen', () => {
       changeEmail: jest.fn(),
       changePassword: jest.fn(),
       deleteAccount: jest.fn(),
-    } as any
+    } as unknown as jest.Mocked<AuthClient>
 
     // Mock AuthStorage
     mockAuthStorage = {
       getAuthToken: jest.fn().mockResolvedValue('mock-token'),
       setAuthToken: jest.fn().mockResolvedValue(undefined),
       clearAll: jest.fn().mockResolvedValue(undefined),
-    } as any
+    } as unknown as jest.Mocked<AuthStorage>
   })
 
   describe('Rendering', () => {

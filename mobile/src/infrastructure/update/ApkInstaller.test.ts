@@ -2,6 +2,17 @@ import { ApkInstaller, DownloadProgress } from './ApkInstaller'
 import RNFS from 'react-native-fs'
 import { Platform, NativeModules } from 'react-native'
 
+// Define RNFS types
+interface RNFSDownloadResponse {
+  bytesWritten: number
+  contentLength: number
+}
+
+interface RNFSDownloadResult {
+  statusCode: number
+  bytesWritten: number
+}
+
 // Mock react-native-fs
 jest.mock('react-native-fs', () => ({
   CachesDirectoryPath: '/cache',
@@ -83,8 +94,8 @@ describe('ApkInstaller', () => {
     })
 
     it('should call progress callback during download', async () => {
-      let capturedProgressCallback: ((res: any) => void) | undefined
-      let resolveDownload: (value: any) => void
+      let capturedProgressCallback: ((res: RNFSDownloadResponse) => void) | undefined
+      let resolveDownload: (value: RNFSDownloadResult) => void
 
       const downloadPromise = new Promise((resolve) => {
         resolveDownload = resolve
@@ -138,8 +149,8 @@ describe('ApkInstaller', () => {
     })
 
     it('should handle progress when contentLength is 0', async () => {
-      let capturedProgressCallback: ((res: any) => void) | undefined
-      let resolveDownload: (value: any) => void
+      let capturedProgressCallback: ((res: RNFSDownloadResponse) => void) | undefined
+      let resolveDownload: (value: RNFSDownloadResult) => void
 
       const downloadPromise = new Promise((resolve) => {
         resolveDownload = resolve

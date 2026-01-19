@@ -11,7 +11,7 @@ jest.mock('../../infrastructure/storage/ValidatedServerStorage')
 describe('ServerSetupScreen', () => {
   let mockStorage: jest.Mocked<ServerConfigStorage>
   let mockHealthCheckService: jest.Mocked<IHealthCheckService>
-  let mockValidatedStorage: any
+  let mockValidatedStorage: jest.Mocked<ValidatedServerStorage>
   let mockOnComplete: jest.Mock
 
   beforeEach(() => {
@@ -22,7 +22,12 @@ describe('ServerSetupScreen', () => {
     } as unknown as jest.Mocked<IHealthCheckService>
     mockValidatedStorage = {
       setServerUrlWithValidation: jest.fn(),
-    }
+      getServerUrl: jest.fn(),
+      hasServerUrl: jest.fn(),
+      clearServerUrl: jest.fn(),
+      initializeDefaultServerUrl: jest.fn(),
+      getDefaultServerUrl: jest.fn(),
+    } as unknown as jest.Mocked<ValidatedServerStorage>
     ;(ValidatedServerStorage as jest.Mock).mockImplementation(() => mockValidatedStorage)
     mockOnComplete = jest.fn()
   })

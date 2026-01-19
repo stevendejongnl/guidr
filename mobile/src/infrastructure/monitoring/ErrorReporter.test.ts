@@ -58,11 +58,14 @@ describe('ErrorReporter', () => {
         callback(mockScope)
       })
 
-      // Test runtime behavior with undefined value (use any to bypass strict typing)
-      ErrorReporter.capture(error, {
-        component: 'Test',
-        userId: undefined,
-      } as any)
+      // Test runtime behavior with undefined value
+      ErrorReporter.capture(
+        error,
+        {
+          component: 'Test',
+          userId: undefined,
+        } as unknown as { component: string; userId?: string }
+      )
 
       expect(mockScope.setTag).toHaveBeenCalledWith('component', 'Test')
       expect(mockScope.setTag).not.toHaveBeenCalledWith('userId', expect.anything())
