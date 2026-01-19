@@ -93,6 +93,14 @@ console.error = (...args) => {
     return
   }
 
+  // Suppress expected category loading errors in tests
+  if (
+    typeof message === 'string' &&
+    message.includes('Failed to load categories:')
+  ) {
+    return
+  }
+
   // Suppress React act() warnings - these are testing library noise
   // in React Native where proper act() wrapping is often impractical
   if (
@@ -108,13 +116,15 @@ console.error = (...args) => {
 }
 
 console.warn = (...args) => {
-  const message = args[0]
+  const fullMessage = args.map(arg => String(arg)).join(' ')
 
   // Suppress fake timers warning when advanceTimersByTime is called without useFakeTimers
-  if (
-    typeof message === 'string' &&
-    message.includes('A function to advance timers was called but the timers APIs are not replaced with fake timers')
-  ) {
+  if (fullMessage.includes('A function to advance timers was called but the timers APIs are not replaced with fake timers')) {
+    return
+  }
+
+  // Suppress React error boundary warnings from async state updates in tests
+  if (fullMessage.includes('An error occurred in the') || fullMessage.includes('Consider adding an error boundary')) {
     return
   }
 
