@@ -71,7 +71,11 @@ Custom Claude Code skills for workflow acceleration:
 
 ## Security
 **Scanning**: `npm run security:all` (pre-push runs automatically) | See [SECURITY.md](./SECURITY.md)
-**Known Issues**: ecdsa timing attack CVE-2024-23342 (accepted, documented in [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md))
+**Known Issues**:
+- CVE-2024-23342 (ecdsa timing attack) - API, accepted with mitigation
+- CVE-2026-23745 (tar file overwrite) - Mobile/npm CLI, bundled, documented
+- GHSA-73rr-hh4g-fpgx (jsdiff DoS) - Mobile/npm CLI, bundled, documented
+- See [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md) for details & monitoring plan
 
 **References**: [ADR-006](./docs/adr/006-admin-user-authorization.md), [ADR-007](./docs/adr/007-user-based-admin-mode-mobile.md), [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
 

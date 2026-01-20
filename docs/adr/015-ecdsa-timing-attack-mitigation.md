@@ -1,4 +1,6 @@
-# ADR 015: ECDSA Timing Attack (CVE-2024-23342) Mitigation Strategy
+# ADR 015: Accepted Security Vulnerabilities
+
+**Covers**: ECDSA timing attack (CVE-2024-23342), tar file overwrite (CVE-2026-23745), jsdiff DoS (GHSA-73rr-hh4g-fpgx)
 
 ## Status
 Accepted
@@ -104,10 +106,79 @@ pip-audit --desc --skip-editable --require-hashes uv.lock
 ### Quarterly Review Checklist
 
 Every quarter (Jan, Apr, Jul, Oct), review:
-1. Check ecdsa GitHub repository for new releases/fixes
+1. Check ecdsa GitHub repository for new releases/fixes (API)
 2. Review CVE databases for new ECDSA timing vulnerabilities
-3. Assess `PyJWT` adoption in ecosystem (alternative option)
-4. Document findings in security incident log
+3. Check npm CLI releases at https://github.com/npm/cli/releases (Mobile)
+   - Verify if npm includes tar@7.5.3 or higher
+   - Verify if npm includes diff@8.0.3 or higher
+4. Update @semantic-release/npm if newer npm CLI is available
+5. Assess `PyJWT` adoption in ecosystem (alternative option for ecdsa)
+6. Document findings in security incident log
+
+---
+
+## 2. tar <=7.5.2 (CVE-2026-23745) - npm CLI Bundled Dependency
+
+**Status**: Documented and accepted (waiting for upstream npm CLI update)
+
+**Vulnerability**:
+- Arbitrary file overwrite via hardlinks and symlink poisoning
+- Affects tar extraction in node-tar <=7.5.2
+- CVSS 8.2 (HIGH severity)
+
+**Location**:
+- mobile → @semantic-release/npm → npm@11.7.0 (bundled) → tar@7.5.2
+
+**Why we can't fix it**:
+- tar is bundled inside npm CLI package (not a regular dependency)
+- npm overrides don't affect bundled packages
+- Requires npm CLI to release version with tar@7.5.3 bundled
+
+**Risk Assessment**:
+- **Low practical risk** for our use case:
+  - Only affects semantic-release in CI/CD (not production code or local development)
+  - npm only extracts from trusted registry (npmjs.com)
+  - Attacker would need to compromise npmjs.com or perform man-in-the-middle attack
+  - Extraction happens in isolated CI/CD containers
+
+**Mitigation**:
+1. Monitor npm CLI releases: https://github.com/npm/cli/releases
+2. Update @semantic-release/npm when newer npm CLI with tar@7.5.3 is available
+3. Quarterly review for npm CLI updates (Jan, Apr, Jul, Oct)
+4. CI/CD runs in isolated containers (limits blast radius)
+
+**Alternative (Not Recommended)**:
+- Use `npx semantic-release@latest` in GitHub Actions (always pulls latest)
+- Trade-off: Slower CI (downloads each time), less reproducible builds, doesn't fix bundled vulnerabilities
+
+---
+
+## 3. diff <8.0.3 (GHSA-73rr-hh4g-fpgx) - npm CLI Bundled Dependency
+
+**Status**: Documented and accepted (waiting for upstream npm CLI update)
+
+**Vulnerability**:
+- jsdiff DoS vulnerability in parsePatch and applyPatch
+- CVSS 2.5 (LOW severity)
+
+**Location**:
+- mobile → @semantic-release/npm → npm@11.7.0 (bundled) → diff@8.0.2
+
+**Why we can't fix it**:
+- Same as tar: bundled inside npm CLI
+- Cannot be overridden at package.json level
+
+**Risk Assessment**:
+- **Very low risk**: CVSS 2.5 is minimal severity
+- Only affects CI/CD tooling, not production code
+- Requires malicious input to patch files during npm CLI operations
+
+**Mitigation**:
+- Monitor npm CLI releases (same as tar)
+- Low priority due to minimal severity (CVSS 2.5)
+- Update when npm CLI includes diff@8.0.3
+
+---
 
 ## Verification
 
@@ -133,6 +204,20 @@ curl -X GET https://guidr.madebysteven.nl/api/health
 
 # Check logs for token validation patterns
 # Expected: No unusual timing patterns, no repeated failures from same IP
+```
+
+### npm Dependencies Verification
+```bash
+# Check tar and diff versions in npm CLI
+npm --prefix mobile ls tar
+# Expected: tar@7.5.2 (bundled in npm) - documented in ADR-015
+
+npm --prefix mobile ls diff
+# Expected: diff@8.0.2 (bundled in npm) - documented in ADR-015
+
+# Run security scan for mobile
+npm --prefix mobile audit
+# Expected: Only tar and diff vulnerabilities (both bundled in npm CLI)
 ```
 
 ## Alternative Approaches Considered

@@ -87,14 +87,32 @@ npm run security:fix:web       # Auto-fix npm vulnerabilities (web)
 
 ### Known Issues
 
-**CVE-2024-23342** (ecdsa timing attack):
+**CVE-2024-23342** (ecdsa timing attack on P-256):
 - **Status**: Accepted with documented mitigation
-- **Risk**: Low (requires repeated timing measurements of signing operations)
+- **Severity**: HIGH (CVSS 7.5)
+- **Risk**: Low (API rate limiting, short-lived tokens)
 - **Location**: API server → python-jose[cryptography] → ecdsa
 - **Details**: See [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
-- **Mitigation**: API rate limiting, short-lived tokens, quarterly reviews
+- **Mitigation**: Rate limiting, short-lived tokens (1 hour), quarterly reviews, key rotation
 
-For security policy details, see [SECURITY.md](./SECURITY.md).
+**CVE-2026-23745** (tar file overwrite via hardlinks/symlinks):
+- **Status**: Accepted (waiting for npm CLI update)
+- **Severity**: HIGH (CVSS 8.2)
+- **Risk**: Low (CI/CD only, trusted registry, isolated containers)
+- **Location**: Mobile → @semantic-release/npm → npm@11.7.0 (bundled) → tar@7.5.2
+- **Why can't fix**: Bundled inside npm CLI, npm overrides don't affect bundled packages
+- **Details**: See [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
+- **Monitoring**: Watch https://github.com/npm/cli/releases for npm with tar@7.5.3+
+
+**GHSA-73rr-hh4g-fpgx** (jsdiff DoS in parsePatch/applyPatch):
+- **Status**: Accepted (waiting for npm CLI update)
+- **Severity**: LOW (CVSS 2.5)
+- **Risk**: Very low (minimal severity, CI/CD only)
+- **Location**: Mobile → @semantic-release/npm → npm@11.7.0 (bundled) → diff@8.0.2
+- **Why can't fix**: Bundled inside npm CLI (same as tar)
+- **Details**: See [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
+
+**Note**: All accepted vulnerabilities are documented with risk assessment, mitigation strategies, and monitoring plans. See [SECURITY.md](./SECURITY.md) for complete security policy and [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md) for detailed analysis.
 
 ## Domain Model
 

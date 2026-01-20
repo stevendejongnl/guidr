@@ -45,15 +45,34 @@ Guidr is a personal project with security measures in place for the safety of it
 
 **CVE-2024-23342** (ecdsa timing attack on P-256)
 - **Status**: Documented and accepted
-- **Risk Assessment**: Low practical risk
-- **Mitigation**: API rate limiting, short-lived tokens, quarterly reviews
-- **Decision**: Document and monitor pending upstream fix
+- **Severity**: HIGH (CVSS 7.5)
+- **Risk Assessment**: Low practical risk (API rate limiting, short-lived tokens)
+- **Location**: API → python-jose[cryptography] → ecdsa
+- **Mitigation**: Rate limiting, short-lived tokens, quarterly reviews, key rotation
+- **Reference**: [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
+
+**CVE-2026-23745** (tar file overwrite in npm CLI)
+- **Status**: Documented and accepted (waiting for upstream npm CLI update)
+- **Severity**: HIGH (CVSS 8.2)
+- **Risk Assessment**: Low practical risk (CI/CD only, trusted registry, isolated containers)
+- **Location**: Mobile → @semantic-release/npm → npm@11.7.0 (bundled) → tar@7.5.2
+- **Why can't fix**: Bundled in npm CLI, npm overrides don't affect bundled packages
+- **Mitigation**: Monitor npm CLI releases, update @semantic-release/npm when available
+- **Reference**: [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
+
+**GHSA-73rr-hh4g-fpgx** (jsdiff DoS in npm CLI)
+- **Status**: Documented and accepted (waiting for upstream npm CLI update)
+- **Severity**: LOW (CVSS 2.5)
+- **Risk Assessment**: Very low risk (minimal severity, CI/CD only)
+- **Location**: Mobile → @semantic-release/npm → npm@11.7.0 (bundled) → diff@8.0.2
+- **Why can't fix**: Bundled in npm CLI (same as tar)
+- **Mitigation**: Monitor npm CLI releases, update when available
 - **Reference**: [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
 
 ### Resolved Vulnerabilities
 
 - **CVE-2022-21670** (markdown-it DoS): Fixed via npm override to v12.3.2
-- **CVE-2026-23745** (tar file overwrite): Pending semantic-release upstream fix
+- **CVE-2026-22036** (undici unbounded decompression): Fixed via npm override to v7.18.2
 
 ## Security Best Practices
 
@@ -102,15 +121,20 @@ Security scans run automatically before each push. To manually test:
 ```bash
 # Simulate pre-push checks
 cd mobile && npm audit --audit-level=high
+# Expected: tar and diff vulnerabilities (documented in ADR-015, bundled in npm CLI)
 cd ../web-app && npm audit --audit-level=high
+# Expected: No vulnerabilities
 cd ../api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp
+# Expected: GHSA-wj6h-64fc-37mp ignored (ecdsa timing attack, documented in ADR-015)
 ```
 
 ## Security Review Checklist
 
 **Quarterly (Jan, Apr, Jul, Oct)**:
 - [ ] Review GitHub Security Advisories
-- [ ] Check for new ecdsa vulnerability updates
+- [ ] Check for new ecdsa vulnerability updates (ADR-015)
+- [ ] Check npm CLI releases for tar@7.5.3+ and diff@8.0.3+ (ADR-015)
+- [ ] Review @semantic-release/npm for updates with newer npm CLI
 - [ ] Audit API logs for suspicious patterns
 - [ ] Test rate limiting effectiveness
 - [ ] Review dependency update candidates
