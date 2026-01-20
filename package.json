@@ -19,7 +19,7 @@
     "lint": "npm run mobile:lint && npm run web:lint && npm run api:lint",
     "typecheck": "npm run mobile:typecheck && npm run web:typecheck && npm run api:typecheck",
     "test": "npm run mobile:test && npm run api:test",
-    "security:mobile": "npm --prefix mobile audit --audit-level=high",
+    "security:mobile": "./scripts/npm-audit-security.sh ./mobile high",
     "security:web": "npm --prefix web-app audit --audit-level=high",
     "security:api": "cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp",
     "security:all": "npm run security:mobile && npm run security:web && npm run security:api",

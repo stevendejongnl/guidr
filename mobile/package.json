@@ -23,7 +23,9 @@
     "lint:fix": "eslint --ext .ts,.tsx src --fix",
     "typecheck": "tsc --noEmit",
     "release": "semantic-release",
-    "prepare": "husky"
+    "prepare": "husky",
+    "security:scan": "../scripts/npm-audit-security.sh . high",
+    "security:full": "npm audit"
   },
   "keywords": [],
   "author": "",

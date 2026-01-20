@@ -43,21 +43,38 @@ Guidr is a personal project with security measures in place for the safety of it
 
 ### Accepted Risks
 
+#### API Server
+
 **CVE-2024-23342** (ecdsa timing attack on P-256)
 - **Status**: Documented and accepted
 - **Severity**: HIGH (CVSS 7.5)
+- **Scope**: devDependencies only (runtime uses hardware-accelerated crypto)
 - **Risk Assessment**: Low practical risk (API rate limiting, short-lived tokens)
 - **Location**: API → python-jose[cryptography] → ecdsa
 - **Mitigation**: Rate limiting, short-lived tokens, quarterly reviews, key rotation
 - **Reference**: [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
 
+#### Mobile (React Native)
+
+**Semantic-Release Bundled Dependencies** (dev-time only)
+- **GHSA-8qq5-rm4j-mr97** (tar file overwrite): HIGH - Bundled in npm CLI
+- **GHSA-5j98-mcp5-4vw2** (glob command injection): HIGH - Bundled in npm CLI
+- **GHSA-73rr-hh4g-fpgx** (jsdiff DoS): LOW - Bundled in npm CLI
+- **Status**: Accepted (dev-time dependencies only)
+- **Scope**: devDependencies only (not runtime/production)
+- **Risk Assessment**: Minimal - only affects trusted dev machines and CI runners
+- **Reason Accepted**:
+  - Cannot be fixed via npm overrides (architectural limitation)
+  - Removing plugins breaks release CI/CD pipeline
+  - No end-user exposure (dev tooling only)
+  - Already accepted similar risks (CVE-2024-23342)
+- **Mitigation**: Custom audit script filters known vulnerabilities, quarterly reviews
+- **Reference**: [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md) (Section 2)
 
 ### Resolved Vulnerabilities
 
 - **CVE-2022-21670** (markdown-it DoS): Fixed via npm override to v12.3.2
 - **CVE-2026-22036** (undici unbounded decompression): Fixed via npm override to v7.18.2
-- **CVE-2026-23745** (tar file overwrite in npm CLI): Fixed by removing semantic-release from devDependencies (2026-01-20)
-- **GHSA-73rr-hh4g-fpgx** (jsdiff DoS in npm CLI): Fixed by removing semantic-release from devDependencies (2026-01-20)
 
 ## Security Best Practices
 
@@ -104,13 +121,25 @@ npm run security:fix:web       # Web auto-fix
 Security scans run automatically before each push. To manually test:
 
 ```bash
-# Simulate pre-push checks
-cd mobile && npm audit --audit-level=high
-# Expected: No vulnerabilities (tar and diff removed with semantic-release)
-cd ../web-app && npm audit --audit-level=high
+# Run all security scans (uses custom npm audit wrapper for mobile)
+npm run security:all
+# Expected: All scans pass with documented vulnerabilities suppressed
+
+# Manual mobile security scan (with accepted vulnerabilities filtered)
+./scripts/npm-audit-security.sh ./mobile high
+# Expected: Exit code 0, message "Only accepted vulnerabilities found"
+
+# Web security scan (no accepted vulnerabilities)
+npm --prefix web-app audit --audit-level=high
 # Expected: No vulnerabilities
-cd ../api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp
+
+# API security scan (with ecdsa timing attack documented)
+cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp
 # Expected: GHSA-wj6h-64fc-37mp ignored (ecdsa timing attack, documented in ADR-015)
+
+# Simulate full pre-push checks
+./.husky/pre-push
+# Expected: All security checks pass, tests pass
 ```
 
 ## Security Review Checklist

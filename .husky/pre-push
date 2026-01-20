@@ -6,7 +6,7 @@ echo ""
 
 # Security Scanning
 echo "🔒 Security: Scanning Mobile Dependencies..."
-npm --prefix mobile audit --audit-level=high
+./scripts/npm-audit-security.sh ./mobile high
 echo "✓ Mobile security scan passed"
 echo ""
 

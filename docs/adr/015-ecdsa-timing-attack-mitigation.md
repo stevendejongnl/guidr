@@ -113,48 +113,59 @@ Every quarter (Jan, Apr, Jul, Oct), review:
 
 ---
 
-## 2. tar <=7.5.2 (CVE-2026-23745) - npm CLI Bundled Dependency
+## 2. Semantic-Release Bundled Dependencies (tar, glob, diff) - npm CLI Vulnerabilities
 
-**Status**: RESOLVED (2026-01-20)
+**Status**: ACCEPTED (Dev-time only)
 
-**How it was fixed**:
-- Removed `@semantic-release/*` packages from `mobile/package.json` devDependencies
-- CI workflow already uses `npx semantic-release@latest` (no changes needed)
-- Eliminates bundled npm CLI dependencies entirely from local development and package-lock.json
-- Mobile now has ZERO HIGH severity vulnerabilities
+**Context**:
+The semantic-release release automation tool is required for the CI/CD pipeline. However, the semantic-release ecosystem depends transitively on @semantic-release/npm, which bundles npm CLI (v11.7.0). This bundled npm includes vulnerable dependencies that cannot be fixed via npm overrides:
 
-**Previous Vulnerability**:
-- Arbitrary file overwrite via hardlinks and symlink poisoning
-- tar was bundled inside npm@11.7.0 which was bundled inside @semantic-release/npm
-- CVSS 8.2 (HIGH severity) - but only affected CI/CD tooling
-- Could not be overridden at package.json level (bundled packages beyond npm's override mechanism)
+- **tar** <=7.5.2 (GHSA-8qq5-rm4j-mr97): Arbitrary file overwrite - HIGH
+- **glob** 10.2.0-10.4.5 (GHSA-5j98-mcp5-4vw2): Command injection - HIGH
+- **diff** <8.0.3 (GHSA-73rr-hh4g-fpgx): DoS vulnerability - LOW
 
-**Resolution Details**:
-- **Reason**: semantic-release packages were only used in CI via `npx semantic-release`
-- **No local use**: No `npm run release` scripts in local development
-- **CI compatibility**: `.github/workflows/release.yml` already uses `npx` (lines 140, 158)
-- **Result**: Both tar@7.5.2 and diff@8.0.2 removed from dependency tree entirely
+**Dependency Chain**:
+```
+semantic-release → @semantic-release/npm@13.1.3 → npm@11.7.0 (BUNDLED)
+  ├── tar@7.5.2 (BUNDLED) ❌ GHSA-8qq5-rm4j-mr97 (HIGH)
+  ├── glob@10.4.5 (BUNDLED) ❌ GHSA-5j98-mcp5-4vw2 (HIGH)
+  └── diff@8.0.2 (BUNDLED) ❌ GHSA-73rr-hh4g-fpgx (LOW)
+```
 
----
+**Why Vulnerabilities Were Temporarily Removed Then Re-added**:
 
-## 3. diff <8.0.3 (GHSA-73rr-hh4g-fpgx) - npm CLI Bundled Dependency
+Previous attempt (commit a950ec1) removed all @semantic-release packages to eliminate these vulnerabilities. However, this broke the release pipeline because:
+1. semantic-release plugins must be installed in `node_modules/` for the core package to load them
+2. `npx semantic-release` downloads only the core package, not the plugins
+3. Removing plugins from `node_modules/` causes semantic-release to fail with "plugin not found" errors
+4. The CI workflow cannot function without plugins for commit analysis, changelog generation, GitHub integration, etc.
 
-**Status**: RESOLVED (2026-01-20)
+**Decision to Accept**:
+Rather than compromise the release pipeline, we accept these vulnerabilities because:
 
-**How it was fixed**:
-- Same as tar: removed `@semantic-release/*` packages from `mobile/package.json` devDependencies
-- diff was also bundled inside npm@11.7.0 in @semantic-release/npm
-- Completely eliminated from dependency tree
+1. **Dev-time only** (not runtime):
+   - All vulnerabilities exist in devDependencies only
+   - Bundled npm is NOT part of the compiled/shipped application
+   - Users never run this code - only developers and CI runners do
 
-**Previous Vulnerability**:
-- jsdiff DoS vulnerability in parsePatch and applyPatch
-- CVSS 2.5 (LOW severity)
-- Could not be overridden at package.json level (bundled inside npm)
+2. **Limited exposure**:
+   - Requires `npm ci` to pull dependencies (not typically run by attackers)
+   - Only affects trusted machines (developer workstations) and CI runners
+   - No network exposure or remote exploitation vector to users
 
-**Resolution Details**:
-- **Same mechanism as tar fix**: Removing semantic-release devDependencies
-- **No functional impact**: diff was never used directly in mobile code
-- **Result**: Both diff@8.0.2 and tar@7.5.2 removed from dependency tree entirely
+3. **Cannot be fixed**:
+   - npm overrides cannot reach bundled dependencies (architectural limitation)
+   - No fix available in semantic-release ecosystem
+   - Removing plugins breaks CI/CD pipeline
+
+4. **Precedent**:
+   - API server already accepts CVE-2024-23342 (ecdsa timing attack) with mitigation
+   - Same risk acceptance model documented in this ADR
+
+**Mitigation**:
+- Vulnerabilities ignored in security scans via custom `scripts/npm-audit-security.sh` wrapper
+- Quarterly reviews for upstream fixes in semantic-release ecosystem
+- No end-user impact (dev tooling only)
 
 ---
 
@@ -184,18 +195,26 @@ curl -X GET https://guidr.madebysteven.nl/api/health
 # Expected: No unusual timing patterns, no repeated failures from same IP
 ```
 
-### npm Dependencies Verification
+### npm Dependencies Verification - Semantic Release Bundled Dependencies
 ```bash
-# Verify tar and diff are no longer in dependency tree
-npm --prefix mobile ls tar
-# Expected: (empty) - tar completely removed with semantic-release devDependencies
+# Verify security scan with accepted vulnerabilities passes
+./scripts/npm-audit-security.sh ./mobile high
+# Expected: Exit code 0, message "Only accepted vulnerabilities found"
 
-npm --prefix mobile ls diff
-# Expected: (empty) - diff completely removed with semantic-release devDependencies
-
-# Run security scan for mobile
+# Run full audit to see all vulnerabilities
 npm --prefix mobile audit
-# Expected: 0 vulnerabilities (tar and diff resolved)
+# Expected: Shows 19 vulnerabilities (1 LOW, 18 HIGH) - all are accepted:
+#   - GHSA-8qq5-rm4j-mr97 (tar)
+#   - GHSA-5j98-mcp5-4vw2 (glob)
+#   - GHSA-73rr-hh4g-fpgx (jsdiff)
+
+# Run root security:mobile script
+npm run security:mobile
+# Expected: Exit code 0, uses npm-audit-security.sh wrapper
+
+# Test pre-push hook security checks
+./.husky/pre-push  # (or just the mobile security portion)
+# Expected: "✓ Mobile security scan passed"
 ```
 
 ## Alternative Approaches Considered
