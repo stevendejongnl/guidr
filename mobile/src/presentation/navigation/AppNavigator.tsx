@@ -18,6 +18,7 @@ import { ProfileScreen } from '../screens/ProfileScreen'
 import { SessionExecutionScreen } from '../screens/SessionExecutionScreen'
 import { CategoryListScreen } from '../screens/CategoryListScreen'
 import { CategoryFormScreen } from '../screens/CategoryFormScreen'
+import { BrowseGuidesScreen } from '../screens/BrowseGuidesScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -52,6 +53,7 @@ export const AppNavigator: React.FC = () => {
   const [categoryFormMode, setCategoryFormMode] = useState<'create' | 'edit' | null>(null)
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [selectedCategoryParentId, setSelectedCategoryParentId] = useState<string | null>(null)
+  const [showBrowseGuides, setShowBrowseGuides] = useState(false)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -251,6 +253,20 @@ export const AppNavigator: React.FC = () => {
   const handleSessionBack = () => {
     setShowSessionExecution(false)
     setExecutingSessionId(null)
+  }
+
+  const handleBrowseGuides = () => {
+    setShowBrowseGuides(true)
+  }
+
+  const handleBrowseGuidesBack = () => {
+    setShowBrowseGuides(false)
+  }
+
+  const handleBrowseGuidesViewGuide = (guideId: string) => {
+    // Placeholder for viewing guide detail
+    console.log('View guide:', guideId)
+    // TODO: Navigate to guide detail screen when implemented
   }
 
   const handleBrowseCategories = () => {
@@ -463,6 +479,15 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (showBrowseGuides) {
+    return (
+      <BrowseGuidesScreen
+        onBack={handleBrowseGuidesBack}
+        onViewGuide={handleBrowseGuidesViewGuide}
+      />
+    )
+  }
+
   if (showCategoryList) {
     return (
       <CategoryListScreen
@@ -478,6 +503,7 @@ export const AppNavigator: React.FC = () => {
       onLogout={handleLogout}
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
+      onBrowseGuides={handleBrowseGuides}
       onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
       isAdmin={isAdmin}

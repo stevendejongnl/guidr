@@ -34,8 +34,6 @@ interface HomeScreenProps {
   onOpenProfile: () => void
   onBrowseGuides?: () => void
   onBrowseCategories?: () => void
-  onStartSession?: () => void
-  onViewSessions?: () => void
   onViewSessionDetail?: (sessionId: string) => void
   onViewGuideDetail?: (guideId: string) => void
   isAdmin: boolean
@@ -47,8 +45,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenProfile,
   onBrowseGuides,
   onBrowseCategories,
-  onStartSession,
-  onViewSessions,
   onViewSessionDetail,
   onViewGuideDetail,
   isAdmin,
@@ -140,21 +136,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     }
   }
 
-  const handleStartSession = () => {
-    if (onStartSession) {
-      onStartSession()
-    } else {
-      Alert.alert('Start Session', 'Feature coming soon!')
-    }
-  }
 
-  const handleViewSessions = () => {
-    if (onViewSessions) {
-      onViewSessions()
-    } else {
-      Alert.alert('View Sessions', 'Feature coming soon!')
-    }
-  }
 
   const handleResumeSession = (sessionId: string) => {
     if (onViewSessionDetail) {
@@ -217,37 +199,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {stats && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsSection}>
             <StatCard icon="🏃" label="Active" value={stats.activeSessions} />
-            <StatCard icon="✅" label="Completed" value={stats.completedSessions} />
+            <StatCard icon="✅" label="Done" value={stats.completedSessions} />
             <StatCard icon="📚" label="Guides" value={stats.totalGuides} />
-            <StatCard
-              icon="⭐"
-              label="Interests"
-              value={stats.favoriteCategories.length}
-            />
           </ScrollView>
         )}
 
-        {/* Quick Actions */}
+        {/* Quick Actions - 2 large buttons */}
         <View style={styles.actionsSection}>
-          <QuickActionButton
-            icon="📁"
-            label="Browse Categories"
-            onPress={handleBrowseCategories}
-          />
           <QuickActionButton
             icon="🔍"
             label="Browse Guides"
             onPress={handleBrowseGuides}
           />
           <QuickActionButton
-            icon="▶️"
-            label="Start Session"
-            onPress={handleStartSession}
-          />
-          <QuickActionButton
-            icon="📋"
-            label="View Sessions"
-            onPress={handleViewSessions}
+            icon="📁"
+            label="Browse Categories"
+            onPress={handleBrowseCategories}
           />
         </View>
 
@@ -262,9 +229,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 onResume={() => handleResumeSession(session.id)}
               />
             ))}
-            <TouchableOpacity onPress={handleViewSessions}>
-              <Text style={commonStyles.linkText}>View All Sessions →</Text>
-            </TouchableOpacity>
           </View>
         )}
 
@@ -312,9 +276,11 @@ const styles = StyleSheet.create({
   },
   actionsSection: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.lg,
     marginBottom: spacing.lg,
     gap: spacing.md,
+    justifyContent: 'space-between',
   },
 })

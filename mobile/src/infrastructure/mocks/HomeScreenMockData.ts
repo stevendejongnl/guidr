@@ -20,6 +20,9 @@ export interface MockSession {
   startedAt: Date | undefined
   currentStepTitle: string | undefined
   progress: number // 0-100
+  // New fields for node progress
+  currentStep?: number
+  totalSteps?: number
 }
 
 export interface MockGuide {
@@ -31,6 +34,12 @@ export interface MockGuide {
   stepCount: number
   duration: number // minutes
   thumbnailEmoji: string
+  // New fields for enhanced UI
+  imageUrl?: string
+  rating?: number
+  ratingCount?: number
+  status?: 'completed' | 'in-progress' | 'paused' | 'not-started'
+  currentStep?: number
 }
 
 export interface MockStats {
@@ -70,6 +79,11 @@ const MOCK_GUIDES: MockGuide[] = [
     stepCount: 8,
     duration: 180,
     thumbnailEmoji: '🍞',
+    imageUrl: 'https://picsum.photos/48/48?random=1',
+    rating: 4.8,
+    ratingCount: 156,
+    status: 'in-progress',
+    currentStep: 5,
   },
   {
     id: 'g2',
@@ -80,6 +94,11 @@ const MOCK_GUIDES: MockGuide[] = [
     stepCount: 6,
     duration: 45,
     thumbnailEmoji: '🍪',
+    imageUrl: 'https://picsum.photos/48/48?random=2',
+    rating: 4.9,
+    ratingCount: 203,
+    status: 'completed',
+    currentStep: 6,
   },
   {
     id: 'g3',
@@ -90,6 +109,11 @@ const MOCK_GUIDES: MockGuide[] = [
     stepCount: 12,
     duration: 480,
     thumbnailEmoji: '🥐',
+    imageUrl: 'https://picsum.photos/48/48?random=3',
+    rating: 4.5,
+    ratingCount: 89,
+    status: 'paused',
+    currentStep: 7,
   },
 
   // Cooking (🍳)
@@ -102,6 +126,9 @@ const MOCK_GUIDES: MockGuide[] = [
     stepCount: 7,
     duration: 60,
     thumbnailEmoji: '🍲',
+    imageUrl: 'https://picsum.photos/48/48?random=4',
+    rating: 4.7,
+    ratingCount: 124,
   },
   {
     id: 'g5',
@@ -112,6 +139,11 @@ const MOCK_GUIDES: MockGuide[] = [
     stepCount: 9,
     duration: 90,
     thumbnailEmoji: '🍣',
+    imageUrl: 'https://picsum.photos/48/48?random=5',
+    rating: 4.6,
+    ratingCount: 98,
+    status: 'in-progress',
+    currentStep: 3,
   },
   {
     id: 'g6',
@@ -122,6 +154,9 @@ const MOCK_GUIDES: MockGuide[] = [
     stepCount: 8,
     duration: 75,
     thumbnailEmoji: '🍝',
+    imageUrl: 'https://picsum.photos/48/48?random=6',
+    rating: 4.8,
+    ratingCount: 167,
   },
 
   // Sports & Fitness (⚽)

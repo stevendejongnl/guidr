@@ -8,29 +8,43 @@ import { StyleSheet } from 'react-native'
 // To add light mode later: create lightColors object and switch via settings
 export const colors = {
   // Backgrounds
-  background: '#121212',
-  surface: '#1e1e1e',
-  surfaceLight: '#2a2a2a',
+  background: '#0B0F14',
+  surface: '#121923',
+  card: '#182233',
+  cardElevated: '#1E2A3A',
+
+  // Legacy aliases (deprecated, use above)
+  surfaceLight: '#182233',
+
+  // Brand
+  primary: '#9AF5CF', // Mint green
+  primaryMuted: '#5F8F7C',
+  primarySubtle: '#3E5F54',
+  primaryDisabled: '#5F8F7C',
 
   // Text
-  textPrimary: '#ffffff',
-  textSecondary: '#b3b3b3',
-  textMuted: '#808080',
+  textPrimary: '#E6EDF3',
+  textSecondary: '#9AA4B2',
+  textTertiary: '#6B7280',
+  textDisabled: '#4B5563',
 
-  // Interactive
-  primary: '#2196f3',
-  primaryDisabled: '#1565c0',
+  // Legacy alias (deprecated, use textTertiary)
+  textMuted: '#6B7280',
+
+  // States
+  success: '#4ADE80',
   danger: '#f44336',
-  success: '#4caf50',
-  warning: '#ff9800',
+  warning: '#FBBF24',
+  paused: '#F59E0B',
+  info: '#60A5FA',
 
   // Inputs & Borders
-  inputBackground: '#2a2a2a',
-  border: '#404040',
+  inputBackground: '#182233',
+  border: '#2A3A4D',
   borderError: '#f44336',
 
   // Buttons
-  buttonSecondary: '#757575',
+  buttonSecondary: '#5F8F7C',
 }
 
 export const spacing = {
@@ -44,19 +58,24 @@ export const spacing = {
 }
 
 export const borderRadius = {
-  sm: 4,
-  md: 8,
-  lg: 12,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
 }
 
 export const typography = {
+  // Font family
+  fontFamily: 'Inter',
+
   // Font sizes
   sizeXs: 12,
   sizeSm: 14,
   sizeMd: 16,
   sizeLg: 18,
-  sizeXl: 24,
+  sizeXl: 22,
   sizeXxl: 28,
+  sizeDisplay: 28, // Alias for sizeXxl
   sizeXxxl: 32,
 
   // Font weights
@@ -64,6 +83,37 @@ export const typography = {
   weightMedium: '500' as const,
   weightSemibold: '600' as const,
   weightBold: 'bold' as const,
+}
+
+// Icon design tokens
+export const iconTokens = {
+  sizeSm: 16,
+  sizeMd: 20,
+  sizeLg: 24,
+  strokeWidth: 1.5,
+}
+
+// Node/Path design tokens (for progress indicators)
+export const nodeTokens = {
+  size: 6,
+  activeSize: 8,
+  spacing: 8,
+  lineWidth: 1.5,
+}
+
+// Motion design tokens
+export const motionTokens = {
+  fast: 120,
+  base: 180,
+  slow: 240,
+}
+
+// Component defaults
+export const componentDefaults = {
+  cardPadding: 16,
+  chipHeight: 28,
+  buttonHeight: 44,
+  listItemMinHeight: 72,
 }
 
 // =============================================================================
@@ -142,6 +192,7 @@ export const commonStyles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
     borderRadius: borderRadius.md,
+    minHeight: componentDefaults.buttonHeight,
     padding: spacing.lg,
     alignItems: 'center',
     marginTop: spacing.sm,
@@ -214,9 +265,9 @@ export const commonStyles = StyleSheet.create({
 
   // Sections
   section: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: componentDefaults.cardPadding,
     marginBottom: spacing.lg,
   },
   sectionTitle: {

@@ -1,7 +1,9 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { colors, spacing, typography } from '../theme'
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'
+import { colors, spacing, typography, borderRadius, componentDefaults } from '../theme'
 import { MockGuide } from '../../infrastructure/mocks/HomeScreenMockData'
+import { NodeProgressIndicator } from './NodeProgressIndicator'
+import { StatusBadge } from './StatusBadge'
 
 interface GuideCardProps {
   guide: MockGuide
@@ -21,8 +23,24 @@ export const GuideCard: React.FC<GuideCardProps> = ({ guide, onPress, testID }) 
       testID={testID}
       activeOpacity={0.8}
     >
+      {/* Status Badge - Top Right */}
+      {guide.status && (
+        <View style={styles.statusBadgeContainer}>
+          <StatusBadge status={guide.status} variant="solid" testID={`${testID}:status`} />
+        </View>
+      )}
+
+      {/* Header with Image/Emoji and Title */}
       <View style={styles.header}>
-        <Text style={styles.emoji}>{guide.thumbnailEmoji}</Text>
+        {guide.imageUrl ? (
+          <Image
+            source={{ uri: guide.imageUrl }}
+            style={styles.thumbnail}
+            testID={`${testID}:image`}
+          />
+        ) : (
+          <Text style={styles.emoji}>{guide.thumbnailEmoji}</Text>
+        )}
         <View style={styles.titleSection}>
           <Text style={styles.title}>{guide.title}</Text>
           <Text
@@ -35,6 +53,28 @@ export const GuideCard: React.FC<GuideCardProps> = ({ guide, onPress, testID }) 
         </View>
       </View>
 
+      {/* Rating Section */}
+      {guide.rating !== undefined && (
+        <View style={styles.ratingContainer}>
+          <Text style={styles.ratingText}>
+            ⭐ {guide.rating.toFixed(1)} {guide.ratingCount ? `(${guide.ratingCount})` : ''}
+          </Text>
+        </View>
+      )}
+
+      {/* Node Progress Indicator */}
+      {guide.currentStep !== undefined && guide.stepCount > 0 && (
+        <View style={styles.nodeProgressContainer}>
+          <NodeProgressIndicator
+            currentStep={guide.currentStep}
+            totalSteps={guide.stepCount}
+            variant="compact"
+            testID={`${testID}:progress`}
+          />
+        </View>
+      )}
+
+      {/* Metadata */}
       <View style={styles.metadata}>
         <Text style={styles.metadataText}>📝 {guide.stepCount} steps</Text>
         <Text style={styles.metadataText}>⏱ {durationDisplay}</Text>
@@ -46,15 +86,30 @@ export const GuideCard: React.FC<GuideCardProps> = ({ guide, onPress, testID }) 
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 8,
-    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: componentDefaults.cardPadding,
     marginBottom: spacing.md,
+    position: 'relative',
+  },
+  statusBadgeContainer: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    zIndex: 1,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: spacing.md,
+  },
+  thumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: spacing.lg,
+    marginTop: spacing.xs,
+    backgroundColor: colors.cardElevated,
   },
   emoji: {
     fontSize: 48,
@@ -73,6 +128,16 @@ const styles = StyleSheet.create({
   description: {
     fontSize: typography.sizeSm,
     color: colors.textSecondary,
+  },
+  ratingContainer: {
+    marginBottom: spacing.sm,
+  },
+  ratingText: {
+    fontSize: typography.sizeSm,
+    color: colors.textSecondary,
+  },
+  nodeProgressContainer: {
+    marginBottom: spacing.md,
   },
   metadata: {
     flexDirection: 'row',

@@ -12,6 +12,8 @@ describe('ActivityItem', () => {
     startedAt: new Date(Date.now() - 3600000), // 1 hour ago
     currentStepTitle: 'Shaping',
     progress: 65,
+    currentStep: 4,
+    totalSteps: 8,
   }
 
   const mockSessionCompleted = {
@@ -32,6 +34,8 @@ describe('ActivityItem', () => {
     startedAt: new Date(Date.now() - 7200000),
     currentStepTitle: 'Step 3',
     progress: 45,
+    currentStep: 3,
+    totalSteps: 8,
   }
 
   it('renders session data', () => {
@@ -44,13 +48,13 @@ describe('ActivityItem', () => {
     expect(getByText('Shaping')).toBeDefined()
   })
 
-  it('shows progress bar for in-progress sessions', () => {
+  it('shows node progress indicator for in-progress sessions with step info', () => {
     const { getByTestId } = render(
       <ActivityItem session={mockSessionInProgress} testID="activity-item" />,
     )
 
-    const progressBar = getByTestId('progress-bar')
-    expect(progressBar).toBeDefined()
+    const progressIndicator = getByTestId('activity-item:progress')
+    expect(progressIndicator).toBeDefined()
   })
 
   it('shows progress percentage', () => {

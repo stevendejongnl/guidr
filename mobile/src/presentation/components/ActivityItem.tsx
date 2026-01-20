@@ -1,7 +1,9 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { colors, spacing, typography } from '../theme'
+import { colors, spacing, typography, borderRadius, componentDefaults } from '../theme'
 import { HomeScreenMockData, MockSession, SessionStatus } from '../../infrastructure/mocks/HomeScreenMockData'
+import { NodeProgressIndicator } from './NodeProgressIndicator'
+import { StatusBadge } from './StatusBadge'
 
 interface ActivityItemProps {
   session: MockSession
@@ -11,19 +13,20 @@ interface ActivityItemProps {
 
 export const ActivityItem: React.FC<ActivityItemProps> = ({ session, onResume, testID }) => {
   const isActive = session.status === SessionStatus.InProgress || session.status === SessionStatus.Paused
-  const statusColor = HomeScreenMockData.getStatusColor(session.status)
-  const statusLabel = HomeScreenMockData.getStatusLabel(session.status)
   const relativeTime = HomeScreenMockData.formatRelativeTime(session.startedAt)
 
-  const getStatusStyle = () => {
-    const baseStyle = styles.badge
-    const colorMap = {
-      primary: { backgroundColor: colors.primary },
-      success: { backgroundColor: colors.success },
-      warning: { backgroundColor: colors.warning },
-      textMuted: { backgroundColor: colors.textMuted },
+  // Convert status to badge status type
+  const getStatusForBadge = (): 'completed' | 'in-progress' | 'paused' | 'not-started' => {
+    switch (session.status) {
+      case SessionStatus.Completed:
+        return 'completed'
+      case SessionStatus.InProgress:
+        return 'in-progress'
+      case SessionStatus.Paused:
+        return 'paused'
+      default:
+        return 'not-started'
     }
-    return [baseStyle, colorMap[statusColor]]
   }
 
   return (
@@ -32,9 +35,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ session, onResume, t
         <View style={styles.titleSection}>
           <Text style={styles.guideTitle}>{session.guideTitle}</Text>
           <View style={styles.metaRow}>
-            <View style={getStatusStyle()}>
-              <Text style={styles.badgeText}>{statusLabel}</Text>
-            </View>
+            <StatusBadge status={getStatusForBadge()} variant="solid" testID={`${testID}:status`} />
             <Text style={styles.time}>{relativeTime}</Text>
           </View>
         </View>
@@ -46,18 +47,18 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ session, onResume, t
 
       {isActive && (
         <>
-          <View style={styles.progressSection}>
-            <View style={styles.progressBarContainer}>
-              <View
-                style={[
-                  styles.progressBar,
-                  { width: `${session.progress}%` },
-                ]}
-                testID="progress-bar"
+          {/* Node Progress Indicator */}
+          {session.currentStep !== undefined && session.totalSteps !== undefined && session.totalSteps > 0 && (
+            <View style={styles.progressSection}>
+              <NodeProgressIndicator
+                currentStep={session.currentStep}
+                totalSteps={session.totalSteps}
+                variant="compact"
+                testID={`${testID}:progress`}
               />
+              <Text style={styles.progressText}>{session.progress}%</Text>
             </View>
-            <Text style={styles.progressText}>{session.progress}%</Text>
-          </View>
+          )}
 
           {onResume && (
             <TouchableOpacity style={styles.resumeButton} onPress={onResume}>
@@ -72,9 +73,9 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ session, onResume, t
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 8,
-    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: componentDefaults.cardPadding,
     marginBottom: spacing.md,
   },
   header: {
@@ -96,16 +97,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  badge: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 4,
-  },
-  badgeText: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightSemibold,
-    color: colors.textPrimary,
-  },
   time: {
     fontSize: typography.sizeSm,
     color: colors.textSecondary,
@@ -118,29 +109,20 @@ const styles = StyleSheet.create({
   },
   progressSection: {
     marginTop: spacing.md,
-  },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: spacing.sm,
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: colors.primary,
+    marginBottom: spacing.md,
   },
   progressText: {
     fontSize: typography.sizeSm,
     color: colors.textSecondary,
     textAlign: 'right',
+    marginTop: spacing.sm,
   },
   resumeButton: {
     marginTop: spacing.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     backgroundColor: colors.primary,
-    borderRadius: 6,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   resumeText: {

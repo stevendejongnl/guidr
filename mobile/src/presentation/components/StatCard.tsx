@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
-import { colors, spacing, borderRadius, typography } from '../theme'
+import { colors, spacing, borderRadius, typography, componentDefaults } from '../theme'
 
 interface StatCardProps {
   icon: string
@@ -21,9 +21,9 @@ export const StatCard: React.FC<StatCardProps> = ({ icon, label, value, testID }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: componentDefaults.cardPadding,
     marginRight: spacing.md,
     minWidth: 100,
     alignItems: 'center',

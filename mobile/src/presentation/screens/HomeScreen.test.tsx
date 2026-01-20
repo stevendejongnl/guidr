@@ -295,7 +295,7 @@ describe('HomeScreen', () => {
 
       await waitFor(() => {
         expect(getByText('Active')).toBeTruthy()
-        expect(getByText('Completed')).toBeTruthy()
+        expect(getByText('Done')).toBeTruthy()
         expect(getByText('Guides')).toBeTruthy()
       })
     })
@@ -307,8 +307,7 @@ describe('HomeScreen', () => {
 
       await waitFor(() => {
         expect(getByText('Browse Guides')).toBeTruthy()
-        expect(getByText('Start Session')).toBeTruthy()
-        expect(getByText('View Sessions')).toBeTruthy()
+        expect(getByText('Browse Categories')).toBeTruthy()
       })
     })
 
@@ -393,14 +392,10 @@ describe('HomeScreen', () => {
 
   describe('quick action callbacks', () => {
     let mockOnBrowseGuides: jest.Mock
-    let mockOnStartSession: jest.Mock
-    let mockOnViewSessions: jest.Mock
     let mockAuthClient: jest.Mocked<AuthClient>
 
     beforeEach(() => {
       mockOnBrowseGuides = jest.fn()
-      mockOnStartSession = jest.fn()
-      mockOnViewSessions = jest.fn()
 
       mockAuthClient = {
         getProfile: jest.fn().mockResolvedValue({
@@ -431,8 +426,6 @@ describe('HomeScreen', () => {
           onOpenSettings={mockOnOpenSettings}
           onOpenProfile={mockOnOpenProfile}
           onBrowseGuides={mockOnBrowseGuides}
-          onStartSession={mockOnStartSession}
-          onViewSessions={mockOnViewSessions}
           isAdmin={false}
         />
       )
@@ -443,41 +436,22 @@ describe('HomeScreen', () => {
       })
     })
 
-    it('should call onStartSession when Start Session button is pressed', async () => {
+    it('should call onBrowseCategories when Browse Categories button is pressed', async () => {
+      const mockOnBrowseCategories = jest.fn()
       const { getByText } = render(
         <HomeScreen
           onLogout={mockOnLogout}
           onOpenSettings={mockOnOpenSettings}
           onOpenProfile={mockOnOpenProfile}
           onBrowseGuides={mockOnBrowseGuides}
-          onStartSession={mockOnStartSession}
-          onViewSessions={mockOnViewSessions}
+          onBrowseCategories={mockOnBrowseCategories}
           isAdmin={false}
         />
       )
 
       await waitFor(() => {
-        fireEvent.press(getByText('Start Session'))
-        expect(mockOnStartSession).toHaveBeenCalledTimes(1)
-      })
-    })
-
-    it('should call onViewSessions when View Sessions button is pressed', async () => {
-      const { getByText } = render(
-        <HomeScreen
-          onLogout={mockOnLogout}
-          onOpenSettings={mockOnOpenSettings}
-          onOpenProfile={mockOnOpenProfile}
-          onBrowseGuides={mockOnBrowseGuides}
-          onStartSession={mockOnStartSession}
-          onViewSessions={mockOnViewSessions}
-          isAdmin={false}
-        />
-      )
-
-      await waitFor(() => {
-        fireEvent.press(getByText('View Sessions'))
-        expect(mockOnViewSessions).toHaveBeenCalledTimes(1)
+        fireEvent.press(getByText('Browse Categories'))
+        expect(mockOnBrowseCategories).toHaveBeenCalledTimes(1)
       })
     })
   })

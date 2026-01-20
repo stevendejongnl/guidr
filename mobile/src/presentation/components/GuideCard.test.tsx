@@ -90,4 +90,66 @@ describe('GuideCard', () => {
 
     expect(getByText('🍳')).toBeDefined()
   })
+
+  it('renders with image url when provided', () => {
+    const guideWithImage = {
+      ...mockGuide,
+      imageUrl: 'https://picsum.photos/48/48?random=1',
+    }
+
+    const { getByText } = render(
+      <GuideCard guide={guideWithImage} testID="guide-card" />,
+    )
+
+    // Just verify the component renders without error
+    expect(getByText('Perfect Sourdough Bread')).toBeDefined()
+  })
+
+  it('renders with rating when provided', () => {
+    const guideWithRating = {
+      ...mockGuide,
+      rating: 4.8,
+      ratingCount: 156,
+    }
+
+    const { getByText } = render(
+      <GuideCard guide={guideWithRating} testID="guide-card" />,
+    )
+
+    expect(getByText('Perfect Sourdough Bread')).toBeDefined()
+  })
+
+  it('renders with status badge when provided', () => {
+    const guideWithStatus = {
+      ...mockGuide,
+      status: 'in-progress' as const,
+    }
+
+    const { getByText } = render(
+      <GuideCard guide={guideWithStatus} testID="guide-card" />,
+    )
+
+    expect(getByText('Perfect Sourdough Bread')).toBeDefined()
+  })
+
+  it('renders with node progress when step info provided', () => {
+    const guideWithProgress = {
+      ...mockGuide,
+      currentStep: 3,
+    }
+
+    const { getByText } = render(
+      <GuideCard guide={guideWithProgress} testID="guide-card" />,
+    )
+
+    expect(getByText('Perfect Sourdough Bread')).toBeDefined()
+  })
+
+  it('renders basic guide without optional fields', () => {
+    const { getByText } = render(
+      <GuideCard guide={mockGuide} testID="guide-card" />,
+    )
+
+    expect(getByText('Perfect Sourdough Bread')).toBeDefined()
+  })
 })
