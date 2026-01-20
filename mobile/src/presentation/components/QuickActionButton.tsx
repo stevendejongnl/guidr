@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   primary: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.buttonPrimary,
   },
   secondary: {
     backgroundColor: colors.buttonSecondary,

@@ -44,6 +44,7 @@ export const colors = {
   borderError: '#f44336',
 
   // Buttons
+  buttonPrimary: '#2E7D5C', // Darker green for button backgrounds (better contrast with white text)
   buttonSecondary: '#5F8F7C',
 }
 
@@ -190,7 +191,7 @@ export const commonStyles = StyleSheet.create({
 
   // Buttons
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: borderRadius.md,
     minHeight: componentDefaults.buttonHeight,
     padding: spacing.lg,

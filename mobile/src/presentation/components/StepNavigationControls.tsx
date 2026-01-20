@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
