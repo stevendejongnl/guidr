@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxxl,
   },
   updateButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.buttonPrimary,
     borderRadius: borderRadius.md,
     paddingVertical: 14,
     paddingHorizontal: spacing.xxxl,

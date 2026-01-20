@@ -35,7 +35,7 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: spacing.md,
-      backgroundColor: selected ? colors.primary : 'transparent',
+      backgroundColor: selected ? colors.buttonPrimary : 'transparent',
       borderWidth: selected ? 0 : 1,
       borderColor: selected ? 'transparent' : colors.textTertiary,
     } as ViewStyle,

@@ -21,7 +21,7 @@ const getStatusColor = (status: BadgeStatus): string => {
     case 'completed':
       return colors.success
     case 'in-progress':
-      return colors.primary
+      return colors.buttonPrimary
     case 'paused':
       return colors.paused
     case 'not-started':
