@@ -6,12 +6,8 @@ echo ""
 
 # Security Scanning
 echo "🔒 Security: Scanning Mobile Dependencies..."
-# Note: tar@7.5.2 and diff@8.0.2 in npm CLI are bundled, cannot be overridden (ADR-015)
-npm --prefix mobile audit --audit-level=high || {
-  echo "⚠ Known issues: tar/diff in npm CLI bundled dependencies (documented in ADR-015)"
-  echo "  See: SECURITY.md, README.md, ADR-015"
-}
-echo "✓ Mobile security scan completed"
+npm --prefix mobile audit --audit-level=high
+echo "✓ Mobile security scan passed"
 echo ""
 
 echo "🔒 Security: Scanning Web Dependencies..."

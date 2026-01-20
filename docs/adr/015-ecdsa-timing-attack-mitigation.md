@@ -108,75 +108,53 @@ pip-audit --desc --skip-editable --require-hashes uv.lock
 Every quarter (Jan, Apr, Jul, Oct), review:
 1. Check ecdsa GitHub repository for new releases/fixes (API)
 2. Review CVE databases for new ECDSA timing vulnerabilities
-3. Check npm CLI releases at https://github.com/npm/cli/releases (Mobile)
-   - Verify if npm includes tar@7.5.3 or higher
-   - Verify if npm includes diff@8.0.3 or higher
-4. Update @semantic-release/npm if newer npm CLI is available
-5. Assess `PyJWT` adoption in ecosystem (alternative option for ecdsa)
-6. Document findings in security incident log
+3. Assess `PyJWT` adoption in ecosystem (alternative option for ecdsa)
+4. Document findings in security incident log
 
 ---
 
 ## 2. tar <=7.5.2 (CVE-2026-23745) - npm CLI Bundled Dependency
 
-**Status**: Documented and accepted (waiting for upstream npm CLI update)
+**Status**: RESOLVED (2026-01-20)
 
-**Vulnerability**:
+**How it was fixed**:
+- Removed `@semantic-release/*` packages from `mobile/package.json` devDependencies
+- CI workflow already uses `npx semantic-release@latest` (no changes needed)
+- Eliminates bundled npm CLI dependencies entirely from local development and package-lock.json
+- Mobile now has ZERO HIGH severity vulnerabilities
+
+**Previous Vulnerability**:
 - Arbitrary file overwrite via hardlinks and symlink poisoning
-- Affects tar extraction in node-tar <=7.5.2
-- CVSS 8.2 (HIGH severity)
+- tar was bundled inside npm@11.7.0 which was bundled inside @semantic-release/npm
+- CVSS 8.2 (HIGH severity) - but only affected CI/CD tooling
+- Could not be overridden at package.json level (bundled packages beyond npm's override mechanism)
 
-**Location**:
-- mobile → @semantic-release/npm → npm@11.7.0 (bundled) → tar@7.5.2
-
-**Why we can't fix it**:
-- tar is bundled inside npm CLI package (not a regular dependency)
-- npm overrides don't affect bundled packages
-- Requires npm CLI to release version with tar@7.5.3 bundled
-
-**Risk Assessment**:
-- **Low practical risk** for our use case:
-  - Only affects semantic-release in CI/CD (not production code or local development)
-  - npm only extracts from trusted registry (npmjs.com)
-  - Attacker would need to compromise npmjs.com or perform man-in-the-middle attack
-  - Extraction happens in isolated CI/CD containers
-
-**Mitigation**:
-1. Monitor npm CLI releases: https://github.com/npm/cli/releases
-2. Update @semantic-release/npm when newer npm CLI with tar@7.5.3 is available
-3. Quarterly review for npm CLI updates (Jan, Apr, Jul, Oct)
-4. CI/CD runs in isolated containers (limits blast radius)
-
-**Alternative (Not Recommended)**:
-- Use `npx semantic-release@latest` in GitHub Actions (always pulls latest)
-- Trade-off: Slower CI (downloads each time), less reproducible builds, doesn't fix bundled vulnerabilities
+**Resolution Details**:
+- **Reason**: semantic-release packages were only used in CI via `npx semantic-release`
+- **No local use**: No `npm run release` scripts in local development
+- **CI compatibility**: `.github/workflows/release.yml` already uses `npx` (lines 140, 158)
+- **Result**: Both tar@7.5.2 and diff@8.0.2 removed from dependency tree entirely
 
 ---
 
 ## 3. diff <8.0.3 (GHSA-73rr-hh4g-fpgx) - npm CLI Bundled Dependency
 
-**Status**: Documented and accepted (waiting for upstream npm CLI update)
+**Status**: RESOLVED (2026-01-20)
 
-**Vulnerability**:
+**How it was fixed**:
+- Same as tar: removed `@semantic-release/*` packages from `mobile/package.json` devDependencies
+- diff was also bundled inside npm@11.7.0 in @semantic-release/npm
+- Completely eliminated from dependency tree
+
+**Previous Vulnerability**:
 - jsdiff DoS vulnerability in parsePatch and applyPatch
 - CVSS 2.5 (LOW severity)
+- Could not be overridden at package.json level (bundled inside npm)
 
-**Location**:
-- mobile → @semantic-release/npm → npm@11.7.0 (bundled) → diff@8.0.2
-
-**Why we can't fix it**:
-- Same as tar: bundled inside npm CLI
-- Cannot be overridden at package.json level
-
-**Risk Assessment**:
-- **Very low risk**: CVSS 2.5 is minimal severity
-- Only affects CI/CD tooling, not production code
-- Requires malicious input to patch files during npm CLI operations
-
-**Mitigation**:
-- Monitor npm CLI releases (same as tar)
-- Low priority due to minimal severity (CVSS 2.5)
-- Update when npm CLI includes diff@8.0.3
+**Resolution Details**:
+- **Same mechanism as tar fix**: Removing semantic-release devDependencies
+- **No functional impact**: diff was never used directly in mobile code
+- **Result**: Both diff@8.0.2 and tar@7.5.2 removed from dependency tree entirely
 
 ---
 
@@ -208,16 +186,16 @@ curl -X GET https://guidr.madebysteven.nl/api/health
 
 ### npm Dependencies Verification
 ```bash
-# Check tar and diff versions in npm CLI
+# Verify tar and diff are no longer in dependency tree
 npm --prefix mobile ls tar
-# Expected: tar@7.5.2 (bundled in npm) - documented in ADR-015
+# Expected: (empty) - tar completely removed with semantic-release devDependencies
 
 npm --prefix mobile ls diff
-# Expected: diff@8.0.2 (bundled in npm) - documented in ADR-015
+# Expected: (empty) - diff completely removed with semantic-release devDependencies
 
 # Run security scan for mobile
 npm --prefix mobile audit
-# Expected: Only tar and diff vulnerabilities (both bundled in npm CLI)
+# Expected: 0 vulnerabilities (tar and diff resolved)
 ```
 
 ## Alternative Approaches Considered
