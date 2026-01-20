@@ -148,6 +148,25 @@ describe('AuthClient', () => {
         .rejects.toThrow('An unexpected error occurred during login')
     })
 
+    it('should handle FastAPI validation error array', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['body', 'email'],
+              msg: 'value is not a valid email address',
+              type: 'value_error.email',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(authClient.login('invalid-email', 'password123'))
+        .rejects.toThrow('email: value is not a valid email address')
+    })
+
     it('should handle isAdmin=true in login response', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
@@ -328,6 +347,25 @@ describe('AuthClient', () => {
         .rejects.toThrow('An unexpected error occurred during registration')
     })
 
+    it('should handle FastAPI validation error array for password', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['body', 'password'],
+              msg: 'ensure this value has at least 6 characters',
+              type: 'value_error.string.min_length',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(authClient.register('test@example.com', 'short'))
+        .rejects.toThrow('password: ensure this value has at least 6 characters')
+    })
+
     it('should handle isAdmin=true in register response', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
@@ -505,6 +543,26 @@ describe('AuthClient', () => {
       await expect(
         authClient.changePassword('OldPassword123', 'NewPassword456', authToken)
       ).rejects.toThrow('An unexpected error occurred during password change')
+    })
+
+    it('should handle FastAPI validation error array for new password', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['body', 'newPassword'],
+              msg: 'Password must contain at least one uppercase letter',
+              type: 'value_error.password_requirements',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(
+        authClient.changePassword('OldPassword123', 'newpassword456', authToken)
+      ).rejects.toThrow('newPassword: Password must contain at least one uppercase letter')
     })
   })
 
@@ -697,6 +755,60 @@ describe('AuthClient', () => {
         authClient.changeEmail('new@example.com', 'Password123', authToken)
       ).rejects.toThrow('An unexpected error occurred during email change')
     })
+
+    it('should handle FastAPI validation error array for email', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['body', 'newEmail'],
+              msg: 'value is not a valid email address',
+              type: 'value_error.email',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(
+        authClient.changeEmail('invalid-email', 'Password123', authToken)
+      ).rejects.toThrow('newEmail: value is not a valid email address')
+    })
+  })
+
+  describe('getProfile', () => {
+    const authToken = 'mock-auth-token-123'
+
+    it('should throw error on 401 unauthorized', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Unauthorized' }),
+      } as Response)
+
+      await expect(authClient.getProfile(authToken))
+        .rejects.toThrow('Unauthorized')
+    })
+
+    it('should handle FastAPI validation error array', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['header', 'authorization'],
+              msg: 'Invalid token format',
+              type: 'value_error.invalid_token',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(authClient.getProfile('invalid-token'))
+        .rejects.toThrow('authorization: Invalid token format')
+    })
   })
 
   describe('updateProfile', () => {
@@ -848,6 +960,26 @@ describe('AuthClient', () => {
         authClient.updateProfile('John', ['sports'], authToken)
       ).rejects.toThrow('An unexpected error occurred during profile update')
     })
+
+    it('should handle FastAPI validation error array for interests', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['body', 'interests'],
+              msg: 'ensure this value has at most 10 items',
+              type: 'value_error.list.max_items',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(
+        authClient.updateProfile('John', ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'], authToken)
+      ).rejects.toThrow('interests: ensure this value has at most 10 items')
+    })
   })
 
   describe('deleteAccount', () => {
@@ -953,6 +1085,26 @@ describe('AuthClient', () => {
       await expect(
         authClient.deleteAccount('Password123', authToken)
       ).rejects.toThrow('An unexpected error occurred during account deletion')
+    })
+
+    it('should handle FastAPI validation error array for password', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['body', 'password'],
+              msg: 'password does not meet complexity requirements',
+              type: 'value_error.password_complexity',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(
+        authClient.deleteAccount('password123', authToken)
+      ).rejects.toThrow('password: password does not meet complexity requirements')
     })
   })
 })

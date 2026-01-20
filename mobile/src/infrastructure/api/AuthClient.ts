@@ -1,4 +1,5 @@
 import { AuthResponse, UserDto } from './dtos/UserDto'
+import { extractErrorMessage } from '../../common/ApiErrorUtils'
 
 export class AuthClient {
   private readonly apiBaseUrl: string
@@ -29,7 +30,7 @@ export class AuthClient {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Login failed')
+        throw new Error(extractErrorMessage(errorData, 'Login failed'))
       }
 
       const data = await response.json()
@@ -76,7 +77,7 @@ export class AuthClient {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Registration failed')
+        throw new Error(extractErrorMessage(errorData, 'Registration failed'))
       }
 
       const data = await response.json()
@@ -134,7 +135,7 @@ export class AuthClient {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Password change failed')
+        throw new Error(extractErrorMessage(errorData, 'Password change failed'))
       }
 
       // Success - no return value needed
@@ -176,7 +177,7 @@ export class AuthClient {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Email change failed')
+        throw new Error(extractErrorMessage(errorData, 'Email change failed'))
       }
 
       const data = await response.json()
@@ -220,7 +221,7 @@ export class AuthClient {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to fetch profile')
+        throw new Error(extractErrorMessage(errorData, 'Failed to fetch profile'))
       }
 
       const data = await response.json()
@@ -270,7 +271,7 @@ export class AuthClient {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Profile update failed')
+        throw new Error(extractErrorMessage(errorData, 'Profile update failed'))
       }
 
       const data = await response.json()
@@ -317,7 +318,7 @@ export class AuthClient {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Account deletion failed')
+        throw new Error(extractErrorMessage(errorData, 'Account deletion failed'))
       }
 
       // Success - no return value needed

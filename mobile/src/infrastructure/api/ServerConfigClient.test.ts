@@ -5,7 +5,7 @@ global.fetch = jest.fn()
 
 describe('ServerConfigClient', () => {
   let configClient: ServerConfigClient
-  const serverUrl = 'http://localhost:8000/api/v1'
+  const serverUrl = 'http://localhost:8000'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
@@ -97,6 +97,49 @@ describe('ServerConfigClient', () => {
 
       await expect(configClient.getConfig())
         .rejects.toThrow('An unexpected error occurred while fetching config')
+    })
+
+    it('should handle FastAPI validation error array', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['query', 'version'],
+              msg: 'value is not a valid version string',
+              type: 'value_error.version',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(configClient.getConfig())
+        .rejects.toThrow('version: value is not a valid version string')
+    })
+
+    it('should handle multiple validation errors (returns first)', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          detail: [
+            {
+              loc: ['body', 'minAppVersion'],
+              msg: 'value is not a valid version',
+              type: 'value_error.version',
+            },
+            {
+              loc: ['body', 'maxAppVersion'],
+              msg: 'value is not a valid version',
+              type: 'value_error.version',
+            },
+          ],
+        }),
+      } as Response)
+
+      await expect(configClient.getConfig())
+        .rejects.toThrow('minAppVersion: value is not a valid version')
     })
   })
 })
