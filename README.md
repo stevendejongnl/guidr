@@ -64,6 +64,38 @@ cd api-server/ && uv sync && uv run guidr-server
 npm install && npm run dev
 ```
 
+## Security
+
+### Dependency Scanning
+
+Automated security scanning runs on every push via pre-push hooks:
+- **npm packages** (mobile, web): Fails on HIGH/CRITICAL vulnerabilities
+- **Python packages** (API): Uses pip-audit with suppression list
+
+### Manual Scans
+
+Run security audits on-demand:
+
+```bash
+npm run security:all           # Scan all packages
+npm run security:mobile        # Scan mobile only (npm audit)
+npm run security:web           # Scan web only (npm audit)
+npm run security:api           # Scan API only (pip-audit)
+npm run security:fix:mobile    # Auto-fix npm vulnerabilities (mobile)
+npm run security:fix:web       # Auto-fix npm vulnerabilities (web)
+```
+
+### Known Issues
+
+**CVE-2024-23342** (ecdsa timing attack):
+- **Status**: Accepted with documented mitigation
+- **Risk**: Low (requires repeated timing measurements of signing operations)
+- **Location**: API server → python-jose[cryptography] → ecdsa
+- **Details**: See [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
+- **Mitigation**: API rate limiting, short-lived tokens, quarterly reviews
+
+For security policy details, see [SECURITY.md](./SECURITY.md).
+
 ## Domain Model
 
 ```

@@ -4,6 +4,28 @@ set -e
 echo "Running pre-push checks..."
 echo ""
 
+# Security Scanning
+echo "🔒 Security: Scanning Mobile Dependencies..."
+npm --prefix mobile audit --audit-level=high
+echo "✓ Mobile security scan passed"
+echo ""
+
+echo "🔒 Security: Scanning Web Dependencies..."
+npm --prefix web-app audit --audit-level=high
+echo "✓ Web security scan passed"
+echo ""
+
+echo "🔒 Security: Scanning API Dependencies..."
+cd api-server
+if [ -f .venv/bin/pip-audit ]; then
+  .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp
+  echo "✓ API security scan passed"
+else
+  echo "⚠ pip-audit not installed, skipping API security scan"
+fi
+cd ..
+echo ""
+
 echo "📱 Running Mobile Tests..."
 npm --prefix mobile test
 echo "✓ Mobile tests passed"

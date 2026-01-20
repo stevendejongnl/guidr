@@ -69,7 +69,11 @@ Custom Claude Code skills for workflow acceleration:
 **TestFlight**: Create group in App Store Connect, check secrets format, wait 10-15min
 **Tests**: Mock RN modules in `mobile/__mocks__/`, use bracket notation for props
 
-**References**: [ADR-006](./docs/adr/006-admin-user-authorization.md), [ADR-007](./docs/adr/007-user-based-admin-mode-mobile.md)
+## Security
+**Scanning**: `npm run security:all` (pre-push runs automatically) | See [SECURITY.md](./SECURITY.md)
+**Known Issues**: ecdsa timing attack CVE-2024-23342 (accepted, documented in [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md))
+
+**References**: [ADR-006](./docs/adr/006-admin-user-authorization.md), [ADR-007](./docs/adr/007-user-based-admin-mode-mobile.md), [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
 
 ---
 **Condensed from 919 to 489 tokens**
