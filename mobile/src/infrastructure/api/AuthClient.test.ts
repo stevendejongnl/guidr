@@ -53,12 +53,16 @@ describe('AuthClient', () => {
       expect(result.user.email).toBe('test@example.com')
       expect(result.user.id).toBe('user-123')
       expect(result.user.isAdmin).toBe(false)
+      const expectedFormData = new URLSearchParams()
+      expectedFormData.append('username', 'test@example.com')
+      expectedFormData.append('password', 'password123')
+
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/auth/login',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'test@example.com', password: 'password123' }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: expectedFormData.toString(),
         }
       )
     })

@@ -11,6 +11,18 @@ export class AuthClient {
     this.apiBaseUrl = `${serverUrl.replace(/\/$/, '')}/api/v1`
   }
 
+  /**
+   * Login with email and password using OAuth2-compliant form-encoded credentials.
+   *
+   * The API follows OAuth2 Password Grant standard (RFC 6749) which requires:
+   * - Content-Type: application/x-www-form-urlencoded
+   * - Parameter name: "username" (mapped to email internally by the API)
+   *
+   * @param email User's email address
+   * @param password User's password
+   * @returns Authentication response with access token and user info
+   * @throws Error if email or password is empty, or if API returns an error
+   */
   async login(email: string, password: string): Promise<AuthResponse> {
     if (!email || email.trim() === '') {
       throw new Error('Email cannot be empty')
@@ -20,12 +32,18 @@ export class AuthClient {
     }
 
     try {
+      // OAuth2 Password Grant requires form-encoded data with "username" field
+      // The API treats "username" as email internally for authentication
+      const formData = new URLSearchParams()
+      formData.append('username', email)
+      formData.append('password', password)
+
       const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({ email, password }),
+        body: formData.toString(),
       })
 
       if (!response.ok) {
