@@ -26,6 +26,8 @@ spec:
       labels:
         app: guidr-api-server
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: api-server
         image: ghcr.io/stevendejongnl/guidr-api-server:latest
