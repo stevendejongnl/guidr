@@ -19,6 +19,7 @@ import { SessionExecutionScreen } from '../screens/SessionExecutionScreen'
 import { CategoryListScreen } from '../screens/CategoryListScreen'
 import { CategoryFormScreen } from '../screens/CategoryFormScreen'
 import { BrowseGuidesScreen } from '../screens/BrowseGuidesScreen'
+import { GuideDetailScreen } from '../screens/GuideDetailScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -54,6 +55,8 @@ export const AppNavigator: React.FC = () => {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [selectedCategoryParentId, setSelectedCategoryParentId] = useState<string | null>(null)
   const [showBrowseGuides, setShowBrowseGuides] = useState(false)
+  const [showGuideDetail, setShowGuideDetail] = useState(false)
+  const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -264,9 +267,8 @@ export const AppNavigator: React.FC = () => {
   }
 
   const handleBrowseGuidesViewGuide = (guideId: string) => {
-    // Placeholder for viewing guide detail
-    console.log('View guide:', guideId)
-    // TODO: Navigate to guide detail screen when implemented
+    setSelectedGuideId(guideId)
+    setShowGuideDetail(true)
   }
 
   const handleBrowseCategories = () => {
@@ -475,6 +477,18 @@ export const AppNavigator: React.FC = () => {
         parentId={selectedCategoryParentId}
         onSave={handleCategoryFormSave}
         onCancel={handleCategoryFormCancel}
+      />
+    )
+  }
+
+  if (showGuideDetail && selectedGuideId) {
+    return (
+      <GuideDetailScreen
+        guideId={selectedGuideId}
+        onBack={() => {
+          setShowGuideDetail(false)
+          setSelectedGuideId(null)
+        }}
       />
     )
   }
