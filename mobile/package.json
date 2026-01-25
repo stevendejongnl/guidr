@@ -35,13 +35,6 @@
     "@react-native-community/cli-platform-android": "^20.0.2",
     "@react-native/babel-preset": "^0.83.1",
     "@react-native/metro-config": "^0.83.1",
-    "@testing-library/jest-native": "^5.4.3",
-    "@testing-library/react-native": "^13.3.3",
-    "@types/jest": "^30.0.0",
-    "@types/react": "^19.2.7",
-    "@types/react-test-renderer": "^19.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.51.0",
-    "@typescript-eslint/parser": "^8.51.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.0",
     "@semantic-release/exec": "^6.0.3",
@@ -49,6 +42,13 @@
     "@semantic-release/github": "^11.0.1",
     "@semantic-release/npm": "^12.0.1",
     "@semantic-release/release-notes-generator": "^14.0.1",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.2.7",
+    "@types/react-test-renderer": "^19.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "conventional-changelog-conventionalcommits": "^9.1.0",
     "eslint": "^8.57.0",
@@ -80,6 +80,8 @@
   "overrides": {
     "tar": "7.5.3",
     "markdown-it": "12.3.2",
-    "undici": "7.18.2"
+    "undici": "7.18.2",
+    "lodash": "4.17.23",
+    "lodash-es": "4.17.23"
   }
 }
