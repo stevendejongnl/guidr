@@ -99,6 +99,20 @@ describe('ServerConfigClient', () => {
         .rejects.toThrow('An unexpected error occurred while fetching config')
     })
 
+    it('should handle HTML error response (e.g., from error page)', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: async () => {
+          throw new SyntaxError('Unexpected character: <')
+        },
+      } as unknown as Response)
+
+      await expect(configClient.getConfig())
+        .rejects.toThrow('Server error: 500 Internal Server Error')
+    })
+
     it('should handle FastAPI validation error array', async () => {
       mockFetch.mockResolvedValue({
         ok: false,

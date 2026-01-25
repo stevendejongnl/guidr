@@ -26,8 +26,16 @@ export class ServerConfigClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Failed to fetch server config'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Failed to fetch server config'))
+        } catch (jsonError) {
+          // If error response isn't JSON (e.g., HTML error page), use status text
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       const data = await response.json()
