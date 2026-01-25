@@ -12,8 +12,15 @@ export class ServerConfigClient {
     if (!serverUrl || serverUrl.trim() === '') {
       throw new Error('Server URL cannot be empty')
     }
-    // Add /api/v1 prefix (consistent with AuthClient)
-    this.serverUrl = `${serverUrl.replace(/\/$/, '')}/api/v1`
+    // Normalize URL: remove trailing slash, ensure /api/v1 is not duplicated
+    const normalized = serverUrl.replace(/\/$/, '')
+    if (normalized.endsWith('/api/v1')) {
+      // URL already includes /api/v1 (from older app versions)
+      this.serverUrl = normalized
+    } else {
+      // Add /api/v1 prefix (consistent with AuthClient)
+      this.serverUrl = `${normalized}/api/v1`
+    }
   }
 
   async getConfig(): Promise<ServerConfigResponse> {

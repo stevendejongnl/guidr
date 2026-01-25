@@ -26,6 +26,39 @@ describe('ServerConfigClient', () => {
       const client = new ServerConfigClient('http://localhost:8000/')
       expect(client).toBeDefined()
     })
+
+    it('should not duplicate /api/v1 when URL already includes it (old app versions)', () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ minAppVersion: '1.0.0', maxAppVersion: null }),
+      } as Response)
+
+      const client = new ServerConfigClient('http://localhost:8000/api/v1')
+      // Should call the endpoint with /api/v1/config, not /api/v1/api/v1/config
+      client.getConfig()
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/config',
+        expect.any(Object)
+      )
+    })
+
+    it('should add /api/v1 when URL does not include it', () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ minAppVersion: '1.0.0', maxAppVersion: null }),
+      } as Response)
+
+      const client = new ServerConfigClient('http://localhost:8000')
+      client.getConfig()
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/config',
+        expect.any(Object)
+      )
+    })
   })
 
   describe('getConfig', () => {

@@ -26,6 +26,46 @@ describe('AuthClient', () => {
       const client = new AuthClient('http://localhost:8000/')
       expect(client).toBeDefined()
     })
+
+    it('should not duplicate /api/v1 when URL already includes it (old app versions)', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          accessToken: 'token',
+          tokenType: 'bearer',
+          user: { id: '1', email: 'test@test.com', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z', isAdmin: false },
+        }),
+      } as Response)
+
+      const client = new AuthClient('http://localhost:8000/api/v1')
+      await client.login('test@test.com', 'password')
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/login',
+        expect.any(Object)
+      )
+    })
+
+    it('should add /api/v1 when URL does not include it', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          accessToken: 'token',
+          tokenType: 'bearer',
+          user: { id: '1', email: 'test@test.com', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z', isAdmin: false },
+        }),
+      } as Response)
+
+      const client = new AuthClient('http://localhost:8000')
+      await client.login('test@test.com', 'password')
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/login',
+        expect.any(Object)
+      )
+    })
   })
 
   describe('login', () => {
