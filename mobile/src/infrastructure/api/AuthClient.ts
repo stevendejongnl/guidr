@@ -8,7 +8,15 @@ export class AuthClient {
     if (!serverUrl || serverUrl.trim() === '') {
       throw new Error('Server URL cannot be empty')
     }
-    this.apiBaseUrl = `${serverUrl.replace(/\/$/, '')}/api/v1`
+    // Normalize URL: remove trailing slash, ensure /api/v1 is not duplicated
+    const normalized = serverUrl.replace(/\/$/, '')
+    if (normalized.endsWith('/api/v1')) {
+      // URL already includes /api/v1 (from older app versions)
+      this.apiBaseUrl = normalized
+    } else {
+      // Add /api/v1 prefix
+      this.apiBaseUrl = `${normalized}/api/v1`
+    }
   }
 
   /**
@@ -47,8 +55,15 @@ export class AuthClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Login failed'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Login failed'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       const data = await response.json()
@@ -94,8 +109,15 @@ export class AuthClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Registration failed'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Registration failed'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       const data = await response.json()
@@ -152,8 +174,15 @@ export class AuthClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Password change failed'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Password change failed'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       // Success - no return value needed
@@ -194,8 +223,15 @@ export class AuthClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Email change failed'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Email change failed'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       const data = await response.json()
@@ -238,8 +274,15 @@ export class AuthClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Failed to fetch profile'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Failed to fetch profile'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       const data = await response.json()
@@ -288,8 +331,15 @@ export class AuthClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Profile update failed'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Profile update failed'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       const data = await response.json()
@@ -335,8 +385,15 @@ export class AuthClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Account deletion failed'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Account deletion failed'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       // Success - no return value needed

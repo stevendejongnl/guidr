@@ -12,8 +12,15 @@ export class ServerConfigClient {
     if (!serverUrl || serverUrl.trim() === '') {
       throw new Error('Server URL cannot be empty')
     }
-    // Add /api/v1 prefix (consistent with AuthClient)
-    this.serverUrl = `${serverUrl.replace(/\/$/, '')}/api/v1`
+    // Normalize URL: remove trailing slash, ensure /api/v1 is not duplicated
+    const normalized = serverUrl.replace(/\/$/, '')
+    if (normalized.endsWith('/api/v1')) {
+      // URL already includes /api/v1 (from older app versions)
+      this.serverUrl = normalized
+    } else {
+      // Add /api/v1 prefix (consistent with AuthClient)
+      this.serverUrl = `${normalized}/api/v1`
+    }
   }
 
   async getConfig(): Promise<ServerConfigResponse> {
@@ -26,8 +33,16 @@ export class ServerConfigClient {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(extractErrorMessage(errorData, 'Failed to fetch server config'))
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Failed to fetch server config'))
+        } catch (jsonError) {
+          // If error response isn't JSON (e.g., HTML error page), use status text
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
       }
 
       const data = await response.json()

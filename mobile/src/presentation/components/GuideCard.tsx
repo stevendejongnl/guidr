@@ -1,20 +1,22 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'
 import { colors, spacing, typography, borderRadius, componentDefaults } from '../theme'
-import { MockGuide } from '../../infrastructure/mocks/HomeScreenMockData'
+import { GuideViewModel } from '../viewmodels/GuideViewModel'
 import { NodeProgressIndicator } from './NodeProgressIndicator'
 import { StatusBadge } from './StatusBadge'
 
 interface GuideCardProps {
-  guide: MockGuide
+  guide: GuideViewModel
   onPress?: () => void
   testID?: string
 }
 
 export const GuideCard: React.FC<GuideCardProps> = ({ guide, onPress, testID }) => {
-  const durationDisplay = guide.duration < 60
-    ? `${guide.duration} min`
-    : `${Math.floor(guide.duration / 60)}h ${guide.duration % 60}m`
+  const durationDisplay = guide.duration !== undefined && guide.duration > 0
+    ? guide.duration < 60
+      ? `${guide.duration} min`
+      : `${Math.floor(guide.duration / 60)}h ${guide.duration % 60}m`
+    : '— min'
 
   return (
     <TouchableOpacity

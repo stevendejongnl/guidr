@@ -27,12 +27,14 @@ import {
   MockStats,
 } from '../../infrastructure/mocks/HomeScreenMockData'
 import { UserDto } from '../../infrastructure/api/dtos/UserDto'
+import { GuideViewModel } from '../viewmodels/GuideViewModel'
 
 interface HomeScreenProps {
   onLogout: () => void | Promise<void>
   onOpenSettings: () => void
   onOpenProfile: () => void
   onBrowseGuides?: () => void
+  onManageGuides?: () => void
   onBrowseCategories?: () => void
   onViewSessionDetail?: (sessionId: string) => void
   onViewGuideDetail?: (guideId: string) => void
@@ -44,6 +46,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenSettings,
   onOpenProfile,
   onBrowseGuides,
+  onManageGuides,
   onBrowseCategories,
   onViewSessionDetail,
   onViewGuideDetail,
@@ -53,7 +56,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
   const [stats, setStats] = useState<MockStats | null>(null)
   const [recentSessions, setRecentSessions] = useState<MockSession[]>([])
-  const [recommendedGuides, setRecommendedGuides] = useState<MockGuide[]>([])
+  const [mockRecommendedGuides, setMockRecommendedGuides] = useState<MockGuide[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -91,7 +94,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
       setStats(dashboardStats)
       setRecentSessions(recentSess)
-      setRecommendedGuides(recommendedGuids)
+      setMockRecommendedGuides(recommendedGuids)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'HomeScreen', action: 'loadData' })
       console.error('Failed to load home screen data:', err)
@@ -136,7 +139,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     }
   }
 
-
+  const handleManageGuides = () => {
+    if (onManageGuides) {
+      onManageGuides()
+    } else {
+      Alert.alert('Manage Guides', 'Feature coming soon!')
+    }
+  }
 
   const handleResumeSession = (sessionId: string) => {
     if (onViewSessionDetail) {
@@ -178,6 +187,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const displayName = userProfile?.name || userEmail || 'User'
 
+  // Convert mock guides to viewmodels
+  const recommendedGuides: GuideViewModel[] = mockRecommendedGuides.map(guide => {
+    const vm: GuideViewModel = {
+      ...guide,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    if (guide.imageUrl !== undefined) vm.imageUrl = guide.imageUrl
+    if (guide.rating !== undefined) vm.rating = guide.rating
+    if (guide.status !== undefined) vm.status = guide.status
+    return vm
+  })
+
   return (
     <SafeScreen>
       <ScrollView
@@ -204,7 +226,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </ScrollView>
         )}
 
-        {/* Quick Actions - 2 large buttons */}
+        {/* Quick Actions */}
         <View style={styles.actionsSection}>
           <QuickActionButton
             icon="🔍"
@@ -216,6 +238,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             label="Browse Categories"
             onPress={handleBrowseCategories}
           />
+          {isAdmin && (
+            <QuickActionButton
+              icon="⚙️"
+              label="Manage Guides"
+              onPress={handleManageGuides}
+            />
+          )}
         </View>
 
         {/* Recent Activity */}

@@ -13,6 +13,7 @@ import { CategoryChip } from '../components/CategoryChip'
 import { GuideCard } from '../components/GuideCard'
 import { EmptyState } from '../components/EmptyState'
 import { NodeProgressIndicator } from '../components/NodeProgressIndicator'
+import { GuideViewModel } from '../viewmodels/GuideViewModel'
 import { HomeScreenMockData, MockGuide } from '../../infrastructure/mocks/HomeScreenMockData'
 
 interface BrowseGuidesScreenProps {
@@ -30,14 +31,29 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
 }) => {
   const [searchText, setSearchText] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All Guides')
-  const [guides] = useState<MockGuide[]>(HomeScreenMockData.getRecommendedGuides([], 15))
+  const [mockGuides] = useState<MockGuide[]>(HomeScreenMockData.getRecommendedGuides([], 15))
+
+  // Convert mock guides to viewmodels
+  const guides = useMemo<GuideViewModel[]>(() => {
+    return mockGuides.map(guide => {
+      const vm: GuideViewModel = {
+        ...guide,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      if (guide.imageUrl !== undefined) vm.imageUrl = guide.imageUrl
+      if (guide.rating !== undefined) vm.rating = guide.rating
+      if (guide.status !== undefined) vm.status = guide.status
+      return vm
+    })
+  }, [mockGuides])
 
   // Filter guides based on search and category
   const filteredGuides = useMemo(() => {
     return guides.filter(guide => {
       const matchesSearch =
         guide.title.toLowerCase().includes(searchText.toLowerCase()) ||
-        guide.description.toLowerCase().includes(searchText.toLowerCase())
+        (guide.description && guide.description.toLowerCase().includes(searchText.toLowerCase()))
 
       const matchesCategory =
         selectedCategory === 'All Guides' || guide.categoryName === selectedCategory

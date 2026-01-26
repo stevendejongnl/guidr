@@ -18,7 +18,10 @@ import { ProfileScreen } from '../screens/ProfileScreen'
 import { SessionExecutionScreen } from '../screens/SessionExecutionScreen'
 import { CategoryListScreen } from '../screens/CategoryListScreen'
 import { CategoryFormScreen } from '../screens/CategoryFormScreen'
+import { GuideListScreen } from '../screens/GuideListScreen'
+import { GuideFormScreen } from '../screens/GuideFormScreen'
 import { BrowseGuidesScreen } from '../screens/BrowseGuidesScreen'
+import { GuideDetailScreen } from '../screens/GuideDetailScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -53,7 +56,13 @@ export const AppNavigator: React.FC = () => {
   const [categoryFormMode, setCategoryFormMode] = useState<'create' | 'edit' | null>(null)
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [selectedCategoryParentId, setSelectedCategoryParentId] = useState<string | null>(null)
+  const [showGuideList, setShowGuideList] = useState(false)
+  const [guideFormMode, setGuideFormMode] = useState<'create' | 'edit' | null>(null)
+  const [editingGuideId, setEditingGuideId] = useState<string | null>(null)
+  const [selectedGuideCategoryId, setSelectedGuideCategoryId] = useState<string | null>(null)
   const [showBrowseGuides, setShowBrowseGuides] = useState(false)
+  const [showGuideDetail, setShowGuideDetail] = useState(false)
+  const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -264,9 +273,8 @@ export const AppNavigator: React.FC = () => {
   }
 
   const handleBrowseGuidesViewGuide = (guideId: string) => {
-    // Placeholder for viewing guide detail
-    console.log('View guide:', guideId)
-    // TODO: Navigate to guide detail screen when implemented
+    setSelectedGuideId(guideId)
+    setShowGuideDetail(true)
   }
 
   const handleBrowseCategories = () => {
@@ -298,6 +306,47 @@ export const AppNavigator: React.FC = () => {
 
   const handleCategoryListBack = () => {
     setShowCategoryList(false)
+  }
+
+  const handleManageGuides = () => {
+    setShowGuideList(true)
+  }
+
+  const handleCreateGuide = (categoryId?: string) => {
+    setSelectedGuideCategoryId(categoryId || null)
+    setGuideFormMode('create')
+  }
+
+  const handleEditGuide = (guideId: string) => {
+    setEditingGuideId(guideId)
+    setGuideFormMode('edit')
+  }
+
+  const handleGuideFormSave = () => {
+    setGuideFormMode(null)
+    setEditingGuideId(null)
+    setSelectedGuideCategoryId(null)
+    setShowGuideList(true)
+  }
+
+  const handleGuideFormCancel = () => {
+    setGuideFormMode(null)
+    setEditingGuideId(null)
+    setSelectedGuideCategoryId(null)
+  }
+
+  const handleViewGuide = (guideId: string) => {
+    setSelectedGuideId(guideId)
+    setShowGuideDetail(true)
+  }
+
+  const handleGuideDetailEdit = (guideId: string) => {
+    setShowGuideDetail(false)
+    handleEditGuide(guideId)
+  }
+
+  const handleGuideListBack = () => {
+    setShowGuideList(false)
   }
 
   if (loading) {
@@ -467,6 +516,29 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (guideFormMode && serverUrl) {
+    return (
+      <GuideFormScreen
+        mode={guideFormMode}
+        {...(editingGuideId && { guideId: editingGuideId })}
+        {...(selectedGuideCategoryId && { categoryId: selectedGuideCategoryId })}
+        onSave={handleGuideFormSave}
+        onCancel={handleGuideFormCancel}
+      />
+    )
+  }
+
+  if (showGuideList) {
+    return (
+      <GuideListScreen
+        onCreateGuide={handleCreateGuide}
+        onEditGuide={handleEditGuide}
+        onViewGuide={handleViewGuide}
+        onBack={handleGuideListBack}
+      />
+    )
+  }
+
   if (categoryFormMode && serverUrl) {
     return (
       <CategoryFormScreen
@@ -475,6 +547,19 @@ export const AppNavigator: React.FC = () => {
         parentId={selectedCategoryParentId}
         onSave={handleCategoryFormSave}
         onCancel={handleCategoryFormCancel}
+      />
+    )
+  }
+
+  if (showGuideDetail && selectedGuideId) {
+    return (
+      <GuideDetailScreen
+        guideId={selectedGuideId}
+        onBack={() => {
+          setShowGuideDetail(false)
+          setSelectedGuideId(null)
+        }}
+        onEdit={handleGuideDetailEdit}
       />
     )
   }
@@ -504,6 +589,7 @@ export const AppNavigator: React.FC = () => {
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
       onBrowseGuides={handleBrowseGuides}
+      {...(isAdmin && { onManageGuides: handleManageGuides })}
       onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
       isAdmin={isAdmin}
