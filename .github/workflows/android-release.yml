@@ -105,7 +105,28 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
 
+      - name: Decode and setup Android Keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          # Decode the base64 keystore
+          echo "$KEYSTORE_B64" | base64 -d > "${{ runner.temp }}/guidr-release.keystore"
+
+          # Verify keystore was created
+          if [ ! -f "${{ runner.temp }}/guidr-release.keystore" ]; then
+            echo "Error: Failed to decode keystore"
+            exit 1
+          fi
+
+          echo "✅ Keystore decoded successfully"
+          ls -lh "${{ runner.temp }}/guidr-release.keystore"
+
       - name: Build Android APK
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/guidr-release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: guidr-release
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
           chmod +x android/gradlew
           android/gradlew assembleRelease --no-daemon --stacktrace -p android
