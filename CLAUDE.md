@@ -50,7 +50,8 @@ Custom Claude Code skills for workflow acceleration:
 ## Code Patterns
 **Entities**: Private fields with getters (`private _name`, `get name()`)
 **Services**: Constructor injection, async, repository pattern
-**Tests**: Jest + mocks | Bracket notation (`props['value']` not `props.value`)
+**Dependency Injection**: Components receive services via props (not mocking in tests) | Example: `CategoryPickerButton` accepts `categoryService: CategoryService`
+**Tests**: Jest + mocks for storage/API | Props passed with actual services (no mocking) | Bracket notation (`props['value']` not `props.value`)
 **TDD**: RED → GREEN → REFACTOR → VERIFY
 **Type Safety**: No `any`/`Any` types (except MongoDB `dict[str, Any]`, test mocks with warnings)
 **Imports**: Always top-level (no conditional/lazy imports inside functions)
