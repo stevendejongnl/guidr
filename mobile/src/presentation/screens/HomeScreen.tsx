@@ -20,14 +20,52 @@ import { ActivityItem } from '../components/ActivityItem'
 import { GuideCard } from '../components/GuideCard'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { colors, spacing, commonStyles } from '../theme'
-import {
-  HomeScreenMockData,
-  MockSession,
-  MockGuide,
-  MockStats,
-} from '../../infrastructure/mocks/HomeScreenMockData'
 import { UserDto } from '../../infrastructure/api/dtos/UserDto'
-import { GuideViewModel } from '../viewmodels/GuideViewModel'
+import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewModel'
+import { GuideService } from '../../domain/services/GuideService'
+import { SessionService } from '../../domain/services/SessionService'
+import { CategoryService } from '../../domain/services/CategoryService'
+import { SessionStatus as DomainSessionStatus } from '../../domain/entities/Session'
+import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
+import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
+import { StepRepository } from '../../infrastructure/repositories/StepRepository'
+import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
+import { Guide } from '../../domain/entities/Guide'
+
+// Mock session status enum for ActivityItem compatibility
+enum ActivityItemSessionStatus {
+  NotStarted = 'not-started',
+  InProgress = 'in-progress',
+  Paused = 'paused',
+  Completed = 'completed',
+  Cancelled = 'cancelled',
+}
+
+// Convert domain session status to activity item session status
+const convertSessionStatus = (status: DomainSessionStatus): ActivityItemSessionStatus => {
+  switch (status) {
+    case DomainSessionStatus.NotStarted:
+      return ActivityItemSessionStatus.NotStarted
+    case DomainSessionStatus.InProgress:
+      return ActivityItemSessionStatus.InProgress
+    case DomainSessionStatus.Paused:
+      return ActivityItemSessionStatus.Paused
+    case DomainSessionStatus.Completed:
+      return ActivityItemSessionStatus.Completed
+    case DomainSessionStatus.Cancelled:
+      return ActivityItemSessionStatus.Cancelled
+  }
+}
+
+// Helper function to get recommended guides
+const getRecommendedGuides = (guides: Guide[], userInterests: string[], limit: number): Guide[] => {
+  if (!userInterests || userInterests.length === 0) {
+    return guides.slice(0, limit)
+  }
+  // For now, return first N guides that match interests
+  // In a real implementation, the backend would filter by interests
+  return guides.slice(0, limit)
+}
 
 interface HomeScreenProps {
   onLogout: () => void | Promise<void>
@@ -54,11 +92,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
-  const [stats, setStats] = useState<MockStats | null>(null)
-  const [recentSessions, setRecentSessions] = useState<MockSession[]>([])
-  const [mockRecommendedGuides, setMockRecommendedGuides] = useState<MockGuide[]>([])
+  const [activeSessions, setActiveSessions] = useState(0)
+  const [completedSessions, setCompletedSessions] = useState(0)
+  const [recommendedGuides, setRecommendedGuides] = useState<GuideViewModel[]>([])
+  const [recentSessions, setRecentSessions] = useState<Array<{
+    id: string
+    guideId: string
+    guideTitle: string
+    status: ActivityItemSessionStatus
+    startedAt: Date
+    currentStepTitle?: string
+    progress: number
+  }>>([])
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
@@ -66,12 +114,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const loadData = async () => {
     try {
       setError(null)
+      setIsLoading(true)
 
       // Load user email
       const email = await authStorage.getUserEmail()
       setUserEmail(email)
 
-      // Get auth token for API calls (will be available from parent component)
+      // Get auth token for API calls
       const authToken = await authStorage.getAuthToken()
       if (!authToken) {
         throw new Error('No auth token found')
@@ -86,22 +135,64 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       const profile = await authClient.getProfile(authToken)
       setUserProfile(profile)
 
-      // Load mock data based on user interests
-      const userInterests = profile.interests || []
-      const dashboardStats = HomeScreenMockData.getStats(userInterests)
-      const recentSess = HomeScreenMockData.getRecentSessions()
-      const recommendedGuids = HomeScreenMockData.getRecommendedGuides(userInterests, 3)
+      // Initialize repositories and services
+      const guideRepository = new GuideRepository(serverUrl)
+      const sessionRepository = new SessionRepository(serverUrl)
+      const stepRepository = new StepRepository(serverUrl)
+      const categoryRepository = new CategoryRepository(serverUrl)
 
-      setStats(dashboardStats)
-      setRecentSessions(recentSess)
-      setMockRecommendedGuides(recommendedGuids)
+      const guideService = new GuideService(guideRepository, stepRepository)
+      const sessionService = new SessionService(sessionRepository, guideRepository, stepRepository)
+      const categoryService = new CategoryService(categoryRepository)
+
+      // Load all guides, sessions, and categories in parallel
+      const [allGuides, allSessions, allCategories] = await Promise.all([
+        guideService.getAllGuides(authToken),
+        sessionService.getAllSessions(authToken),
+        categoryService.getAllCategories(authToken),
+      ])
+
+      // Calculate stats
+      const activeCount = allSessions.filter(
+        s => s.status === DomainSessionStatus.InProgress || s.status === DomainSessionStatus.Paused,
+      ).length
+      const completedCount = allSessions.filter(s => s.status === DomainSessionStatus.Completed).length
+
+      setActiveSessions(activeCount)
+      setCompletedSessions(completedCount)
+
+      // Get recommended guides filtered by user interests
+      const userInterests = profile.interests || []
+      const recommendedList = getRecommendedGuides(allGuides, userInterests, 3)
+
+      const recommendedViewModels: GuideViewModel[] = recommendedList.map(guide => {
+        const category = allCategories.find(c => c.id === guide.categoryId)
+        return createGuideViewModel(guide, category?.name || 'Uncategorized')
+      })
+
+      setRecommendedGuides(recommendedViewModels)
+
+      // Convert real sessions to ActivityItem-compatible format
+      const recentSessionsList = allSessions.slice(0, 5).map(session => {
+        const guide = allGuides.find(g => g.id === session.guideId)
+        return {
+          id: session.id,
+          guideId: session.guideId,
+          guideTitle: guide?.title || 'Unknown Guide',
+          status: convertSessionStatus(session.status),
+          startedAt: session.createdAt,
+          progress: 0,
+        }
+      })
+
+      setRecentSessions(recentSessionsList)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'HomeScreen', action: 'loadData' })
       console.error('Failed to load home screen data:', err)
-      // Graceful degradation - show what we can
       setError(err instanceof Error ? err.message : 'Failed to load data')
     } finally {
       setRefreshing(false)
+      setIsLoading(false)
     }
   }
 
@@ -187,19 +278,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const displayName = userProfile?.name || userEmail || 'User'
 
-  // Convert mock guides to viewmodels
-  const recommendedGuides: GuideViewModel[] = mockRecommendedGuides.map(guide => {
-    const vm: GuideViewModel = {
-      ...guide,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-    if (guide.imageUrl !== undefined) vm.imageUrl = guide.imageUrl
-    if (guide.rating !== undefined) vm.rating = guide.rating
-    if (guide.status !== undefined) vm.status = guide.status
-    return vm
-  })
-
   return (
     <SafeScreen>
       <ScrollView
@@ -217,13 +295,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {error && <Text style={commonStyles.errorText}>{error}</Text>}
 
-        {/* Quick Stats */}
-        {stats && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsSection}>
-            <StatCard icon="🏃" label="Active" value={stats.activeSessions} />
-            <StatCard icon="✅" label="Done" value={stats.completedSessions} />
-            <StatCard icon="📚" label="Guides" value={stats.totalGuides} />
-          </ScrollView>
+        {!isLoading && (
+          <>
+            {/* Quick Stats */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsSection}>
+              <StatCard icon="🏃" label="Active" value={activeSessions} />
+              <StatCard icon="✅" label="Done" value={completedSessions} />
+              <StatCard icon="📚" label="Guides" value={recommendedGuides.length} />
+            </ScrollView>
+          </>
         )}
 
         {/* Quick Actions */}
@@ -248,13 +328,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </View>
 
         {/* Recent Activity */}
-        {recentSessions.length > 0 && (
+        {!isLoading && recentSessions.length > 0 && (
           <View style={commonStyles.section}>
             <Text style={commonStyles.sectionTitle}>Recent Activity</Text>
             {recentSessions.map(session => (
               <ActivityItem
                 key={session.id}
-                session={session}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                session={session as any}
                 onResume={() => handleResumeSession(session.id)}
               />
             ))}
@@ -262,7 +343,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         )}
 
         {/* Recommendations */}
-        {recommendedGuides.length > 0 && (
+        {!isLoading && recommendedGuides.length > 0 && (
           <View style={commonStyles.section}>
             <Text style={commonStyles.sectionTitle}>Recommended for You</Text>
             {recommendedGuides.map(guide => (
