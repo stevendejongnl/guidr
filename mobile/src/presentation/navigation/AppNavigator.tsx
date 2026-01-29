@@ -599,6 +599,10 @@ export const AppNavigator: React.FC = () => {
       <BrowseGuidesScreen
         onBack={handleBrowseGuidesBack}
         onViewGuide={handleBrowseGuidesViewGuide}
+        {...(servicesRef.current && {
+          guideService: servicesRef.current.guide,
+          categoryService: servicesRef.current.category,
+        })}
       />
     )
   }
