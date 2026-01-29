@@ -11,10 +11,13 @@ import {
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { GuideService } from '../../domain/services/GuideService'
+import { CategoryService } from '../../domain/services/CategoryService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
+import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { SafeScreen } from '../components/SafeScreen'
+import { CategoryPickerButton } from '../components/CategoryPickerButton'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { colors, spacing, commonStyles, typography } from '../theme'
 
@@ -36,6 +39,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(categoryId || null)
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null)
   const [loading, setLoading] = useState(mode === 'edit')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +47,19 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
+  const [authToken, setAuthToken] = useState<string>('')
+  const [serverUrl, setServerUrl] = useState<string>('')
+
+  useEffect(() => {
+    const setupServices = async () => {
+      const token = await authStorage.getAuthToken()
+      const url = await serverConfigStorage.getServerUrl()
+      if (token) setAuthToken(token)
+      if (url) setServerUrl(url)
+    }
+    setupServices()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (mode === 'edit' && guideId) {
@@ -63,9 +80,11 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 
       const guideRepository = new GuideRepository(serverUrl)
       const stepRepository = new StepRepository(serverUrl)
-      const service = new GuideService(guideRepository, stepRepository)
+      const categoryRepository = new CategoryRepository(serverUrl)
+      const guideService = new GuideService(guideRepository, stepRepository)
+      const categoryService = new CategoryService(categoryRepository)
 
-      const guide = await service.getGuideById(guideId as string, authToken)
+      const guide = await guideService.getGuideById(guideId as string, authToken)
       if (!guide) {
         throw new Error('Guide not found')
       }
@@ -73,6 +92,12 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
       setTitle(guide.title)
       setDescription(guide.description || '')
       setSelectedCategoryId(guide.categoryId)
+
+      // Load category name for display in edit mode
+      const category = await categoryService.getCategoryById(guide.categoryId, authToken)
+      if (category) {
+        setSelectedCategoryName(category.name)
+      }
     } catch (err) {
       ErrorReporter.capture(err, { component: 'GuideFormScreen', action: 'loadGuide' })
       console.error('Failed to load guide:', err)
@@ -201,7 +226,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           <View style={styles.formGroup}>
             <Text style={styles.label}>Guide Title</Text>
             <TextInput
-              style={[commonStyles.input, validationError && commonStyles.inputError]}
+              style={[commonStyles.input, validationError === 'Guide title is required' && commonStyles.inputError]}
               placeholder="Enter guide title"
               placeholderTextColor={colors.textMuted}
               value={title}
@@ -209,7 +234,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
               editable={!saving}
               testID="guide-title-input"
             />
-            {validationError && (
+            {validationError === 'Guide title is required' && (
               <Text style={commonStyles.errorText}>{validationError}</Text>
             )}
           </View>
@@ -229,13 +254,32 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
             />
           </View>
 
-          {/* Category Info (Read-only in form) */}
-          {selectedCategoryId && (
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Category</Text>
-              <Text style={styles.categoryInfo}>{selectedCategoryId}</Text>
-            </View>
-          )}
+          {/* Category Selection */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Category</Text>
+            {mode === 'create' ? (
+              authToken && serverUrl ? (
+                <CategoryPickerButton
+                  selectedCategoryId={selectedCategoryId}
+                  onSelectCategory={setSelectedCategoryId}
+                  authToken={authToken}
+                  categoryService={new CategoryService(new CategoryRepository(serverUrl))}
+                  disabled={saving}
+                />
+              ) : (
+                <View style={styles.categoryReadOnly}>
+                  <ActivityIndicator color={colors.primary} />
+                </View>
+              )
+            ) : (
+              <View style={styles.categoryReadOnly}>
+                <Text style={styles.categoryReadOnlyText}>{selectedCategoryName || selectedCategoryId}</Text>
+              </View>
+            )}
+            {validationError === 'Category is required' && (
+              <Text style={commonStyles.errorText}>{validationError}</Text>
+            )}
+          </View>
 
           {/* Action Buttons */}
           <View style={styles.buttonGroup}>
@@ -299,6 +343,20 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     backgroundColor: colors.inputBackground,
     borderRadius: 8,
+  },
+  categoryReadOnly: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.inputBackground,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  categoryReadOnlyText: {
+    fontSize: typography.sizeMd,
+    color: colors.textPrimary,
   },
   buttonGroup: {
     marginTop: spacing.xl,
