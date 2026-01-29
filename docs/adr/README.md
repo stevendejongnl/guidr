@@ -38,6 +38,12 @@ What becomes easier or harder as a result of this change?
 - [ADR-008: RBAC and Comprehensive Audit Logging System](./008-rbac-and-audit-logging.md) - Accepted
 - [ADR-009: Server Health Validation and URL Normalization](./009-server-health-validation.md) - Accepted
 - [ADR-010: Strict Type Safety and Import Rules](./010-strict-type-safety-rules.md) - Accepted
+- [ADR-011: Fastlane Match Certificate Management](./011-fastlane-match-certificate-management.md) - Accepted
+- [ADR-012: API Server Crash Notifications](./012-api-server-crash-notifications.md) - Accepted
+- [ADR-013: iOS TestFlight Build Optimization](./013-ios-testflight-build-optimization.md) - Accepted
+- [ADR-014: iOS 26 SDK Upgrade](./014-ios-26-sdk-upgrade.md) - Accepted
+- [ADR-015: ECDSA Timing Attack Mitigation](./015-ecdsa-timing-attack-mitigation.md) - Accepted
+- [ADR-016: iOS Password AutoFill Support for Authentication Screens](./016-ios-password-autofill-support.md) - Accepted
 
 ## Updating ADRs
 
