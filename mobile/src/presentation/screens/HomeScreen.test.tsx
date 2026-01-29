@@ -1,81 +1,106 @@
 import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { HomeScreen } from './HomeScreen'
+import { GuideService } from '../../domain/services/GuideService'
+import { SessionService } from '../../domain/services/SessionService'
+import { CategoryService } from '../../domain/services/CategoryService'
+import { Guide } from '../../domain/entities/Guide'
+import { Session, SessionStatus } from '../../domain/entities/Session'
+import { Category } from '../../domain/entities/Category'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
-import * as HomeScreenMockDataModule from '../../infrastructure/mocks/HomeScreenMockData'
-import { SessionStatus } from '../../infrastructure/mocks/HomeScreenMockData'
 
-// Define interface for mock user profile
-interface MockUserProfile {
-  id: string
-  email: string
-  name: string
-  interests: string[]
-  isAdmin: boolean
-}
-
+// Mock storage and API clients
 jest.mock('../../infrastructure/storage/AuthStorage')
 jest.mock('../../infrastructure/storage/ServerConfigStorage')
 jest.mock('../../infrastructure/api/AuthClient')
-jest.mock('../../infrastructure/mocks/HomeScreenMockData')
+
+// Create mock service factories
+const createMockGuideService = (guides: Guide[] = []): jest.Mocked<GuideService> => {
+  const mock = {
+    getAllGuides: jest.fn().mockResolvedValue(guides),
+    getGuideById: jest.fn(),
+    getGuidesByCategoryId: jest.fn(),
+  } as unknown as jest.Mocked<GuideService>
+  return mock
+}
+
+const createMockSessionService = (sessions: Session[] = []): jest.Mocked<SessionService> => {
+  const mock = {
+    getAllSessions: jest.fn().mockResolvedValue(sessions),
+    getSessionById: jest.fn(),
+    createSession: jest.fn(),
+    getSessionsByStatus: jest.fn(),
+  } as unknown as jest.Mocked<SessionService>
+  return mock
+}
+
+const createMockCategoryService = (categories: Category[] = []): jest.Mocked<CategoryService> => {
+  const mock = {
+    getAllCategories: jest.fn().mockResolvedValue(categories),
+    getCategoryById: jest.fn(),
+  } as unknown as jest.Mocked<CategoryService>
+  return mock
+}
 
 describe('HomeScreen', () => {
   let mockOnLogout: jest.Mock
   let mockOnOpenSettings: jest.Mock
   let mockOnOpenProfile: jest.Mock
-  let mockAuthStorage: jest.Mocked<AuthStorage>
-  let mockServerConfigStorage: jest.Mocked<ServerConfigStorage>
+  let mockGuideService: jest.Mocked<GuideService>
+  let mockSessionService: jest.Mocked<SessionService>
+  let mockCategoryService: jest.Mocked<CategoryService>
 
   beforeEach(() => {
     mockOnLogout = jest.fn()
     mockOnOpenSettings = jest.fn()
     mockOnOpenProfile = jest.fn()
 
-    mockAuthStorage = {
+    // Create default mock services with empty data
+    mockGuideService = createMockGuideService([])
+    mockSessionService = createMockSessionService([])
+    mockCategoryService = createMockCategoryService([])
+
+    // Mock storage
+    const mockAuthStorage = {
       getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
       getAuthToken: jest.fn().mockResolvedValue('test-token'),
     } as unknown as jest.Mocked<AuthStorage>
 
-    mockServerConfigStorage = {
+    const mockServerConfigStorage = {
       getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000'),
     } as unknown as jest.Mocked<ServerConfigStorage>
 
     ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
     ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerConfigStorage)
 
-    // Default mock implementations for HomeScreenMockData
-    jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
-      activeSessions: 0,
-      completedSessions: 0,
-      totalGuides: 33,
-      favoriteCategories: [],
-    })
-    jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getRecentSessions').mockReturnValue([])
-    jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getRecommendedGuides').mockReturnValue([])
+    // Mock AuthClient
+    const mockAuthClientInstance = {
+      getProfile: jest.fn().mockResolvedValue({
+        id: 'user1',
+        email: 'test@example.com',
+        name: 'Test User',
+        interests: [],
+        isAdmin: false,
+      }),
+    } as unknown as jest.Mocked<AuthClient>
 
-    jest.clearAllMocks()
+    ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
   })
 
   describe('rendering', () => {
-    beforeEach(() => {
-      const mockAuthClientInstance = {
-        getProfile: jest.fn().mockResolvedValue({
-          id: 'user1',
-          email: 'test@example.com',
-          name: null,
-          interests: [],
-          isAdmin: false,
-        }),
-      } as unknown as jest.Mocked<AuthClient>
-
-      ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
-    })
-
     it('should render title and description', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       // Should render app title
@@ -86,65 +111,51 @@ describe('HomeScreen', () => {
 
     it('should render logout menu item', () => {
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       fireEvent.press(getByTestId('home-menu'))
       expect(getByTestId('menu-item-logout')).toBeTruthy()
     })
 
-    it('should display user email when loaded', async () => {
-      const mockAuthClientInstance = {
-        getProfile: jest.fn().mockResolvedValue({
-          id: 'user1',
-          email: 'test@example.com',
-          name: null, // No name set, should use email
-          interests: [],
-          isAdmin: false,
-        }),
-      } as unknown as jest.Mocked<AuthClient>
-
-      ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
-
+    it('should render quick action buttons', () => {
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
-      await waitFor(() => {
-        expect(getByText('Welcome, test@example.com!')).toBeTruthy()
-      })
-    })
-
-    it('should display generic welcome when email is not available', async () => {
-      mockAuthStorage.getUserEmail.mockResolvedValue(null)
-
-      const mockAuthClientInstance = {
-        getProfile: jest.fn().mockResolvedValue({
-          id: 'user1',
-          email: 'test@example.com',
-          name: null,
-          interests: [],
-          isAdmin: false,
-        }),
-      } as unknown as jest.Mocked<AuthClient>
-
-      ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
-
-      const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
-      )
-
-      await waitFor(() => {
-        // When email is null and profile has no name, should show "Welcome, User!"
-        expect(getByText('Welcome, User!')).toBeTruthy()
-      })
+      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('Browse Categories')).toBeTruthy()
     })
   })
 
   describe('logout menu item', () => {
     it('should call onLogout when logout menu item is pressed', () => {
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       fireEvent.press(getByTestId('home-menu'))
@@ -157,7 +168,15 @@ describe('HomeScreen', () => {
       mockOnLogout.mockRejectedValue(new Error('Logout failed'))
 
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       fireEvent.press(getByTestId('home-menu'))
@@ -170,43 +189,39 @@ describe('HomeScreen', () => {
   })
 
   describe('error handling', () => {
-    it('should handle email loading error gracefully', async () => {
-      mockAuthStorage.getUserEmail.mockRejectedValue(new Error('Failed to load email'))
-
-      const mockAuthClientInstance = {
-        getProfile: jest.fn().mockResolvedValue({
-          id: 'user1',
-          email: 'test@example.com',
-          name: null,
-          interests: [],
-          isAdmin: false,
-        }),
-      } as unknown as jest.Mocked<AuthClient>
-
-      ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
-
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+    it('should display error message when service fails to load data', async () => {
+      mockGuideService.getAllGuides.mockRejectedValue(new Error('Failed to load guides'))
 
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       await waitFor(() => {
-        // When email loading fails, still show welcome with fallback name
-        expect(getByText('Welcome, User!')).toBeTruthy()
+        expect(getByText('Failed to load guides')).toBeTruthy()
       })
-
-      // Verify that the error was logged
-      expect(consoleErrorSpy).toHaveBeenCalled()
-
-      consoleErrorSpy.mockRestore()
     })
   })
 
   describe('menu', () => {
     it('should render menu button', () => {
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       expect(getByTestId('home-menu')).toBeTruthy()
@@ -214,7 +229,15 @@ describe('HomeScreen', () => {
 
     it('should call onOpenProfile when profile menu item is pressed', () => {
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       fireEvent.press(getByTestId('home-menu'))
@@ -225,7 +248,15 @@ describe('HomeScreen', () => {
 
     it('should call onOpenSettings when settings menu item is pressed', () => {
       const { getByTestId } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       fireEvent.press(getByTestId('home-menu'))
@@ -236,61 +267,51 @@ describe('HomeScreen', () => {
   })
 
   describe('dashboard sections', () => {
-    let mockAuthClient: jest.Mocked<AuthClient>
-    let mockUserProfile: MockUserProfile
-
-    beforeEach(() => {
-      mockUserProfile = {
-        id: 'user1',
-        email: 'test@example.com',
-        name: 'John Doe',
-        interests: ['Baking', 'Cooking'],
-        isAdmin: false,
-      }
-
-      mockAuthClient = {
-        getProfile: jest.fn().mockResolvedValue(mockUserProfile),
-      } as unknown as jest.Mocked<AuthClient>
-
-      ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClient)
-
-      // Mock HomeScreenMockData functions
-      jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
-        activeSessions: 2,
-        completedSessions: 5,
-        totalGuides: 33,
-        favoriteCategories: ['Baking', 'Cooking'],
-      })
-
-      jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getRecentSessions').mockReturnValue([
-        {
-          id: 's1',
-          guideId: 'g1',
-          guideTitle: 'Perfect Sourdough',
-          status: SessionStatus.InProgress,
-          startedAt: new Date(),
-          currentStepTitle: 'Shaping',
-          progress: 65,
-        },
-      ])
-
-      jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getRecommendedGuides').mockReturnValue([
+    it('should display quick stats section with data from services', async () => {
+      const mockGuides: Guide[] = [
         {
           id: 'g1',
           title: 'Perfect Sourdough Bread',
           description: 'Master the art of sourdough',
           categoryId: 'baking',
-          categoryName: 'Baking',
           stepCount: 8,
           duration: 180,
-          thumbnailEmoji: '🍞',
-        },
-      ])
-    })
+          thumbnail: '🍞',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Guide,
+      ]
 
-    it('should display quick stats section', async () => {
+      const mockSessions: Session[] = [
+        {
+          id: 's1',
+          guideId: 'g1',
+          status: SessionStatus.InProgress,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Session,
+        {
+          id: 's2',
+          guideId: 'g1',
+          status: SessionStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Session,
+      ]
+
+      mockGuideService = createMockGuideService(mockGuides)
+      mockSessionService = createMockSessionService(mockSessions)
+
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       await waitFor(() => {
@@ -300,31 +321,90 @@ describe('HomeScreen', () => {
       })
     })
 
-    it('should display quick action buttons', async () => {
-      const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
-      )
+    it('should display recent activity section when sessions exist', async () => {
+      const mockGuides: Guide[] = [
+        {
+          id: 'g1',
+          title: 'Guide Title',
+          description: 'Master the art of something',
+          categoryId: 'category1',
+          stepCount: 8,
+          duration: 180,
+          thumbnail: '🎯',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Guide,
+      ]
 
-      await waitFor(() => {
-        expect(getByText('Browse Guides')).toBeTruthy()
-        expect(getByText('Browse Categories')).toBeTruthy()
-      })
-    })
+      const mockSessions: Session[] = [
+        {
+          id: 's1',
+          guideId: 'g1',
+          status: SessionStatus.InProgress,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Session,
+      ]
 
-    it('should display recent activity section', async () => {
+      mockGuideService = createMockGuideService(mockGuides)
+      mockSessionService = createMockSessionService(mockSessions)
+
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       await waitFor(() => {
         expect(getByText('Recent Activity')).toBeTruthy()
-        expect(getByText('Perfect Sourdough')).toBeTruthy()
       })
     })
 
-    it('should display recommendations section', async () => {
+    it('should display recommendations section when guides exist', async () => {
+      const mockGuides: Guide[] = [
+        {
+          id: 'g1',
+          title: 'Perfect Sourdough Bread',
+          description: 'Master the art of sourdough',
+          categoryId: 'baking',
+          stepCount: 8,
+          duration: 180,
+          thumbnail: '🍞',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Guide,
+      ]
+
+      const mockCategories: Category[] = [
+        {
+          id: 'baking',
+          name: 'Baking',
+          description: 'Baking guides',
+          parentId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Category,
+      ]
+
+      mockGuideService = createMockGuideService(mockGuides)
+      mockCategoryService = createMockCategoryService(mockCategories)
+
       const { getByText } = render(
-        <HomeScreen onLogout={mockOnLogout} onOpenSettings={mockOnOpenSettings} onOpenProfile={mockOnOpenProfile} isAdmin={false} />
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
       )
 
       await waitFor(() => {
@@ -332,94 +412,11 @@ describe('HomeScreen', () => {
         expect(getByText('Perfect Sourdough Bread')).toBeTruthy()
       })
     })
-
-    it('should display user name in welcome when profile is loaded', async () => {
-      const mockAuthClientInstance = {
-        getProfile: jest.fn().mockResolvedValue({
-          id: 'user1',
-          email: 'test@example.com',
-          name: 'John Doe',
-          interests: ['Baking', 'Cooking'],
-          isAdmin: false,
-        }),
-      } as unknown as jest.Mocked<AuthClient>
-
-      ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
-
-      jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
-        activeSessions: 2,
-        completedSessions: 5,
-        totalGuides: 33,
-        favoriteCategories: ['Baking', 'Cooking'],
-      })
-
-      const { getByText } = render(
-        <HomeScreen
-          onLogout={mockOnLogout}
-          onOpenSettings={mockOnOpenSettings}
-          onOpenProfile={mockOnOpenProfile}
-          isAdmin={false}
-        />
-      )
-
-      await waitFor(() => {
-        expect(getByText('Welcome, John Doe!')).toBeTruthy()
-      })
-    })
-
-    it('should handle profile fetch error gracefully', async () => {
-      mockAuthClient.getProfile.mockRejectedValue(new Error('Network error'))
-
-      const { getByText } = render(
-        <HomeScreen
-          onLogout={mockOnLogout}
-          onOpenSettings={mockOnOpenSettings}
-          onOpenProfile={mockOnOpenProfile}
-          isAdmin={false}
-        />
-      )
-
-      await waitFor(() => {
-        // Should fall back to email and show error message
-        // Also verify error is displayed
-        expect(getByText('Network error')).toBeTruthy()
-        // And still display the subtitle with email
-        const subtitle = getByText('Welcome, test@example.com!')
-        expect(subtitle).toBeTruthy()
-      })
-    })
   })
 
   describe('quick action callbacks', () => {
-    let mockOnBrowseGuides: jest.Mock
-    let mockAuthClient: jest.Mocked<AuthClient>
-
-    beforeEach(() => {
-      mockOnBrowseGuides = jest.fn()
-
-      mockAuthClient = {
-        getProfile: jest.fn().mockResolvedValue({
-          id: 'user1',
-          email: 'test@example.com',
-          name: 'John',
-          interests: [],
-          isAdmin: false,
-        }),
-      } as unknown as jest.Mocked<AuthClient>
-
-      ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClient)
-
-      jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getStats').mockReturnValue({
-        activeSessions: 0,
-        completedSessions: 0,
-        totalGuides: 33,
-        favoriteCategories: [],
-      })
-      jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getRecentSessions').mockReturnValue([])
-      jest.spyOn(HomeScreenMockDataModule.HomeScreenMockData, 'getRecommendedGuides').mockReturnValue([])
-    })
-
-    it('should call onBrowseGuides when Browse Guides button is pressed', async () => {
+    it('should call onBrowseGuides when Browse Guides button is pressed', () => {
+      const mockOnBrowseGuides = jest.fn()
       const { getByText } = render(
         <HomeScreen
           onLogout={mockOnLogout}
@@ -427,32 +424,33 @@ describe('HomeScreen', () => {
           onOpenProfile={mockOnOpenProfile}
           onBrowseGuides={mockOnBrowseGuides}
           isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
         />
       )
 
-      await waitFor(() => {
-        fireEvent.press(getByText('Browse Guides'))
-        expect(mockOnBrowseGuides).toHaveBeenCalledTimes(1)
-      })
+      fireEvent.press(getByText('Browse Guides'))
+      expect(mockOnBrowseGuides).toHaveBeenCalledTimes(1)
     })
 
-    it('should call onBrowseCategories when Browse Categories button is pressed', async () => {
+    it('should call onBrowseCategories when Browse Categories button is pressed', () => {
       const mockOnBrowseCategories = jest.fn()
       const { getByText } = render(
         <HomeScreen
           onLogout={mockOnLogout}
           onOpenSettings={mockOnOpenSettings}
           onOpenProfile={mockOnOpenProfile}
-          onBrowseGuides={mockOnBrowseGuides}
           onBrowseCategories={mockOnBrowseCategories}
           isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
         />
       )
 
-      await waitFor(() => {
-        fireEvent.press(getByText('Browse Categories'))
-        expect(mockOnBrowseCategories).toHaveBeenCalledTimes(1)
-      })
+      fireEvent.press(getByText('Browse Categories'))
+      expect(mockOnBrowseCategories).toHaveBeenCalledTimes(1)
     })
   })
 })

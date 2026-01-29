@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   View,
   Text,
@@ -6,47 +6,145 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native'
-import { colors, spacing, typography } from '../theme'
+import { colors, spacing, typography, commonStyles } from '../theme'
 import { SearchBar } from '../components/SearchBar'
 import { CategoryChip } from '../components/CategoryChip'
 import { GuideCard } from '../components/GuideCard'
 import { EmptyState } from '../components/EmptyState'
 import { NodeProgressIndicator } from '../components/NodeProgressIndicator'
-import { GuideViewModel } from '../viewmodels/GuideViewModel'
-import { HomeScreenMockData, MockGuide } from '../../infrastructure/mocks/HomeScreenMockData'
+import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewModel'
+import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
+import { GuideService } from '../../domain/services/GuideService'
+import { CategoryService } from '../../domain/services/CategoryService'
+import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
+import { StepRepository } from '../../infrastructure/repositories/StepRepository'
+import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
+import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 
 interface BrowseGuidesScreenProps {
   onBack: () => void
   onViewGuide: (guideId: string) => void
   testID?: string
+  // Optional dependencies (for testing/DI)
+  guideService?: GuideService
+  categoryService?: CategoryService
 }
-
-const CATEGORIES = ['All Guides', 'Baking', 'Cooking', 'Sports & Fitness', 'Arts & Crafts', 'Meditation & Wellness']
 
 export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   onBack,
   onViewGuide,
   testID,
+  guideService: injectedGuideService,
+  categoryService: injectedCategoryService,
 }) => {
   const [searchText, setSearchText] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All Guides')
-  const [mockGuides] = useState<MockGuide[]>(HomeScreenMockData.getRecommendedGuides([], 15))
+  const [guides, setGuides] = useState<GuideViewModel[]>([])
+  const [categories, setCategories] = useState<string[]>(['All Guides'])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
-  // Convert mock guides to viewmodels
-  const guides = useMemo<GuideViewModel[]>(() => {
-    return mockGuides.map(guide => {
-      const vm: GuideViewModel = {
-        ...guide,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+  const authStorage = new AuthStorage()
+  const serverConfigStorage = new ServerConfigStorage()
+
+  // Initialize services (use injected or create new)
+  const servicesRef = React.useRef<{
+    guideService: GuideService
+    categoryService: CategoryService
+  } | null>(null)
+
+  const getServices = (serverUrl: string) => {
+    if (servicesRef.current) {
+      return servicesRef.current
+    }
+
+    if (injectedGuideService && injectedCategoryService) {
+      servicesRef.current = {
+        guideService: injectedGuideService,
+        categoryService: injectedCategoryService,
       }
-      if (guide.imageUrl !== undefined) vm.imageUrl = guide.imageUrl
-      if (guide.rating !== undefined) vm.rating = guide.rating
-      if (guide.status !== undefined) vm.status = guide.status
-      return vm
-    })
-  }, [mockGuides])
+      return servicesRef.current
+    }
+
+    const guideRepository = new GuideRepository(serverUrl)
+    const stepRepository = new StepRepository(serverUrl)
+    const categoryRepository = new CategoryRepository(serverUrl)
+
+    servicesRef.current = {
+      guideService: new GuideService(guideRepository, stepRepository),
+      categoryService: new CategoryService(categoryRepository),
+    }
+    return servicesRef.current
+  }
+
+  const loadData = async () => {
+    try {
+      setError(null)
+      setIsLoading(true)
+
+      // Get auth token for API calls
+      const authToken = await authStorage.getAuthToken()
+      if (!authToken) {
+        throw new Error('No auth token found')
+      }
+
+      // Fetch server URL
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) {
+        throw new Error('No server URL configured')
+      }
+
+      // Get services
+      const services = getServices(serverUrl)
+
+      // Load guides and categories in parallel
+      const [allGuides, allCategories] = await Promise.all([
+        services.guideService.getAllGuides(authToken),
+        services.categoryService.getAllCategories(authToken),
+      ])
+
+      // Convert guides to view models
+      const guideViewModels: GuideViewModel[] = allGuides.map(guide => {
+        const category = allCategories.find(c => c.id === guide.categoryId)
+        return createGuideViewModel(guide, category?.name || 'Uncategorized')
+      })
+
+      setGuides(guideViewModels)
+
+      // Extract unique category names and prepend "All Guides"
+      const categoryNames = Array.from(
+        new Set(allCategories.map(c => c.name))
+      ).sort()
+      setCategories(['All Guides', ...categoryNames])
+
+      // Reset category filter if it's no longer available
+      if (selectedCategory !== 'All Guides' && !categoryNames.includes(selectedCategory)) {
+        setSelectedCategory('All Guides')
+      }
+    } catch (err) {
+      ErrorReporter.capture(err, { component: 'BrowseGuidesScreen', action: 'loadData' })
+      console.error('Failed to load guides:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load guides')
+    } finally {
+      setRefreshing(false)
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await loadData()
+  }
 
   // Filter guides based on search and category
   const filteredGuides = useMemo(() => {
@@ -61,6 +159,24 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
       return matchesSearch && matchesCategory
     })
   }, [guides, searchText, selectedCategory])
+
+  // Show loading state
+  if (isLoading && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container} testID={testID}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onBack} testID={`${testID}:back`}>
+            <Text style={styles.backButton}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Browse Guides</Text>
+          <View style={{ width: 50 }} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container} testID={testID}>
@@ -78,7 +194,13 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
         <NodeProgressIndicator currentStep={3} totalSteps={5} variant="compact" />
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      {error && <Text style={commonStyles.errorText}>{error}</Text>}
+
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      >
         {/* Search Bar */}
         <View style={styles.searchSection}>
           <SearchBar
@@ -96,7 +218,7 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
           style={styles.categorySection}
           contentContainerStyle={styles.categoryChipsContainer}
         >
-          {CATEGORIES.map(category => (
+          {categories.map(category => (
             <CategoryChip
               key={category}
               label={category}
@@ -171,6 +293,11 @@ const styles = StyleSheet.create({
   progressIndicatorContainer: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   scrollView: {

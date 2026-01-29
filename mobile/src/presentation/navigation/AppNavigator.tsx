@@ -29,6 +29,13 @@ import { GitHubReleaseClient } from '../../infrastructure/api/GitHubReleaseClien
 import { UpdateCheckStorage } from '../../infrastructure/storage/UpdateCheckStorage'
 import { UpdateService, UpdateCheckResult } from '../../domain/services/UpdateService'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
+import { GuideService } from '../../domain/services/GuideService'
+import { SessionService } from '../../domain/services/SessionService'
+import { CategoryService } from '../../domain/services/CategoryService'
+import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
+import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
+import { StepRepository } from '../../infrastructure/repositories/StepRepository'
+import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 import { commonStyles, colors } from '../theme'
 
 export const AppNavigator: React.FC = () => {
@@ -67,6 +74,13 @@ export const AppNavigator: React.FC = () => {
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
   const healthCheckService = new HealthCheckService()
+
+  // Create service instances
+  const servicesRef = React.useRef<{
+    guide: GuideService
+    session: SessionService
+    category: CategoryService
+  } | null>(null)
 
   useEffect(() => {
     const checkConfiguration = async () => {
@@ -167,6 +181,22 @@ export const AppNavigator: React.FC = () => {
     checkConfiguration()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Initialize services if we have server URL
+  useEffect(() => {
+    if (serverUrl && !servicesRef.current) {
+      const guideRepository = new GuideRepository(serverUrl)
+      const sessionRepository = new SessionRepository(serverUrl)
+      const stepRepository = new StepRepository(serverUrl)
+      const categoryRepository = new CategoryRepository(serverUrl)
+
+      servicesRef.current = {
+        guide: new GuideService(guideRepository, stepRepository),
+        session: new SessionService(sessionRepository, guideRepository, stepRepository),
+        category: new CategoryService(categoryRepository),
+      }
+    }
+  }, [serverUrl])
 
   const handleServerSetupComplete = async () => {
     const url = await serverStorage.getServerUrl()
@@ -569,6 +599,10 @@ export const AppNavigator: React.FC = () => {
       <BrowseGuidesScreen
         onBack={handleBrowseGuidesBack}
         onViewGuide={handleBrowseGuidesViewGuide}
+        {...(servicesRef.current && {
+          guideService: servicesRef.current.guide,
+          categoryService: servicesRef.current.category,
+        })}
       />
     )
   }
@@ -593,6 +627,11 @@ export const AppNavigator: React.FC = () => {
       onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
       isAdmin={isAdmin}
+      {...(servicesRef.current && {
+        guideService: servicesRef.current.guide,
+        sessionService: servicesRef.current.session,
+        categoryService: servicesRef.current.category,
+      })}
     />
   )
 }

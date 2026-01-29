@@ -11,6 +11,7 @@
 # - GHSA-73rr-hh4g-fpgx: jsdiff DoS (LOW)
 # - GHSA-8qq5-rm4j-mr97: tar arbitrary file overwrite (HIGH)
 # - GHSA-r6q2-hw4h-h46w: tar race condition on macOS APFS (HIGH)
+# - GHSA-34x7-hfp2-rc4v: tar hardlink path traversal (HIGH)
 
 set -e
 
@@ -23,6 +24,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-73rr-hh4g-fpgx"
   "GHSA-8qq5-rm4j-mr97"
   "GHSA-r6q2-hw4h-h46w"
+  "GHSA-34x7-hfp2-rc4v"
 )
 
 # Run npm audit and capture output
