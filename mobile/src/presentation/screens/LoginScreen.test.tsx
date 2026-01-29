@@ -87,6 +87,26 @@ describe('LoginScreen', () => {
       expect(passwordInput.props['secureTextEntry']).toBe(true)
     })
 
+    it('should have correct autoComplete attributes for iOS Password AutoFill', () => {
+      const { getByPlaceholderText } = render(
+        <LoginScreen
+          authStorage={mockAuthStorage}
+          authClient={mockAuthClient}
+          onComplete={mockOnComplete}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
+        />
+      )
+
+      const emailInput = getByPlaceholderText('email@example.com')
+      const passwordInput = getByPlaceholderText('Password')
+
+      expect(emailInput.props['autoComplete']).toBe('email')
+      expect(emailInput.props['textContentType']).toBe('emailAddress')
+      expect(passwordInput.props['autoComplete']).toBe('current-password')
+      expect(passwordInput.props['textContentType']).toBe('password')
+    })
+
     it('should not render version display (hidden for non-admin users)', () => {
       const { queryByTestId } = render(
         <LoginScreen

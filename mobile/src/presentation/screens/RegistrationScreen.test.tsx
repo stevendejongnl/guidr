@@ -94,6 +94,28 @@ describe('RegistrationScreen', () => {
       expect(passwordInput.props['secureTextEntry']).toBe(true)
       expect(confirmPasswordInput.props['secureTextEntry']).toBe(true)
     })
+
+    it('should have correct autoComplete attributes for iOS Password AutoFill', () => {
+      const { getByPlaceholderText } = render(
+        <RegistrationScreen
+          authStorage={mockAuthStorage}
+          authClient={mockAuthClient}
+          onComplete={mockOnComplete}
+          onBackToLogin={mockOnBackToLogin}
+        />
+      )
+
+      const emailInput = getByPlaceholderText('email@example.com')
+      const passwordInput = getByPlaceholderText('Password (min 6 characters)')
+      const confirmPasswordInput = getByPlaceholderText('Confirm Password')
+
+      expect(emailInput.props['autoComplete']).toBe('email')
+      expect(emailInput.props['textContentType']).toBe('emailAddress')
+      expect(passwordInput.props['autoComplete']).toBe('new-password')
+      expect(passwordInput.props['textContentType']).toBe('newPassword')
+      expect(confirmPasswordInput.props['autoComplete']).toBe('new-password')
+      expect(confirmPasswordInput.props['textContentType']).toBe('newPassword')
+    })
   })
 
   describe('user interaction', () => {

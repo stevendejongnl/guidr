@@ -104,7 +104,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
-            textContentType="username"
+            textContentType="emailAddress"
+            autoComplete="email"
             editable={!loading}
           />
 
@@ -116,6 +117,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             onChangeText={handlePasswordChange}
             secureTextEntry
             textContentType="password"
+            autoComplete="current-password"
             editable={!loading}
           />
 
