@@ -26,11 +26,11 @@ import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
 import { CategoryService } from '../../domain/services/CategoryService'
 import { SessionStatus as DomainSessionStatus } from '../../domain/entities/Session'
+import { Guide } from '../../domain/entities/Guide'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
-import { Guide } from '../../domain/entities/Guide'
 
 // Mock session status enum for ActivityItem compatibility
 enum ActivityItemSessionStatus {
@@ -77,6 +77,10 @@ interface HomeScreenProps {
   onViewSessionDetail?: (sessionId: string) => void
   onViewGuideDetail?: (guideId: string) => void
   isAdmin: boolean
+  // Optional dependencies (for testing/DI)
+  guideService?: GuideService
+  sessionService?: SessionService
+  categoryService?: CategoryService
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -89,6 +93,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onViewSessionDetail,
   onViewGuideDetail,
   isAdmin,
+  guideService: injectedGuideService,
+  sessionService: injectedSessionService,
+  categoryService: injectedCategoryService,
 }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
@@ -110,6 +117,40 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
+
+  // Initialize services (use injected or create new)
+  const servicesRef = React.useRef<{
+    guideService: GuideService
+    sessionService: SessionService
+    categoryService: CategoryService
+  } | null>(null)
+
+  const getServices = (serverUrl: string) => {
+    if (servicesRef.current) {
+      return servicesRef.current
+    }
+
+    if (injectedGuideService && injectedSessionService && injectedCategoryService) {
+      servicesRef.current = {
+        guideService: injectedGuideService,
+        sessionService: injectedSessionService,
+        categoryService: injectedCategoryService,
+      }
+      return servicesRef.current
+    }
+
+    const guideRepository = new GuideRepository(serverUrl)
+    const sessionRepository = new SessionRepository(serverUrl)
+    const stepRepository = new StepRepository(serverUrl)
+    const categoryRepository = new CategoryRepository(serverUrl)
+
+    servicesRef.current = {
+      guideService: new GuideService(guideRepository, stepRepository),
+      sessionService: new SessionService(sessionRepository, guideRepository, stepRepository),
+      categoryService: new CategoryService(categoryRepository),
+    }
+    return servicesRef.current
+  }
 
   const loadData = async () => {
     try {
@@ -135,21 +176,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       const profile = await authClient.getProfile(authToken)
       setUserProfile(profile)
 
-      // Initialize repositories and services
-      const guideRepository = new GuideRepository(serverUrl)
-      const sessionRepository = new SessionRepository(serverUrl)
-      const stepRepository = new StepRepository(serverUrl)
-      const categoryRepository = new CategoryRepository(serverUrl)
-
-      const guideService = new GuideService(guideRepository, stepRepository)
-      const sessionService = new SessionService(sessionRepository, guideRepository, stepRepository)
-      const categoryService = new CategoryService(categoryRepository)
+      // Get services (either injected or create new)
+      const services = getServices(serverUrl)
 
       // Load all guides, sessions, and categories in parallel
       const [allGuides, allSessions, allCategories] = await Promise.all([
-        guideService.getAllGuides(authToken),
-        sessionService.getAllSessions(authToken),
-        categoryService.getAllCategories(authToken),
+        services.guideService.getAllGuides(authToken),
+        services.sessionService.getAllSessions(authToken),
+        services.categoryService.getAllCategories(authToken),
       ])
 
       // Calculate stats
