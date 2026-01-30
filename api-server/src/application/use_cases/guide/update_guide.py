@@ -1,7 +1,7 @@
 """Update guide use case."""
 
 
-from src.application.authorization import require_admin
+from src.application.authorization import require_admin, require_owner_or_admin
 from src.application.dtos import GuideResponseDTO, GuideUpdateDTO
 from src.application.mappers import GuideMapper
 from src.domain.entities import User
@@ -33,32 +33,52 @@ class UpdateGuide:
     async def execute(
         self, guide_id: str, dto: GuideUpdateDTO, current_user: User
     ) -> GuideResponseDTO | None:
-        """Update a guide (admin only).
+        """Update a guide (owner or admin).
 
         Args:
             guide_id: Guide ID
             dto: Guide update data
-            current_user: User performing the update (must be admin)
+            current_user: User performing the update (owner or admin)
 
         Returns:
             GuideResponseDTO with updated guide data
 
         Raises:
-            AuthorizationException: If user is not an admin
+            AuthorizationException: If user is not owner or admin
             EntityNotFoundException: If guide not found
         """
-        require_admin(current_user)
-
         # Find existing guide
         guide = await self._repository.find_by_id(EntityId(guide_id))
         if not guide:
             raise EntityNotFoundException(f"Guide not found: {guide_id}")
 
-        # Update fields if provided
+        # Check authorization upfront
+        # If highlighting is requested, require admin immediately
+        if dto.is_highlighted is not None:
+            require_admin(current_user)
+        else:
+            # For other updates (title, description, is_public), require owner or admin
+            require_owner_or_admin(current_user, guide.created_by_user_id)
+
+        # Update basic fields if provided (owner or admin)
         if dto.title is not None:
             guide.update_title(GuideTitle(dto.title))
         if dto.description is not None:
             guide.update_description(dto.description)
+
+        # Handle visibility (owner or admin can change)
+        if dto.is_public is not None:
+            if dto.is_public:
+                guide.make_public()
+            else:
+                guide.make_private()
+
+        # Handle highlighting (admin only - already checked above)
+        if dto.is_highlighted is not None:
+            if dto.is_highlighted:
+                guide.highlight()
+            else:
+                guide.unhighlight()
 
         # Save guide
         await self._repository.save(guide)

@@ -142,6 +142,8 @@ async def get_guide(
 @router.get("", response_model=list[GuideResponse])
 async def list_guides(
     category_id: str | None = None,
+    my_guides: bool = False,
+    highlighted: bool = False,
     use_case_all: GetAllGuides = Depends(get_get_all_guides_use_case),
     use_case_by_category: GetGuidesByCategory = Depends(
         get_get_guides_by_category_use_case
@@ -154,7 +156,58 @@ async def list_guides(
     else:
         results = await use_case_all.execute(current_user)  # type: ignore[call-arg]
 
+    # Filter by my_guides (requires authenticated user)
+    if my_guides:
+        if current_user is None:
+            results = []
+        else:
+            results = [
+                r for r in results
+                if r.created_by_user_id == current_user.id.value
+            ]
+
+    # Filter by highlighted
+    if highlighted:
+        results = [r for r in results if r.is_highlighted]
+
     return [_guide_response_from_dto(r) for r in results]
+
+
+@router.patch(
+    "/{guide_id}/highlight",
+    response_model=GuideResponse,
+    responses={
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
+)
+async def highlight_guide(
+    guide_id: str,
+    highlight_data: GuideUpdate,
+    use_case: UpdateGuide = Depends(get_update_guide_use_case),
+    current_user: User = Depends(get_current_user),
+) -> GuideResponse:
+    """Highlight/unhighlight a guide (admin only)."""
+    try:
+        dto = GuideUpdateDTO(
+            title=None,
+            description=None,
+            is_public=None,
+            is_highlighted=highlight_data.is_highlighted,
+        )
+        result = await use_case.execute(guide_id, dto, current_user)
+        if result is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Guide not found: {guide_id}",
+            )
+        return _guide_response_from_dto(result)
+    except EntityNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except AuthorizationException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.patch(

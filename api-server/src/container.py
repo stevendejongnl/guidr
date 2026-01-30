@@ -193,7 +193,6 @@ class Container(containers.DeclarativeContainer):
     update_guide_use_case = providers.Factory(
         UpdateGuide,
         guide_repository=guide_repository,
-        category_repository=category_repository,
         event_persistence_service=event_persistence_service,
     )
 

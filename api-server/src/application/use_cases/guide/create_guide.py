@@ -28,11 +28,12 @@ class CreateGuide:
         self._category_repository = category_repository
         self._mapper = GuideMapper()
 
-    async def execute(self, dto: GuideCreateDTO) -> GuideResponseDTO:
+    async def execute(self, dto: GuideCreateDTO, user=None) -> GuideResponseDTO:  # type: ignore[no-untyped-def]
         """Create a new guide.
 
         Args:
             dto: Guide creation data
+            user: Current user (optional, for setting created_by_user_id)
 
         Returns:
             GuideResponseDTO with created guide data
@@ -46,12 +47,16 @@ class CreateGuide:
         if not category:
             raise ValidationException(f"Category not found: {dto.category_id}")
 
+        # Get user ID if available
+        created_by_user_id = EntityId(user.id) if user else None
+
         # Create entity
         guide = Guide(
             id=EntityId(str(uuid4())),
             category_id=category_id,
             title=GuideTitle(dto.title),
             description=dto.description,
+            created_by_user_id=created_by_user_id,
         )
 
         # Save and return

@@ -19,11 +19,12 @@ class GetGuide:
         self._repository = guide_repository
         self._mapper = GuideMapper()
 
-    async def execute(self, guide_id: str) -> GuideResponseDTO | None:
-        """Get a guide by ID.
+    async def execute(self, guide_id: str, user=None) -> GuideResponseDTO | None:  # type: ignore[no-untyped-def]
+        """Get a guide by ID (with visibility check).
 
         Args:
             guide_id: Guide ID
+            user: Current user (optional, for visibility check)
 
         Returns:
             GuideResponseDTO if found, None otherwise
@@ -31,4 +32,19 @@ class GetGuide:
         guide = await self._repository.find_by_id(EntityId(guide_id))
         if not guide:
             return None
-        return self._mapper.to_response_dto(guide)
+
+        # Check visibility
+        # Admin can see all guides
+        if user and user.is_admin:
+            return self._mapper.to_response_dto(guide)
+
+        # Public guides visible to everyone
+        if guide.is_public:
+            return self._mapper.to_response_dto(guide)
+
+        # User's own guides visible to them
+        if user and guide.created_by_user_id and str(guide.created_by_user_id) == str(user.id):
+            return self._mapper.to_response_dto(guide)
+
+        # Private guides not visible to others
+        return None

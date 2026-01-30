@@ -58,6 +58,7 @@ def sample_guide(sample_category):
         category_id=sample_category.id,
         title=GuideTitle("Test Guide"),
         description="Test Description",
+        is_public=True,  # Make public for testing
     )
 
 
@@ -201,16 +202,51 @@ class TestUpdateGuide:
         with pytest.raises(EntityNotFoundException, match="Guide not found"):
             await use_case.execute(str(uuid4()), dto, admin_user)
 
-    async def test_update_guide_non_admin_rejected(
+    async def test_update_guide_non_owner_non_admin_rejected(
         self, mock_guide_repository, mock_event_persistence_service, sample_guide, non_admin_user
     ):
-        """Test updating guide is rejected for non-admin users."""
-        mock_guide_repository.find_by_id.return_value = sample_guide
+        """Test updating guide is rejected for non-owner, non-admin users."""
+        # Guide is owned by a different user
+        other_user = User(
+            id=EntityId(str(uuid4())),
+            email=Email("other@example.com"),
+            password_hash="$argon2id$v=19$m=65536,t=3,p=4$...",
+            is_admin=False,
+        )
+        guide_with_owner = Guide(
+            id=EntityId(str(uuid4())),
+            category_id=sample_guide.category_id,
+            title=GuideTitle("Test Guide"),
+            created_by_user_id=other_user.id,
+        )
+        mock_guide_repository.find_by_id.return_value = guide_with_owner
         use_case = UpdateGuide(mock_guide_repository, mock_event_persistence_service)
         dto = GuideUpdateDTO(title="Updated Title")
 
-        with pytest.raises(AuthorizationException, match="Admin privileges required"):
-            await use_case.execute(sample_guide.id.value, dto, non_admin_user)
+        with pytest.raises(
+            AuthorizationException, match="You are not authorized to access this resource"
+        ):
+            await use_case.execute(guide_with_owner.id.value, dto, non_admin_user)
+
+    async def test_update_guide_owner_can_update_own_guide(
+        self, mock_guide_repository, mock_event_persistence_service, non_admin_user
+    ):
+        """Test that guide owner can update their own guide."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            category_id=EntityId(str(uuid4())),
+            title=GuideTitle("Test Guide"),
+            created_by_user_id=non_admin_user.id,
+        )
+        mock_guide_repository.find_by_id.return_value = guide
+        use_case = UpdateGuide(mock_guide_repository, mock_event_persistence_service)
+        dto = GuideUpdateDTO(title="Updated Title")
+
+        result = await use_case.execute(guide.id.value, dto, non_admin_user)
+
+        assert result is not None
+        assert result.title == "Updated Title"
+        mock_guide_repository.save.assert_called_once()
 
 
 class TestDeleteGuide:
