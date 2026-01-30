@@ -6,23 +6,30 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { GuideService } from '../../domain/services/GuideService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
+import { StepService } from '../../domain/services/StepService'
 import { CategoryService } from '../../domain/services/CategoryService'
 import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { Guide } from '../../domain/entities/Guide'
+import { Step } from '../../domain/entities/Step'
 import { colors, spacing, typography, commonStyles } from '../theme'
 import { SafeScreen } from '../components/SafeScreen'
+import { StepListItem } from '../components/StepListItem'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 
 interface GuideDetailScreenProps {
   guideId: string
   onBack: () => void
   onEdit?: (guideId: string) => void
+  onAddStep?: (guideId: string, stepCount: number) => void
+  onEditStep?: (stepId: string) => void
+  stepService?: StepService
   testID?: string
 }
 
@@ -30,15 +37,36 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   guideId,
   onBack,
   onEdit,
+  onAddStep,
+  onEditStep,
+  stepService: injectedStepService,
   testID,
 }) => {
   const [guide, setGuide] = useState<Guide | null>(null)
   const [categoryName, setCategoryName] = useState<string>('')
+  const [steps, setSteps] = useState<Step[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingSteps, setLoadingSteps] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
+  const stepServiceRef = React.useRef<StepService | null>(null)
+
+  const getStepService = (serverUrl: string) => {
+    if (stepServiceRef.current) {
+      return stepServiceRef.current
+    }
+
+    if (injectedStepService) {
+      stepServiceRef.current = injectedStepService
+      return stepServiceRef.current
+    }
+
+    const stepRepository = new StepRepository(serverUrl)
+    stepServiceRef.current = new StepService(stepRepository)
+    return stepServiceRef.current
+  }
 
   useEffect(() => {
     loadGuideDetail()
@@ -73,12 +101,145 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       const categoryService = new CategoryService(categoryRepository)
       const category = await categoryService.getCategoryById(loadedGuide.categoryId, authToken)
       setCategoryName(category?.name || 'Unknown')
+
+      // Load steps if service is available
+      if (injectedStepService || stepServiceRef.current) {
+        await loadSteps(authToken, serverUrl)
+      }
     } catch (err) {
       ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'loadGuideDetail' })
       console.error('Failed to load guide detail:', err)
       setError(err instanceof Error ? err.message : 'Failed to load guide')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadSteps = async (authToken: string, serverUrl: string) => {
+    try {
+      setLoadingSteps(true)
+      const stepService = getStepService(serverUrl)
+      const loadedSteps = await stepService.getStepsByGuideId(guideId, authToken)
+      setSteps(loadedSteps)
+    } catch (err) {
+      ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'loadSteps' })
+      console.error('Failed to load steps:', err)
+    } finally {
+      setLoadingSteps(false)
+    }
+  }
+
+  const handleAddStep = () => {
+    const nextOrder = steps.length
+    if (onAddStep) {
+      onAddStep(guideId, nextOrder)
+    }
+  }
+
+  const handleEditStep = (stepId: string) => {
+    if (onEditStep) {
+      onEditStep(stepId)
+    }
+  }
+
+  const handleDeleteStep = (stepId: string) => {
+    Alert.alert(
+      'Delete Step',
+      'Are you sure you want to delete this step?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const authToken = await authStorage.getAuthToken()
+              if (!authToken) throw new Error('No auth token found')
+
+              const serverUrl = await serverConfigStorage.getServerUrl()
+              if (!serverUrl) throw new Error('No server URL configured')
+
+              const stepService = getStepService(serverUrl)
+              await stepService.deleteStep(stepId, authToken)
+
+              // Reload steps after deletion
+              await loadSteps(authToken, serverUrl)
+            } catch (err) {
+              ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'handleDeleteStep' })
+              console.error('Failed to delete step:', err)
+              Alert.alert('Error', 'Failed to delete step')
+            }
+          },
+        },
+      ]
+    )
+  }
+
+  const handleMoveStepUp = async (stepId: string) => {
+    try {
+      const authToken = await authStorage.getAuthToken()
+      if (!authToken) throw new Error('No auth token found')
+
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) throw new Error('No server URL configured')
+
+      const stepService = getStepService(serverUrl)
+
+      // Find the step and its predecessor
+      const sortedSteps = [...steps].sort((a, b) => a.order - b.order)
+      const currentIndex = sortedSteps.findIndex((s) => s.id === stepId)
+
+      if (currentIndex > 0) {
+        const currentStep = sortedSteps[currentIndex]
+        const previousStep = sortedSteps[currentIndex - 1]
+
+        if (currentStep && previousStep) {
+          // Swap orders
+          await stepService.updateStepOrder(currentStep.id, previousStep.order, authToken)
+          await stepService.updateStepOrder(previousStep.id, currentStep.order, authToken)
+
+          // Reload steps
+          await loadSteps(authToken, serverUrl)
+        }
+      }
+    } catch (err) {
+      ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'handleMoveStepUp' })
+      console.error('Failed to move step up:', err)
+      Alert.alert('Error', 'Failed to reorder steps')
+    }
+  }
+
+  const handleMoveStepDown = async (stepId: string) => {
+    try {
+      const authToken = await authStorage.getAuthToken()
+      if (!authToken) throw new Error('No auth token found')
+
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) throw new Error('No server URL configured')
+
+      const stepService = getStepService(serverUrl)
+
+      // Find the step and its successor
+      const sortedSteps = [...steps].sort((a, b) => a.order - b.order)
+      const currentIndex = sortedSteps.findIndex((s) => s.id === stepId)
+
+      if (currentIndex < sortedSteps.length - 1) {
+        const currentStep = sortedSteps[currentIndex]
+        const nextStep = sortedSteps[currentIndex + 1]
+
+        if (currentStep && nextStep) {
+          // Swap orders
+          await stepService.updateStepOrder(currentStep.id, nextStep.order, authToken)
+          await stepService.updateStepOrder(nextStep.id, currentStep.order, authToken)
+
+          // Reload steps
+          await loadSteps(authToken, serverUrl)
+        }
+      }
+    } catch (err) {
+      ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'handleMoveStepDown' })
+      console.error('Failed to move step down:', err)
+      Alert.alert('Error', 'Failed to reorder steps')
     }
   }
 
@@ -152,13 +313,50 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
             </View>
           )}
 
-          {/* Steps Preview */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Steps</Text>
-            <Text style={styles.sectionContent}>
-              This guide contains {guide.stepCount} {guide.stepCount === 1 ? 'step' : 'steps'} to help you complete your goal.
-            </Text>
-          </View>
+          {/* Steps Section */}
+          {(injectedStepService || stepServiceRef.current) && (
+            <View style={styles.section}>
+              <View style={styles.stepsHeader}>
+                <Text style={styles.sectionTitle}>Steps</Text>
+                {onAddStep && (
+                  <TouchableOpacity
+                    style={styles.addStepButton}
+                    onPress={handleAddStep}
+                    testID={`${testID}:add-step`}
+                  >
+                    <Text style={styles.addStepButtonText}>+ Add</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {loadingSteps ? (
+                <View style={commonStyles.loadingContainer}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              ) : steps.length > 0 ? (
+                <View>
+                  {steps
+                    .sort((a, b) => a.order - b.order)
+                    .map((step, index) => (
+                      <StepListItem
+                        key={step.id}
+                        step={step}
+                        stepNumber={index + 1}
+                        isFirst={index === 0}
+                        isLast={index === steps.length - 1}
+                        onMoveUp={handleMoveStepUp}
+                        onMoveDown={handleMoveStepDown}
+                        onEdit={handleEditStep}
+                        onDelete={handleDeleteStep}
+                        testID={`${testID}:step-${index}`}
+                      />
+                    ))}
+                </View>
+              ) : (
+                <Text style={styles.emptyStateText}>No steps yet. Add your first step!</Text>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeScreen>
@@ -252,5 +450,28 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeMd,
     color: colors.danger,
     marginTop: spacing.lg,
+  },
+  stepsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  addStepButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 6,
+  },
+  addStepButtonText: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.background,
+  },
+  emptyStateText: {
+    fontSize: typography.sizeMd,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingVertical: spacing.xl,
   },
 })

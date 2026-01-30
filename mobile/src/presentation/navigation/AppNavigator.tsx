@@ -22,6 +22,7 @@ import { GuideListScreen } from '../screens/GuideListScreen'
 import { GuideFormScreen } from '../screens/GuideFormScreen'
 import { BrowseGuidesScreen } from '../screens/BrowseGuidesScreen'
 import { GuideDetailScreen } from '../screens/GuideDetailScreen'
+import { StepFormScreen } from '../screens/StepFormScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -70,6 +71,11 @@ export const AppNavigator: React.FC = () => {
   const [showBrowseGuides, setShowBrowseGuides] = useState(false)
   const [showGuideDetail, setShowGuideDetail] = useState(false)
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
+  const [showStepForm, setShowStepForm] = useState(false)
+  const [stepFormMode, setStepFormMode] = useState<'create' | 'edit' | null>(null)
+  const [editingStepId, setEditingStepId] = useState<string | null>(null)
+  const [editingStepGuideId, setEditingStepGuideId] = useState<string | null>(null)
+  const [newStepOrder, setNewStepOrder] = useState(0)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -379,6 +385,37 @@ export const AppNavigator: React.FC = () => {
     setShowGuideList(false)
   }
 
+  const handleAddStep = (guideId: string, stepCount: number) => {
+    setEditingStepGuideId(guideId)
+    setEditingStepId(null)
+    setNewStepOrder(stepCount)
+    setStepFormMode('create')
+    setShowStepForm(true)
+  }
+
+  const handleEditStep = (stepId: string) => {
+    setEditingStepId(stepId)
+    setStepFormMode('edit')
+    setShowStepForm(true)
+  }
+
+  const handleStepFormSave = async () => {
+    // After saving, refresh the guide detail by triggering a re-render
+    setShowStepForm(false)
+    setStepFormMode(null)
+    setEditingStepId(null)
+
+    // Reload guide detail by keeping it visible
+    // The GuideDetailScreen will reload its steps on re-mount
+  }
+
+  const handleStepFormCancel = () => {
+    setShowStepForm(false)
+    setStepFormMode(null)
+    setEditingStepId(null)
+    setEditingStepGuideId(null)
+  }
+
   if (loading) {
     return (
       <View style={commonStyles.loadingContainer}>
@@ -581,6 +618,19 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (showStepForm && stepFormMode && editingStepGuideId) {
+    return (
+      <StepFormScreen
+        mode={stepFormMode}
+        guideId={editingStepGuideId}
+        {...(editingStepId && { stepId: editingStepId })}
+        {...(stepFormMode === 'create' && { order: newStepOrder })}
+        onSave={handleStepFormSave}
+        onCancel={handleStepFormCancel}
+      />
+    )
+  }
+
   if (showGuideDetail && selectedGuideId) {
     return (
       <GuideDetailScreen
@@ -590,6 +640,8 @@ export const AppNavigator: React.FC = () => {
           setSelectedGuideId(null)
         }}
         onEdit={handleGuideDetailEdit}
+        onAddStep={handleAddStep}
+        onEditStep={handleEditStep}
       />
     )
   }
