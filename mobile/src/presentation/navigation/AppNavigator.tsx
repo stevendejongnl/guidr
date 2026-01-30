@@ -591,6 +591,7 @@ export const AppNavigator: React.FC = () => {
         {...(selectedGuideCategoryId && { categoryId: selectedGuideCategoryId })}
         onSave={handleGuideFormSave}
         onCancel={handleGuideFormCancel}
+        isAdmin={isAdmin}
       />
     )
   }
