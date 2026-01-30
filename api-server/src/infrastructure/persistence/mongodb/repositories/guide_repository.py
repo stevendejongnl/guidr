@@ -39,6 +39,40 @@ class MongoGuideRepository(IGuideRepository):
         documents = await cursor.to_list(length=None)
         return [self._mapper.to_entity(doc) for doc in documents]
 
+    async def find_by_user_id(self, user_id: EntityId) -> list[Guide]:
+        """Find all guides created by a specific user."""
+        cursor = self._collection.find({"createdByUserId": user_id.value})
+        documents = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(doc) for doc in documents]
+
+    async def find_public_guides(self) -> list[Guide]:
+        """Find all public guides."""
+        cursor = self._collection.find({"isPublic": True})
+        documents = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(doc) for doc in documents]
+
+    async def find_highlighted_guides(self) -> list[Guide]:
+        """Find all highlighted guides."""
+        cursor = self._collection.find({"isHighlighted": True, "isPublic": True})
+        documents = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(doc) for doc in documents]
+
+    async def find_accessible_by_user(self, user_id: EntityId | None) -> list[Guide]:
+        """Find guides accessible by a user (public + user's own guides)."""
+        if user_id is None:
+            # Unauthenticated: only public guides
+            cursor = self._collection.find({"isPublic": True})
+        else:
+            # Authenticated: public guides + own guides
+            cursor = self._collection.find({
+                "$or": [
+                    {"isPublic": True},
+                    {"createdByUserId": user_id.value}
+                ]
+            })
+        documents = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(doc) for doc in documents]
+
     async def save(self, entity: Guide) -> None:
         """Save guide (upsert)."""
         document = self._mapper.to_document(entity)

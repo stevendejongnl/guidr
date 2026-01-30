@@ -25,6 +25,9 @@ class GuideMapper:
             "title": guide.title.value,
             "description": guide.description,
             "stepIds": [step_id.value for step_id in guide.step_ids],
+            "createdByUserId": guide.created_by_user_id.value if guide.created_by_user_id else None,
+            "isPublic": guide.is_public,
+            "isHighlighted": guide.is_highlighted,
             "createdAt": guide.created_at,
             "updatedAt": guide.updated_at,
         }
@@ -39,12 +42,16 @@ class GuideMapper:
         Returns:
             Guide entity
         """
+        created_by_user_id = document.get("createdByUserId")
         return Guide(
             id=EntityId(str(document["_id"])),
             category_id=EntityId(str(document["categoryId"])),
             title=GuideTitle(document["title"]),
             description=document.get("description"),
             step_ids=[EntityId(str(step_id)) for step_id in document.get("stepIds", [])],
+            created_by_user_id=EntityId(str(created_by_user_id)) if created_by_user_id else None,
+            is_public=document.get("isPublic", False),
+            is_highlighted=document.get("isHighlighted", False),
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
         )

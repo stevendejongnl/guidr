@@ -15,6 +15,9 @@ class Guide:
         title: GuideTitle,
         description: str | None = None,
         step_ids: list[EntityId] | None = None,
+        created_by_user_id: EntityId | None = None,
+        is_public: bool = False,
+        is_highlighted: bool = False,
         created_at: datetime | None = None,
         updated_at: datetime | None = None,
     ):
@@ -26,6 +29,9 @@ class Guide:
             title: Guide title (non-empty)
             description: Optional description
             step_ids: Optional list of step IDs
+            created_by_user_id: Optional ID of user who created the guide
+            is_public: Whether the guide is publicly visible (default: False)
+            is_highlighted: Whether the guide is highlighted for homepage (default: False)
             created_at: Optional creation timestamp (defaults to now)
             updated_at: Optional update timestamp (defaults to now)
         """
@@ -34,6 +40,9 @@ class Guide:
         self._title = title
         self._description = description
         self._step_ids = step_ids or []
+        self._created_by_user_id = created_by_user_id
+        self._is_public = is_public
+        self._is_highlighted = is_highlighted
         self._created_at = created_at or datetime.now(UTC)
         self._updated_at = updated_at or datetime.now(UTC)
 
@@ -76,6 +85,21 @@ class Guide:
     def updated_at(self) -> datetime:
         """Get last update timestamp."""
         return self._updated_at
+
+    @property
+    def created_by_user_id(self) -> EntityId | None:
+        """Get ID of user who created the guide."""
+        return self._created_by_user_id
+
+    @property
+    def is_public(self) -> bool:
+        """Check if guide is publicly visible."""
+        return self._is_public
+
+    @property
+    def is_highlighted(self) -> bool:
+        """Check if guide is highlighted for homepage."""
+        return self._is_highlighted
 
     def update_title(self, new_title: GuideTitle) -> None:
         """Update guide title.
@@ -120,3 +144,23 @@ class Guide:
         if step_id in self._step_ids:
             self._step_ids.remove(step_id)
             self._updated_at = datetime.now(UTC)
+
+    def make_public(self) -> None:
+        """Make this guide publicly visible."""
+        self._is_public = True
+        self._updated_at = datetime.now(UTC)
+
+    def make_private(self) -> None:
+        """Make this guide private (only visible to creator and admins)."""
+        self._is_public = False
+        self._updated_at = datetime.now(UTC)
+
+    def highlight(self) -> None:
+        """Highlight this guide for homepage featuring."""
+        self._is_highlighted = True
+        self._updated_at = datetime.now(UTC)
+
+    def unhighlight(self) -> None:
+        """Remove highlight from this guide."""
+        self._is_highlighted = False
+        self._updated_at = datetime.now(UTC)

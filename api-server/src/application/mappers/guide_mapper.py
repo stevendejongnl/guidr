@@ -23,6 +23,9 @@ class GuideMapper:
             title=guide.title.value,
             description=guide.description,
             step_ids=[step_id.value for step_id in guide.step_ids],
+            created_by_user_id=guide.created_by_user_id.value if guide.created_by_user_id else None,
+            is_public=guide.is_public,
+            is_highlighted=guide.is_highlighted,
             created_at=guide.created_at.isoformat(),
             updated_at=guide.updated_at.isoformat(),
         )
