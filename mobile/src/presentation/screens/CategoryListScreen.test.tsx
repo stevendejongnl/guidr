@@ -1,20 +1,30 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react-native'
 import { CategoryListScreen } from './CategoryListScreen'
+import {
+  createMockAuthStorage,
+  createMockServerConfigStorage,
+  createMockCategoryService,
+} from '../testUtils'
 
-// Mock CategoryService and AuthStorage
-jest.mock('../../domain/services/CategoryService')
-jest.mock('../../infrastructure/storage/AuthStorage')
-jest.mock('../../infrastructure/repositories/CategoryRepository')
+// Mock only ErrorReporter (static utility)
 jest.mock('../../infrastructure/monitoring/ErrorReporter')
 
 describe('CategoryListScreen', () => {
   const mockOnCreateCategory = jest.fn()
   const mockOnEditCategory = jest.fn()
   const mockOnBack = jest.fn()
+  let mockCategoryService: ReturnType<typeof createMockCategoryService>
+  let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
+  let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // Create mock infrastructure and services
+    mockAuthStorage = createMockAuthStorage()
+    mockServerConfigStorage = createMockServerConfigStorage()
+    mockCategoryService = createMockCategoryService([])
   })
 
   it('renders category list screen', () => {
@@ -23,6 +33,9 @@ describe('CategoryListScreen', () => {
         onCreateCategory={mockOnCreateCategory}
         onEditCategory={mockOnEditCategory}
         onBack={mockOnBack}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     // Test should not throw
@@ -35,6 +48,7 @@ describe('CategoryListScreen', () => {
         onCreateCategory={mockOnCreateCategory}
         onEditCategory={mockOnEditCategory}
         onBack={mockOnBack}
+        categoryService={mockCategoryService}
       />
     )
     // May have multiple instances of "Categories"
@@ -50,6 +64,7 @@ describe('CategoryListScreen', () => {
         onCreateCategory={mockOnCreateCategory}
         onEditCategory={mockOnEditCategory}
         onBack={mockOnBack}
+        categoryService={mockCategoryService}
       />
     )
     await waitFor(() => {
@@ -64,6 +79,9 @@ describe('CategoryListScreen', () => {
         onCreateCategory={mockOnCreateCategory}
         onEditCategory={mockOnEditCategory}
         onBack={mockOnBack}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -79,6 +97,7 @@ describe('CategoryListScreen', () => {
         onCreateCategory={mockOnCreateCategory}
         onEditCategory={mockOnEditCategory}
         onBack={mockOnBack}
+        categoryService={mockCategoryService}
       />
     )
 

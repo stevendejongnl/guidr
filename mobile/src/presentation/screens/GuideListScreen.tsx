@@ -30,6 +30,11 @@ interface GuideListScreenProps {
   onEditGuide: (guideId: string) => void
   onViewGuide: (guideId: string) => void
   onBack: () => void
+  // Optional dependency injection
+  guideService?: GuideService
+  categoryService?: CategoryService
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
 }
 
 export const GuideListScreen: React.FC<GuideListScreenProps> = ({
@@ -37,6 +42,10 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   onCreateGuide,
   onViewGuide,
   onBack,
+  guideService: injectedGuideService,
+  categoryService: injectedCategoryService,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
 }) => {
   const [guides, setGuides] = useState<Guide[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -46,8 +55,38 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public'>('all')
   const [userId, setUserId] = useState<string | null>(null)
 
-  const authStorage = new AuthStorage()
-  const serverConfigStorage = new ServerConfigStorage()
+  const authStorage = injectedAuthStorage || new AuthStorage()
+  const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
+
+  // Initialize services (use injected or create new)
+  const servicesRef = React.useRef<{
+    guideService: GuideService
+    categoryService: CategoryService
+  } | null>(null)
+
+  const getServices = (serverUrl: string) => {
+    if (servicesRef.current) {
+      return servicesRef.current
+    }
+
+    if (injectedGuideService && injectedCategoryService) {
+      servicesRef.current = {
+        guideService: injectedGuideService,
+        categoryService: injectedCategoryService,
+      }
+      return servicesRef.current
+    }
+
+    const guideRepository = new GuideRepository(serverUrl)
+    const stepRepository = new StepRepository(serverUrl)
+    const categoryRepository = new CategoryRepository(serverUrl)
+
+    servicesRef.current = {
+      guideService: new GuideService(guideRepository, stepRepository),
+      categoryService: new CategoryService(categoryRepository),
+    }
+    return servicesRef.current
+  }
 
   const loadGuides = async () => {
     try {
@@ -63,23 +102,19 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
         throw new Error('No server URL configured')
       }
 
-      const guideRepository = new GuideRepository(serverUrl)
-      const stepRepository = new StepRepository(serverUrl)
-      const guideService = new GuideService(guideRepository, stepRepository)
+      const services = getServices(serverUrl)
 
       // Load guides
       let loadedGuides: Guide[]
       if (categoryId) {
-        loadedGuides = await guideService.getGuidesByCategoryId(categoryId, authToken)
+        loadedGuides = await services.guideService.getGuidesByCategoryId(categoryId, authToken)
       } else {
-        loadedGuides = await guideService.getAllGuides(authToken)
+        loadedGuides = await services.guideService.getAllGuides(authToken)
       }
       setGuides(loadedGuides)
 
       // Load categories for category name mapping
-      const categoryRepository = new CategoryRepository(serverUrl)
-      const categoryService = new CategoryService(categoryRepository)
-      const loadedCategories = await categoryService.getAllCategories(authToken)
+      const loadedCategories = await services.categoryService.getAllCategories(authToken)
       setCategories(loadedCategories)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'GuideListScreen', action: 'loadGuides' })
@@ -98,7 +133,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     loadUserId()
     loadGuides()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId])
+  }, [categoryId, injectedGuideService, injectedCategoryService])
 
   const handleRefresh = async () => {
     setRefreshing(true)

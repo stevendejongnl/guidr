@@ -24,6 +24,10 @@ interface CategoryListScreenProps {
   onEditCategory: (categoryId: string) => void
   onBack: () => void
   isAdmin?: boolean
+  // Optional dependency injection
+  categoryService?: CategoryService
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
 }
 
 export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
@@ -32,14 +36,41 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
   onEditCategory,
   onBack,
   isAdmin = false,
+  categoryService: injectedCategoryService,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
 }) => {
   const [categories, setCategories] = useState<Category[]>([])
   const [childrenCount, setChildrenCount] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const authStorage = new AuthStorage()
-  const serverConfigStorage = new ServerConfigStorage()
+  const authStorage = injectedAuthStorage || new AuthStorage()
+  const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
+
+  // Initialize service (use injected or create new)
+  const servicesRef = React.useRef<{
+    categoryService: CategoryService
+  } | null>(null)
+
+  const getServices = (serverUrl: string) => {
+    if (servicesRef.current) {
+      return servicesRef.current
+    }
+
+    if (injectedCategoryService) {
+      servicesRef.current = {
+        categoryService: injectedCategoryService,
+      }
+      return servicesRef.current
+    }
+
+    const repository = new CategoryRepository(serverUrl)
+    servicesRef.current = {
+      categoryService: new CategoryService(repository),
+    }
+    return servicesRef.current
+  }
 
   const loadCategories = async () => {
     try {
@@ -55,8 +86,8 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
         throw new Error('No server URL configured')
       }
 
-      const repository = new CategoryRepository(serverUrl)
-      const service = new CategoryService(repository)
+      const services = getServices(serverUrl)
+      const service = services.categoryService
 
       // Load categories for the current level
       const loadedCategories = await service.getCategoriesByParentId(parentId, authToken)
@@ -81,7 +112,7 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
   useEffect(() => {
     loadCategories()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentId])
+  }, [parentId, injectedCategoryService])
 
   const handleRefresh = async () => {
     setRefreshing(true)

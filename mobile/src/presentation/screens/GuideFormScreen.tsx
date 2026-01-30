@@ -31,6 +31,8 @@ interface GuideFormScreenProps {
   isAdmin: boolean
   guideService?: GuideService
   categoryService?: CategoryService
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
 }
 
 export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
@@ -42,6 +44,8 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   isAdmin,
   guideService: _guideService,
   categoryService: _categoryService,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
 }) => {
   // Form fields
   const [title, setTitle] = useState('')
@@ -69,8 +73,8 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
         setLoading(true)
         setError(null)
 
-        const authStorage = new AuthStorage()
-        const serverConfigStorage = new ServerConfigStorage()
+        const authStorage = injectedAuthStorage || new AuthStorage()
+        const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
 
         const token = await authStorage.getAuthToken()
         const url = await serverConfigStorage.getServerUrl()

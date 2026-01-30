@@ -81,6 +81,9 @@ interface HomeScreenProps {
   guideService?: GuideService
   sessionService?: SessionService
   categoryService?: CategoryService
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
+  authClient?: AuthClient
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -96,6 +99,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   guideService: injectedGuideService,
   sessionService: injectedSessionService,
   categoryService: injectedCategoryService,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
+  authClient: injectedAuthClient,
 }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
@@ -116,8 +122,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const authStorage = new AuthStorage()
-  const serverConfigStorage = new ServerConfigStorage()
+  const authStorage = injectedAuthStorage || new AuthStorage()
+  const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
 
   // Initialize services (use injected or create new)
   const servicesRef = React.useRef<{
@@ -173,7 +179,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       if (!serverUrl) {
         throw new Error('No server URL configured')
       }
-      const authClient = new AuthClient(serverUrl)
+      const authClient = injectedAuthClient || new AuthClient(serverUrl)
       const profile = await authClient.getProfile(authToken)
       setUserProfile(profile)
 

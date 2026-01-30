@@ -1,14 +1,14 @@
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react-native'
 import { GuideListScreen } from './GuideListScreen'
+import {
+  createMockAuthStorage,
+  createMockServerConfigStorage,
+  createMockGuideService,
+  createMockCategoryService,
+} from '../testUtils'
 
-// Mock services
-jest.mock('../../domain/services/GuideService')
-jest.mock('../../domain/services/CategoryService')
-jest.mock('../../infrastructure/storage/AuthStorage')
-jest.mock('../../infrastructure/repositories/GuideRepository')
-jest.mock('../../infrastructure/repositories/StepRepository')
-jest.mock('../../infrastructure/repositories/CategoryRepository')
+// Mock only ErrorReporter (static utility)
 jest.mock('../../infrastructure/monitoring/ErrorReporter')
 
 describe('GuideListScreen', () => {
@@ -16,9 +16,19 @@ describe('GuideListScreen', () => {
   const mockOnEditGuide = jest.fn()
   const mockOnViewGuide = jest.fn()
   const mockOnBack = jest.fn()
+  let mockGuideService: ReturnType<typeof createMockGuideService>
+  let mockCategoryService: ReturnType<typeof createMockCategoryService>
+  let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
+  let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // Create mock infrastructure and services
+    mockAuthStorage = createMockAuthStorage()
+    mockServerConfigStorage = createMockServerConfigStorage()
+    mockGuideService = createMockGuideService([])
+    mockCategoryService = createMockCategoryService([])
   })
 
   it('renders guide list screen without errors', () => {
@@ -28,6 +38,10 @@ describe('GuideListScreen', () => {
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     expect(mockOnCreateGuide).toBeDefined()
@@ -40,6 +54,10 @@ describe('GuideListScreen', () => {
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     expect(getByText('← Back')).toBeTruthy()
@@ -52,6 +70,10 @@ describe('GuideListScreen', () => {
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     expect(getByText('Guides')).toBeTruthy()
@@ -64,6 +86,10 @@ describe('GuideListScreen', () => {
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     expect(getByText('+ New')).toBeTruthy()
@@ -76,6 +102,10 @@ describe('GuideListScreen', () => {
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     fireEvent.press(getByText('← Back'))
@@ -89,6 +119,10 @@ describe('GuideListScreen', () => {
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     fireEvent.press(getByText('+ New'))
@@ -103,6 +137,10 @@ describe('GuideListScreen', () => {
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
     expect(mockOnCreateGuide).toBeDefined()

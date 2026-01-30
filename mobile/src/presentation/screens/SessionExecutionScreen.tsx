@@ -13,6 +13,9 @@ import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigSt
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
+import { SessionService } from '../../domain/services/SessionService'
+import { GuideService } from '../../domain/services/GuideService'
+import { StepService } from '../../domain/services/StepService'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { SafeScreen } from '../components/SafeScreen'
 import { CountdownTimer } from '../components/CountdownTimer'
@@ -29,6 +32,12 @@ interface SessionExecutionScreenProps {
   onComplete: () => void
   onCancel: () => void
   onBack: () => void
+  // Optional dependency injection
+  sessionService?: SessionService
+  guideService?: GuideService
+  stepService?: StepService
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
 }
 
 export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
@@ -36,6 +45,11 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
   onComplete,
   onCancel,
   onBack,
+  sessionService: injectedSessionService,
+  guideService: injectedGuideService,
+  stepService: injectedStepService,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
 }) => {
   // Domain entities
   const [session, setSession] = useState<Session | null>(null)
@@ -49,38 +63,45 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Repositories - memoized to avoid dependency issues
-  const authStorage = useMemo(() => new AuthStorage(), [])
-  const serverConfigStorage = useMemo(() => new ServerConfigStorage(), [])
-  const [sessionRepository, setSessionRepository] = useState<SessionRepository | null>(null)
-  const [guideRepository, setGuideRepository] = useState<GuideRepository | null>(null)
-  const [stepRepository, setStepRepository] = useState<StepRepository | null>(null)
+  // Storage - memoized to avoid dependency issues, use injected or create new
+  const authStorage = useMemo(() => injectedAuthStorage || new AuthStorage(), [injectedAuthStorage])
+  const serverConfigStorage = useMemo(() => injectedServerConfigStorage || new ServerConfigStorage(), [injectedServerConfigStorage])
 
-  // Initialize repositories on mount
-  useEffect(() => {
-    const initializeRepositories = async () => {
-      try {
-        const serverUrl = await serverConfigStorage.getServerUrl()
-        if (!serverUrl) {
-          throw new Error('Server URL not configured')
-        }
-        setSessionRepository(new SessionRepository(serverUrl))
-        setGuideRepository(new GuideRepository(serverUrl))
-        setStepRepository(new StepRepository(serverUrl))
-      } catch (err) {
-        ErrorReporter.capture(err, { component: 'SessionExecutionScreen', action: 'initializeRepositories' })
-        setError('Failed to initialize repositories')
-      }
+  // Services ref for caching
+  const servicesRef = React.useRef<{
+    sessionService: SessionService
+    guideService: GuideService
+    stepService: StepService
+  } | null>(null)
+
+  const getServices = (serverUrl: string) => {
+    if (servicesRef.current) {
+      return servicesRef.current
     }
-    initializeRepositories()
-  }, [serverConfigStorage])
+
+    if (injectedSessionService && injectedGuideService && injectedStepService) {
+      servicesRef.current = {
+        sessionService: injectedSessionService,
+        guideService: injectedGuideService,
+        stepService: injectedStepService,
+      }
+      return servicesRef.current
+    }
+
+    const sessionRepository = new SessionRepository(serverUrl)
+    const guideRepository = new GuideRepository(serverUrl)
+    const stepRepository = new StepRepository(serverUrl)
+
+    servicesRef.current = {
+      sessionService: new SessionService(sessionRepository, guideRepository, stepRepository),
+      guideService: new GuideService(guideRepository, stepRepository),
+      stepService: new StepService(stepRepository),
+    }
+    return servicesRef.current
+  }
 
   // Load session data on mount
   useEffect(() => {
-    if (!sessionRepository || !guideRepository || !stepRepository) {
-      return
-    }
-
     const loadSessionData = async () => {
       try {
         setLoading(true)
@@ -91,22 +112,29 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
           throw new Error('No auth token found')
         }
 
+        const serverUrl = await serverConfigStorage.getServerUrl()
+        if (!serverUrl) {
+          throw new Error('Server URL not configured')
+        }
+
+        const services = getServices(serverUrl)
+
         // Load session
-        const loadedSession = await sessionRepository.findById(sessionId, authToken)
+        const loadedSession = await services.sessionService.getSessionById(sessionId, authToken)
         if (!loadedSession) {
           throw new Error('Session not found')
         }
         setSession(loadedSession)
 
         // Load guide
-        const loadedGuide = await guideRepository.findById(loadedSession.guideId, authToken)
+        const loadedGuide = await services.guideService.getGuideById(loadedSession.guideId, authToken)
         if (!loadedGuide) {
           throw new Error('Guide not found')
         }
         setGuide(loadedGuide)
 
         // Load steps
-        const loadedSteps = await stepRepository.findByGuideId(loadedSession.guideId, authToken)
+        const loadedSteps = await services.stepService.getStepsByGuideId(loadedSession.guideId, authToken)
         // Sort by order field to ensure correct sequence
         const sortedSteps = loadedSteps.sort((a, b) => a.order - b.order)
         setSteps(sortedSteps)
@@ -128,20 +156,23 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
     }
 
     loadSessionData()
-  }, [sessionRepository, guideRepository, stepRepository, sessionId, authStorage])
+  }, [sessionId, injectedSessionService, injectedGuideService, injectedStepService, authStorage, serverConfigStorage])
 
   const currentStep = steps[currentStepIndex]
   const authToken = authStorage.getAuthToken()
 
   const handleStart = async () => {
-    if (!session || !sessionRepository) return
+    if (!session) return
     try {
       setError(null)
       const token = await authToken
       if (!token) throw new Error('No auth token')
 
-      const updatedSession = await sessionRepository.start(sessionId, token)
-      setSession(updatedSession)
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) throw new Error('Server URL not configured')
+
+      const services = getServices(serverUrl)
+      await services.sessionService.startSession(sessionId, token)
       setIsTimerRunning(true)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'SessionExecutionScreen', action: 'handleStart' })
@@ -150,7 +181,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
   }
 
   const handlePause = async () => {
-    if (!session || !sessionRepository || !currentStep) return
+    if (!session || !currentStep) return
     try {
       setError(null)
       setIsTimerRunning(false)
@@ -158,11 +189,14 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
       const token = await authToken
       if (!token) throw new Error('No auth token')
 
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) throw new Error('Server URL not configured')
+
+      const services = getServices(serverUrl)
       // Calculate elapsed seconds: duration - remaining
       // This will be updated by the timer's onSecondsChange callback
       // For now, we'll pass the current value from the session
-      const updatedSession = await sessionRepository.pause(sessionId, session.stepElapsedSeconds, token)
-      setSession(updatedSession)
+      await services.sessionService.pauseSession(sessionId, token)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'SessionExecutionScreen', action: 'handlePause' })
       setError('Failed to pause session')
@@ -171,14 +205,17 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
   }
 
   const handleResume = async () => {
-    if (!session || !sessionRepository) return
+    if (!session) return
     try {
       setError(null)
       const token = await authToken
       if (!token) throw new Error('No auth token')
 
-      const updatedSession = await sessionRepository.resume(sessionId, token)
-      setSession(updatedSession)
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) throw new Error('Server URL not configured')
+
+      const services = getServices(serverUrl)
+      await services.sessionService.resumeSession(sessionId, token)
       setIsTimerRunning(true)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'SessionExecutionScreen', action: 'handleResume' })
@@ -187,7 +224,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
   }
 
   const handleComplete = async () => {
-    if (!session || !sessionRepository) return
+    if (!session) return
     try {
       setError(null)
       setIsTimerRunning(false)
@@ -195,7 +232,11 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
       const token = await authToken
       if (!token) throw new Error('No auth token')
 
-      await sessionRepository.complete(sessionId, token)
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) throw new Error('Server URL not configured')
+
+      const services = getServices(serverUrl)
+      await services.sessionService.completeSession(sessionId, token)
       onComplete()
     } catch (err) {
       ErrorReporter.capture(err, { component: 'SessionExecutionScreen', action: 'handleComplete' })
@@ -209,7 +250,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
       {
         text: 'Cancel Session',
         onPress: async () => {
-          if (!session || !sessionRepository) return
+          if (!session) return
           try {
             setError(null)
             setIsTimerRunning(false)
@@ -217,7 +258,11 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
             const token = await authToken
             if (!token) throw new Error('No auth token')
 
-            await sessionRepository.cancel(sessionId, token)
+            const serverUrl = await serverConfigStorage.getServerUrl()
+            if (!serverUrl) throw new Error('Server URL not configured')
+
+            const services = getServices(serverUrl)
+            await services.sessionService.cancelSession(sessionId, token)
             onCancel()
           } catch (err) {
             ErrorReporter.capture(err, { component: 'SessionExecutionScreen', action: 'handleCancel' })
@@ -230,7 +275,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
   }
 
   const moveToStep = async (stepId: string) => {
-    if (!session || !sessionRepository) return
+    if (!session) return
     try {
       setError(null)
       setIsTimerRunning(false)
@@ -238,8 +283,11 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
       const token = await authToken
       if (!token) throw new Error('No auth token')
 
-      const updatedSession = await sessionRepository.moveToStep(sessionId, stepId, token)
-      setSession(updatedSession)
+      const serverUrl = await serverConfigStorage.getServerUrl()
+      if (!serverUrl) throw new Error('Server URL not configured')
+
+      const services = getServices(serverUrl)
+      await services.sessionService.moveToStep(sessionId, stepId, token)
 
       // Update current step index
       const newIndex = steps.findIndex((s) => s.id === stepId)
@@ -289,7 +337,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
     // If not auto-advance, just pause and let user manually advance
   }
 
-  const handleSessionSecondsChange = async (remainingSeconds: number) => {
+  const handleSessionSecondsChange = (remainingSeconds: number) => {
     if (!session || !currentStep) return
 
     // Calculate elapsed seconds

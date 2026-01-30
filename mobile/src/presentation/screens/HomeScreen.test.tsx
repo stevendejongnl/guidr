@@ -1,92 +1,43 @@
 import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { HomeScreen } from './HomeScreen'
-import { GuideService } from '../../domain/services/GuideService'
-import { SessionService } from '../../domain/services/SessionService'
-import { CategoryService } from '../../domain/services/CategoryService'
 import { Guide } from '../../domain/entities/Guide'
 import { Session, SessionStatus } from '../../domain/entities/Session'
 import { Category } from '../../domain/entities/Category'
-import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
-import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
-import { AuthClient } from '../../infrastructure/api/AuthClient'
-
-// Mock storage and API clients
-jest.mock('../../infrastructure/storage/AuthStorage')
-jest.mock('../../infrastructure/storage/ServerConfigStorage')
-jest.mock('../../infrastructure/api/AuthClient')
-
-// Create mock service factories
-const createMockGuideService = (guides: Guide[] = []): jest.Mocked<GuideService> => {
-  const mock = {
-    getAllGuides: jest.fn().mockResolvedValue(guides),
-    getGuideById: jest.fn(),
-    getGuidesByCategoryId: jest.fn(),
-  } as unknown as jest.Mocked<GuideService>
-  return mock
-}
-
-const createMockSessionService = (sessions: Session[] = []): jest.Mocked<SessionService> => {
-  const mock = {
-    getAllSessions: jest.fn().mockResolvedValue(sessions),
-    getSessionById: jest.fn(),
-    createSession: jest.fn(),
-    getSessionsByStatus: jest.fn(),
-  } as unknown as jest.Mocked<SessionService>
-  return mock
-}
-
-const createMockCategoryService = (categories: Category[] = []): jest.Mocked<CategoryService> => {
-  const mock = {
-    getAllCategories: jest.fn().mockResolvedValue(categories),
-    getCategoryById: jest.fn(),
-  } as unknown as jest.Mocked<CategoryService>
-  return mock
-}
+import {
+  createMockAuthStorage,
+  createMockServerConfigStorage,
+  createMockAuthClient,
+  createMockGuideService,
+  createMockSessionService,
+  createMockCategoryService,
+} from '../testUtils'
 
 describe('HomeScreen', () => {
   let mockOnLogout: jest.Mock
   let mockOnOpenSettings: jest.Mock
   let mockOnOpenProfile: jest.Mock
-  let mockGuideService: jest.Mocked<GuideService>
-  let mockSessionService: jest.Mocked<SessionService>
-  let mockCategoryService: jest.Mocked<CategoryService>
+  let mockGuideService: jest.Mocked<ReturnType<typeof createMockGuideService>>
+  let mockSessionService: jest.Mocked<ReturnType<typeof createMockSessionService>>
+  let mockCategoryService: jest.Mocked<ReturnType<typeof createMockCategoryService>>
+  let mockAuthStorage: jest.Mocked<ReturnType<typeof createMockAuthStorage>>
+  let mockServerConfigStorage: jest.Mocked<ReturnType<typeof createMockServerConfigStorage>>
+  let mockAuthClient: jest.Mocked<ReturnType<typeof createMockAuthClient>>
 
   beforeEach(() => {
     mockOnLogout = jest.fn()
     mockOnOpenSettings = jest.fn()
     mockOnOpenProfile = jest.fn()
 
-    // Create default mock services with empty data
+    // Create mock infrastructure
+    mockAuthStorage = createMockAuthStorage()
+    mockServerConfigStorage = createMockServerConfigStorage()
+    mockAuthClient = createMockAuthClient()
+
+    // Create mock services
     mockGuideService = createMockGuideService([])
     mockSessionService = createMockSessionService([])
     mockCategoryService = createMockCategoryService([])
-
-    // Mock storage
-    const mockAuthStorage = {
-      getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
-      getAuthToken: jest.fn().mockResolvedValue('test-token'),
-    } as unknown as jest.Mocked<AuthStorage>
-
-    const mockServerConfigStorage = {
-      getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000'),
-    } as unknown as jest.Mocked<ServerConfigStorage>
-
-    ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
-    ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerConfigStorage)
-
-    // Mock AuthClient
-    const mockAuthClientInstance = {
-      getProfile: jest.fn().mockResolvedValue({
-        id: 'user1',
-        email: 'test@example.com',
-        name: 'Test User',
-        interests: [],
-        isAdmin: false,
-      }),
-    } as unknown as jest.Mocked<AuthClient>
-
-    ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
   })
 
   describe('rendering', () => {
@@ -100,6 +51,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -119,6 +73,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -136,6 +93,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -152,6 +112,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -172,6 +135,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -193,6 +159,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -218,6 +187,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -238,6 +210,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -254,6 +229,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -273,6 +251,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -328,6 +309,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -375,6 +359,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 
@@ -421,6 +408,9 @@ describe('HomeScreen', () => {
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
         />
       )
 

@@ -2,26 +2,44 @@ import React from 'react'
 import { render } from '@testing-library/react-native'
 import { GuideDetailScreen } from './GuideDetailScreen'
 import { StepService } from '../../domain/services/StepService'
+import {
+  createMockAuthStorage,
+  createMockServerConfigStorage,
+  createMockGuideService,
+  createMockCategoryService,
+} from '../testUtils'
 
-// Mock services
-jest.mock('../../domain/services/GuideService')
-jest.mock('../../domain/services/CategoryService')
-jest.mock('../../infrastructure/storage/AuthStorage')
-jest.mock('../../infrastructure/repositories/GuideRepository')
-jest.mock('../../infrastructure/repositories/StepRepository')
-jest.mock('../../infrastructure/repositories/CategoryRepository')
+// Mock only ErrorReporter (static utility)
 jest.mock('../../infrastructure/monitoring/ErrorReporter')
 
 describe('GuideDetailScreen', () => {
   const mockOnBack = jest.fn()
+  let mockGuideService: ReturnType<typeof createMockGuideService>
+  let mockCategoryService: ReturnType<typeof createMockCategoryService>
+  let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
+  let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // Create mock infrastructure and services
+    mockAuthStorage = createMockAuthStorage()
+    mockServerConfigStorage = createMockServerConfigStorage()
+    mockGuideService = createMockGuideService([])
+    mockCategoryService = createMockCategoryService([])
   })
 
   it('renders guide detail screen without errors', () => {
     const { getByTestId } = render(
-      <GuideDetailScreen guideId="guide-1" onBack={mockOnBack} testID="test" />
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="test"
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
     )
     expect(getByTestId('test')).toBeTruthy()
   })
@@ -29,14 +47,28 @@ describe('GuideDetailScreen', () => {
   it('accepts optional onEdit callback', () => {
     const mockOnEdit = jest.fn()
     render(
-      <GuideDetailScreen guideId="guide-1" onBack={mockOnBack} onEdit={mockOnEdit} />
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        onEdit={mockOnEdit}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+      />
     )
     expect(mockOnEdit).toBeDefined()
   })
 
   it('passes testID to safe screen', () => {
     const { getByTestId } = render(
-      <GuideDetailScreen guideId="guide-1" onBack={mockOnBack} testID="test" />
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="test"
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
     )
 
     expect(getByTestId('test')).toBeTruthy()
@@ -44,11 +76,21 @@ describe('GuideDetailScreen', () => {
 
   it('handles different guide IDs', () => {
     const { rerender } = render(
-      <GuideDetailScreen guideId="guide-1" onBack={mockOnBack} />
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+      />
     )
 
     rerender(
-      <GuideDetailScreen guideId="guide-2" onBack={mockOnBack} />
+      <GuideDetailScreen
+        guideId="guide-2"
+        onBack={mockOnBack}
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
+      />
     )
 
     expect(mockOnBack).toBeDefined()
@@ -67,6 +109,8 @@ describe('GuideDetailScreen', () => {
         onBack={mockOnBack}
         stepService={mockStepService}
         testID="test"
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
       />
     )
 
@@ -82,6 +126,8 @@ describe('GuideDetailScreen', () => {
         onBack={mockOnBack}
         onAddStep={mockOnAddStep}
         testID="test"
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
       />
     )
 
@@ -97,6 +143,8 @@ describe('GuideDetailScreen', () => {
         onBack={mockOnBack}
         onEditStep={mockOnEditStep}
         testID="test"
+        guideService={mockGuideService}
+        categoryService={mockCategoryService}
       />
     )
 

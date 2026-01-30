@@ -24,6 +24,10 @@ interface CategoryFormScreenProps {
   onSave: (categoryId: string) => void
   onCancel: () => void
   isAdmin?: boolean
+  // Optional dependency injection
+  categoryService?: CategoryService
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
 }
 
 export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
@@ -33,6 +37,9 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
   onSave,
   onCancel,
   isAdmin = false,
+  categoryService: injectedCategoryService,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
 }) => {
   const [name, setName] = useState('')
   const [selectedParentId, setSelectedParentId] = useState<string | null>(parentId || null)
@@ -42,8 +49,32 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null)
   const [showAdminError, setShowAdminError] = useState(!isAdmin && mode === 'create')
 
-  const authStorage = new AuthStorage()
-  const serverConfigStorage = new ServerConfigStorage()
+  const authStorage = injectedAuthStorage || new AuthStorage()
+  const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
+
+  // Initialize service (use injected or create new)
+  const servicesRef = React.useRef<{
+    categoryService: CategoryService
+  } | null>(null)
+
+  const getServices = (serverUrl: string) => {
+    if (servicesRef.current) {
+      return servicesRef.current
+    }
+
+    if (injectedCategoryService) {
+      servicesRef.current = {
+        categoryService: injectedCategoryService,
+      }
+      return servicesRef.current
+    }
+
+    const repository = new CategoryRepository(serverUrl)
+    servicesRef.current = {
+      categoryService: new CategoryService(repository),
+    }
+    return servicesRef.current
+  }
 
   useEffect(() => {
     if (!isAdmin && mode === 'create') {
@@ -57,7 +88,7 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
       loadCategory()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, categoryId])
+  }, [mode, categoryId, injectedCategoryService])
 
   const loadCategory = async () => {
     try {
@@ -69,8 +100,8 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
       const serverUrl = await serverConfigStorage.getServerUrl()
       if (!serverUrl) throw new Error('No server URL configured')
 
-      const repository = new CategoryRepository(serverUrl)
-      const service = new CategoryService(repository)
+      const services = getServices(serverUrl)
+      const service = services.categoryService
 
       const category = await service.getCategoryById(categoryId as string, authToken)
       if (!category) {
@@ -112,8 +143,8 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
       const serverUrl = await serverConfigStorage.getServerUrl()
       if (!serverUrl) throw new Error('No server URL configured')
 
-      const repository = new CategoryRepository(serverUrl)
-      const service = new CategoryService(repository)
+      const services = getServices(serverUrl)
+      const service = services.categoryService
 
       if (mode === 'create') {
         const newCategory = await service.createCategory(name, selectedParentId, authToken)
@@ -151,8 +182,8 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
               const serverUrl = await serverConfigStorage.getServerUrl()
               if (!serverUrl) throw new Error('No server URL configured')
 
-              const repository = new CategoryRepository(serverUrl)
-              const service = new CategoryService(repository)
+              const services = getServices(serverUrl)
+              const service = services.categoryService
               await service.deleteCategory(categoryId, authToken)
 
               onSave(categoryId)
