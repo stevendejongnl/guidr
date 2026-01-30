@@ -15,7 +15,15 @@ export class GuideMapper {
    * Note: timestamps will be reset to current time due to entity constructor behavior.
    */
   static toDomain(dto: GuideDto): Guide {
-    const guide = new Guide(dto.id, dto.categoryId, dto.title, dto.description ?? undefined)
+    const guide = new Guide(
+      dto.id,
+      dto.categoryId,
+      dto.title,
+      dto.description ?? undefined,
+      dto.createdByUserId,
+      dto.isPublic,
+      dto.isHighlighted
+    )
 
     // Reconstruct stepIds array
     dto.stepIds.forEach(stepId => {
@@ -38,17 +46,26 @@ export class GuideMapper {
       stepIds: guide.stepIds,
       createdAt: guide.createdAt.toISOString(),
       updatedAt: guide.updatedAt.toISOString(),
+      createdByUserId: guide.createdByUserId,
+      isPublic: guide.isPublic,
+      isHighlighted: guide.isHighlighted,
     }
   }
 
   /**
    * Convert to API create request format.
    */
-  static toCreateRequest(categoryId: string, title: string, description?: string): GuideCreateRequest {
+  static toCreateRequest(
+    categoryId: string,
+    title: string,
+    description?: string,
+    isPublic: boolean = false
+  ): GuideCreateRequest {
     return {
       categoryId,
       title,
       description: description ?? null,
+      isPublic,
     }
   }
 
@@ -60,6 +77,8 @@ export class GuideMapper {
     return {
       title: guide.title,
       description: guide.description ?? null,
+      isPublic: guide.isPublic,
+      isHighlighted: guide.isHighlighted,
     }
   }
 }

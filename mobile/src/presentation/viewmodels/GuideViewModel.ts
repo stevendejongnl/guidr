@@ -9,6 +9,9 @@ export interface GuideViewModel {
   stepCount: number
   createdAt: Date
   updatedAt: Date
+  createdByUserId: string | undefined
+  isPublic: boolean
+  isHighlighted: boolean
 
   // UI-specific fields
   categoryName: string
@@ -55,6 +58,9 @@ export function createGuideViewModel(guide: Guide, categoryName: string): GuideV
     stepCount: guide.stepCount,
     createdAt: guide.createdAt,
     updatedAt: guide.updatedAt,
+    createdByUserId: guide.createdByUserId,
+    isPublic: guide.isPublic,
+    isHighlighted: guide.isHighlighted,
 
     // UI-specific fields
     categoryName,

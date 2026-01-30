@@ -5,9 +5,9 @@ import { colors, spacing, typography, commonStyles } from '../theme'
 interface EmptyStateProps {
   icon: string
   message: string
-  actionLabel?: string
-  onAction?: () => void
-  testID?: string
+  actionLabel?: string | undefined
+  onAction?: (() => void) | undefined
+  testID?: string | undefined
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({

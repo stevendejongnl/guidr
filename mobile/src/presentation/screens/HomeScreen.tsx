@@ -102,6 +102,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [activeSessions, setActiveSessions] = useState(0)
   const [completedSessions, setCompletedSessions] = useState(0)
   const [recommendedGuides, setRecommendedGuides] = useState<GuideViewModel[]>([])
+  const [featuredGuides, setFeaturedGuides] = useState<GuideViewModel[]>([])
   const [recentSessions, setRecentSessions] = useState<Array<{
     id: string
     guideId: string
@@ -205,6 +206,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       })
 
       setRecommendedGuides(recommendedViewModels)
+
+      // Get featured guides (public and highlighted)
+      const featuredList = allGuides
+        .filter(guide => guide.isPublic && guide.isHighlighted)
+        .slice(0, 3)
+
+      const featuredViewModels: GuideViewModel[] = featuredList.map(guide => {
+        const category = allCategories.find(c => c.id === guide.categoryId)
+        return createGuideViewModel(guide, category?.name || 'Uncategorized')
+      })
+
+      setFeaturedGuides(featuredViewModels)
 
       // Convert real sessions to ActivityItem-compatible format
       const recentSessionsList = allSessions.slice(0, 5).map(session => {
@@ -360,6 +373,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             />
           )}
         </View>
+
+        {/* Featured Guides */}
+        {!isLoading && featuredGuides.length > 0 && (
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>✨ Featured Guides</Text>
+            {featuredGuides.map(guide => (
+              <GuideCard
+                key={guide.id}
+                guide={guide}
+                onPress={() => handleViewGuide(guide.id)}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Recent Activity */}
         {!isLoading && recentSessions.length > 0 && (

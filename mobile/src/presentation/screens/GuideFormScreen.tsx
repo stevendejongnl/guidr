@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Switch,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { GuideService } from '../../domain/services/GuideService'
@@ -40,6 +41,9 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   const [description, setDescription] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(categoryId || null)
   const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null)
+  const [isPublic, setIsPublic] = useState(false)
+  const [isHighlighted, setIsHighlighted] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(mode === 'edit')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -54,8 +58,10 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
     const setupServices = async () => {
       const token = await authStorage.getAuthToken()
       const url = await serverConfigStorage.getServerUrl()
+      const isUserAdmin = await authStorage.getUserIsAdmin()
       if (token) setAuthToken(token)
       if (url) setServerUrl(url)
+      if (isUserAdmin) setIsAdmin(isUserAdmin)
     }
     setupServices()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,6 +98,8 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
       setTitle(guide.title)
       setDescription(guide.description || '')
       setSelectedCategoryId(guide.categoryId)
+      setIsPublic(guide.isPublic)
+      setIsHighlighted(guide.isHighlighted)
 
       // Load category name for display in edit mode
       const category = await categoryService.getCategoryById(guide.categoryId, authToken)
@@ -140,17 +148,29 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
       const service = new GuideService(guideRepository, stepRepository)
 
       if (mode === 'create') {
+        const userId = await authStorage.getUserId()
         const newGuide = await service.createGuide(
           selectedCategoryId as string,
           title,
           description || undefined,
-          authToken
+          authToken,
+          userId || undefined,
+          isPublic
         )
         onSave(newGuide.id)
       } else if (mode === 'edit' && guideId) {
+        const guide = await service.getGuideById(guideId, authToken)
+        if (!guide) throw new Error('Guide not found')
+
         await service.updateGuideTitle(guideId, title, authToken)
         if (description !== undefined) {
           await service.updateGuideDescription(guideId, description, authToken)
+        }
+        if (guide.isPublic !== isPublic) {
+          await service.toggleVisibility(guideId, isPublic, authToken)
+        }
+        if (isAdmin && guide.isHighlighted !== isHighlighted) {
+          await service.toggleHighlight(guideId, isHighlighted, authToken)
         }
         onSave(guideId)
       }
@@ -281,6 +301,42 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
             )}
           </View>
 
+          {/* Visibility Toggle */}
+          <View style={styles.toggleGroup}>
+            <Text style={styles.label}>Visibility</Text>
+            <View style={styles.toggleContainer}>
+              <Text style={styles.toggleLabel}>{isPublic ? 'Public' : 'Private'}</Text>
+              <Switch
+                value={isPublic}
+                onValueChange={setIsPublic}
+                disabled={saving}
+                testID="guide-visibility-toggle"
+              />
+            </View>
+            <Text style={styles.toggleHint}>
+              {isPublic ? 'Anyone can view this guide' : 'Only you and admins can view this guide'}
+            </Text>
+          </View>
+
+          {/* Highlight Toggle (Admin Only) */}
+          {isAdmin && (
+            <View style={styles.toggleGroup}>
+              <Text style={styles.label}>Featured</Text>
+              <View style={styles.toggleContainer}>
+                <Text style={styles.toggleLabel}>{isHighlighted ? 'Featured' : 'Not Featured'}</Text>
+                <Switch
+                  value={isHighlighted}
+                  onValueChange={setIsHighlighted}
+                  disabled={saving}
+                  testID="guide-highlight-toggle"
+                />
+              </View>
+              <Text style={styles.toggleHint}>
+                {isHighlighted ? 'This guide appears on the home screen' : 'This guide is not featured'}
+              </Text>
+            </View>
+          )}
+
           {/* Action Buttons */}
           <View style={styles.buttonGroup}>
             <TouchableOpacity
@@ -357,6 +413,32 @@ const styles = StyleSheet.create({
   categoryReadOnlyText: {
     fontSize: typography.sizeMd,
     color: colors.textPrimary,
+  },
+  toggleGroup: {
+    marginTop: spacing.xl,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.inputBackground,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+  },
+  toggleLabel: {
+    fontSize: typography.sizeMd,
+    color: colors.textPrimary,
+    fontWeight: '500',
+  },
+  toggleHint: {
+    fontSize: typography.sizeSm,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
   },
   buttonGroup: {
     marginTop: spacing.xl,

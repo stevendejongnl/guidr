@@ -34,6 +34,9 @@ describe('SessionService', () => {
       findByCategoryId: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
+      findMyGuides: jest.fn(),
+      findPublicGuides: jest.fn(),
+      findHighlightedGuides: jest.fn(),
     }
     mockStepRepository = {
       findById: jest.fn(),

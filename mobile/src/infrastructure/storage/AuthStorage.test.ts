@@ -193,8 +193,60 @@ describe('AuthStorage', () => {
     })
   })
 
+  describe('getUserId', () => {
+    it('should return null when no user ID is stored', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue(null)
+
+      const result = await storage.getUserId()
+
+      expect(result).toBeNull()
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_UserId')
+    })
+
+    it('should return stored user ID when user ID exists', async () => {
+      const userId = 'user-123'
+      mockAsyncStorage.getItem.mockResolvedValue(userId)
+
+      const result = await storage.getUserId()
+
+      expect(result).toBe(userId)
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_UserId')
+    })
+  })
+
+  describe('setUserId', () => {
+    it('should store user ID', async () => {
+      const userId = 'user-123'
+      mockAsyncStorage.setItem.mockResolvedValue()
+
+      await storage.setUserId(userId)
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith('Guidr_UserId', userId)
+    })
+
+    it('should throw error for empty user ID', async () => {
+      await expect(storage.setUserId('')).rejects.toThrow('User ID cannot be empty')
+      expect(mockAsyncStorage.setItem).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only user ID', async () => {
+      await expect(storage.setUserId('   ')).rejects.toThrow('User ID cannot be empty')
+      expect(mockAsyncStorage.setItem).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('clearUserId', () => {
+    it('should remove user ID from storage', async () => {
+      mockAsyncStorage.removeItem.mockResolvedValue()
+
+      await storage.clearUserId()
+
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserId')
+    })
+  })
+
   describe('clearAll', () => {
-    it('should remove auth token, user email, and admin status from storage', async () => {
+    it('should remove all auth data from storage', async () => {
       mockAsyncStorage.removeItem.mockResolvedValue()
 
       await storage.clearAll()
@@ -202,7 +254,8 @@ describe('AuthStorage', () => {
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_AuthToken')
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserEmail')
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserIsAdmin')
-      expect(mockAsyncStorage.removeItem).toHaveBeenCalledTimes(3)
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserId')
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledTimes(4)
     })
   })
 })

@@ -125,4 +125,91 @@ describe('Guide', () => {
       expect(guide.stepIds).toEqual(['step-1'])
     })
   })
+
+  describe('visibility management', () => {
+    it('should be private by default', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      expect(guide.isPublic).toBe(false)
+    })
+
+    it('should make guide public', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      guide.makePublic()
+
+      expect(guide.isPublic).toBe(true)
+    })
+
+    it('should make guide private', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      guide.makePublic()
+      guide.makePrivate()
+
+      expect(guide.isPublic).toBe(false)
+    })
+
+    it('should update timestamp when changing visibility', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const oldUpdatedAt = guide.updatedAt
+
+      setTimeout(() => {
+        guide.makePublic()
+        expect(guide.updatedAt.getTime()).toBeGreaterThan(oldUpdatedAt.getTime())
+      }, 10)
+    })
+  })
+
+  describe('highlighting management', () => {
+    it('should not be highlighted by default', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      expect(guide.isHighlighted).toBe(false)
+    })
+
+    it('should highlight guide', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      guide.highlight()
+
+      expect(guide.isHighlighted).toBe(true)
+    })
+
+    it('should unhighlight guide', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      guide.highlight()
+      guide.unhighlight()
+
+      expect(guide.isHighlighted).toBe(false)
+    })
+
+    it('should update timestamp when highlighting', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const oldUpdatedAt = guide.updatedAt
+
+      setTimeout(() => {
+        guide.highlight()
+        expect(guide.updatedAt.getTime()).toBeGreaterThan(oldUpdatedAt.getTime())
+      }, 10)
+    })
+  })
+
+  describe('ownership', () => {
+    it('should be created without owner by default', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      expect(guide.createdByUserId).toBeUndefined()
+    })
+
+    it('should track owner when provided', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies', undefined, 'user-123')
+      expect(guide.createdByUserId).toBe('user-123')
+    })
+
+    it('should identify if user is owner', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies', undefined, 'user-123')
+      expect(guide.isOwnedBy('user-123')).toBe(true)
+      expect(guide.isOwnedBy('user-456')).toBe(false)
+    })
+
+    it('should return false for isOwnedBy when no owner', () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      expect(guide.isOwnedBy('user-123')).toBe(false)
+    })
+  })
 })

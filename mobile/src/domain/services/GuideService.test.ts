@@ -17,6 +17,9 @@ describe('GuideService', () => {
       findByCategoryId: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
+      findMyGuides: jest.fn(),
+      findPublicGuides: jest.fn(),
+      findHighlightedGuides: jest.fn(),
     }
     mockStepRepository = {
       findById: jest.fn(),
@@ -47,6 +50,15 @@ describe('GuideService', () => {
       const guide = await guideService.createGuide('cat-1', 'Cookies', undefined, authToken)
 
       expect(guide.description).toBeUndefined()
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
+    })
+
+    it('should create a guide with owner and visibility', async () => {
+      const userId = 'user-123'
+      const guide = await guideService.createGuide('cat-1', 'Cookies', 'Classic recipe', authToken, userId, true)
+
+      expect(guide.createdByUserId).toBe(userId)
+      expect(guide.isPublic).toBe(true)
       expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
@@ -246,6 +258,68 @@ describe('GuideService', () => {
       mockGuideRepository.findById.mockResolvedValue(null)
 
       await expect(guideService.deleteGuide('guide-999', authToken)).rejects.toThrow(
+        'Guide with id guide-999 not found'
+      )
+    })
+  })
+
+  describe('visibility management', () => {
+    it('should toggle guide to public', async () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      mockGuideRepository.findById.mockResolvedValue(guide)
+
+      await guideService.toggleVisibility('guide-1', true, authToken)
+
+      expect(guide.isPublic).toBe(true)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
+    })
+
+    it('should toggle guide to private', async () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      guide.makePublic()
+      mockGuideRepository.findById.mockResolvedValue(guide)
+
+      await guideService.toggleVisibility('guide-1', false, authToken)
+
+      expect(guide.isPublic).toBe(false)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
+    })
+
+    it('should throw error when guide not found for visibility toggle', async () => {
+      mockGuideRepository.findById.mockResolvedValue(null)
+
+      await expect(guideService.toggleVisibility('guide-999', true, authToken)).rejects.toThrow(
+        'Guide with id guide-999 not found'
+      )
+    })
+  })
+
+  describe('highlight management', () => {
+    it('should highlight guide', async () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      mockGuideRepository.findById.mockResolvedValue(guide)
+
+      await guideService.toggleHighlight('guide-1', true, authToken)
+
+      expect(guide.isHighlighted).toBe(true)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
+    })
+
+    it('should unhighlight guide', async () => {
+      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      guide.highlight()
+      mockGuideRepository.findById.mockResolvedValue(guide)
+
+      await guideService.toggleHighlight('guide-1', false, authToken)
+
+      expect(guide.isHighlighted).toBe(false)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
+    })
+
+    it('should throw error when guide not found for highlight toggle', async () => {
+      mockGuideRepository.findById.mockResolvedValue(null)
+
+      await expect(guideService.toggleHighlight('guide-999', true, authToken)).rejects.toThrow(
         'Guide with id guide-999 not found'
       )
     })

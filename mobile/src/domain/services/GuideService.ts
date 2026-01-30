@@ -9,9 +9,16 @@ export class GuideService {
     private readonly stepRepository: IStepRepository
   ) {}
 
-  async createGuide(categoryId: string, title: string, description: string | undefined, authToken: string): Promise<Guide> {
+  async createGuide(
+    categoryId: string,
+    title: string,
+    description: string | undefined,
+    authToken: string,
+    createdByUserId?: string,
+    isPublic: boolean = false
+  ): Promise<Guide> {
     const id = uuid.v4() as string
-    const guide = new Guide(id, categoryId, title, description)
+    const guide = new Guide(id, categoryId, title, description, createdByUserId, isPublic)
     await this.guideRepository.save(guide, authToken)
     return guide
   }
@@ -86,5 +93,35 @@ export class GuideService {
     }
 
     await this.guideRepository.delete(id, authToken)
+  }
+
+  async toggleVisibility(id: string, isPublic: boolean, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(id, authToken)
+    if (!guide) {
+      throw new Error(`Guide with id ${id} not found`)
+    }
+
+    if (isPublic) {
+      guide.makePublic()
+    } else {
+      guide.makePrivate()
+    }
+
+    await this.guideRepository.save(guide, authToken)
+  }
+
+  async toggleHighlight(id: string, isHighlighted: boolean, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(id, authToken)
+    if (!guide) {
+      throw new Error(`Guide with id ${id} not found`)
+    }
+
+    if (isHighlighted) {
+      guide.highlight()
+    } else {
+      guide.unhighlight()
+    }
+
+    await this.guideRepository.save(guide, authToken)
   }
 }

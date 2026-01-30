@@ -43,6 +43,8 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public'>('all')
+  const [userId, setUserId] = useState<string | null>(null)
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
@@ -89,6 +91,11 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   }
 
   useEffect(() => {
+    const loadUserId = async () => {
+      const id = await authStorage.getUserId()
+      setUserId(id)
+    }
+    loadUserId()
     loadGuides()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId])
@@ -115,20 +122,30 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     })
   }, [guides, categoryMap])
 
-  // Filter guides based on search query
+  // Filter guides based on search query and filter tab
   const filteredGuides = useMemo(() => {
+    let filtered = guideViewModels
+
+    // Apply filter tab
+    if (filterTab === 'mine' && userId) {
+      filtered = filtered.filter(guide => guide.createdByUserId === userId)
+    } else if (filterTab === 'public') {
+      filtered = filtered.filter(guide => guide.isPublic)
+    }
+
+    // Apply search query
     if (!searchQuery.trim()) {
-      return guideViewModels
+      return filtered
     }
 
     const query = searchQuery.toLowerCase()
-    return guideViewModels.filter(
+    return filtered.filter(
       guide =>
         guide.title.toLowerCase().includes(query) ||
         guide.description?.toLowerCase().includes(query) ||
         guide.categoryName.toLowerCase().includes(query)
     )
-  }, [guideViewModels, searchQuery])
+  }, [guideViewModels, searchQuery, filterTab, userId])
 
   return (
     <SafeScreen testID="guide-list-screen">
@@ -157,6 +174,55 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
             placeholder="Search guides..."
             testID="search-guides"
           />
+        </View>
+
+        {/* Filter Tabs */}
+        <View style={styles.filterTabs}>
+          <TouchableOpacity
+            style={[
+              styles.filterTab,
+              filterTab === 'all' && styles.filterTabActive,
+            ]}
+            onPress={() => setFilterTab('all')}
+            testID="filter-tab-all"
+          >
+            <Text style={[
+              styles.filterTabText,
+              filterTab === 'all' && styles.filterTabTextActive,
+            ]}>
+              All
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterTab,
+              filterTab === 'mine' && styles.filterTabActive,
+            ]}
+            onPress={() => setFilterTab('mine')}
+            testID="filter-tab-mine"
+          >
+            <Text style={[
+              styles.filterTabText,
+              filterTab === 'mine' && styles.filterTabTextActive,
+            ]}>
+              My Guides
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterTab,
+              filterTab === 'public' && styles.filterTabActive,
+            ]}
+            onPress={() => setFilterTab('public')}
+            testID="filter-tab-public"
+          >
+            <Text style={[
+              styles.filterTabText,
+              filterTab === 'public' && styles.filterTabTextActive,
+            ]}>
+              Public
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {filteredGuides.length === 0 ? (
@@ -199,6 +265,34 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
+  },
+  filterTabs: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
+    gap: spacing.md,
+  },
+  filterTab: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.inputBackground,
+    alignItems: 'center',
+  },
+  filterTabActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterTabText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  filterTabTextActive: {
+    color: colors.textPrimary,
   },
   listContainer: {
     paddingHorizontal: spacing.lg,

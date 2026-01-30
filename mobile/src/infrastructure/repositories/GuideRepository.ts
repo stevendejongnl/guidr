@@ -188,7 +188,8 @@ export class GuideRepository implements IGuideRepository {
         const createRequest: GuideCreateRequest = GuideMapper.toCreateRequest(
           guide.categoryId,
           guide.title,
-          guide.description
+          guide.description,
+          guide.isPublic
         )
 
         const response = await fetch(`${this.apiBaseUrl}/guides`, {
@@ -252,6 +253,135 @@ export class GuideRepository implements IGuideRepository {
         throw error
       }
       throw new Error('An unexpected error occurred while deleting guide')
+    }
+  }
+
+  async findMyGuides(authToken: string): Promise<Guide[]> {
+    const cacheKey = 'List_myGuides'
+
+    // Check cache first
+    const cached = await this.cache.get(cacheKey)
+    if (cached) {
+      return (cached as unknown as GuideDto[]).map(dto => GuideMapper.toDomain(dto))
+    }
+
+    // Fetch from API
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/guides?my_guides=true`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to fetch my guides')
+      }
+
+      const dtos: GuideDto[] = await response.json()
+
+      // Cache the list
+      await this.cache.set(cacheKey, dtos)
+
+      // Also cache individual items
+      for (const dto of dtos) {
+        await this.cache.set(dto.id, dto)
+      }
+
+      return dtos.map(dto => GuideMapper.toDomain(dto))
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred while fetching my guides')
+    }
+  }
+
+  async findPublicGuides(authToken: string): Promise<Guide[]> {
+    const cacheKey = 'List_publicGuides'
+
+    // Check cache first
+    const cached = await this.cache.get(cacheKey)
+    if (cached) {
+      return (cached as unknown as GuideDto[]).map(dto => GuideMapper.toDomain(dto))
+    }
+
+    // Fetch from API
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/guides?public=true`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to fetch public guides')
+      }
+
+      const dtos: GuideDto[] = await response.json()
+
+      // Cache the list
+      await this.cache.set(cacheKey, dtos)
+
+      // Also cache individual items
+      for (const dto of dtos) {
+        await this.cache.set(dto.id, dto)
+      }
+
+      return dtos.map(dto => GuideMapper.toDomain(dto))
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred while fetching public guides')
+    }
+  }
+
+  async findHighlightedGuides(authToken: string): Promise<Guide[]> {
+    const cacheKey = 'List_highlightedGuides'
+
+    // Check cache first
+    const cached = await this.cache.get(cacheKey)
+    if (cached) {
+      return (cached as unknown as GuideDto[]).map(dto => GuideMapper.toDomain(dto))
+    }
+
+    // Fetch from API
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/guides?highlighted=true`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to fetch highlighted guides')
+      }
+
+      const dtos: GuideDto[] = await response.json()
+
+      // Cache the list
+      await this.cache.set(cacheKey, dtos)
+
+      // Also cache individual items
+      for (const dto of dtos) {
+        await this.cache.set(dto.id, dto)
+      }
+
+      return dtos.map(dto => GuideMapper.toDomain(dto))
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred while fetching highlighted guides')
     }
   }
 }

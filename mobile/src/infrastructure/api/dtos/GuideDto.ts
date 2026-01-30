@@ -10,6 +10,9 @@ export interface GuideDto {
   stepIds: string[]
   createdAt: string // ISO 8601
   updatedAt: string // ISO 8601
+  createdByUserId: string | undefined // Optional for backward compatibility
+  isPublic: boolean
+  isHighlighted: boolean
 }
 
 /**
@@ -19,6 +22,7 @@ export interface GuideCreateRequest {
   categoryId: string
   title: string
   description?: string | null
+  isPublic?: boolean // Default: false
 }
 
 /**
@@ -28,4 +32,6 @@ export interface GuideCreateRequest {
 export interface GuideUpdateRequest {
   title?: string
   description?: string | null
+  isPublic?: boolean
+  isHighlighted?: boolean
 }

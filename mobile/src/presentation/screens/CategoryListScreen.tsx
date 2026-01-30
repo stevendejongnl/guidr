@@ -23,6 +23,7 @@ interface CategoryListScreenProps {
   onCreateCategory: () => void
   onEditCategory: (categoryId: string) => void
   onBack: () => void
+  isAdmin?: boolean
 }
 
 export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
@@ -30,6 +31,7 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
   onCreateCategory,
   onEditCategory,
   onBack,
+  isAdmin = false,
 }) => {
   const [categories, setCategories] = useState<Category[]>([])
   const [childrenCount, setChildrenCount] = useState<Record<string, number>>({})
@@ -87,6 +89,10 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
   }
 
   const handleCategoryPress = (category: Category) => {
+    if (!isAdmin) {
+      // Non-admin users cannot edit categories
+      return
+    }
     if ((childrenCount[category.id] ?? 0) > 0) {
       // Navigate to child categories
       // This would be handled by parent component through callback
@@ -109,9 +115,13 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
             <Text style={commonStyles.linkText}>← Back</Text>
           </TouchableOpacity>
           <Text style={commonStyles.titleLarge}>Categories</Text>
-          <TouchableOpacity onPress={onCreateCategory}>
-            <Text style={commonStyles.linkText}>+ New</Text>
-          </TouchableOpacity>
+          {isAdmin ? (
+            <TouchableOpacity onPress={onCreateCategory} testID="create-category-button">
+              <Text style={commonStyles.linkText}>+ New</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 40 }} />
+          )}
         </View>
 
         {error && <Text style={commonStyles.errorText}>{error}</Text>}
@@ -119,9 +129,9 @@ export const CategoryListScreen: React.FC<CategoryListScreenProps> = ({
         {categories.length === 0 ? (
           <EmptyState
             icon="📭"
-            message="No categories yet"
-            actionLabel="Create Category"
-            onAction={onCreateCategory}
+            message={isAdmin ? 'No categories yet' : 'No categories available'}
+            actionLabel={isAdmin ? 'Create Category' : undefined}
+            onAction={isAdmin ? onCreateCategory : undefined}
           />
         ) : (
           <View style={styles.listContainer}>

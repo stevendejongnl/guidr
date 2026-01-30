@@ -1,13 +1,24 @@
 export class Guide {
   readonly id: string
   readonly categoryId: string
+  readonly createdByUserId: string | undefined
   private _title: string
   private _description: string | undefined
   private _stepIds: string[]
+  private _isPublic: boolean
+  private _isHighlighted: boolean
   readonly createdAt: Date
   private _updatedAt: Date
 
-  constructor(id: string, categoryId: string, title: string, description?: string) {
+  constructor(
+    id: string,
+    categoryId: string,
+    title: string,
+    description?: string,
+    createdByUserId?: string,
+    isPublic: boolean = false,
+    isHighlighted: boolean = false
+  ) {
     if (!id || id.trim() === '') {
       throw new Error('Guide id cannot be empty')
     }
@@ -20,9 +31,12 @@ export class Guide {
 
     this.id = id
     this.categoryId = categoryId
+    this.createdByUserId = createdByUserId
     this._title = title
     this._description = description
     this._stepIds = []
+    this._isPublic = isPublic
+    this._isHighlighted = isHighlighted
     this.createdAt = new Date()
     this._updatedAt = new Date()
   }
@@ -45,6 +59,18 @@ export class Guide {
 
   get updatedAt(): Date {
     return this._updatedAt
+  }
+
+  get isPublic(): boolean {
+    return this._isPublic
+  }
+
+  get isHighlighted(): boolean {
+    return this._isHighlighted
+  }
+
+  isOwnedBy(userId: string): boolean {
+    return this.createdByUserId === userId
   }
 
   updateTitle(newTitle: string): void {
@@ -73,5 +99,25 @@ export class Guide {
       this._stepIds.splice(index, 1)
       this._updatedAt = new Date()
     }
+  }
+
+  makePublic(): void {
+    this._isPublic = true
+    this._updatedAt = new Date()
+  }
+
+  makePrivate(): void {
+    this._isPublic = false
+    this._updatedAt = new Date()
+  }
+
+  highlight(): void {
+    this._isHighlighted = true
+    this._updatedAt = new Date()
+  }
+
+  unhighlight(): void {
+    this._isHighlighted = false
+    this._updatedAt = new Date()
   }
 }

@@ -23,6 +23,7 @@ interface CategoryFormScreenProps {
   parentId?: string | null
   onSave: (categoryId: string) => void
   onCancel: () => void
+  isAdmin?: boolean
 }
 
 export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
@@ -31,6 +32,7 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
   parentId = null,
   onSave,
   onCancel,
+  isAdmin = false,
 }) => {
   const [name, setName] = useState('')
   const [selectedParentId, setSelectedParentId] = useState<string | null>(parentId || null)
@@ -38,9 +40,17 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [showAdminError, setShowAdminError] = useState(!isAdmin && mode === 'create')
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
+
+  useEffect(() => {
+    if (!isAdmin && mode === 'create') {
+      setShowAdminError(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (mode === 'edit' && categoryId) {
@@ -163,6 +173,24 @@ export const CategoryFormScreen: React.FC<CategoryFormScreenProps> = ({
       <SafeScreen testID="category-form-screen">
         <View style={commonStyles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeScreen>
+    )
+  }
+
+  if (showAdminError) {
+    return (
+      <SafeScreen testID="category-form-screen">
+        <View style={commonStyles.loadingContainer}>
+          <Text style={[commonStyles.errorText, { textAlign: 'center', marginHorizontal: spacing.xl }]}>
+            Only administrators can create or edit categories.
+          </Text>
+          <TouchableOpacity
+            style={[commonStyles.buttonSecondary, { marginTop: spacing.xl, marginHorizontal: spacing.xl }]}
+            onPress={onCancel}
+          >
+            <Text style={commonStyles.buttonTextMuted}>Back</Text>
+          </TouchableOpacity>
         </View>
       </SafeScreen>
     )

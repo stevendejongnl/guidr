@@ -15,6 +15,9 @@ describe('GuideCard', () => {
     thumbnailEmoji: '🍞',
     createdAt: new Date(),
     updatedAt: new Date(),
+    createdByUserId: undefined,
+    isPublic: false,
+    isHighlighted: false,
   }
 
   it('renders guide data', () => {

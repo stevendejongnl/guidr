@@ -22,6 +22,9 @@ describe('GuideRepository', () => {
     stepIds: ['step-1', 'step-2'],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
+    createdByUserId: 'user-1',
+    isPublic: true,
+    isHighlighted: false,
   }
 
   const mockGuideDto2: GuideDto = {
@@ -32,6 +35,9 @@ describe('GuideRepository', () => {
     stepIds: ['step-3'],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
+    createdByUserId: 'user-2',
+    isPublic: false,
+    isHighlighted: true,
   }
 
   beforeEach(() => {
@@ -297,6 +303,164 @@ describe('GuideRepository', () => {
     })
   })
 
+  describe('findMyGuides', () => {
+    it('should return my guides from cache if available', async () => {
+      const cacheKey = 'Guidr_Cache_Guide_List_myGuides'
+      const cachedData = {
+        data: [mockGuideDto],
+        timestamp: Date.now(),
+        ttl: 5 * 60 * 1000,
+      }
+      ;(AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(cachedData))
+
+      const result = await repository.findMyGuides(authToken)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]!.id).toBe('guide-1')
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith(cacheKey)
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
+
+    it('should fetch my guides from API on cache miss', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => [mockGuideDto],
+      })
+
+      const result = await repository.findMyGuides(authToken)
+
+      expect(result).toHaveLength(1)
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/guides?my_guides=true',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mock-auth-token',
+          }),
+        })
+      )
+    })
+
+    it('should throw error on API failure', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Unauthorized' }),
+      })
+
+      await expect(repository.findMyGuides(authToken)).rejects.toThrow('Unauthorized')
+    })
+  })
+
+  describe('findPublicGuides', () => {
+    it('should return public guides from cache if available', async () => {
+      const cacheKey = 'Guidr_Cache_Guide_List_publicGuides'
+      const cachedData = {
+        data: [mockGuideDto],
+        timestamp: Date.now(),
+        ttl: 5 * 60 * 1000,
+      }
+      ;(AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(cachedData))
+
+      const result = await repository.findPublicGuides(authToken)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]!.id).toBe('guide-1')
+      expect(result[0]!.isPublic).toBe(true)
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith(cacheKey)
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
+
+    it('should fetch public guides from API on cache miss', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => [mockGuideDto],
+      })
+
+      const result = await repository.findPublicGuides(authToken)
+
+      expect(result).toHaveLength(1)
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/guides?public=true',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mock-auth-token',
+          }),
+        })
+      )
+    })
+
+    it('should throw error on API failure', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ detail: 'Server error' }),
+      })
+
+      await expect(repository.findPublicGuides(authToken)).rejects.toThrow('Server error')
+    })
+  })
+
+  describe('findHighlightedGuides', () => {
+    it('should return highlighted guides from cache if available', async () => {
+      const cacheKey = 'Guidr_Cache_Guide_List_highlightedGuides'
+      const cachedData = {
+        data: [mockGuideDto2],
+        timestamp: Date.now(),
+        ttl: 5 * 60 * 1000,
+      }
+      ;(AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(cachedData))
+
+      const result = await repository.findHighlightedGuides(authToken)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]!.id).toBe('guide-2')
+      expect(result[0]!.isHighlighted).toBe(true)
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith(cacheKey)
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
+
+    it('should fetch highlighted guides from API on cache miss', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => [mockGuideDto2],
+      })
+
+      const result = await repository.findHighlightedGuides(authToken)
+
+      expect(result).toHaveLength(1)
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/guides?highlighted=true',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mock-auth-token',
+          }),
+        })
+      )
+    })
+
+    it('should throw error on API failure', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: async () => ({ detail: 'Forbidden' }),
+      })
+
+      await expect(repository.findHighlightedGuides(authToken)).rejects.toThrow('Forbidden')
+    })
+  })
+
   describe('save', () => {
     it('should create new guide via POST', async () => {
       const newGuide = new Guide('guide-3', 'cat-2', 'New Recipe')
@@ -331,6 +495,7 @@ describe('GuideRepository', () => {
           categoryId: 'cat-2',
           title: 'New Recipe',
           description: null,
+          isPublic: false,
         }),
       })
     })
@@ -372,6 +537,8 @@ describe('GuideRepository', () => {
           body: JSON.stringify({
             title: 'Updated Title',
             description: null,
+            isPublic: false,
+            isHighlighted: false,
           }),
         }
       )
