@@ -33,6 +33,7 @@ import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
 import { CategoryService } from '../../domain/services/CategoryService'
+import { StepService } from '../../domain/services/StepService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
@@ -86,6 +87,7 @@ export const AppNavigator: React.FC = () => {
     guide: GuideService
     session: SessionService
     category: CategoryService
+    step: StepService
   } | null>(null)
 
   useEffect(() => {
@@ -200,6 +202,7 @@ export const AppNavigator: React.FC = () => {
         guide: new GuideService(guideRepository, stepRepository),
         session: new SessionService(sessionRepository, guideRepository, stepRepository),
         category: new CategoryService(categoryRepository),
+        step: new StepService(stepRepository),
       }
     }
   }, [serverUrl])
@@ -643,6 +646,9 @@ export const AppNavigator: React.FC = () => {
         onEdit={handleGuideDetailEdit}
         onAddStep={handleAddStep}
         onEditStep={handleEditStep}
+        {...(servicesRef.current && {
+          stepService: servicesRef.current.step,
+        })}
       />
     )
   }
