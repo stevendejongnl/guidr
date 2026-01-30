@@ -140,7 +140,24 @@ describe('HomeScreen', () => {
       )
 
       expect(getByText('Browse Guides')).toBeTruthy()
+    })
+
+    it('should render admin-only quick action buttons when isAdmin is true', () => {
+      const { getByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={true}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
+      )
+
+      expect(getByText('Browse Guides')).toBeTruthy()
       expect(getByText('Browse Categories')).toBeTruthy()
+      expect(getByText('Manage Guides')).toBeTruthy()
     })
   })
 
@@ -442,7 +459,7 @@ describe('HomeScreen', () => {
           onOpenSettings={mockOnOpenSettings}
           onOpenProfile={mockOnOpenProfile}
           onBrowseCategories={mockOnBrowseCategories}
-          isAdmin={false}
+          isAdmin={true}
           guideService={mockGuideService}
           sessionService={mockSessionService}
           categoryService={mockCategoryService}
