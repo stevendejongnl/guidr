@@ -14,9 +14,13 @@ from src.application.use_cases.guide import (
 )
 from src.container import Container
 from src.domain.entities import User
-from src.domain.exceptions import EntityNotFoundException, ValidationException
+from src.domain.exceptions import (
+    AuthorizationException,
+    EntityNotFoundException,
+    ValidationException,
+)
 
-from ..dependencies.auth import get_current_user
+from ..dependencies.auth import get_current_user, get_optional_current_user
 from ..models import ErrorResponse, GuideCreate, GuideResponse, GuideUpdate
 
 router = APIRouter(prefix="/guides", tags=["guides"])
@@ -63,6 +67,22 @@ def get_delete_guide_use_case() -> DeleteGuide:
     return _container.delete_guide_use_case()
 
 
+def _guide_response_from_dto(result) -> GuideResponse:  # type: ignore
+    """Convert GuideResponseDTO to GuideResponse Pydantic model."""
+    return GuideResponse(
+        id=result.id,
+        categoryId=result.category_id,
+        title=result.title,
+        description=result.description,
+        stepIds=result.step_ids,
+        createdByUserId=result.created_by_user_id,
+        isPublic=result.is_public,
+        isHighlighted=result.is_highlighted,
+        createdAt=result.created_at,
+        updatedAt=result.updated_at,
+    )
+
+
 @router.post(
     "",
     response_model=GuideResponse,
@@ -72,6 +92,7 @@ def get_delete_guide_use_case() -> DeleteGuide:
 async def create_guide(
     guide: GuideCreate,
     use_case: CreateGuide = Depends(get_create_guide_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> GuideResponse:
     """Create a new guide."""
     try:
@@ -79,17 +100,10 @@ async def create_guide(
             category_id=guide.category_id,
             title=guide.title,
             description=guide.description,
+            is_public=guide.is_public,
         )
-        result = await use_case.execute(dto)
-        return GuideResponse(
-            id=result.id,
-            categoryId=result.category_id,
-            title=result.title,
-            description=result.description,
-            stepIds=result.step_ids,
-            createdAt=result.created_at,
-            updatedAt=result.updated_at,
-        )
+        result = await use_case.execute(dto, current_user)  # type: ignore[call-arg]
+        return _guide_response_from_dto(result)
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -97,28 +111,32 @@ async def create_guide(
 @router.get(
     "/{guide_id}",
     response_model=GuideResponse,
-    responses={404: {"model": ErrorResponse}},
+    responses={403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
 )
 async def get_guide(
     guide_id: str,
     use_case: GetGuide = Depends(get_get_guide_use_case),
+    current_user: User | None = Depends(get_optional_current_user),
 ) -> GuideResponse:
-    """Get a guide by ID."""
-    result = await use_case.execute(guide_id)
+    """Get a guide by ID (with visibility check)."""
+    try:
+        result = await use_case.execute(guide_id, current_user)  # type: ignore[call-arg]
+    except EntityNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except AuthorizationException as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Guide not found: {guide_id}",
         )
-    return GuideResponse(
-        id=result.id,
-        categoryId=result.category_id,
-        title=result.title,
-        description=result.description,
-        stepIds=result.step_ids,
-        createdAt=result.created_at,
-        updatedAt=result.updated_at,
-    )
+    return _guide_response_from_dto(result)
 
 
 @router.get("", response_model=list[GuideResponse])
@@ -128,31 +146,25 @@ async def list_guides(
     use_case_by_category: GetGuidesByCategory = Depends(
         get_get_guides_by_category_use_case
     ),
+    current_user: User | None = Depends(get_optional_current_user),
 ) -> list[GuideResponse]:
-    """List guides with optional category filter."""
+    """List guides (filtered by visibility) with optional category filter."""
     if category_id:
-        results = await use_case_by_category.execute(category_id)
+        results = await use_case_by_category.execute(category_id, current_user)  # type: ignore[call-arg]
     else:
-        results = await use_case_all.execute()
+        results = await use_case_all.execute(current_user)  # type: ignore[call-arg]
 
-    return [
-        GuideResponse(
-            id=r.id,
-            categoryId=r.category_id,
-            title=r.title,
-            description=r.description,
-            stepIds=r.step_ids,
-            createdAt=r.created_at,
-            updatedAt=r.updated_at,
-        )
-        for r in results
-    ]
+    return [_guide_response_from_dto(r) for r in results]
 
 
 @router.patch(
     "/{guide_id}",
     response_model=GuideResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def update_guide(
     guide_id: str,
@@ -162,33 +174,41 @@ async def update_guide(
 ) -> GuideResponse:
     """Update a guide (partial update)."""
     try:
-        dto = GuideUpdateDTO(title=guide.title, description=guide.description)
+        dto = GuideUpdateDTO(
+            title=guide.title,
+            description=guide.description,
+            is_public=guide.is_public,
+            is_highlighted=guide.is_highlighted,
+        )
         result = await use_case.execute(guide_id, dto, current_user)
         if result is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Guide not found: {guide_id}",
             )
-        return GuideResponse(
-            id=result.id,
-            categoryId=result.category_id,
-            title=result.title,
-            description=result.description,
-            stepIds=result.step_ids,
-            createdAt=result.created_at,
-            updatedAt=result.updated_at,
-        )
+        return _guide_response_from_dto(result)
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except AuthorizationException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.delete("/{guide_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{guide_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+)
 async def delete_guide(
     guide_id: str,
     use_case: DeleteGuide = Depends(get_delete_guide_use_case),
     current_user: User = Depends(get_current_user),
 ) -> None:
-    """Delete a guide."""
-    await use_case.execute(guide_id, current_user)
+    """Delete a guide (owner or admin only)."""
+    try:
+        await use_case.execute(guide_id, current_user)
+    except EntityNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except AuthorizationException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))

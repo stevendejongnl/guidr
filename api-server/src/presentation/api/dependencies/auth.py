@@ -15,7 +15,14 @@ _container: Container | None = None
 # OAuth2 scheme for automatic Swagger UI authorization
 # scopes={} explicitly indicates this is Resource Owner Password Credentials flow
 # (not Client Credentials), preventing Swagger UI from showing client_id/client_secret
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", scopes={})
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login", scopes={}, auto_error=True
+)
+
+# Optional OAuth2 scheme for endpoints that support unauthenticated access
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login", scopes={}, auto_error=False
+)
 
 
 def set_container(container):
@@ -54,6 +61,60 @@ async def get_current_user(
     Raises:
         HTTPException(401): If token is missing, invalid, expired, or user not found
     """
+    # Verify JWT token
+    payload = jwt_service.verify_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Extract user ID from token payload
+    user_id = payload.get("sub")
+    if not isinstance(user_id, str) or user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Fetch user from repository
+    user_entity_id = EntityId(user_id)
+    user = await user_repository.find_by_id(user_entity_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return user
+
+
+async def get_optional_current_user(
+    token: str | None = Depends(oauth2_scheme_optional),
+    jwt_service: JWTService = Depends(get_jwt_service),
+    user_repository: IUserRepository = Depends(get_user_repository),
+) -> User | None:
+    """Extract authenticated user from JWT Bearer token (optional).
+
+    If no token is provided, returns None. Otherwise behaves like get_current_user.
+
+    Args:
+        token: JWT Bearer token from Authorization header (optional)
+        jwt_service: Service for JWT token validation
+        user_repository: Repository to fetch user entity
+
+    Returns:
+        User entity for the authenticated user, or None if unauthenticated
+
+    Raises:
+        HTTPException(401): If token is provided but invalid, expired, or user not found
+    """
+    if token is None:
+        return None
+
     # Verify JWT token
     payload = jwt_service.verify_token(token)
     if payload is None:

@@ -105,10 +105,16 @@ This document tracks progress on implementing guide ownership, visibility contro
    - Accept `current_user: User` parameter
    - Add `require_admin(current_user)` check
 
-## Pending Implementation (⏳ Phase 4-8)
+## Phase 4: Backend API Routes and Models ✅ (Design Complete)
+**Status**: Route design and models complete - Use case integration pending
 
-### Phase 4: Backend API Routes and Models
-**Status**: Needs implementation
+**Completed**:
+- ✅ Updated Pydantic models with new fields (is_public, is_highlighted, created_by_user_id)
+- ✅ Added optional authentication support (get_optional_current_user)
+- ✅ Designed route handlers with proper authorization error handling (403 Forbidden)
+- ✅ Created helper function for consistent DTO-to-Pydantic response conversion
+- ✅ Updated response specs to include 403 status codes
+- ✅ All model tests passing (4/4)
 
 **Key Changes**:
 - Add `current_user` dependency injection to all guide endpoints
@@ -145,8 +151,9 @@ Authorization:           11/11 passing ✅
 DTOs:                     7/7 passing ✅
 Mappers:                  4/4 passing ✅
 Repository Integration:    5/5 passing ✅
+API Models:                4/4 passing ✅
 
-Total: 35/35 passing (100%) ✅✅✅
+Total: 39/39 passing (100%) ✅✅✅
 ```
 
 ## Critical Implementation Notes
