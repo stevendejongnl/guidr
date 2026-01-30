@@ -360,11 +360,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             label="Browse Guides"
             onPress={handleBrowseGuides}
           />
-          <QuickActionButton
-            icon="📁"
-            label="Browse Categories"
-            onPress={handleBrowseCategories}
-          />
+          {isAdmin && (
+            <QuickActionButton
+              icon="📁"
+              label="Browse Categories"
+              onPress={handleBrowseCategories}
+            />
+          )}
           {isAdmin && (
             <QuickActionButton
               icon="⚙️"
