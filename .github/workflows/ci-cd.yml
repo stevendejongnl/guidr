@@ -126,9 +126,6 @@ jobs:
   web-app-lint:
     name: Web App Lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web-app
     steps:
       - uses: actions/checkout@v4
 
@@ -136,23 +133,20 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: web-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run web:lint
 
       - name: Run TypeScript check
-        run: npm run typecheck
+        run: npm run web:typecheck
 
   web-app-test:
     name: Web App Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web-app
     steps:
       - uses: actions/checkout@v4
 
@@ -160,13 +154,13 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: web-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm --prefix web-app test
 
   android-build:
     name: Android Build
