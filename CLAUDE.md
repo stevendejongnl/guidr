@@ -66,13 +66,29 @@ Custom Claude Code skills for workflow acceleration:
 - **Rules**: No AI attribution, rebase before push, **ALWAYS validate pre-push before pushing**
 
 ## Pre-Push Validation ⚠️
-**CRITICAL**: After successful `git commit`, ALWAYS run pre-push checks locally to validate:
-1. Pre-commit runs: TypeScript + ESLint (mobile/web) + Ruff/Mypy (API)
-2. Pre-push runs: Security scanning + Mobile tests + API tests
-3. If pre-push fails, fix issues and amend commit: `git add . && git commit --amend --no-edit`
-4. **WAIT for explicit user instruction before running `git push`** - NEVER push without being asked
-5. If pushing later, verify conflicts resolved properly - never force push to main
-6. See `.husky/pre-commit` and `.husky/pre-push` for exact checks
+**CRITICAL**: Three-step validation workflow (no exceptions):
+
+**1. Create Commit** (auto-runs pre-commit checks):
+- Stage files: `git add <files>`
+- Commit: `git commit -m "..."`
+- Pre-commit hook runs: TypeScript + ESLint (mobile/web) + Ruff/Mypy (API)
+- If pre-commit fails: fix issues and amend: `git add . && git commit --amend --no-edit`
+
+**2. Run Pre-Push Checks** (ALWAYS after successful commit):
+- `npm run mobile:test` - All Jest tests (1000+)
+- `npm run api:test` - All pytest tests (400+)
+- `npm run security:all` - Security scanning (mobile/web/api)
+- If pre-push fails: fix issues and amend commit, repeat this step
+
+**3. Ask for Permission** (only after pre-push passes):
+- Never run `git push` without explicit user instruction
+- After pre-push validation succeeds, ask: "All checks passed. Ready to push?"
+- Wait for user confirmation before pushing to remote
+
+**Manual verification** (if pushing later):
+- Run steps 2-3 again before pushing
+- Never force push to main (`git push --force`)
+- See `.husky/pre-commit` and `.husky/pre-push` for exact checks
 
 ## Common Issues
 **Android**: JAVA_HOME=/usr/lib/jvm/java-17-openjdk | `npx react-native doctor`
