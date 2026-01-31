@@ -36,7 +36,7 @@ describe('CategoryRepository', () => {
     ;(AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
     ;(AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined)
     ;(AsyncStorage.removeItem as jest.Mock).mockResolvedValue(undefined)
-    repository = new CategoryRepository(serverUrl)
+    repository = new CategoryRepository(serverUrl, async () => authToken)
   })
 
   describe('constructor', () => {
@@ -104,13 +104,13 @@ describe('CategoryRepository', () => {
       expect(result?.name).toBe('Cooking')
       expect(global.fetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/categories/cat-1',
-        {
+        expect.objectContaining({
           method: 'GET',
-          headers: {
+          headers: expect.objectContaining({
             'Authorization': 'Bearer mock-auth-token',
             'Content-Type': 'application/json',
-          },
-        }
+          }),
+        })
       )
       expect(AsyncStorage.setItem).toHaveBeenCalled()
     })
@@ -133,10 +133,11 @@ describe('CategoryRepository', () => {
         ok: false,
         status: 500,
         json: async () => ({ detail: 'Internal server error' }),
+        text: async () => JSON.stringify({ detail: 'Internal server error' }),
       })
 
       await expect(repository.findById('cat-1', authToken)).rejects.toThrow(
-        'Internal server error'
+        /GET \/categories\/cat-1 failed with status 500/
       )
     })
 
@@ -146,10 +147,11 @@ describe('CategoryRepository', () => {
         ok: false,
         status: 500,
         json: async () => ({}),
+        text: async () => JSON.stringify({}),
       })
 
       await expect(repository.findById('cat-1', authToken)).rejects.toThrow(
-        'Failed to fetch category'
+        /GET \/categories\/cat-1 failed with status 500/
       )
     })
   })
@@ -187,13 +189,13 @@ describe('CategoryRepository', () => {
       expect(result).toHaveLength(2)
       expect(global.fetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/categories',
-        {
+        expect.objectContaining({
           method: 'GET',
-          headers: {
+          headers: expect.objectContaining({
             'Authorization': 'Bearer mock-auth-token',
             'Content-Type': 'application/json',
-          },
-        }
+          }),
+        })
       )
     })
 
@@ -229,9 +231,12 @@ describe('CategoryRepository', () => {
         ok: false,
         status: 401,
         json: async () => ({ detail: 'Unauthorized' }),
+        text: async () => JSON.stringify({ detail: 'Unauthorized' }),
       })
 
-      await expect(repository.findAll(authToken)).rejects.toThrow('Unauthorized')
+      await expect(repository.findAll(authToken)).rejects.toThrow(
+        /GET \/categories failed with status 401/
+      )
     })
   })
 
@@ -335,17 +340,17 @@ describe('CategoryRepository', () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/categories',
-        {
+        expect.objectContaining({
           method: 'POST',
-          headers: {
+          headers: expect.objectContaining({
             'Authorization': 'Bearer mock-auth-token',
             'Content-Type': 'application/json',
-          },
+          }),
           body: JSON.stringify({
             name: 'Desserts',
             parentId: null,
           }),
-        }
+        })
       )
     })
 
@@ -376,16 +381,16 @@ describe('CategoryRepository', () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/categories/cat-1',
-        {
+        expect.objectContaining({
           method: 'PATCH',
-          headers: {
+          headers: expect.objectContaining({
             'Authorization': 'Bearer mock-auth-token',
             'Content-Type': 'application/json',
-          },
+          }),
           body: JSON.stringify({
             name: 'Cooking Updated',
           }),
-        }
+        })
       )
     })
 
@@ -419,10 +424,11 @@ describe('CategoryRepository', () => {
           ok: false,
           status: 400,
           json: async () => ({ detail: 'Invalid category name' }),
+          text: async () => JSON.stringify({ detail: 'Invalid category name' }),
         })
 
       await expect(repository.save(newCategory, authToken)).rejects.toThrow(
-        'Invalid category name'
+        /POST \/categories failed with status 400/
       )
     })
   })
@@ -438,13 +444,13 @@ describe('CategoryRepository', () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/categories/cat-1',
-        {
+        expect.objectContaining({
           method: 'DELETE',
-          headers: {
+          headers: expect.objectContaining({
             'Authorization': 'Bearer mock-auth-token',
             'Content-Type': 'application/json',
-          },
-        }
+          }),
+        })
       )
     })
 
@@ -474,9 +480,12 @@ describe('CategoryRepository', () => {
         ok: false,
         status: 403,
         json: async () => ({ detail: 'Permission denied' }),
+        text: async () => JSON.stringify({ detail: 'Permission denied' }),
       })
 
-      await expect(repository.delete('cat-1', authToken)).rejects.toThrow('Permission denied')
+      await expect(repository.delete('cat-1', authToken)).rejects.toThrow(
+        /DELETE \/categories\/cat-1 failed with status 403/
+      )
     })
   })
 
