@@ -32,19 +32,34 @@ guidr/
 
 ## Design System (@guidr/shared)
 **Package**: `shared/` (npm workspace)
+
+**Architecture**: Platform-agnostic definitions with platform-specific adapters
+```
+shared/src/
+├── tokens/                 # Design tokens (colors, spacing, typography, etc.)
+├── styles/
+│   ├── definitions/        # Platform-agnostic style objects
+│   │   ├── buttons, cards, badges, forms, inputs, typography, layout, common
+│   │   └── Can be imported to build adapters for new platforms
+│   ├── adapters/react-native/  # Convert definitions → React Native StyleSheets
+│   └── react-native/       # Backwards compatibility re-exports
+```
+
 **Exports**:
-- `@guidr/shared/tokens` - Platform-agnostic design tokens (colors, spacing, typography, borderRadius, motionTokens, componentDefaults, iconTokens, nodeTokens)
-- `@guidr/shared/styles/react-native` - Mobile component styles with helper functions (buttonStyles, cardStyles, badgeStyles, inputStyles, typographyStyles, layoutStyles, commonStyles)
+- `@guidr/shared/tokens` - Design tokens (colors, spacing, typography, borderRadius, etc.)
+- `@guidr/shared/styles/react-native` - React Native StyleSheets + helpers (buttonStyles, formStyles, commonStyles, etc.)
+- `@guidr/shared/styles/definitions` - Platform-agnostic style definitions (for building adapters)
 
 **Key Helpers**:
-- `getButtonStyle(variant, disabled, size)` - Returns styled button array
-- `getStatusBadgeStyle(status, variant, size)` - Returns badge container & text styles
-- `getCardStyle(variant, hasMargin)` - Returns card style array
-- `getInputStyle(options)` - Returns input style array with state handling
+- `getButtonStyle(variant, disabled, size)` - Returns button style array
+- `getStatusBadgeStyle(status, variant, size)` - Returns badge styles
+- `getFormGroupStyle(compact)` - Returns form group style
+- `getInputStyle(options)` - Returns input style array
 
 **Usage**:
-- Mobile: `import { colors, spacing, buttonStyles, getButtonStyle } from '@guidr/shared/tokens'` or `'@guidr/shared/styles/react-native'`
-- Web: `import { colors, spacingWeb, typography } from '@guidr/shared/tokens'` (use tokens only, manage Lit CSS separately)
+- Mobile: `import { colors, spacing, formStyles, getFormGroupStyle } from '@guidr/shared/styles/react-native'`
+- Web: `import { colors, spacingWeb, typography } from '@guidr/shared/tokens'` (manage Lit CSS separately)
+- New platforms: `import { buttonDefinitions, formDefinitions } from '@guidr/shared/styles/definitions'` → create adapter
 
 ## Commands
 **Mobile** (`mobile/`): `npm start`, `npm test`, `npm run lint`, `npm run typecheck`, `npm run android`, `npm run ios`, `./build-android.sh`
