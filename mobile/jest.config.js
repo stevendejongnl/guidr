@@ -9,14 +9,27 @@ module.exports = {
     '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
     '^@presentation/(.*)$': '<rootDir>/src/presentation/$1',
     '^@common/(.*)$': '<rootDir>/src/common/$1',
+    '^@guidr/shared/tokens$': '<rootDir>/../shared/src/tokens/index.ts',
+    '^@guidr/shared/styles/react-native$': '<rootDir>/../shared/src/styles/react-native/index.ts',
+    '^@guidr/shared/styles/adapters/react-native$': '<rootDir>/../shared/src/styles/adapters/react-native/index.ts',
+    '^@guidr/shared/styles/definitions$': '<rootDir>/../shared/src/styles/definitions/index.ts',
+    '^@guidr/shared/api/adapters/fetch$': '<rootDir>/../shared/src/api/adapters/fetch/index.ts',
+    '^@guidr/shared/api/definitions$': '<rootDir>/__mocks__/@guidr/shared.ts',
     '^react-native$': '<rootDir>/node_modules/react-native',
   },
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
+        isolatedModules: false,
         tsconfig: {
           jsx: 'react',
+          plugins: [
+            {
+              transform: 'typia/lib/transform',
+              type: 'program',
+            },
+          ],
         },
       },
     ],
