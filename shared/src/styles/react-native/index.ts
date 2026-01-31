@@ -1,58 +1,13 @@
 /**
- * React Native component style library
- * Shared StyleSheet definitions and helper functions
+ * React Native component style library (backwards compatibility layer)
+ * Re-exports from adapters/react-native for convenient importing
+ *
+ * This layer maintains backwards compatibility while supporting the new
+ * platform-agnostic definitions architecture.
  *
  * Usage:
- * import { buttonStyles, getButtonStyle } from '@guidr/shared/styles/react-native'
+ * import { buttonStyles, getButtonStyle, formStyles } from '@guidr/shared/styles/react-native'
  */
 
-export {
-  buttonStyles,
-  getButtonStyle,
-  type ButtonVariant,
-  type ButtonSize,
-} from './buttons'
-
-export {
-  cardStyles,
-  getCardStyle,
-  type CardVariant,
-} from './cards'
-
-export {
-  badgeStyles,
-  statusBadgeColors,
-  getStatusBadgeLabel,
-  getStatusBadgeStyle,
-  getStatusColor,
-  type BadgeVariant,
-  type BadgeSize,
-  type StatusBadgeStatus,
-} from './badges'
-
-export {
-  inputStyles,
-  inputPlaceholderColor,
-  getInputStyle,
-} from './inputs'
-
-export {
-  typographyStyles,
-} from './typography'
-
-export {
-  layoutStyles,
-} from './layout'
-
-export {
-  commonStyles,
-} from './common'
-
-export {
-  formStyles,
-  getLabelStyle,
-  getInputFormStyle,
-  getFormGroupStyle,
-  getButtonGroupStyle,
-  type FormFieldSize,
-} from './forms'
+// Re-export everything from the adapters for backwards compatibility
+export * from '../adapters/react-native'
