@@ -17,6 +17,7 @@ export {
 export {
   badgeDefinitions,
   statusBadgeColorMap,
+  statusBadgeLabels,
   type BadgeVariant,
   type BadgeSize,
   type StatusBadgeStatus,
@@ -24,6 +25,7 @@ export {
 
 export {
   inputDefinitions,
+  inputPlaceholderColor,
 } from './inputs'
 
 export {

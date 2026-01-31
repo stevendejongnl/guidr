@@ -12,14 +12,34 @@
     "./styles/react-native": {
       "types": "./src/styles/react-native/index.ts",
       "import": "./src/styles/react-native/index.ts"
+    },
+    "./styles/adapters/react-native": {
+      "types": "./src/styles/adapters/react-native/index.ts",
+      "import": "./src/styles/adapters/react-native/index.ts"
+    },
+    "./styles/definitions": {
+      "types": "./src/styles/definitions/index.ts",
+      "import": "./src/styles/definitions/index.ts"
+    },
+    "./api/definitions": {
+      "types": "./src/api/definitions/index.ts",
+      "import": "./src/api/definitions/index.ts"
+    },
+    "./api/adapters/fetch": {
+      "types": "./src/api/adapters/fetch/index.ts",
+      "import": "./src/api/adapters/fetch/index.ts"
     }
   },
   "files": [
     "src"
   ],
   "devDependencies": {
+    "@ryoppippi/unplugin-typia": "^2.6.5",
     "@types/react-native": "^0.71",
     "react-native": "^0.83.1",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "typia": "^11.0.3"
   }
 }
