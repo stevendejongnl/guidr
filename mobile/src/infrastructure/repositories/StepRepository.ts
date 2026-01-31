@@ -122,7 +122,7 @@ export class StepRepository implements IStepRepository {
 
     // Fetch from API
     try {
-      const response = await fetch(`${this.apiBaseUrl}/steps?guideId=${guideId}`, {
+      const response = await fetch(`${this.apiBaseUrl}/steps?guide_id=${guideId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${authToken}`,
