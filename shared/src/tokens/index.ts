@@ -43,5 +43,5 @@ export {
   type NodeToken,
 } from './components'
 
-// Re-export common styles from react-native styles (for backwards compatibility during migration)
-export { commonStyles } from '../styles/react-native/common'
+// Common styles (re-exported from adapters for convenience during migration)
+export { commonStyles } from '../styles/adapters/react-native'

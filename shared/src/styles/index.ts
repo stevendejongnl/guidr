@@ -1,21 +1,17 @@
 /**
- * Shared styling system with platform-agnostic definitions and adapters
+ * Shared styling system - Platform-agnostic definitions with adapters
  *
  * Architecture:
- * - definitions/ - Platform-agnostic style definitions (TypeScript objects)
- * - adapters/react-native/ - React Native StyleSheet adapter
- * - adapters/lit/ - Lit/Web CSS adapter (future)
+ * - definitions/ - Platform-agnostic style definitions
+ * - adapters/ - Platform-specific implementations (react-native, lit, etc.)
  *
  * Usage:
- * // For React Native (with StyleSheets)
- * import { buttonStyles, formStyles } from '@guidr/shared/styles/react-native'
+ * // React Native
+ * import { buttonStyles, formStyles } from '@guidr/shared/styles/adapters/react-native'
  *
- * // For platform-agnostic definitions (to build other adapters)
+ * // Build custom adapters
  * import { buttonDefinitions, formDefinitions } from '@guidr/shared/styles/definitions'
  */
 
-// Export definitions for custom adapters and extensions
 export * as definitions from './definitions'
-
-// Export React Native adapter (main entry point for mobile app)
-export * from './react-native'
+export * as reactNative from './adapters/react-native'
