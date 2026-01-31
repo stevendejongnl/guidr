@@ -22,12 +22,29 @@ Guidr monorepo: Mobile (React Native) + API (FastAPI) + Web (React). DDD/TDD arc
 ## Structure
 ```
 guidr/
+├── shared/        # Design system package: tokens + React Native component styles
 ├── mobile/        # React Native: src/{common,domain,infrastructure,presentation}
 ├── api-server/    # FastAPI backend
 ├── web-app/       # React Vite app
 ├── docs/adr/      # Architectural decisions
 └── scripts/       # Build scripts
 ```
+
+## Design System (@guidr/shared)
+**Package**: `shared/` (npm workspace)
+**Exports**:
+- `@guidr/shared/tokens` - Platform-agnostic design tokens (colors, spacing, typography, borderRadius, motionTokens, componentDefaults, iconTokens, nodeTokens)
+- `@guidr/shared/styles/react-native` - Mobile component styles with helper functions (buttonStyles, cardStyles, badgeStyles, inputStyles, typographyStyles, layoutStyles, commonStyles)
+
+**Key Helpers**:
+- `getButtonStyle(variant, disabled, size)` - Returns styled button array
+- `getStatusBadgeStyle(status, variant, size)` - Returns badge container & text styles
+- `getCardStyle(variant, hasMargin)` - Returns card style array
+- `getInputStyle(options)` - Returns input style array with state handling
+
+**Usage**:
+- Mobile: `import { colors, spacing, buttonStyles, getButtonStyle } from '@guidr/shared/tokens'` or `'@guidr/shared/styles/react-native'`
+- Web: `import { colors, spacingWeb, typography } from '@guidr/shared/tokens'` (use tokens only, manage Lit CSS separately)
 
 ## Commands
 **Mobile** (`mobile/`): `npm start`, `npm test`, `npm run lint`, `npm run typecheck`, `npm run android`, `npm run ios`, `./build-android.sh`
@@ -55,6 +72,7 @@ Custom Claude Code skills for workflow acceleration:
 **TDD**: RED → GREEN → REFACTOR → VERIFY
 **Type Safety**: No `any`/`Any` types (except MongoDB `dict[str, Any]`, test mocks with warnings)
 **Imports**: Always top-level (no conditional/lazy imports inside functions)
+**Styling (Mobile)**: Use `@guidr/shared` instead of local theme. No component-level `StyleSheet.create` (only shared libraries). Dynamic styles use helper functions from shared package
 
 ## Build & Deploy
 **Android**: Gradle 8.13, Java 17 (NOT 25+), NDK 27.1, SDK 36, Package: com.guidr
