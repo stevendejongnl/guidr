@@ -47,3 +47,12 @@ export {
 export {
   commonStyles,
 } from './common'
+
+export {
+  formStyles,
+  getLabelStyle,
+  getInputFormStyle,
+  getFormGroupStyle,
+  getButtonGroupStyle,
+  type FormFieldSize,
+} from './forms'
