@@ -676,6 +676,7 @@ export const AppNavigator: React.FC = () => {
   if (showGuideDetail && selectedGuideId) {
     return (
       <GuideDetailScreen
+        key={selectedGuideId}
         guideId={selectedGuideId}
         onBack={() => {
           setShowGuideDetail(false)
@@ -721,7 +722,7 @@ export const AppNavigator: React.FC = () => {
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
       onBrowseGuides={handleBrowseGuides}
-      {...(isAdmin && { onManageGuides: handleManageGuides })}
+      onManageGuides={handleManageGuides}
       onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
       isAdmin={isAdmin}

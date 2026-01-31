@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from time import sleep
 
 import pytest
 
@@ -271,14 +272,17 @@ class TestSession:
         session = Session(id=id, guide_id=guide_id)
 
         initial_updated = session.updated_at
+        sleep(0.001)  # Ensure microsecond difference
         session.start()
         assert session.updated_at > initial_updated
 
         start_updated = session.updated_at
+        sleep(0.001)  # Ensure microsecond difference
         session.pause()
         assert session.updated_at > start_updated
 
         pause_updated = session.updated_at
+        sleep(0.001)  # Ensure microsecond difference
         session.resume()
         assert session.updated_at > pause_updated
 

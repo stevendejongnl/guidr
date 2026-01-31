@@ -59,6 +59,16 @@ jobs:
     defaults:
       run:
         working-directory: api-server
+    services:
+      mongodb:
+        image: mongo:latest
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
     steps:
       - uses: actions/checkout@v4
 
