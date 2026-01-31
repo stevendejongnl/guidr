@@ -676,6 +676,7 @@ export const AppNavigator: React.FC = () => {
   if (showGuideDetail && selectedGuideId) {
     return (
       <GuideDetailScreen
+        key={selectedGuideId}
         guideId={selectedGuideId}
         onBack={() => {
           setShowGuideDetail(false)
