@@ -265,7 +265,7 @@ describe('StepRepository', () => {
 
       expect(result).toHaveLength(2)
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/steps?guideId=guide-1',
+        'http://localhost:8000/api/v1/steps?guide_id=guide-1',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
