@@ -24,6 +24,8 @@ interface StepFormScreenProps {
   order?: number
   onSave: (stepId: string) => void
   onCancel: () => void
+  canEdit?: boolean
+  isAdmin?: boolean
   // Optional dependencies (for testing/DI)
   stepService?: StepService
 }
@@ -38,6 +40,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   order = 0,
   onSave,
   onCancel,
+  canEdit = true,
   stepService: injectedStepService,
 }) => {
   const [title, setTitle] = useState('')
@@ -47,6 +50,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [showAuthError, setShowAuthError] = useState(!canEdit)
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
@@ -68,6 +72,13 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
     serviceRef.current = new StepService(stepRepository)
     return serviceRef.current
   }
+
+  useEffect(() => {
+    if (!canEdit) {
+      setShowAuthError(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (mode === 'edit' && stepId) {
@@ -128,6 +139,11 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   }
 
   const handleSave = async () => {
+    if (!canEdit) {
+      Alert.alert('Unauthorized', 'You do not have permission to edit this step')
+      return
+    }
+
     if (!validateForm()) {
       return
     }
@@ -175,6 +191,11 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   const handleDelete = () => {
     if (mode !== 'edit' || !stepId) return
 
+    if (!canEdit) {
+      Alert.alert('Unauthorized', 'You do not have permission to delete this step')
+      return
+    }
+
     Alert.alert(
       'Delete Step',
       'Are you sure you want to delete this step? This action cannot be undone.',
@@ -213,6 +234,24 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
       <SafeScreen testID="step-form-screen">
         <View style={commonStyles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeScreen>
+    )
+  }
+
+  if (showAuthError) {
+    return (
+      <SafeScreen testID="step-form-screen">
+        <View style={commonStyles.loadingContainer}>
+          <Text style={[commonStyles.errorText, { textAlign: 'center', marginHorizontal: spacing.xl }]}>
+            Only the guide owner or administrators can edit steps.
+          </Text>
+          <TouchableOpacity
+            style={[commonStyles.buttonSecondary, { marginTop: spacing.xl, marginHorizontal: spacing.xl }]}
+            onPress={onCancel}
+          >
+            <Text style={commonStyles.buttonTextMuted}>Back</Text>
+          </TouchableOpacity>
         </View>
       </SafeScreen>
     )

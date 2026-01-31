@@ -61,6 +61,7 @@ export const AppNavigator: React.FC = () => {
   const [dismissedOptionalUpdate, setDismissedOptionalUpdate] = useState(false)
   const [showSessionExecution, setShowSessionExecution] = useState(false)
   const [executingSessionId, setExecutingSessionId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const [showCategoryList, setShowCategoryList] = useState(false)
   const [categoryFormMode, setCategoryFormMode] = useState<'create' | 'edit' | null>(null)
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
@@ -77,6 +78,7 @@ export const AppNavigator: React.FC = () => {
   const [editingStepId, setEditingStepId] = useState<string | null>(null)
   const [editingStepGuideId, setEditingStepGuideId] = useState<string | null>(null)
   const [newStepOrder, setNewStepOrder] = useState(0)
+  const [canEditCurrentGuide, setCanEditCurrentGuide] = useState(false)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -139,10 +141,13 @@ export const AppNavigator: React.FC = () => {
         const hasToken = await authStorage.hasAuthToken()
         setHasAuthToken(hasToken)
 
-        // Load user email and admin status if authenticated
+        // Load user email, ID and admin status if authenticated
         if (hasToken) {
           const email = await authStorage.getUserEmail()
           setUserEmail(email || '')
+
+          const userIdValue = await authStorage.getUserId()
+          setUserId(userIdValue)
 
           const adminStatus = await authStorage.getUserIsAdmin()
           setIsAdmin(adminStatus)
@@ -243,6 +248,9 @@ export const AppNavigator: React.FC = () => {
     const email = await authStorage.getUserEmail()
     setUserEmail(email || '')
 
+    const userIdValue = await authStorage.getUserId()
+    setUserId(userIdValue)
+
     const adminStatus = await authStorage.getUserIsAdmin()
     setIsAdmin(adminStatus)
   }
@@ -251,12 +259,14 @@ export const AppNavigator: React.FC = () => {
     try {
       await authStorage.clearAll()
       setHasAuthToken(false)
+      setUserId(null)
       setIsAdmin(false)
     } catch (error) {
       ErrorReporter.capture(error, { component: 'AppNavigator', action: 'logout' })
       console.error('Logout failed:', error)
       // Still update state to log out user even if storage clear fails
       setHasAuthToken(false)
+      setUserId(null)
       setIsAdmin(false)
     }
   }
@@ -278,6 +288,9 @@ export const AppNavigator: React.FC = () => {
     setShowRegistration(false)
     const email = await authStorage.getUserEmail()
     setUserEmail(email || '')
+
+    const userIdValue = await authStorage.getUserId()
+    setUserId(userIdValue)
 
     const adminStatus = await authStorage.getUserIsAdmin()
     setIsAdmin(adminStatus)
@@ -388,7 +401,28 @@ export const AppNavigator: React.FC = () => {
     setShowGuideList(false)
   }
 
-  const handleAddStep = (guideId: string, stepCount: number) => {
+  const handleAddStep = async (guideId: string, stepCount: number) => {
+    try {
+      const authToken = await authStorage.getAuthToken()
+      if (!authToken) throw new Error('No auth token found')
+
+      const serverUrl = await serverStorage.getServerUrl()
+      if (!serverUrl) throw new Error('No server URL configured')
+
+      // Load the guide to check ownership
+      const services = servicesRef.current
+      if (services) {
+        const guide = await services.guide.getGuideById(guideId, authToken)
+        if (guide) {
+          const canEdit = Boolean(isAdmin || (userId && guide.isOwnedBy(userId)))
+          setCanEditCurrentGuide(canEdit)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check guide authorization:', error)
+      setCanEditCurrentGuide(false)
+    }
+
     setEditingStepGuideId(guideId)
     setEditingStepId(null)
     setNewStepOrder(stepCount)
@@ -396,7 +430,9 @@ export const AppNavigator: React.FC = () => {
     setShowStepForm(true)
   }
 
-  const handleEditStep = (stepId: string) => {
+  const handleEditStep = async (stepId: string) => {
+    // Note: We need to get the guideId from somewhere to check authorization
+    // The guideId should be passed here or we load it from the step
     setEditingStepId(stepId)
     setStepFormMode('edit')
     setShowStepForm(true)
@@ -631,6 +667,8 @@ export const AppNavigator: React.FC = () => {
         {...(stepFormMode === 'create' && { order: newStepOrder })}
         onSave={handleStepFormSave}
         onCancel={handleStepFormCancel}
+        canEdit={canEditCurrentGuide}
+        isAdmin={isAdmin}
       />
     )
   }
@@ -646,6 +684,7 @@ export const AppNavigator: React.FC = () => {
         onEdit={handleGuideDetailEdit}
         onAddStep={handleAddStep}
         onEditStep={handleEditStep}
+        isAdmin={isAdmin}
         {...(servicesRef.current && {
           stepService: servicesRef.current.step,
         })}

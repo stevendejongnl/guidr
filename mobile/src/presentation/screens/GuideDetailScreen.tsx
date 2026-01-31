@@ -29,6 +29,7 @@ interface GuideDetailScreenProps {
   onEdit?: (guideId: string) => void
   onAddStep?: (guideId: string, stepCount: number) => void
   onEditStep?: (stepId: string) => void
+  isAdmin?: boolean
   stepService?: StepService
   guideService?: GuideService
   categoryService?: CategoryService
@@ -43,6 +44,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   onEdit,
   onAddStep,
   onEditStep,
+  isAdmin = false,
   stepService: injectedStepService,
   guideService: injectedGuideService,
   categoryService: injectedCategoryService,
@@ -56,6 +58,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const [loading, setLoading] = useState(true)
   const [loadingSteps, setLoadingSteps] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [canEditSteps, setCanEditSteps] = useState(false)
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
@@ -114,6 +117,9 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       const serverUrl = await serverConfigStorage.getServerUrl()
       if (!serverUrl) throw new Error('No server URL configured')
 
+      // Load current user ID
+      const userId = await authStorage.getUserId()
+
       // Get services (injected or create)
       const services = getServices(serverUrl)
 
@@ -125,6 +131,10 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       }
 
       setGuide(loadedGuide)
+
+      // Calculate edit permission: admin OR owner
+      const canEdit = Boolean(isAdmin || (userId && loadedGuide.isOwnedBy(userId)))
+      setCanEditSteps(canEdit)
 
       // Load category name
       const category = await services.categoryService.getCategoryById(loadedGuide.categoryId, authToken)
@@ -171,6 +181,11 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   }
 
   const handleDeleteStep = (stepId: string) => {
+    if (!canEditSteps) {
+      Alert.alert('Unauthorized', 'Only the guide owner or admins can edit steps')
+      return
+    }
+
     Alert.alert(
       'Delete Step',
       'Are you sure you want to delete this step?',
@@ -204,6 +219,11 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   }
 
   const handleMoveStepUp = async (stepId: string) => {
+    if (!canEditSteps) {
+      Alert.alert('Unauthorized', 'Only the guide owner or admins can edit steps')
+      return
+    }
+
     try {
       const authToken = await authStorage.getAuthToken()
       if (!authToken) throw new Error('No auth token found')
@@ -238,6 +258,11 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   }
 
   const handleMoveStepDown = async (stepId: string) => {
+    if (!canEditSteps) {
+      Alert.alert('Unauthorized', 'Only the guide owner or admins can edit steps')
+      return
+    }
+
     try {
       const authToken = await authStorage.getAuthToken()
       if (!authToken) throw new Error('No auth token found')
@@ -346,7 +371,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
             <View style={styles.section}>
               <View style={styles.stepsHeader}>
                 <Text style={styles.sectionTitle}>Steps</Text>
-                {onAddStep && (
+                {onAddStep && canEditSteps && (
                   <TouchableOpacity
                     style={styles.addStepButton}
                     onPress={handleAddStep}
@@ -376,6 +401,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                         onMoveDown={handleMoveStepDown}
                         onEdit={handleEditStep}
                         onDelete={handleDeleteStep}
+                        canEdit={canEditSteps}
                         testID={`${testID}:step-${index}`}
                       />
                     ))}

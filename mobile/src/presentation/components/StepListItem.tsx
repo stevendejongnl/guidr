@@ -12,6 +12,7 @@ interface StepListItemProps {
   onMoveDown: (stepId: string) => void
   onEdit: (stepId: string) => void
   onDelete: (stepId: string) => void
+  canEdit?: boolean
   testID?: string
 }
 
@@ -24,6 +25,7 @@ export const StepListItem: React.FC<StepListItemProps> = ({
   onMoveDown,
   onEdit,
   onDelete,
+  canEdit = true,
   testID,
 }) => {
   const formatDuration = (minutes: number): string => {
@@ -54,46 +56,50 @@ export const StepListItem: React.FC<StepListItemProps> = ({
       </View>
 
       {/* Reorder Controls */}
-      <View style={styles.reorderControls}>
-        <TouchableOpacity
-          style={[styles.reorderButton, isFirst && styles.reorderButtonDisabled]}
-          onPress={() => onMoveUp(step.id)}
-          disabled={isFirst}
-          testID={`${testID}:move-up`}
-        >
-          <Text style={[styles.reorderButtonText, isFirst && styles.reorderButtonTextDisabled]}>
-            ↑
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.reorderButton, isLast && styles.reorderButtonDisabled]}
-          onPress={() => onMoveDown(step.id)}
-          disabled={isLast}
-          testID={`${testID}:move-down`}
-        >
-          <Text style={[styles.reorderButtonText, isLast && styles.reorderButtonTextDisabled]}>
-            ↓
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {canEdit && (
+        <View style={styles.reorderControls}>
+          <TouchableOpacity
+            style={[styles.reorderButton, isFirst && styles.reorderButtonDisabled]}
+            onPress={() => onMoveUp(step.id)}
+            disabled={isFirst}
+            testID={`${testID}:move-up`}
+          >
+            <Text style={[styles.reorderButtonText, isFirst && styles.reorderButtonTextDisabled]}>
+              ↑
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.reorderButton, isLast && styles.reorderButtonDisabled]}
+            onPress={() => onMoveDown(step.id)}
+            disabled={isLast}
+            testID={`${testID}:move-down`}
+          >
+            <Text style={[styles.reorderButtonText, isLast && styles.reorderButtonTextDisabled]}>
+              ↓
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => onEdit(step.id)}
-          testID={`${testID}:edit`}
-        >
-          <Text style={styles.actionButtonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => onDelete(step.id)}
-          testID={`${testID}:delete`}
-        >
-          <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
-        </TouchableOpacity>
-      </View>
+      {canEdit && (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => onEdit(step.id)}
+            testID={`${testID}:edit`}
+          >
+            <Text style={styles.actionButtonText}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={() => onDelete(step.id)}
+            testID={`${testID}:delete`}
+          >
+            <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   )
 }

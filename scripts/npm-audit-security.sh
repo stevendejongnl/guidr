@@ -13,6 +13,7 @@
 # - GHSA-r6q2-hw4h-h46w: tar race condition on macOS APFS (HIGH)
 # - GHSA-34x7-hfp2-rc4v: tar hardlink path traversal (HIGH)
 # - GHSA-p5wg-g6qr-c7cg: eslint Stack Overflow with circular references (MODERATE)
+# - GHSA-37qj-frw5-hhjh: fast-xml-parser RangeError DoS (HIGH)
 
 set -e
 
@@ -27,6 +28,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-r6q2-hw4h-h46w"
   "GHSA-34x7-hfp2-rc4v"
   "GHSA-p5wg-g6qr-c7cg"
+  "GHSA-37qj-frw5-hhjh"
 )
 
 # Run npm audit and capture output
