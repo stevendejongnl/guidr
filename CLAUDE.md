@@ -66,12 +66,13 @@ Custom Claude Code skills for workflow acceleration:
 - **Rules**: No AI attribution, rebase before push, **ALWAYS validate pre-push before pushing**
 
 ## Pre-Push Validation ⚠️
-**CRITICAL**: After successful `git commit`, ALWAYS run pre-push checks locally before `git push`:
+**CRITICAL**: After successful `git commit`, ALWAYS run pre-push checks locally to validate:
 1. Pre-commit runs: TypeScript + ESLint (mobile/web) + Ruff/Mypy (API)
 2. Pre-push runs: Security scanning + Mobile tests + API tests
-3. If pre-push fails, fix issues and amend commit: `git add . && git commit --amend --no-edit && git push`
-4. Never force push to main - resolve conflicts properly
-5. See `.husky/pre-commit` and `.husky/pre-push` for exact checks
+3. If pre-push fails, fix issues and amend commit: `git add . && git commit --amend --no-edit`
+4. **WAIT for explicit user instruction before running `git push`** - NEVER push without being asked
+5. If pushing later, verify conflicts resolved properly - never force push to main
+6. See `.husky/pre-commit` and `.husky/pre-push` for exact checks
 
 ## Common Issues
 **Android**: JAVA_HOME=/usr/lib/jvm/java-17-openjdk | `npx react-native doctor`
