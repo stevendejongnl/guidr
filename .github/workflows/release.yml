@@ -33,6 +33,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -160,7 +161,7 @@ jobs:
 
       - name: Run semantic-release (dry-run to get version)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
           npx semantic-release --dry-run > release-output.txt 2>&1 || true
 
@@ -179,7 +180,7 @@ jobs:
       - name: Run semantic-release
         if: env.SHOULD_RELEASE == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: npx semantic-release
 
       - name: Notify release success
@@ -201,7 +202,7 @@ jobs:
         if: env.SHOULD_RELEASE == 'true'
         working-directory: .
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
           # Extract version from package.json
           VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
