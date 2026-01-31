@@ -102,7 +102,46 @@ describe('HomeScreen', () => {
       expect(getByText('Browse Guides')).toBeTruthy()
     })
 
-    it('should render admin-only quick action buttons when isAdmin is true', () => {
+    it('should render My Guides button for all users', () => {
+      const { getByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('My Guides')).toBeTruthy()
+    })
+
+    it('should render Browse Categories button only for admins', () => {
+      const { queryByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      expect(queryByText('Browse Categories')).toBeFalsy()
+    })
+
+    it('should render all buttons for admin users', () => {
       const { getByText } = render(
         <HomeScreen
           onLogout={mockOnLogout}
@@ -120,7 +159,7 @@ describe('HomeScreen', () => {
 
       expect(getByText('Browse Guides')).toBeTruthy()
       expect(getByText('Browse Categories')).toBeTruthy()
-      expect(getByText('Manage Guides')).toBeTruthy()
+      expect(getByText('My Guides')).toBeTruthy()
     })
   })
 
@@ -439,6 +478,25 @@ describe('HomeScreen', () => {
 
       fireEvent.press(getByText('Browse Guides'))
       expect(mockOnBrowseGuides).toHaveBeenCalledTimes(1)
+    })
+
+    it('should call onManageGuides when My Guides button is pressed for non-admin user', () => {
+      const mockOnManageGuides = jest.fn()
+      const { getByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          onManageGuides={mockOnManageGuides}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+        />
+      )
+
+      fireEvent.press(getByText('My Guides'))
+      expect(mockOnManageGuides).toHaveBeenCalledTimes(1)
     })
 
     it('should call onBrowseCategories when Browse Categories button is pressed', () => {

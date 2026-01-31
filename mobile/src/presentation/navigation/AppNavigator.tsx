@@ -721,7 +721,7 @@ export const AppNavigator: React.FC = () => {
       onOpenSettings={() => setShowSettingsScreen(true)}
       onOpenProfile={() => setShowProfileScreen(true)}
       onBrowseGuides={handleBrowseGuides}
-      {...(isAdmin && { onManageGuides: handleManageGuides })}
+      onManageGuides={handleManageGuides}
       onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
       isAdmin={isAdmin}
