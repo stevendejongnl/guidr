@@ -12,12 +12,14 @@
     "useDefineForClassFields": false,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@components/*": ["components/*"],
-      "@services/*": ["services/*"],
-      "@models/*": ["models/*"],
-      "@styles/*": ["styles/*"]
+      "@components/*": ["src/components/*"],
+      "@services/*": ["src/services/*"],
+      "@models/*": ["src/models/*"],
+      "@styles/*": ["src/styles/*"],
+      "@guidr/shared": ["../shared/src/tokens"],
+      "@guidr/shared/*": ["../shared/src/*"]
     },
     "declaration": true,
     "declarationMap": true,

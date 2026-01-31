@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Switch } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { colors, spacing, typography } from '../theme'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
 
 interface AutoAdvanceToggleProps {
   /**

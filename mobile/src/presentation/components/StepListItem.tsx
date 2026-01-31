@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Step } from '../../domain/entities/Step'
-import { colors, spacing, typography } from '../theme'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
 
 interface StepListItemProps {
   step: Step

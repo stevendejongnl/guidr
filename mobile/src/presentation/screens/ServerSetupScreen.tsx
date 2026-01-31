@@ -13,7 +13,7 @@ import { IHealthCheckService, HealthCheckResult } from '../../domain/services/IH
 import { ValidatedServerStorage } from '../../infrastructure/storage/ValidatedServerStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
-import { commonStyles, colors } from '../theme'
+import { commonStyles, colors } from '@guidr/shared/tokens'
 
 interface ServerSetupScreenProps {
   storage: ServerConfigStorage

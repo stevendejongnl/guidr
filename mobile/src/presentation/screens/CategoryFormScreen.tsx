@@ -15,7 +15,7 @@ import { CategoryRepository } from '../../infrastructure/repositories/CategoryRe
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { SafeScreen } from '../components/SafeScreen'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
-import { colors, spacing, commonStyles, typography } from '../theme'
+import { colors, spacing, commonStyles, typography } from '@guidr/shared/tokens'
 
 interface CategoryFormScreenProps {
   mode: 'create' | 'edit'

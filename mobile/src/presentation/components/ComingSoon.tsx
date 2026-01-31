@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, View, Text } from 'react-native'
-import { colors, typography } from '../theme'
+import { colors, typography } from '@guidr/shared/tokens'
 
 interface ComingSoonProps {
   children: React.ReactNode

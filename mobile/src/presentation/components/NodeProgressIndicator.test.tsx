@@ -1,7 +1,7 @@
 import React from 'react'
 import { render } from '@testing-library/react-native'
 import { NodeProgressIndicator } from './NodeProgressIndicator'
-import { nodeTokens } from '../theme'
+import { nodeTokens } from '@guidr/shared/tokens'
 
 describe('NodeProgressIndicator', () => {
   it('renders correct number of nodes', () => {

@@ -20,7 +20,7 @@ import { CategoryRepository } from '../../infrastructure/repositories/CategoryRe
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { SafeScreen } from '../components/SafeScreen'
 import { CategoryPickerButton } from '../components/CategoryPickerButton'
-import { colors, spacing, commonStyles, typography } from '../theme'
+import { colors, spacing, commonStyles, typography } from '@guidr/shared/tokens'
 
 interface GuideFormScreenProps {
   mode: 'create' | 'edit'

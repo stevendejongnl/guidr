@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Text,
 } from 'react-native'
-import { colors, spacing, borderRadius, typography, componentDefaults } from '../theme'
+import { colors, spacing, borderRadius, typography, componentDefaults } from '@guidr/shared/tokens'
 
 interface SearchBarProps {
   value: string

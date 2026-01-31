@@ -16,13 +16,15 @@
 
       /* Modules */
       "module": "ESNext",
-      "moduleResolution": "node",
-      "baseUrl": "./src",
+      "moduleResolution": "bundler",
+      "baseUrl": ".",
       "paths": {
-        "@domain/*": ["domain/*"],
-        "@infrastructure/*": ["infrastructure/*"],
-        "@presentation/*": ["presentation/*"],
-        "@common/*": ["common/*"]
+        "@domain/*": ["src/domain/*"],
+        "@infrastructure/*": ["src/infrastructure/*"],
+        "@presentation/*": ["src/presentation/*"],
+        "@common/*": ["src/common/*"],
+        "@guidr/shared": ["../shared/src/tokens"],
+        "@guidr/shared/*": ["../shared/src/*"]
       },
       "resolveJsonModule": true,
 

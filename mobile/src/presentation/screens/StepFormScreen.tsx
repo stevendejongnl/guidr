@@ -15,7 +15,7 @@ import { StepRepository } from '../../infrastructure/repositories/StepRepository
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { SafeScreen } from '../components/SafeScreen'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
-import { colors, spacing, commonStyles, typography } from '../theme'
+import { colors, spacing, commonStyles, typography } from '@guidr/shared/tokens'
 
 interface StepFormScreenProps {
   mode: 'create' | 'edit'

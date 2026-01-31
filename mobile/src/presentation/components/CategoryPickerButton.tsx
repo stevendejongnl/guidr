@@ -9,7 +9,7 @@ import {
 import { Category } from '../../domain/entities/Category'
 import { CategoryService } from '../../domain/services/CategoryService'
 import { CategoryPicker } from './CategoryPicker'
-import { colors, spacing, commonStyles, typography } from '../theme'
+import { colors, spacing, commonStyles, typography } from '@guidr/shared/tokens'
 
 interface CategoryPickerButtonProps {
   selectedCategoryId: string | null

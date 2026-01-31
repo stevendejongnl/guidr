@@ -3,6 +3,11 @@
   "version": "1.23.1",
   "private": true,
   "description": "Guidr monorepo - mobile app, API server, and web app",
+  "workspaces": [
+    "shared",
+    "mobile",
+    "web-app"
+  ],
   "scripts": {
     "mobile:lint": "npm --prefix mobile run lint",
     "mobile:test": "npm --prefix mobile test",

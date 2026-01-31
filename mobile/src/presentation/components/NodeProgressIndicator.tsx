@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
-import { colors, nodeTokens } from '../theme'
+import { colors, nodeTokens } from '@guidr/shared/tokens'
 
 interface NodeProgressIndicatorProps {
   currentStep: number

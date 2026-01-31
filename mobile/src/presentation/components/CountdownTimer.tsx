@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { View, Text, StyleSheet, Animated } from 'react-native'
-import { colors, spacing, typography } from '../theme'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
 
 interface CountdownTimerProps {
   /**

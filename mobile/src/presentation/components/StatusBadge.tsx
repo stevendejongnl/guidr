@@ -1,47 +1,15 @@
 import React from 'react'
-import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native'
+import { View, Text } from 'react-native'
 import {
-  colors,
-  spacing,
-  borderRadius,
-  typography,
-} from '../theme'
-
-type BadgeStatus = 'completed' | 'in-progress' | 'paused' | 'not-started'
-type BadgeVariant = 'solid' | 'outline'
+  getStatusBadgeStyle,
+  getStatusBadgeLabel,
+  type StatusBadgeStatus,
+} from '@guidr/shared/styles/react-native'
 
 interface StatusBadgeProps {
-  status: BadgeStatus
-  variant?: BadgeVariant
+  status: StatusBadgeStatus
+  variant?: 'solid' | 'outline'
   testID?: string
-}
-
-const getStatusColor = (status: BadgeStatus): string => {
-  switch (status) {
-    case 'completed':
-      return colors.success
-    case 'in-progress':
-      return colors.buttonPrimary
-    case 'paused':
-      return colors.paused
-    case 'not-started':
-    default:
-      return colors.textTertiary
-  }
-}
-
-const getStatusLabel = (status: BadgeStatus): string => {
-  switch (status) {
-    case 'completed':
-      return 'Completed'
-    case 'in-progress':
-      return 'In Progress'
-    case 'paused':
-      return 'Paused'
-    case 'not-started':
-    default:
-      return 'Not Started'
-  }
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
@@ -49,32 +17,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   variant = 'solid',
   testID,
 }) => {
-  const statusColor = getStatusColor(status)
-  const statusLabel = getStatusLabel(status)
-
-  const styles = StyleSheet.create({
-    badge: {
-      borderRadius: borderRadius.sm,
-      paddingVertical: spacing.xs,
-      paddingHorizontal: spacing.sm,
-      backgroundColor:
-        variant === 'solid' ? statusColor : 'transparent',
-      borderWidth: variant === 'outline' ? 1 : 0,
-      borderColor: statusColor,
-    } as ViewStyle,
-    text: {
-      fontSize: typography.sizeXs,
-      fontWeight: typography.weightMedium,
-      color:
-        variant === 'solid'
-          ? colors.textPrimary
-          : statusColor,
-    } as TextStyle,
-  })
+  const label = getStatusBadgeLabel(status)
+  const styles = getStatusBadgeStyle(status, variant)
 
   return (
-    <View style={styles.badge} testID={testID}>
-      <Text style={styles.text}>{statusLabel}</Text>
+    <View style={styles.container} testID={testID}>
+      <Text style={styles.text}>{label}</Text>
     </View>
   )
 }

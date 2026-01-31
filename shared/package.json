@@ -1,0 +1,25 @@
+{
+  "name": "@guidr/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared design system and utilities for Guidr cross-platform apps",
+  "type": "module",
+  "exports": {
+    "./tokens": {
+      "types": "./src/tokens/index.ts",
+      "import": "./src/tokens/index.ts"
+    },
+    "./styles/react-native": {
+      "types": "./src/styles/react-native/index.ts",
+      "import": "./src/styles/react-native/index.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "devDependencies": {
+    "@types/react-native": "^0.71",
+    "react-native": "^0.83.1",
+    "typescript": "^5.3.3"
+  }
+}

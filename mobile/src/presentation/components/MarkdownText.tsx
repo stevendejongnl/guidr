@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import Markdown from 'react-native-markdown-display'
-import { colors, typography } from '../theme'
+import { colors, typography } from '@guidr/shared/tokens'
 
 interface MarkdownTextProps {
   children: string

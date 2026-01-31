@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
-import { colors, spacing, borderRadius, typography, componentDefaults } from '../theme'
+import { colors, spacing, borderRadius, typography, componentDefaults } from '@guidr/shared/tokens'
 
 interface StatCardProps {
   icon: string

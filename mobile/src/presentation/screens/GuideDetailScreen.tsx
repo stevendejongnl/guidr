@@ -18,7 +18,7 @@ import { CategoryRepository } from '../../infrastructure/repositories/CategoryRe
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
-import { colors, spacing, typography, commonStyles } from '../theme'
+import { colors, spacing, typography, commonStyles } from '@guidr/shared/tokens'
 import { SafeScreen } from '../components/SafeScreen'
 import { StepListItem } from '../components/StepListItem'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'

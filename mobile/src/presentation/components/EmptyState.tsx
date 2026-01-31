@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { colors, spacing, typography, commonStyles } from '../theme'
+import { colors, spacing, typography, commonStyles } from '@guidr/shared/tokens'
 
 interface EmptyStateProps {
   icon: string

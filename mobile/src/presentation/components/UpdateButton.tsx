@@ -10,7 +10,7 @@ import DeviceInfo from 'react-native-device-info'
 import { GitHubReleaseClient } from '../../infrastructure/api/GitHubReleaseClient'
 import { UpdateCheckStorage } from '../../infrastructure/storage/UpdateCheckStorage'
 import { UpdateService, UpdateCheckResult } from '../../domain/services/UpdateService'
-import { commonStyles, colors, spacing, typography } from '../theme'
+import { commonStyles, colors, spacing, typography } from '@guidr/shared/tokens'
 
 interface UpdateButtonProps {
   serverConfig: { minAppVersion?: string | null }

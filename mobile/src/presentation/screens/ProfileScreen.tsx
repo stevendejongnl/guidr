@@ -12,7 +12,7 @@ import {
 import { AuthClient } from '@infrastructure/api/AuthClient'
 import { AuthStorage } from '@infrastructure/storage/AuthStorage'
 import { SafeScreen } from '../components/SafeScreen'
-import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
+import { commonStyles, colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import {
   INTEREST_CATEGORIES,
   type InterestCategory,
