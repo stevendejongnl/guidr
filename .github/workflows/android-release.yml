@@ -27,6 +27,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup npm workspace
+        run: npm install
+        # Rebuild workspace symlinks for @guidr/shared and other workspace packages
+
       - name: Get version
         id: version
         run: |

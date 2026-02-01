@@ -208,20 +208,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
+          # Fetch the latest main to get the release commit that was just pushed by semantic-release
+          git fetch origin main
+
+          # Get the release commit SHA (the one that semantic-release just created and pushed)
+          RELEASE_COMMIT_SHA=$(git rev-parse origin/main)
+
           # Extract version from package.json
           VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
           TAG="v${VERSION}"
-          COMMIT_SHA=$(git rev-parse HEAD)
 
           # Dispatch repository event that will trigger both Docker and TestFlight workflows
+          # Use the correct commit SHA from the release commit that was just pushed
           gh api repos/${{ github.repository }}/dispatches \
             --method POST \
             --field event_type='release-created' \
             --field client_payload[version]="$VERSION" \
             --field client_payload[tag]="$TAG" \
-            --field client_payload[commit_sha]="$COMMIT_SHA"
+            --field client_payload[commit_sha]="$RELEASE_COMMIT_SHA"
 
-          echo "✅ Dispatched release-created event for version $VERSION"
+          echo "✅ Dispatched release-created event for version $VERSION with commit SHA: $RELEASE_COMMIT_SHA"
 
       - name: No release needed
         if: env.SHOULD_RELEASE == 'false'

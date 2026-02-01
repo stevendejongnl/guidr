@@ -246,6 +246,7 @@ jobs:
 
       - name: Sync code signing with fastlane match
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        working-directory: mobile
         env:
           GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -255,10 +256,10 @@ jobs:
           MATCH_KEYCHAIN_NAME: ${{ env.KEYCHAIN_PATH }}
           MATCH_KEYCHAIN_PASSWORD: ${{ env.KEYCHAIN_PASSWORD }}
         run: |
-          # Ensure gems are installed
+          # Ensure gems are installed (Gemfile is now at mobile/Gemfile)
           bundle install --retry=3
           # Run fastlane from mobile/ios directory
-          cd mobile/ios
+          cd ios
           bundle exec fastlane sync_certificates
 
       - name: Create Sentry properties file
@@ -488,9 +489,10 @@ jobs:
 
       - name: Notify TestFlight success
         if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        working-directory: .
         run: |
-          chmod +x ../scripts/send-telegram-notification.sh
-          ../scripts/send-telegram-notification.sh \
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
             --type testflight_success \
             --version "${{ steps.version.outputs.VERSION }}" \
             --branch "${{ github.ref_name }}" \
@@ -535,9 +537,10 @@ jobs:
 
       - name: Notify TestFlight failure
         if: failure()
+        working-directory: .
         run: |
-          chmod +x ../scripts/send-telegram-notification.sh
-          ../scripts/send-telegram-notification.sh \
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
             --type testflight_failure \
             --version "${{ steps.version.outputs.VERSION }}" \
             --branch "${{ github.ref_name }}" \
