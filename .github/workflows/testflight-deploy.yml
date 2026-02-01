@@ -102,7 +102,7 @@ jobs:
 
       - name: Install dependencies
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        run: npm ci
+        run: npm ci --workspaces
 
       - name: Restore CocoaPods cache
         uses: actions/cache@v4
