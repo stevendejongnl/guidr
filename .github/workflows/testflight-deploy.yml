@@ -103,6 +103,10 @@ jobs:
       - name: Install dependencies
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: npm ci --workspaces
+        # IMPORTANT: --workspaces flag installs all workspace packages (@guidr/shared, mobile, web-app)
+        # Without this, Metro bundler cannot resolve @guidr/shared during xcodebuild,
+        # causing "main.jsbundle.map not found" errors (looks like code signing failure, but isn't)
+        # See: docs/CI_CD_TROUBLESHOOTING.md#issue-testflight-build-fails-with-missing-source-map
 
       - name: Restore CocoaPods cache
         uses: actions/cache@v4

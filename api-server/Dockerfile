@@ -12,7 +12,11 @@ COPY shared/tsconfig.json ./shared/
 COPY mobile/ ./mobile/
 COPY web-app ./web-app
 
-# Install dependencies (npm workspaces will resolve @guidr/shared)
+# Install dependencies with workspace support
+# IMPORTANT: --workspaces flag installs @guidr/shared, mobile, and web-app dependencies
+# Without this, web-app build fails with "npm run web:build: command not found" (exit code 127)
+# This is required because the web-app package depends on @guidr/shared from the workspace
+# See: docs/CI_CD_TROUBLESHOOTING.md#issue-docker-build-fails
 RUN npm ci --workspaces
 
 # Build web app

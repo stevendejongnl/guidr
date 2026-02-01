@@ -99,7 +99,7 @@ jobs:
       - name: Install npm dependencies
         run: |
           echo "=== Installing npm dependencies ==="
-          npm ci
+          npm ci --workspaces
 
       - name: Install CocoaPods dependencies
         run: |
