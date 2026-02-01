@@ -23,10 +23,6 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'repository_dispatch'
-    defaults:
-      run:
-        working-directory: mobile
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,7 +35,7 @@ jobs:
             if [ -n "${{ inputs.version }}" ]; then
               VERSION="${{ inputs.version }}"
             else
-              VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+              VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
             fi
           else
             # repository_dispatch trigger: use event payload
@@ -54,7 +50,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -67,7 +63,7 @@ jobs:
 
       - name: Create Sentry properties file
         run: |
-          cat > android/sentry.properties <<EOF
+          cat > mobile/android/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
           defaults.org=madebysteven
           defaults.project=guidr
@@ -100,8 +96,8 @@ jobs:
 
       - name: Update Android version
         run: |
-          chmod +x ../scripts/update-android-version.sh
-          ../scripts/update-android-version.sh "$VERSION"
+          chmod +x scripts/update-android-version.sh
+          scripts/update-android-version.sh "$VERSION"
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
 
@@ -128,25 +124,25 @@ jobs:
           KEY_ALIAS: guidr-release
           KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          chmod +x android/gradlew
-          android/gradlew assembleRelease --no-daemon --stacktrace -p android
+          chmod +x mobile/android/gradlew
+          mobile/android/gradlew assembleRelease --no-daemon --stacktrace -p mobile/android
 
           # Get APK info
-          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          APK_PATH="mobile/android/app/build/outputs/apk/release/app-release.apk"
           if [ -f "$APK_PATH" ]; then
             APK_SIZE=$(stat -c%s "$APK_PATH")
             echo "Built APK: $APK_PATH (${APK_SIZE} bytes)"
           else
             echo "Error: APK not found at expected path"
-            ls -la android/app/build/outputs/apk/release/ || true
+            ls -la mobile/android/app/build/outputs/apk/release/ || true
             exit 1
           fi
 
       - name: Rename APK with version
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
-          OLD_PATH="android/app/build/outputs/apk/release/app-release.apk"
-          NEW_PATH="android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
+          OLD_PATH="mobile/android/app/build/outputs/apk/release/app-release.apk"
+          NEW_PATH="mobile/android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
 
           mv "$OLD_PATH" "$NEW_PATH"
           echo "✅ Renamed APK to: guidr-v${VERSION}.apk"
@@ -169,8 +165,8 @@ jobs:
       - name: Notify Android success
         if: success()
         run: |
-          chmod +x ../scripts/send-telegram-notification.sh
-          ../scripts/send-telegram-notification.sh \
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
             --type android_success \
             --version "${{ steps.version.outputs.VERSION }}" \
             --branch "${{ github.ref_name }}" \
@@ -206,8 +202,8 @@ jobs:
       - name: Notify Android failure
         if: failure()
         run: |
-          chmod +x ../scripts/send-telegram-notification.sh
-          ../scripts/send-telegram-notification.sh \
+          chmod +x scripts/send-telegram-notification.sh
+          scripts/send-telegram-notification.sh \
             --type android_failure \
             --version "${{ steps.version.outputs.VERSION }}" \
             --branch "${{ github.ref_name }}" \

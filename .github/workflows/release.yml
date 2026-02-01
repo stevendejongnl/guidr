@@ -26,9 +26,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    defaults:
-      run:
-        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,21 +36,21 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Create Sentry properties files
         run: |
-          cat > android/sentry.properties <<EOF
+          cat > mobile/android/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
           defaults.org=madebysteven
           defaults.project=guidr
           defaults.url=https://sentry.io/
           EOF
 
-          cat > ios/sentry.properties <<EOF
+          cat > mobile/ios/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
           defaults.org=madebysteven
           defaults.project=guidr

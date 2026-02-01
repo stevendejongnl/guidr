@@ -29,10 +29,6 @@ jobs:
     concurrency:
       group: cloudflare-bypass
       cancel-in-progress: false
-    defaults:
-      run:
-        working-directory: mobile
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -90,7 +86,7 @@ jobs:
             VERSION="${{ github.event.client_payload.version }}"
           else
             # Manual trigger: extract from package.json
-            VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+            VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
           fi
 
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
@@ -102,7 +98,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
@@ -119,14 +115,14 @@ jobs:
       - name: Install CocoaPods dependencies
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          cd ios
+          cd mobile/ios
           # Install dependencies from cache (skip repo update to avoid 10-20min delay)
           pod install
 
       - name: Check for Vendored Frameworks
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          cd ios/Pods
+          cd mobile/ios/Pods
 
           echo "🔍 Checking for .framework files in Pods..."
           FRAMEWORK_COUNT=$(find . -name "*.framework" -type d 2>/dev/null | wc -l)
@@ -153,7 +149,7 @@ jobs:
       - name: Verify and Remove CocoaPods Build System File Lists
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          cd ios
+          cd mobile/ios
 
           echo "📋 Checking for file lists BEFORE removal..."
           INPUT_COUNT=$(grep -c "inputFileListPaths" guidr.xcodeproj/project.pbxproj || echo "0")
@@ -184,7 +180,7 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true  # Automatically runs bundle install and caches gems
-          working-directory: mobile
+          working-directory: mobile/ios
 
       # DISABLED: DerivedData caching can cause stale keychain references
       # - name: Restore Xcode DerivedData cache
@@ -261,14 +257,14 @@ jobs:
         run: |
           # Ensure gems are installed
           bundle install --retry=3
-          # Run fastlane from ios directory
-          cd ios
+          # Run fastlane from mobile/ios directory
+          cd mobile/ios
           bundle exec fastlane sync_certificates
 
       - name: Create Sentry properties file
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          cat > ios/sentry.properties <<EOF
+          cat > mobile/ios/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
           defaults.org=madebysteven
           defaults.project=guidr
@@ -282,7 +278,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           BUILD_NUM=$(date +%Y%m%d%H%M%S)
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUM" ios/guidr/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUM" mobile/ios/guidr/Info.plist
           echo "Build number set to: $BUILD_NUM"
           echo "BUILD_NUMBER=$BUILD_NUM" >> $GITHUB_ENV
 
@@ -300,7 +296,7 @@ jobs:
           SENTRY_DISABLE_XCODE_DEBUG_UPLOAD: true
           SENTRY_ALLOW_FAILURE: true
         run: |
-          cd ios
+          cd mobile/ios
           echo "ℹ️ Starting iOS archive build (Sentry upload disabled)..."
           BUILD_START=$(date +%s)
 
@@ -348,9 +344,8 @@ jobs:
       - name: Upload debug symbols to Sentry
         if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
         continue-on-error: true
-        working-directory: mobile
         run: |
-          cd ios
+          cd mobile/ios
 
           # Extract dSYM from archive
           DSYM_PATH="./build/guidr.xcarchive/dSYMs/guidr.app.dSYM"
@@ -375,7 +370,7 @@ jobs:
       - name: Export IPA
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
-          cd ios
+          cd mobile/ios
           xcodebuild \
             -exportArchive \
             -archivePath ./build/guidr.xcarchive \
@@ -387,9 +382,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         id: version
         run: |
-          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "IPA_PATH=$(pwd)/ios/build/guidr.ipa" >> $GITHUB_OUTPUT
+          echo "IPA_PATH=$(pwd)/mobile/ios/build/guidr.ipa" >> $GITHUB_OUTPUT
           echo "Version: $VERSION, Build: $BUILD_NUMBER"
 
       # Extract changelog for TestFlight "What to Test" notes
@@ -483,6 +478,14 @@ jobs:
           path: mobile/ios/build/guidr.ipa
           retention-days: 30
 
+      - name: Upload build log artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflight-build-log-${{ env.BUILD_NUMBER }}
+          path: mobile/ios/build.log
+          retention-days: 7
+
       - name: Notify TestFlight success
         if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
         run: |
@@ -502,11 +505,11 @@ jobs:
         id: error_details
         run: |
           # Extract version from package.json (don't rely on previous step)
-          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/' || echo "unknown")
+          VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/' || echo "unknown")
 
           # Get build log if it exists, otherwise use generic error
-          if [ -f "ios/build.log" ]; then
-            ERROR=$(tail -50 ios/build.log | grep -E "(error|Error|ERROR|failed|Failed|FAILED)" | head -5 | sed 's/"/\\"/g' || echo "Build failed - check logs")
+          if [ -f "mobile/ios/build.log" ]; then
+            ERROR=$(tail -50 mobile/ios/build.log | grep -E "(error|Error|ERROR|failed|Failed|FAILED)" | head -5 | sed 's/"/\\"/g' || echo "Build failed - check logs")
           else
             ERROR="Build failed before log file was created"
           fi
@@ -516,10 +519,10 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
           # Determine failed step based on log content
-          if [ -f "ios/build.log" ]; then
-            if grep -q "codesign" ios/build.log; then
+          if [ -f "mobile/ios/build.log" ]; then
+            if grep -q "codesign" mobile/ios/build.log; then
               FAILED_STEP="Build iOS archive (code signing)"
-            elif grep -q "xcodebuild" ios/build.log; then
+            elif grep -q "xcodebuild" mobile/ios/build.log; then
               FAILED_STEP="Build iOS archive (xcodebuild)"
             else
               FAILED_STEP="Build iOS archive"
