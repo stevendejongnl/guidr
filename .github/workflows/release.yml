@@ -89,14 +89,14 @@ jobs:
 
           echo "✅ Configured Gradle repository mirrors"
 
-      - name: Run lint
-        run: npm run lint
+      - name: Run Mobile & Web Lint
+        run: npm run mobile:lint && npm run web:lint
 
-      - name: Run tests
-        run: npm test
+      - name: Run Mobile Tests
+        run: npm run mobile:test
 
-      - name: Run typecheck
-        run: npm run typecheck
+      - name: Run Mobile & Web Type Check
+        run: npm run mobile:typecheck && npm run web:typecheck
 
       - uses: actions/setup-python@v5
         with:
