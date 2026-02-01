@@ -4,8 +4,10 @@ FROM node:24-slim AS web-builder
 WORKDIR /
 
 # Copy root files for npm workspaces
-COPY package*.json .npmrc ./
-COPY shared ./shared
+COPY package*.json ./
+COPY shared/package*.json ./shared/
+COPY shared/src ./shared/src
+COPY shared/tsconfig.json ./shared/
 COPY web-app ./web-app
 
 # Install dependencies (npm workspaces will resolve @guidr/shared)
