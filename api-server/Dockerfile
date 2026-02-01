@@ -5,7 +5,7 @@ WORKDIR /
 
 # Copy root files for npm workspaces
 COPY package*.json .npmrc ./
-COPY shared/package.json ./shared/package.json
+COPY shared ./shared
 COPY web-app ./web-app
 
 # Install dependencies (npm workspaces will resolve @guidr/shared)
