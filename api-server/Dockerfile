@@ -13,11 +13,13 @@ COPY mobile/ ./mobile/
 COPY web-app ./web-app
 
 # Install dependencies with workspace support
-# IMPORTANT: --workspaces flag installs @guidr/shared, mobile, and web-app dependencies
-# Without this, web-app build fails with "npm run web:build: command not found" (exit code 127)
-# This is required because the web-app package depends on @guidr/shared from the workspace
+# Use npm install (not npm ci) to ensure optional dependencies are installed for the
+# current architecture. npm ci skips optional deps in some cases, causing issues like
+# "Cannot find module @rollup/rollup-linux-arm64-gnu" on ARM64 builds.
+# The --workspaces flag installs @guidr/shared, mobile, and web-app dependencies.
+# This is required because the web-app package depends on @guidr/shared from the workspace.
 # See: docs/CI_CD_TROUBLESHOOTING.md#issue-docker-build-fails
-RUN npm ci --workspaces
+RUN npm install --workspaces
 
 # Build web app
 RUN npm run web:build

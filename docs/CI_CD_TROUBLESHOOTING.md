@@ -93,30 +93,47 @@ This ensures:
 
 ---
 
-## Issue: Docker Build Fails with "npm run web:build: command not found"
+## Issue: Docker Build Fails with "npm run web:build: command not found" or Missing Native Module
 
 ### Symptoms
 
-The Docker build fails in the web-builder stage:
+The Docker build fails in the web-builder stage with one of two errors:
 
+**Error 1: Command not found (exit code 127)**
 ```
 RUN npm run web:build
 # Output: exit code 127 (command not found)
 ```
 
+**Error 2: Missing native module (especially on ARM64)**
+```
+Error: Cannot find module @rollup/rollup-linux-arm64-gnu
+npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828)
+```
+
 ### Root Cause
 
-The `web-app/` workspace dependencies aren't installed, so npm scripts are unavailable.
+- **Error 1:** The `web-app/` workspace dependencies aren't installed, so npm scripts are unavailable
+- **Error 2:** `npm ci` skips optional dependencies in some scenarios, particularly for architecture-specific native modules (like Rollup's ARM64 binary). Docker needs to install dependencies for the **current build architecture**, not just the lock file's architecture.
 
 ### Solution
 
-In `api-server/Dockerfile`, use `npm ci --workspaces`:
+In `api-server/Dockerfile`, use `npm install --workspaces` (not `npm ci`):
 
 ```dockerfile
-RUN npm ci --workspaces
+RUN npm install --workspaces
 ```
 
-This installs dependencies for all workspaces, making the `web:build` script available.
+**Why `npm install` instead of `npm ci`:**
+- Docker is a clean environment (no reproducibility concerns)
+- `npm install` properly handles optional dependencies for the current architecture
+- `npm ci` is optimized for CI reproducibility but can skip optional deps
+- Multi-architecture builds (linux/amd64, linux/arm64) need architecture-specific natives
+
+This installs:
+1. Dependencies for all workspaces (`@guidr/shared`, `mobile`, `web-app`)
+2. Optional dependencies like native Rollup modules for the current architecture
+3. Makes the `web:build` script available
 
 ---
 
