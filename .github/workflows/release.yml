@@ -162,6 +162,11 @@ jobs:
         run: |
           npx semantic-release --dry-run > release-output.txt 2>&1 || true
 
+          # Show the actual output for debugging
+          echo "=== Semantic-Release Output ==="
+          cat release-output.txt
+          echo "=============================="
+
           # Extract next version from semantic-release output
           if grep -q "The next release version is" release-output.txt; then
             NEXT_VERSION=$(grep "The next release version is" release-output.txt | sed 's/.*The next release version is //' | tr -d '[:space:]')
