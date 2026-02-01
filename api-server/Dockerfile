@@ -15,6 +15,9 @@ COPY web-app ./web-app
 # Install dependencies (npm workspaces will resolve @guidr/shared)
 RUN npm ci
 
+# Explicitly install web-app dependencies to ensure TypeScript and build tools are available
+RUN npm --prefix web-app install
+
 # Build web app
 RUN npm run web:build
 
