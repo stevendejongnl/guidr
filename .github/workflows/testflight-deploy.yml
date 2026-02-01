@@ -180,7 +180,7 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true  # Automatically runs bundle install and caches gems
-          working-directory: mobile/ios
+          working-directory: mobile
 
       # DISABLED: DerivedData caching can cause stale keychain references
       # - name: Restore Xcode DerivedData cache
