@@ -31,7 +31,7 @@
     "security:fix:mobile": "npm --prefix mobile audit fix",
     "security:fix:web": "npm --prefix web-app audit fix",
     "postinstall": "node scripts/setup-sentry-symlink.js",
-    "prepare": "husky install"
+    "prepare": "node scripts/setup-husky.js"
   },
   "devDependencies": {
     "husky": "^9.1.7"
