@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --workspaces
+        run: npm ci --workspaces --include=dev
 
       - name: Create Sentry properties files
         run: |

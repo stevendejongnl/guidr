@@ -15,7 +15,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci --workspaces
+      - run: npm ci --workspaces --include=dev
       - run: npm run mobile:lint
 
   test:
@@ -28,7 +28,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci --workspaces
+      - run: npm ci --workspaces --include=dev
       - run: npm run mobile:test
 
   typecheck:
@@ -41,7 +41,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci --workspaces
+      - run: npm ci --workspaces --include=dev
       - run: npm run mobile:typecheck
 
   api-server-test:
@@ -136,7 +136,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --workspaces
+        run: npm ci --workspaces --include=dev
 
       - name: Run ESLint
         run: npm run web:lint
@@ -157,7 +157,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --workspaces
+        run: npm ci --workspaces --include=dev
 
       - name: Run tests
         run: npm --prefix web-app test
@@ -180,7 +180,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: npm ci --workspaces
+        run: npm ci --workspaces --include=dev
 
       - name: Create Sentry properties file
         run: |
@@ -240,7 +240,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --workspaces
+        run: npm ci --workspaces --include=dev
 
       - name: Install CocoaPods dependencies
         run: |
