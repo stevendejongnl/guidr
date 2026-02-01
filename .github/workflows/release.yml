@@ -157,6 +157,7 @@ jobs:
           echo "✅ Web app built to web-app/dist/"
 
       - name: Run semantic-release (dry-run to get version)
+        working-directory: mobile
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
@@ -181,6 +182,7 @@ jobs:
 
       - name: Run semantic-release
         if: env.SHOULD_RELEASE == 'true'
+        working-directory: mobile
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: npx semantic-release
