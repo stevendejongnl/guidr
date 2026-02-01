@@ -58,15 +58,22 @@ Ensure workspace dependencies are installed before the iOS build begins:
 
 ### Symptoms
 
-The Android release build fails during `gradlew assembleRelease`:
+The Android release build fails during the Hermes bundling task:
 
 ```
-error: Cannot resolve @react-native/metro-config
+Error: Cannot resolve `@react-native/metro-config`. Ensure it is listed in your project's `devDependencies`.
+    at loadMetroConfig (/node_modules/@react-native/community-cli-plugin/dist/utils/loadMetroConfig.js:62:11)
+    at Object.buildBundle [as func] (/node_modules/@react-native/community-cli-plugin/dist/commands/bundle/buildBundle.js:22:53)
+
+> Task :app:createBundleReleaseJsAndAssets FAILED
+> Process 'command 'node'' finished with non-zero exit value 1
 ```
+
+This happens during the `createBundleReleaseJsAndAssets` gradle task when React Native tries to bundle JavaScript using Metro.
 
 ### Root Cause
 
-Metro bundler (used by React Native's Android build) cannot find the `@react-native/metro-config` package because workspace dependencies weren't installed.
+Metro bundler cannot find `@react-native/metro-config` because workspace dependencies weren't installed. Same root cause as the TestFlight "missing source map" failure - both are Metro bundler resolution problems when `npm ci` runs without the `--workspaces` flag.
 
 ### Solution
 
@@ -77,7 +84,12 @@ In `.github/workflows/android-release.yml`, ensure workspace dependencies are in
   run: npm ci --workspaces
 ```
 
-This ensures the `mobile/` workspace has all devDependencies, including `@react-native/metro-config`.
+**Critical:** The `package-lock.json` must have workspace configuration from running `npm install --workspaces` locally. Without it, CI's `npm ci --workspaces` won't work correctly.
+
+This ensures:
+1. Root `package.json` workspace configuration is read
+2. `mobile/` workspace dependencies installed (including `@react-native/metro-config`)
+3. Metro bundler can find all required packages during the build
 
 ---
 
