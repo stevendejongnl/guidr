@@ -12,7 +12,7 @@ import {
   borderRadius,
   typography,
   componentDefaults,
-} from '../theme'
+} from '@guidr/shared/tokens'
 
 interface CategoryChipProps {
   label: string

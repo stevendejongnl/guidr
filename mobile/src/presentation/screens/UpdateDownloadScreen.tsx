@@ -16,7 +16,7 @@ import {
   spacing,
   typography,
   borderRadius,
-} from '../theme'
+} from '@guidr/shared/tokens'
 
 interface UpdateDownloadScreenProps {
   apkUrl: string

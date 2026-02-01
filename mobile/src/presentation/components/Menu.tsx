@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native'
-import { colors, spacing, borderRadius, typography } from '../theme'
+import { colors, spacing, borderRadius, typography } from '@guidr/shared/tokens'
 
 export interface MenuItem {
   id: string

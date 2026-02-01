@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { colors } from '../theme'
+import { colors } from '@guidr/shared/tokens'
 
 interface SafeScreenProps {
   children: React.ReactNode

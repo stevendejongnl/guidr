@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import { CountdownTimer } from '../components/CountdownTimer'
 import { StepNavigationControls } from '../components/StepNavigationControls'
 import { AutoAdvanceToggle } from '../components/AutoAdvanceToggle'
 import { SessionProgressIndicator } from '../components/SessionProgressIndicator'
-import { colors, spacing, typography, commonStyles } from '../theme'
+import { colors, spacing, typography, commonStyles } from '@guidr/shared/tokens'
 import { Session } from '../../domain/entities/Session'
 import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
@@ -74,7 +74,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
     stepService: StepService
   } | null>(null)
 
-  const getServices = (serverUrl: string) => {
+  const getServices = useCallback((serverUrl: string) => {
     if (servicesRef.current) {
       return servicesRef.current
     }
@@ -98,7 +98,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
       stepService: new StepService(stepRepository),
     }
     return servicesRef.current
-  }
+  }, [injectedSessionService, injectedGuideService, injectedStepService])
 
   // Load session data on mount
   useEffect(() => {
@@ -156,7 +156,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
     }
 
     loadSessionData()
-  }, [sessionId, injectedSessionService, injectedGuideService, injectedStepService, authStorage, serverConfigStorage])
+  }, [sessionId, getServices, authStorage, serverConfigStorage])
 
   const currentStep = steps[currentStepIndex]
   const authToken = authStorage.getAuthToken()

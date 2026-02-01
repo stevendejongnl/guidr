@@ -22,12 +22,44 @@ Guidr monorepo: Mobile (React Native) + API (FastAPI) + Web (React). DDD/TDD arc
 ## Structure
 ```
 guidr/
+├── shared/        # Design system package: tokens + React Native component styles
 ├── mobile/        # React Native: src/{common,domain,infrastructure,presentation}
 ├── api-server/    # FastAPI backend
 ├── web-app/       # React Vite app
 ├── docs/adr/      # Architectural decisions
 └── scripts/       # Build scripts
 ```
+
+## Design System (@guidr/shared)
+**Package**: `shared/` (npm workspace)
+
+**Architecture**: Platform-agnostic definitions with platform-specific adapters
+```
+shared/src/
+├── tokens/                 # Design tokens (colors, spacing, typography, etc.)
+├── styles/
+│   ├── definitions/        # Platform-agnostic style objects
+│   │   ├── buttons, cards, badges, forms, inputs, typography, layout, common
+│   │   └── Can be imported to build adapters for new platforms
+│   ├── adapters/react-native/  # Convert definitions → React Native StyleSheets
+│   └── react-native/       # Backwards compatibility re-exports
+```
+
+**Exports**:
+- `@guidr/shared/tokens` - Design tokens (colors, spacing, typography, borderRadius, etc.)
+- `@guidr/shared/styles/react-native` - React Native StyleSheets + helpers (buttonStyles, formStyles, commonStyles, etc.)
+- `@guidr/shared/styles/definitions` - Platform-agnostic style definitions (for building adapters)
+
+**Key Helpers**:
+- `getButtonStyle(variant, disabled, size)` - Returns button style array
+- `getStatusBadgeStyle(status, variant, size)` - Returns badge styles
+- `getFormGroupStyle(compact)` - Returns form group style
+- `getInputStyle(options)` - Returns input style array
+
+**Usage**:
+- Mobile: `import { colors, spacing, formStyles, getFormGroupStyle } from '@guidr/shared/styles/react-native'`
+- Web: `import { colors, spacingWeb, typography } from '@guidr/shared/tokens'` (manage Lit CSS separately)
+- New platforms: `import { buttonDefinitions, formDefinitions } from '@guidr/shared/styles/definitions'` → create adapter
 
 ## Commands
 **Mobile** (`mobile/`): `npm start`, `npm test`, `npm run lint`, `npm run typecheck`, `npm run android`, `npm run ios`, `./build-android.sh`
@@ -55,6 +87,7 @@ Custom Claude Code skills for workflow acceleration:
 **TDD**: RED → GREEN → REFACTOR → VERIFY
 **Type Safety**: No `any`/`Any` types (except MongoDB `dict[str, Any]`, test mocks with warnings)
 **Imports**: Always top-level (no conditional/lazy imports inside functions)
+**Styling (Mobile)**: Use `@guidr/shared` instead of local theme. No component-level `StyleSheet.create` (only shared libraries). Dynamic styles use helper functions from shared package
 
 ## Build & Deploy
 **Android**: Gradle 8.13, Java 17 (NOT 25+), NDK 27.1, SDK 36, Package: com.guidr

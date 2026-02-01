@@ -9,7 +9,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native'
-import { colors, spacing, typography, commonStyles } from '../theme'
+import { colors, spacing, typography, commonStyles } from '@guidr/shared/tokens'
 import { SearchBar } from '../components/SearchBar'
 import { CategoryChip } from '../components/CategoryChip'
 import { GuideCard } from '../components/GuideCard'

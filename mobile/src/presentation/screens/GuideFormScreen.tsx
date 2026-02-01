@@ -5,7 +5,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Switch,
   Alert,
@@ -20,7 +19,8 @@ import { CategoryRepository } from '../../infrastructure/repositories/CategoryRe
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { SafeScreen } from '../components/SafeScreen'
 import { CategoryPickerButton } from '../components/CategoryPickerButton'
-import { colors, spacing, commonStyles, typography } from '../theme'
+import { colors, commonStyles } from '@guidr/shared/tokens'
+import { formStyles } from '@guidr/shared/styles/react-native'
 
 interface GuideFormScreenProps {
   mode: 'create' | 'edit'
@@ -254,7 +254,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   if (loading) {
     return (
       <SafeScreen testID="guide-form-screen">
-        <View style={[styles.container, styles.centerContainer]}>
+        <View style={[formStyles.container, formStyles.centerContainer]}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </SafeScreen>
@@ -263,8 +263,8 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 
   return (
     <SafeScreen testID="guide-form-screen">
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.container}>
+      <ScrollView style={formStyles.scrollView}>
+        <View style={formStyles.container}>
           <Text style={commonStyles.titleLarge}>
             {mode === 'create' ? 'New Guide' : 'Edit Guide'}
           </Text>
@@ -272,8 +272,8 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           {error && <Text style={commonStyles.errorText}>{error}</Text>}
           {validationError && <Text style={commonStyles.errorText}>{validationError}</Text>}
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Guide Title *</Text>
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Guide Title *</Text>
             <TextInput
               style={commonStyles.input}
               placeholder="Enter guide title"
@@ -285,10 +285,10 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
             />
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Description</Text>
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Description</Text>
             <TextInput
-              style={[commonStyles.input, styles.descriptionInput]}
+              style={[commonStyles.input, formStyles.descriptionInput]}
               placeholder="Enter guide description"
               placeholderTextColor={colors.textMuted}
               value={description}
@@ -300,8 +300,8 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
             />
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Category *</Text>
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Category *</Text>
             {mode === 'create' && categoryService && authToken ? (
               <CategoryPickerButton
                 selectedCategoryId={selectedCategoryId}
@@ -311,18 +311,18 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
                 disabled={saving}
               />
             ) : (
-              <View style={styles.categoryReadOnly}>
-                <Text style={styles.categoryReadOnlyText}>
+              <View style={formStyles.categoryReadOnly}>
+                <Text style={formStyles.categoryReadOnlyText}>
                   {selectedCategoryName || 'No category selected'}
                 </Text>
               </View>
             )}
           </View>
 
-          <View style={styles.toggleGroup}>
-            <View style={styles.toggleContainer}>
-              <Text style={styles.toggleLabel}>Public Guide</Text>
-              <Text style={styles.toggleHint}>Make this guide visible to all users</Text>
+          <View style={formStyles.toggleGroup}>
+            <View style={formStyles.toggleContainer}>
+              <Text style={formStyles.toggleLabel}>Public Guide</Text>
+              <Text style={formStyles.toggleHint}>Make this guide visible to all users</Text>
               <Switch
                 value={isPublic}
                 onValueChange={setIsPublic}
@@ -333,10 +333,10 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           </View>
 
           {isAdmin && (
-            <View style={styles.toggleGroup}>
-              <View style={styles.toggleContainer}>
-                <Text style={styles.toggleLabel}>Highlight Guide</Text>
-                <Text style={styles.toggleHint}>Featured on home screen (admin only)</Text>
+            <View style={formStyles.toggleGroup}>
+              <View style={formStyles.toggleContainer}>
+                <Text style={formStyles.toggleLabel}>Highlight Guide</Text>
+                <Text style={formStyles.toggleHint}>Featured on home screen (admin only)</Text>
                 <Switch
                   value={isHighlighted}
                   onValueChange={setIsHighlighted}
@@ -347,7 +347,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
             </View>
           )}
 
-          <View style={styles.buttonGroup}>
+          <View style={formStyles.buttonGroup}>
             <TouchableOpacity
               style={commonStyles.button}
               onPress={handleSave}
@@ -358,7 +358,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[commonStyles.buttonSecondary, styles.cancelButton]}
+              style={[commonStyles.buttonSecondary, formStyles.cancelButton]}
               onPress={onCancel}
               disabled={saving}
               testID="cancel-button"
@@ -368,7 +368,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 
             {mode === 'edit' && (
               <TouchableOpacity
-                style={[commonStyles.buttonDanger, styles.deleteButton]}
+                style={[commonStyles.buttonDanger, formStyles.deleteButton]}
                 onPress={handleDelete}
                 disabled={saving}
                 testID="delete-button"
@@ -383,50 +383,6 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   )
 }
 
-const styles = StyleSheet.create({
-  scrollView: { flex: 1, backgroundColor: colors.background },
-  container: { padding: spacing.xl, paddingBottom: spacing.xxxl },
-  centerContainer: { justifyContent: 'center', alignItems: 'center' },
-  formGroup: { marginTop: spacing.xl, marginBottom: spacing.lg },
-  label: {
-    fontSize: typography.sizeMd,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-    fontWeight: '600',
-  },
-  descriptionInput: { minHeight: 100, textAlignVertical: 'top' },
-  categoryReadOnly: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: spacing.md,
-    justifyContent: 'center',
-  },
-  categoryReadOnlyText: {
-    fontSize: typography.sizeMd,
-    color: colors.textSecondary,
-  },
-  toggleGroup: { marginTop: spacing.xl, marginBottom: spacing.lg },
-  toggleContainer: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  toggleLabel: {
-    fontSize: typography.sizeMd,
-    color: colors.textPrimary,
-    fontWeight: '600',
-    flex: 1,
-  },
-  toggleHint: {
-    fontSize: typography.sizeSm,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    flex: 1,
-  },
-  buttonGroup: { marginTop: spacing.xl, gap: spacing.md },
-  cancelButton: { marginTop: spacing.md },
-  deleteButton: { marginTop: spacing.md },
-})
+// Use shared form styles - no component-specific StyleSheet needed
+// formStyles provides: formGroup, label, readOnlyContainer, toggleContainer, buttonGroup, etc.
+// For any overrides, compose with formStyles using array syntax: [formStyles.base, { customProp: value }]

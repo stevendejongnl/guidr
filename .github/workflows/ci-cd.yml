@@ -8,50 +8,41 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm run lint
+      - run: npm run mobile:lint
 
   test:
     name: Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm test
+      - run: npm run mobile:test
 
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm run typecheck
+      - run: npm run mobile:typecheck
 
   api-server-test:
     name: API Server Test
@@ -135,9 +126,6 @@ jobs:
   web-app-lint:
     name: Web App Lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web-app
     steps:
       - uses: actions/checkout@v4
 
@@ -145,23 +133,20 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: web-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run web:lint
 
       - name: Run TypeScript check
-        run: npm run typecheck
+        run: npm run web:typecheck
 
   web-app-test:
     name: Web App Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web-app
     steps:
       - uses: actions/checkout@v4
 
@@ -169,20 +154,17 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: web-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm --prefix web-app test
 
   android-build:
     name: Android Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
 
@@ -190,7 +172,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - uses: actions/setup-java@v4
         with:
@@ -202,7 +184,7 @@ jobs:
 
       - name: Create Sentry properties file
         run: |
-          cat > android/sentry.properties <<EOF
+          cat > mobile/android/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
           defaults.org=madebysteven
           defaults.project=guidr
@@ -235,8 +217,8 @@ jobs:
 
       - name: Build Android APK
         run: |
-          chmod +x android/gradlew
-          android/gradlew assembleDebug --no-daemon --stacktrace -p android
+          chmod +x mobile/android/gradlew
+          mobile/android/gradlew assembleDebug --no-daemon --stacktrace -p mobile/android
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -248,9 +230,6 @@ jobs:
   ios-build:
     name: iOS Build
     runs-on: macos-15
-    defaults:
-      run:
-        working-directory: mobile
     steps:
       - uses: actions/checkout@v4
 
@@ -258,19 +237,19 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Install CocoaPods dependencies
         run: |
-          cd ios
+          cd mobile/ios
           pod install
 
       - name: Create Sentry properties file
         run: |
-          cat > ios/sentry.properties <<EOF
+          cat > mobile/ios/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
           defaults.org=madebysteven
           defaults.project=guidr
@@ -281,7 +260,7 @@ jobs:
 
       - name: Build iOS app for simulator
         run: |
-          cd ios
+          cd mobile/ios
           xcodebuild \
             -workspace guidr.xcworkspace \
             -scheme guidr \

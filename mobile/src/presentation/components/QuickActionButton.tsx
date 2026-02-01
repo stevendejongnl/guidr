@@ -1,6 +1,6 @@
 import React from 'react'
 import { TouchableOpacity, Text, StyleSheet } from 'react-native'
-import { colors, spacing, borderRadius, typography } from '../theme'
+import { colors, spacing, borderRadius, typography } from '@guidr/shared/tokens'
 
 interface QuickActionButtonProps {
   icon: string

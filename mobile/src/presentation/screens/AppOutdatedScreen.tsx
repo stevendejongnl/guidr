@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
-import { commonStyles, colors, spacing, typography, borderRadius } from '../theme'
+import { commonStyles, colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 
 interface AppOutdatedScreenProps {
   currentVersion: string

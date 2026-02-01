@@ -3,6 +3,11 @@
   "version": "1.23.1",
   "private": true,
   "description": "Guidr monorepo - mobile app, API server, and web app",
+  "workspaces": [
+    "shared",
+    "mobile",
+    "web-app"
+  ],
   "scripts": {
     "mobile:lint": "npm --prefix mobile run lint",
     "mobile:test": "npm --prefix mobile test",
@@ -25,6 +30,7 @@
     "security:all": "npm run security:mobile && npm run security:web && npm run security:api",
     "security:fix:mobile": "npm --prefix mobile audit fix",
     "security:fix:web": "npm --prefix web-app audit fix",
+    "postinstall": "node scripts/setup-sentry-symlink.js",
     "prepare": "husky install"
   },
   "devDependencies": {

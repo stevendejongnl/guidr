@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { colors, spacing, typography, borderRadius, componentDefaults } from '../theme'
+import { colors, spacing, typography, borderRadius, componentDefaults } from '@guidr/shared/tokens'
 import { HomeScreenMockData, MockSession, SessionStatus } from '../../infrastructure/mocks/HomeScreenMockData'
 import { NodeProgressIndicator } from './NodeProgressIndicator'
 import { StatusBadge } from './StatusBadge'

@@ -15,7 +15,7 @@ import {
   spacing,
   typography,
   borderRadius,
-} from '../theme'
+} from '@guidr/shared/tokens'
 
 interface UpdateAvailableScreenProps {
   currentVersion: string

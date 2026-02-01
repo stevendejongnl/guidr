@@ -22,7 +22,7 @@ import { SearchBar } from '../components/SearchBar'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { createGuideViewModel } from '../viewmodels/GuideViewModel'
-import { colors, spacing, commonStyles } from '../theme'
+import { colors, spacing, commonStyles } from '@guidr/shared/tokens'
 
 interface GuideListScreenProps {
   categoryId?: string

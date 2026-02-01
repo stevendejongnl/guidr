@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import { Category } from '../../domain/entities/Category'
-import { colors, spacing, borderRadius, typography } from '../theme'
+import { colors, spacing, borderRadius, typography } from '@guidr/shared/tokens'
 
 interface CategoryPickerProps {
   visible: boolean

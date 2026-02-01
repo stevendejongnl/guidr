@@ -16,7 +16,7 @@ import { SafeScreen } from '../components/SafeScreen'
 import { CategoryListItem } from '../components/CategoryListItem'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
-import { colors, spacing, commonStyles } from '../theme'
+import { colors, spacing, commonStyles } from '@guidr/shared/tokens'
 
 interface CategoryListScreenProps {
   parentId?: string | null

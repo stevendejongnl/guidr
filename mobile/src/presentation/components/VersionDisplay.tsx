@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { colors, spacing, typography } from '../theme'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
 
 interface VersionDisplayProps {
   isVisible?: boolean

@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Category } from '../../domain/entities/Category'
-import { colors, spacing, typography } from '../theme'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
 
 interface CategoryListItemProps {
   category: Category

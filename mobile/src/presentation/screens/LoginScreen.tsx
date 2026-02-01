@@ -13,7 +13,7 @@ import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
-import { commonStyles, colors } from '../theme'
+import { commonStyles, colors } from '@guidr/shared/tokens'
 
 interface LoginScreenProps {
   authStorage: AuthStorage
