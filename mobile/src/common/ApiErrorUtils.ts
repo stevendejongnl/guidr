@@ -1,5 +1,6 @@
 /**
  * FastAPI validation error structure
+ * Ensures proper error handling across API calls
  */
 interface FastAPIValidationError {
   loc: (string | number)[]
