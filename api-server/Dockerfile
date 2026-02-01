@@ -1,19 +1,18 @@
 # Stage 1: Build Web App
 FROM node:24-slim AS web-builder
 
-WORKDIR /web-app
+WORKDIR /
 
-# Copy web app files
-COPY web-app/package*.json ./
-COPY web-app/tsconfig.json ./
-COPY web-app/vite.config.ts ./
-COPY web-app/index.html ./
-COPY web-app/public ./public
-COPY web-app/src ./src
+# Copy root files for npm workspaces
+COPY package*.json .npmrc ./
+COPY shared/package.json ./shared/package.json
+COPY web-app ./web-app
 
-# Install and build
+# Install dependencies (npm workspaces will resolve @guidr/shared)
 RUN npm ci
-RUN npm run build
+
+# Build web app
+RUN npm run web:build
 
 # Stage 2: Build Python Dependencies
 FROM python:3.12-slim AS python-builder
