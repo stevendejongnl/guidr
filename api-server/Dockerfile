@@ -9,7 +9,7 @@ COPY scripts ./scripts
 COPY shared/package*.json ./shared/
 COPY shared/src ./shared/src
 COPY shared/tsconfig.json ./shared/
-COPY mobile/package*.json ./mobile/
+COPY mobile/ ./mobile/
 COPY web-app ./web-app
 
 # Install dependencies (npm workspaces will resolve @guidr/shared)
