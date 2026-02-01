@@ -131,7 +131,7 @@ npm run security:all
 # Expected: Exit code 0, message "Only accepted vulnerabilities found"
 
 # Web security scan (no accepted vulnerabilities)
-npm --prefix web-app audit --audit-level=high
+npm audit --workspace=web-app --audit-level=high
 # Expected: No vulnerabilities
 
 # API security scan (with ecdsa timing attack documented)

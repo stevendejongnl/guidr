@@ -160,7 +160,7 @@ jobs:
         run: npm ci --workspaces --include=dev
 
       - name: Run tests
-        run: npm --prefix web-app test
+        run: npm test --workspace=web-app
 
   android-build:
     name: Android Build

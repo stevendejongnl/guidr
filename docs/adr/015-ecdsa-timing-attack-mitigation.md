@@ -202,7 +202,7 @@ curl -X GET https://guidr.madebysteven.nl/api/health
 # Expected: Exit code 0, message "Only accepted vulnerabilities found"
 
 # Run full audit to see all vulnerabilities
-npm --prefix mobile audit
+npm audit --workspace=mobile
 # Expected: Shows 19 vulnerabilities (1 LOW, 18 HIGH) - all are accepted:
 #   - GHSA-8qq5-rm4j-mr97 (tar)
 #   - GHSA-5j98-mcp5-4vw2 (glob)

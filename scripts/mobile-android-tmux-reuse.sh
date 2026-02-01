@@ -25,11 +25,11 @@ if [ -n "$TMUX" ]; then
 
   # Create android window
   tmux new-window -n "$ANDROID_WINDOW"
-  tmux send-keys -t "$ANDROID_WINDOW" "cd '$PROJECT_ROOT' && npm --prefix mobile start" Enter
+  tmux send-keys -t "$ANDROID_WINDOW" "cd '$PROJECT_ROOT' && npm --workspace=mobile start" Enter
 
   # Create second pane for android:watch
   tmux split-window -h -t "$ANDROID_WINDOW"
-  tmux send-keys -t "$ANDROID_WINDOW" "cd '$PROJECT_ROOT' && sleep 30 && npm --prefix mobile run android:watch" Enter
+  tmux send-keys -t "$ANDROID_WINDOW" "cd '$PROJECT_ROOT' && sleep 30 && npm --workspace=mobile run android:watch" Enter
 
   # Set equal pane sizes
   tmux select-layout -t "$ANDROID_WINDOW" even-horizontal
@@ -48,11 +48,11 @@ else
 
   # Create new session with android window
   tmux new-session -d -s "$SESSION_NAME" -x 200 -y 50 -n "android"
-  tmux send-keys -t "$SESSION_NAME" "cd '$PROJECT_ROOT' && npm --prefix mobile start" Enter
+  tmux send-keys -t "$SESSION_NAME" "cd '$PROJECT_ROOT' && npm --workspace=mobile start" Enter
 
   # Create second pane for android:watch
   tmux split-window -h -t "$SESSION_NAME"
-  tmux send-keys -t "$SESSION_NAME" "cd '$PROJECT_ROOT' && sleep 30 && npm --prefix mobile run android:watch" Enter
+  tmux send-keys -t "$SESSION_NAME" "cd '$PROJECT_ROOT' && sleep 30 && npm --workspace=mobile run android:watch" Enter
 
   # Set equal pane sizes
   tmux select-layout -t "$SESSION_NAME" even-horizontal

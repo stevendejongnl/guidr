@@ -5,14 +5,14 @@ echo "Running pre-commit checks..."
 echo ""
 
 echo "📱 Checking Mobile (TypeScript + ESLint)..."
-npm --prefix mobile run typecheck
-npm --prefix mobile run lint
+npm run typecheck --workspace=mobile
+npm run lint --workspace=mobile
 echo "✓ Mobile checks passed"
 echo ""
 
 echo "🌐 Checking Web-app (TypeScript + ESLint)..."
-npm --prefix web-app run typecheck
-npm --prefix web-app run lint
+npm run typecheck --workspace=web-app
+npm run lint --workspace=web-app
 echo "✓ Web-app checks passed"
 echo ""
 
