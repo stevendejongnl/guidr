@@ -1,7 +1,7 @@
 # Stage 1: Build Web App
 FROM node:24-slim AS web-builder
 
-WORKDIR /
+WORKDIR /app
 
 # Copy root files for npm workspaces
 COPY package*.json ./
@@ -55,7 +55,7 @@ COPY api-server/src ./src
 COPY default-configuration.toml .
 
 # Copy built web app from web-builder
-COPY --from=web-builder /web-app/dist ./web-app/dist
+COPY --from=web-builder /app/web-app/dist ./web-app/dist
 
 # Set version as build argument (injected during build)
 ARG GUIDR_VERSION=0.1.0
