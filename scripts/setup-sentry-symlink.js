@@ -3,43 +3,66 @@
 const fs = require('fs');
 const path = require('path');
 
-// Create symlink for @sentry from mobile/node_modules to root node_modules
-// This is needed because iOS build scripts expect @sentry/react-native to be
-// at root/node_modules/@sentry, but it's installed in mobile/node_modules
-
 const rootDir = path.join(__dirname, '..');
-const mobileNodeModulesSrc = path.join(rootDir, 'mobile/node_modules/@sentry');
-const rootNodeModulesSentryDir = path.join(rootDir, 'node_modules/@sentry');
 const rootNodeModulesDir = path.join(rootDir, 'node_modules');
+const mobileNodeModulesDir = path.join(rootDir, 'mobile/node_modules');
 
-// Only proceed if source exists
-if (!fs.existsSync(mobileNodeModulesSrc)) {
-  console.log('Skipping sentry symlink setup - mobile/@sentry not found yet');
-  process.exit(0);
-}
+// Helper function to create symlinks
+function createSymlink(srcPath, destPath, linkName) {
+  // Only proceed if source exists
+  if (!fs.existsSync(srcPath)) {
+    console.log(`Skipping ${linkName} - source not found`);
+    return false;
+  }
 
-// Create node_modules directory if it doesn't exist
-if (!fs.existsSync(rootNodeModulesDir)) {
-  fs.mkdirSync(rootNodeModulesDir, { recursive: true });
-}
+  // Create destination directory if needed
+  const destDir = path.dirname(destPath);
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
 
-// Remove existing symlink or directory if it exists
-if (fs.existsSync(rootNodeModulesSentryDir)) {
-  const stat = fs.lstatSync(rootNodeModulesSentryDir);
-  if (stat.isSymbolicLink()) {
-    fs.unlinkSync(rootNodeModulesSentryDir);
-  } else if (stat.isDirectory()) {
-    console.log('@sentry directory exists at root node_modules - skipping symlink creation');
-    process.exit(0);
+  // Remove existing symlink if it exists
+  if (fs.existsSync(destPath)) {
+    const stat = fs.lstatSync(destPath);
+    if (stat.isSymbolicLink()) {
+      fs.unlinkSync(destPath);
+    } else {
+      console.log(`${linkName} directory exists - skipping symlink creation`);
+      return false;
+    }
+  }
+
+  // Create the symlink
+  try {
+    fs.symlinkSync(srcPath, destPath, 'dir');
+    console.log(`✓ Created symlink for ${linkName}`);
+    return true;
+  } catch (err) {
+    console.error(`✗ Failed to create ${linkName} symlink:`, err.message);
+    return false;
   }
 }
 
-// Create symlink
-try {
-  fs.symlinkSync(mobileNodeModulesSrc, rootNodeModulesSentryDir, 'dir');
-  console.log('Successfully created symlink for @sentry in root node_modules');
-} catch (err) {
-  console.error('Failed to create sentry symlink:', err.message);
-  // Don't fail the entire install if symlink creation fails
-  process.exit(0);
+// 1. Create symlink for @sentry from mobile to root node_modules
+// (iOS build scripts expect @sentry/react-native at root/node_modules/@sentry)
+const mobileNodeModulesSentry = path.join(rootDir, 'mobile/node_modules/@sentry');
+const rootNodeModulesSentry = path.join(rootNodeModulesDir, '@sentry');
+if (fs.existsSync(mobileNodeModulesSentry)) {
+  createSymlink(mobileNodeModulesSentry, rootNodeModulesSentry, '@sentry');
+}
+
+// 2. Create symlink for react-native from root to mobile node_modules
+// (Android gradle plugin expects react-native in mobile/node_modules)
+const rootNodeModulesReactNative = path.join(rootNodeModulesDir, 'react-native');
+const mobileNodeModulesReactNative = path.join(mobileNodeModulesDir, 'react-native');
+if (fs.existsSync(rootNodeModulesReactNative)) {
+  createSymlink(rootNodeModulesReactNative, mobileNodeModulesReactNative, 'react-native');
+}
+
+// 3. Create symlink for @react-native/codegen from root to mobile node_modules
+// (React Native gradle plugin needs this too)
+const rootNodeModulesCodegen = path.join(rootNodeModulesDir, '@react-native/codegen');
+const mobileNodeModulesCodegen = path.join(mobileNodeModulesDir, '@react-native/codegen');
+if (fs.existsSync(rootNodeModulesCodegen)) {
+  createSymlink(rootNodeModulesCodegen, mobileNodeModulesCodegen, '@react-native/codegen');
 }
