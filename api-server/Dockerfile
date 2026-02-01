@@ -5,6 +5,7 @@ WORKDIR /
 
 # Copy root files for npm workspaces
 COPY package*.json ./
+COPY scripts ./scripts
 COPY shared/package*.json ./shared/
 COPY shared/src ./shared/src
 COPY shared/tsconfig.json ./shared/
