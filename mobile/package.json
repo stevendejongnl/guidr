@@ -1,6 +1,6 @@
 {
   "name": "guidr",
-  "version": "1.48.1",
+  "version": "1.49.3",
   "private": true,
   "engines": {
     "node": ">=24.11.0",
