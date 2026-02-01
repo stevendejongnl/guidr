@@ -128,25 +128,27 @@ jobs:
           KEY_ALIAS: guidr-release
           KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          chmod +x mobile/android/gradlew
-          mobile/android/gradlew assembleRelease --no-daemon --stacktrace -p mobile/android
+          cd mobile
+          chmod +x android/gradlew
+          ./android/gradlew assembleRelease --no-daemon --stacktrace -p android
 
           # Get APK info
-          APK_PATH="mobile/android/app/build/outputs/apk/release/app-release.apk"
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
           if [ -f "$APK_PATH" ]; then
             APK_SIZE=$(stat -c%s "$APK_PATH")
             echo "Built APK: $APK_PATH (${APK_SIZE} bytes)"
           else
             echo "Error: APK not found at expected path"
-            ls -la mobile/android/app/build/outputs/apk/release/ || true
+            ls -la android/app/build/outputs/apk/release/ || true
             exit 1
           fi
 
       - name: Rename APK with version
+        working-directory: mobile
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
-          OLD_PATH="mobile/android/app/build/outputs/apk/release/app-release.apk"
-          NEW_PATH="mobile/android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
+          OLD_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          NEW_PATH="android/app/build/outputs/apk/release/guidr-v${VERSION}.apk"
 
           mv "$OLD_PATH" "$NEW_PATH"
           echo "✅ Renamed APK to: guidr-v${VERSION}.apk"
