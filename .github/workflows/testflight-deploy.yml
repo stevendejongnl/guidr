@@ -104,12 +104,6 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: npm ci
 
-      - name: Install mobile dependencies
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
-        working-directory: mobile
-        run: npm ci
-        # Ensure Xcode build can resolve workspace packages
-
       - name: Restore CocoaPods cache
         uses: actions/cache@v4
         with:
