@@ -13,7 +13,7 @@ COPY mobile/ ./mobile/
 COPY web-app ./web-app
 
 # Install dependencies (npm workspaces will resolve @guidr/shared)
-RUN npm ci
+RUN npm ci --workspaces
 
 # Build web app
 RUN npm run web:build

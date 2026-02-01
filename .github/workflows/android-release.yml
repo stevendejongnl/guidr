@@ -59,7 +59,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspaces
 
       - name: Create Sentry properties file
         run: |
