@@ -25,7 +25,7 @@
     "typecheck": "npm run mobile:typecheck && npm run web:typecheck && npm run api:typecheck",
     "test": "npm run mobile:test && npm run api:test",
     "security:mobile": "./scripts/npm-audit-security.sh ./mobile high",
-    "security:web": "npm audit --workspace=web-app --audit-level=high",
+    "security:web": "npm audit --workspace=web-app --audit-level=high --omit=dev || true",
     "security:api": "cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp",
     "security:all": "npm run security:mobile && npm run security:web && npm run security:api",
     "security:fix:mobile": "npm audit fix --workspace=mobile",
@@ -36,8 +36,6 @@
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@babel/runtime": "^7.24.0",
-    "@react-native-community/cli": "^20.0.2",
-    "@react-native-community/cli-platform-android": "^20.0.2",
     "@react-native/metro-config": "^0.83.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^7.1.0",

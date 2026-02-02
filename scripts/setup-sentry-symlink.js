@@ -96,4 +96,29 @@ if (fs.existsSync(rootGuidrShared)) {
   console.log('This is expected if installing for the first time');
 }
 
+// 6. Create symlink for @react-native-community/cli from mobile to root node_modules
+// (Gradle needs this when running from monorepo root to execute React Native CLI)
+const mobileCliDir = path.join(mobileNodeModulesDir, '@react-native-community');
+const rootCliDir = path.join(rootNodeModulesDir, '@react-native-community');
+
+console.log('\n6. Setting up React Native CLI symlinks...');
+if (fs.existsSync(mobileCliDir)) {
+  // Create root @react-native-community directory if needed
+  if (!fs.existsSync(rootCliDir)) {
+    fs.mkdirSync(rootCliDir, { recursive: true });
+  }
+
+  // Symlink individual CLI packages
+  const cliPackages = ['cli', 'cli-platform-android', 'cli-config-android', 'cli-doctor'];
+  for (const pkg of cliPackages) {
+    const srcPath = path.join(mobileCliDir, pkg);
+    const destPath = path.join(rootCliDir, pkg);
+    if (fs.existsSync(srcPath)) {
+      createSymlink(srcPath, destPath, `@react-native-community/${pkg}`);
+    }
+  }
+} else {
+  console.log('⚠ @react-native-community CLI not found in mobile/node_modules');
+}
+
 console.log('\n✓ Workspace symlink setup complete');
