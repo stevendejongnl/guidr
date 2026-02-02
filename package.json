@@ -9,11 +9,12 @@
     "web-app"
   ],
   "scripts": {
+    "build:shared": "npm run build --workspace=shared",
     "mobile:lint": "npm run lint --workspace=mobile",
     "mobile:test": "npm test --workspace=mobile",
     "mobile:typecheck": "npm run typecheck --workspace=mobile",
-    "mobile:android": "bash scripts/mobile-android-tmux-new.sh",
-    "mobile:ios": "npm run ios --workspace=mobile",
+    "mobile:android": "npm run build:shared && bash scripts/mobile-android-tmux-new.sh",
+    "mobile:ios": "npm run build:shared && npm run ios --workspace=mobile",
     "api:test": "cd api-server && uv run pytest",
     "api:lint": "cd api-server && uv run ruff check .",
     "api:typecheck": "cd api-server && uv run mypy src",

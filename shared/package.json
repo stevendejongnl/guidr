@@ -4,40 +4,52 @@
   "private": true,
   "description": "Shared design system and utilities for Guidr cross-platform apps",
   "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./src/index.ts",
   "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./src/index.ts"
+    },
     "./tokens": {
-      "types": "./src/tokens/index.ts",
-      "import": "./src/tokens/index.ts"
+      "import": "./dist/tokens/index.mjs",
+      "types": "./src/tokens/index.ts"
     },
     "./styles/react-native": {
-      "types": "./src/styles/react-native/index.ts",
-      "import": "./src/styles/react-native/index.ts"
+      "import": "./dist/styles/react-native/index.mjs",
+      "types": "./src/styles/react-native/index.ts"
     },
     "./styles/adapters/react-native": {
-      "types": "./src/styles/adapters/react-native/index.ts",
-      "import": "./src/styles/adapters/react-native/index.ts"
+      "import": "./dist/styles/adapters/react-native/index.mjs",
+      "types": "./src/styles/adapters/react-native/index.ts"
     },
     "./styles/definitions": {
-      "types": "./src/styles/definitions/index.ts",
-      "import": "./src/styles/definitions/index.ts"
+      "import": "./dist/styles/definitions/index.mjs",
+      "types": "./src/styles/definitions/index.ts"
     },
     "./api/definitions": {
-      "types": "./src/api/definitions/index.ts",
-      "import": "./src/api/definitions/index.ts"
+      "import": "./dist/api/definitions/index.mjs",
+      "types": "./src/api/definitions/index.ts"
     },
     "./api/adapters/fetch": {
-      "types": "./src/api/adapters/fetch/index.ts",
-      "import": "./src/api/adapters/fetch/index.ts"
+      "import": "./dist/api/adapters/fetch/index.mjs",
+      "types": "./src/api/adapters/fetch/index.ts"
     }
   },
+  "scripts": {
+    "build": "vite build",
+    "build:watch": "vite build --watch"
+  },
   "files": [
+    "dist",
     "src"
   ],
   "devDependencies": {
     "@ryoppippi/unplugin-typia": "^2.6.5",
     "@types/react-native": "^0.71",
     "react-native": "^0.83.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0"
   },
   "dependencies": {
     "typia": "^11.0.3"
