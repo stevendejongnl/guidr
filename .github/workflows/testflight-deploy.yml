@@ -462,6 +462,7 @@ jobs:
         if: |
           (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch') &&
           github.event.inputs.skip_testflight != 'true'
+        working-directory: mobile
         run: |
           # Read changelog from file
           CHANGELOG_TEXT=$(cat "${{ env.CHANGELOG_FILE }}")
