@@ -66,3 +66,11 @@ const mobileNodeModulesCodegen = path.join(mobileNodeModulesDir, '@react-native/
 if (fs.existsSync(rootNodeModulesCodegen)) {
   createSymlink(rootNodeModulesCodegen, mobileNodeModulesCodegen, '@react-native/codegen');
 }
+
+// 4. Create symlink for @react-native/metro-config from root to mobile node_modules
+// (Metro bundler needs this when Gradle runs createBundleReleaseJsAndAssets)
+const rootNodeModulesMetroConfig = path.join(rootNodeModulesDir, '@react-native/metro-config');
+const mobileNodeModulesMetroConfig = path.join(mobileNodeModulesDir, '@react-native/metro-config');
+if (fs.existsSync(rootNodeModulesMetroConfig)) {
+  createSymlink(rootNodeModulesMetroConfig, mobileNodeModulesMetroConfig, '@react-native/metro-config');
+}
