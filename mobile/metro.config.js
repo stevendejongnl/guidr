@@ -15,6 +15,10 @@ const defaultConfig = getDefaultConfig(__dirname)
 const config = {
   resolver: {
     assetExts: [...defaultConfig.resolver.assetExts, 'toml'],
+    nodeModulesPaths: [
+      require('path').resolve(__dirname, 'node_modules'),
+      require('path').resolve(__dirname, '../node_modules'),
+    ],
   },
 }
 
