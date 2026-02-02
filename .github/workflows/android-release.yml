@@ -65,6 +65,9 @@ jobs:
         # This is required for the npm workspace restructuring to work correctly
         # See: docs/CI_CD_TROUBLESHOOTING.md#issue-android-release-build-fails
 
+      - name: Build shared package
+        run: npm run build:shared
+
       - name: Create Sentry properties file
         run: |
           cat > mobile/android/sentry.properties <<EOF
