@@ -74,3 +74,26 @@ const mobileNodeModulesMetroConfig = path.join(mobileNodeModulesDir, '@react-nat
 if (fs.existsSync(rootNodeModulesMetroConfig)) {
   createSymlink(rootNodeModulesMetroConfig, mobileNodeModulesMetroConfig, '@react-native/metro-config');
 }
+
+// 5. Create symlink for @guidr/shared from root to mobile node_modules
+// (Mobile app imports @guidr/shared from multiple files, Metro needs this in mobile/node_modules)
+const mobileNodeModulesGuidr = path.join(mobileNodeModulesDir, '@guidr');
+const rootGuidrShared = path.join(rootNodeModulesDir, '@guidr', 'shared');
+const mobileGuidrShared = path.join(mobileNodeModulesGuidr, 'shared');
+
+console.log('\n5. Setting up @guidr/shared symlink...');
+
+if (fs.existsSync(rootGuidrShared)) {
+  // Create @guidr directory if needed
+  if (!fs.existsSync(mobileNodeModulesGuidr)) {
+    fs.mkdirSync(mobileNodeModulesGuidr, { recursive: true });
+    console.log('Created @guidr directory in mobile/node_modules');
+  }
+
+  createSymlink(rootGuidrShared, mobileGuidrShared, '@guidr/shared');
+} else {
+  console.log('⚠ @guidr/shared not found in root node_modules');
+  console.log('This is expected if installing for the first time');
+}
+
+console.log('\n✓ Workspace symlink setup complete');

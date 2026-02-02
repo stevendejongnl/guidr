@@ -215,6 +215,23 @@ jobs:
         with:
           cache-cleanup: on-success
 
+      - name: Setup workspace symlinks
+        run: |
+          node scripts/setup-sentry-symlink.js
+
+      - name: Debug workspace symlinks
+        run: |
+          echo "=== Root node_modules @guidr ==="
+          ls -la node_modules/@guidr/ || echo "Not found"
+
+          echo ""
+          echo "=== Mobile node_modules @guidr ==="
+          ls -la mobile/node_modules/@guidr/ || echo "Not found"
+
+          echo ""
+          echo "=== Mobile node_modules symlinks ==="
+          find mobile/node_modules -maxdepth 2 -type l -ls 2>/dev/null | head -20 || true
+
       - name: Build Android APK
         run: |
           chmod +x mobile/android/gradlew
