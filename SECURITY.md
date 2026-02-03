@@ -72,6 +72,22 @@ Guidr is a personal project with security measures in place for the safety of it
 - **Mitigation**: Custom audit script filters known vulnerabilities, quarterly reviews
 - **Reference**: [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md) (Section 2)
 
+#### Web (React/Vite)
+
+**Development Server Vulnerabilities** (dev-time only)
+- **GHSA-67mh-4wv8-2f99** (esbuild CORS bypass): MODERATE - Development server only
+- **GHSA-p5wg-g6qr-c7cg** (eslint Stack Overflow): MODERATE - Build tool, not runtime
+- **Status**: Accepted (dev-time dependencies only)
+- **Scope**: devDependencies only (Vite/esbuild, ESLint - not shipped to production)
+- **Risk Assessment**: Minimal - only affects trusted dev machines and CI runners during builds
+- **Reason Accepted**:
+  - No end-user exposure (dev/build tooling only)
+  - Vite/esbuild used during development, not in production bundles
+  - Production bundles use Vite output, not esbuild directly
+  - Major version upgrades would require breaking changes to build config
+- **Mitigation**: Custom audit script filters known vulnerabilities, quarterly reviews
+- **Reference**: [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md) (Section 2)
+
 ### Resolved Vulnerabilities
 
 - **CVE-2022-21670** (markdown-it DoS): Fixed via npm override to v12.3.2

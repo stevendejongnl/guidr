@@ -14,13 +14,14 @@
 # - GHSA-34x7-hfp2-rc4v: tar hardlink path traversal (HIGH)
 # - GHSA-p5wg-g6qr-c7cg: eslint Stack Overflow with circular references (MODERATE)
 # - GHSA-37qj-frw5-hhjh: fast-xml-parser RangeError DoS (HIGH)
+# - GHSA-67mh-4wv8-2f99: esbuild CORS bypass in dev server (MODERATE)
 
 set -e
 
 PREFIX_PATH="${1:-.}"
 AUDIT_LEVEL="${2:-high}"
 
-# GHSA advisories to ignore (dev-time only, bundled in semantic-release)
+# GHSA advisories to ignore (dev-time only, bundled in semantic-release or web dev tools)
 ACCEPTED_ADVISORIES=(
   "GHSA-5j98-mcp5-4vw2"
   "GHSA-73rr-hh4g-fpgx"
@@ -29,6 +30,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-34x7-hfp2-rc4v"
   "GHSA-p5wg-g6qr-c7cg"
   "GHSA-37qj-frw5-hhjh"
+  "GHSA-67mh-4wv8-2f99"
 )
 
 # Run npm audit and capture output
