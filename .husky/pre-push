@@ -11,19 +11,17 @@ echo "✓ Mobile security scan passed"
 echo ""
 
 echo "🔒 Security: Scanning Web Dependencies..."
-npm audit --workspace=web-app --audit-level=high || true
+./scripts/npm-audit-security.sh . high || true
 echo "✓ Web security scan passed"
 echo ""
 
 echo "🔒 Security: Scanning API Dependencies..."
-cd api-server
-if [ -f .venv/bin/pip-audit ]; then
-  .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp
+if [ -f api-server/.venv/bin/pip-audit ]; then
+  (cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp)
   echo "✓ API security scan passed"
 else
   echo "⚠ pip-audit not installed, skipping API security scan"
 fi
-cd ..
 echo ""
 
 echo "📱 Running Mobile Tests..."
@@ -32,9 +30,7 @@ echo "✓ Mobile tests passed"
 echo ""
 
 echo "🔧 Running API Tests..."
-cd api-server
-.venv/bin/python -m pytest
-cd ..
+npm run api:test
 echo "✓ API tests passed"
 echo ""
 
