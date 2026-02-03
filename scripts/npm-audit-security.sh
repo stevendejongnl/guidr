@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # npm-audit-security.sh - Run npm audit and ignore known/accepted vulnerabilities
-# Usage: npm-audit-security.sh [prefix-path] [exit-level]
+# Usage: npm-audit-security.sh [prefix-path] [exit-level] [workspace]
 #
 # This script runs npm audit and filters out vulnerabilities that have been
 # documented and accepted as dev-time only risks.
@@ -20,6 +20,7 @@ set -e
 
 PREFIX_PATH="${1:-.}"
 AUDIT_LEVEL="${2:-high}"
+WORKSPACE="${3:-}"
 
 # GHSA advisories to ignore (dev-time only, bundled in semantic-release or web dev tools)
 ACCEPTED_ADVISORIES=(
@@ -34,7 +35,11 @@ ACCEPTED_ADVISORIES=(
 )
 
 # Run npm audit and capture output
-AUDIT_OUTPUT=$(npm audit --prefix "$PREFIX_PATH" --audit-level="$AUDIT_LEVEL" 2>&1 || true)
+if [ -n "$WORKSPACE" ]; then
+  AUDIT_OUTPUT=$(npm audit --workspace="$WORKSPACE" --audit-level="$AUDIT_LEVEL" 2>&1 || true)
+else
+  AUDIT_OUTPUT=$(npm audit --prefix "$PREFIX_PATH" --audit-level="$AUDIT_LEVEL" 2>&1 || true)
+fi
 
 # Check if output contains any unaccepted vulnerabilities
 UNACCEPTED_FOUND=false

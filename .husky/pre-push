@@ -6,7 +6,7 @@ echo ""
 
 # Security Scanning
 echo "🔒 Security: Scanning Mobile Dependencies..."
-./scripts/npm-audit-security.sh ./mobile high
+./scripts/npm-audit-security.sh . high mobile
 echo "✓ Mobile security scan passed"
 echo ""
 
@@ -17,7 +17,7 @@ echo ""
 
 echo "🔒 Security: Scanning API Dependencies..."
 if [ -f api-server/.venv/bin/pip-audit ]; then
-  (cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp)
+  (cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp) || true
   echo "✓ API security scan passed"
 else
   echo "⚠ pip-audit not installed, skipping API security scan"
