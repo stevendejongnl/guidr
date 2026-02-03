@@ -10,7 +10,8 @@ import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
-import { commonStyles, colors } from '@guidr/shared/tokens'
+import { colors } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface RegistrationScreenProps {
   authStorage: AuthStorage

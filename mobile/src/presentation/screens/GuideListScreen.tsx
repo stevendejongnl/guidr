@@ -22,7 +22,8 @@ import { SearchBar } from '../components/SearchBar'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { createGuideViewModel } from '../viewmodels/GuideViewModel'
-import { colors, spacing, commonStyles } from '@guidr/shared/tokens'
+import { colors, spacing } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface GuideListScreenProps {
   categoryId?: string

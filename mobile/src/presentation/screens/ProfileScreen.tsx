@@ -12,7 +12,8 @@ import {
 import { AuthClient } from '@infrastructure/api/AuthClient'
 import { AuthStorage } from '@infrastructure/storage/AuthStorage'
 import { SafeScreen } from '../components/SafeScreen'
-import { commonStyles, colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
+import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 import {
   INTEREST_CATEGORIES,
   type InterestCategory,

@@ -10,12 +10,12 @@ import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { MarkdownText } from '../components/MarkdownText'
 import {
-  commonStyles,
   colors,
   spacing,
   typography,
   borderRadius,
 } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface UpdateAvailableScreenProps {
   currentVersion: string

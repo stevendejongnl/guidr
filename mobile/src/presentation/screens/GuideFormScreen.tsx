@@ -19,7 +19,8 @@ import { CategoryRepository } from '../../infrastructure/repositories/CategoryRe
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { SafeScreen } from '../components/SafeScreen'
 import { CategoryPickerButton } from '../components/CategoryPickerButton'
-import { colors, commonStyles } from '@guidr/shared/tokens'
+import { colors } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 import { formStyles } from '@guidr/shared/styles/react-native'
 
 interface GuideFormScreenProps {

@@ -16,7 +16,8 @@ import { SafeScreen } from '../components/SafeScreen'
 import { CategoryListItem } from '../components/CategoryListItem'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
-import { colors, spacing, commonStyles } from '@guidr/shared/tokens'
+import { colors, spacing } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface CategoryListScreenProps {
   parentId?: string | null

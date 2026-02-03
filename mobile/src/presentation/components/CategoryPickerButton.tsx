@@ -9,7 +9,8 @@ import {
 import { Category } from '../../domain/entities/Category'
 import { CategoryService } from '../../domain/services/CategoryService'
 import { CategoryPicker } from './CategoryPicker'
-import { colors, spacing, commonStyles, typography } from '@guidr/shared/tokens'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface CategoryPickerButtonProps {
   selectedCategoryId: string | null

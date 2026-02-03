@@ -42,6 +42,3 @@ export {
   type IconToken,
   type NodeToken,
 } from './components'
-
-// Common styles (re-exported from adapters for convenience during migration)
-export { commonStyles } from '../styles/adapters/react-native'

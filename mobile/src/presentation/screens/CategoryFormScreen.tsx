@@ -15,7 +15,8 @@ import { CategoryRepository } from '../../infrastructure/repositories/CategoryRe
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { SafeScreen } from '../components/SafeScreen'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
-import { colors, spacing, commonStyles, typography } from '@guidr/shared/tokens'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface CategoryFormScreenProps {
   mode: 'create' | 'edit'

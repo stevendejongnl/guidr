@@ -38,7 +38,8 @@ import { GuideRepository } from '../../infrastructure/repositories/GuideReposito
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
-import { commonStyles, colors } from '@guidr/shared/tokens'
+import { colors } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 export const AppNavigator: React.FC = () => {
   const [loading, setLoading] = useState(true)

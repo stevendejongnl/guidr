@@ -11,12 +11,12 @@ import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import {
-  commonStyles,
   colors,
   spacing,
   typography,
   borderRadius,
 } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface UpdateDownloadScreenProps {
   apkUrl: string

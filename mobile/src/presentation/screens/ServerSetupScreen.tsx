@@ -13,7 +13,8 @@ import { IHealthCheckService, HealthCheckResult } from '../../domain/services/IH
 import { ValidatedServerStorage } from '../../infrastructure/storage/ValidatedServerStorage'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
-import { commonStyles, colors } from '@guidr/shared/tokens'
+import { colors } from '@guidr/shared/tokens'
+import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface ServerSetupScreenProps {
   storage: ServerConfigStorage
