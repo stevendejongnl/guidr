@@ -6,6 +6,8 @@ export class HomePage extends LitElement {
   static styles = css`
     :host {
       display: block;
+      background-color: var(--color-background);
+      color: var(--color-text-primary);
     }
 
     .hero {
@@ -16,28 +18,28 @@ export class HomePage extends LitElement {
     h1 {
       font-size: 2.5rem;
       margin-bottom: 1rem;
-      color: #2c3e50;
+      color: var(--color-primary);
     }
 
     .subtitle {
       font-size: 1.25rem;
-      color: #666;
+      color: var(--color-text-secondary);
       margin-bottom: 2rem;
     }
 
     .cta {
       display: inline-block;
       padding: 0.75rem 2rem;
-      background: #3498db;
-      color: white;
+      background: var(--color-primary);
+      color: var(--color-background);
       text-decoration: none;
       border-radius: 4px;
       font-weight: 500;
-      transition: background 0.2s;
+      transition: opacity 0.2s;
     }
 
     .cta:hover {
-      background: #2980b9;
+      opacity: 0.8;
     }
 
     .features {
@@ -49,17 +51,18 @@ export class HomePage extends LitElement {
 
     .feature {
       padding: 1.5rem;
-      background: #f8f9fa;
+      background: var(--color-card);
       border-radius: 8px;
+      border: 1px solid var(--color-border);
     }
 
     .feature h3 {
       margin-top: 0;
-      color: #2c3e50;
+      color: var(--color-primary);
     }
 
     .feature p {
-      color: #666;
+      color: var(--color-text-secondary);
       line-height: 1.6;
     }
   `

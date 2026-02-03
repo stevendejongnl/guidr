@@ -14,6 +14,8 @@ export class AdminStyleguidePage extends LitElement {
     :host {
       display: block;
       padding: 32px;
+      background-color: var(--color-background);
+      color: var(--color-text-primary);
     }
 
     .container {
@@ -36,6 +38,7 @@ export class AdminStyleguidePage extends LitElement {
       font-size: 28px;
       font-weight: 700;
       margin: 0;
+      color: var(--color-primary);
     }
 
     .section {
@@ -47,7 +50,8 @@ export class AdminStyleguidePage extends LitElement {
       font-weight: 600;
       margin-bottom: 16px;
       padding-bottom: 12px;
-      border-bottom: 1px solid;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-primary);
     }
 
     .grid {
@@ -58,7 +62,7 @@ export class AdminStyleguidePage extends LitElement {
     }
 
     .token-card {
-      border: 1px solid;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       padding: 16px;
     }
@@ -69,6 +73,7 @@ export class AdminStyleguidePage extends LitElement {
       margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      color: var(--color-text-primary);
     }
 
     .color-swatch {
@@ -81,7 +86,7 @@ export class AdminStyleguidePage extends LitElement {
       width: 60px;
       height: 60px;
       border-radius: 4px;
-      border: 1px solid;
+      border: 1px solid var(--color-border);
       flex-shrink: 0;
     }
 
@@ -95,11 +100,13 @@ export class AdminStyleguidePage extends LitElement {
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 4px;
+      color: var(--color-text-primary);
     }
 
     .color-hex {
       font-size: 14px;
       font-family: monospace;
+      color: var(--color-text-secondary);
     }
 
     .spacing-item {
@@ -113,12 +120,14 @@ export class AdminStyleguidePage extends LitElement {
       font-size: 14px;
       min-width: 80px;
       font-weight: 500;
+      color: var(--color-text-secondary);
     }
 
     .spacing-bar {
       height: 24px;
       border-radius: 4px;
       flex-grow: 1;
+      background-color: var(--color-primary);
     }
 
     .typography-item {
@@ -131,6 +140,7 @@ export class AdminStyleguidePage extends LitElement {
       font-size: 14px;
       margin-bottom: 4px;
       font-family: monospace;
+      color: var(--color-text-secondary);
     }
 
     .typography-example {
@@ -144,7 +154,7 @@ export class AdminStyleguidePage extends LitElement {
     }
 
     .component-group {
-      border: 1px solid;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       padding: 16px;
     }
@@ -154,7 +164,8 @@ export class AdminStyleguidePage extends LitElement {
       font-weight: 600;
       margin-bottom: 12px;
       padding-bottom: 12px;
-      border-bottom: 1px solid;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-primary);
     }
 
     button {
@@ -180,20 +191,21 @@ export class AdminStyleguidePage extends LitElement {
     }
 
     .btn-primary {
-      color: white;
+      color: var(--color-background);
     }
 
     .btn-secondary {
-      color: white;
+      color: var(--color-background);
     }
 
     .btn-danger {
-      color: white;
+      color: var(--color-background);
     }
 
     .btn-outline {
       background-color: transparent;
-      border: 1px solid;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
     }
 
     input {
@@ -201,22 +213,25 @@ export class AdminStyleguidePage extends LitElement {
       width: 100%;
       padding: 12px;
       margin-bottom: 12px;
-      border: 1px solid;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       font-size: 16px;
       box-sizing: border-box;
+      background-color: var(--color-input-background);
+      color: var(--color-text-primary);
     }
 
     input::placeholder {
-      opacity: 0.5;
+      color: var(--color-text-tertiary);
+      opacity: 1;
     }
 
     input.error {
-      border-color: #f44336;
+      border-color: var(--color-danger);
     }
 
     .card {
-      border: 1px solid;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 12px;
@@ -226,10 +241,12 @@ export class AdminStyleguidePage extends LitElement {
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 8px;
+      color: var(--color-text-primary);
     }
 
     .card-text {
       font-size: 14px;
+      color: var(--color-text-secondary);
     }
 
     .feedback-box {
@@ -241,21 +258,21 @@ export class AdminStyleguidePage extends LitElement {
     }
 
     .feedback-success {
-      background-color: rgba(76, 175, 80, 0.1);
-      color: #4caf50;
-      border-color: #4caf50;
+      background-color: rgba(74, 222, 128, 0.1);
+      color: var(--color-success);
+      border-color: var(--color-success);
     }
 
     .feedback-warning {
-      background-color: rgba(255, 152, 0, 0.1);
-      color: #ff9800;
-      border-color: #ff9800;
+      background-color: rgba(251, 191, 36, 0.1);
+      color: var(--color-warning);
+      border-color: var(--color-warning);
     }
 
     .feedback-danger {
       background-color: rgba(244, 67, 54, 0.1);
-      color: #f44336;
-      border-color: #f44336;
+      color: var(--color-danger);
+      border-color: var(--color-danger);
     }
   `
 

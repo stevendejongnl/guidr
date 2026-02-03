@@ -13,6 +13,7 @@ export class RegisterPage extends LitElement {
       align-items: center;
       min-height: 80vh;
       padding: 2rem;
+      background-color: var(--color-background);
     }
 
     .container {
@@ -20,21 +21,23 @@ export class RegisterPage extends LitElement {
       width: 100%;
       padding: 2rem;
       border-radius: 8px;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background: var(--color-card);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--color-border);
     }
 
     h1 {
       margin: 0 0 1rem 0;
       font-size: 1.75rem;
       text-align: center;
-      color: #2c3e50;
+      color: var(--color-primary);
     }
 
     .description {
       text-align: center;
       margin-bottom: 2rem;
       font-size: 0.95rem;
+      color: var(--color-text-secondary);
     }
 
     .form-group {
@@ -45,34 +48,44 @@ export class RegisterPage extends LitElement {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
+      color: var(--color-text-primary);
     }
 
     input {
       width: 100%;
       padding: 0.75rem;
-      border: 1px solid #ddd;
+      border: 1px solid var(--color-border);
       border-radius: 4px;
       font-size: 1rem;
       box-sizing: border-box;
       font-family: inherit;
+      background-color: var(--color-input-background);
+      color: var(--color-text-primary);
+      transition: border-color 0.2s;
+    }
+
+    input::placeholder {
+      color: var(--color-text-tertiary);
     }
 
     input:focus {
       outline: none;
-      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(154, 245, 207, 0.1);
     }
 
     input.error {
-      border-color: #f44336;
+      border-color: var(--color-danger);
     }
 
     .error-message {
-      color: #f44336;
+      color: var(--color-danger);
       margin: 1rem 0;
       padding: 0.75rem;
-      background: #ffebee;
+      background: rgba(244, 67, 54, 0.1);
       border-radius: 4px;
       font-size: 0.875rem;
+      border-left: 3px solid var(--color-danger);
     }
 
     button {
@@ -86,6 +99,8 @@ export class RegisterPage extends LitElement {
       cursor: pointer;
       transition: opacity 0.2s;
       font-family: inherit;
+      background-color: var(--color-primary);
+      color: var(--color-background);
     }
 
     button:hover:not(:disabled) {
@@ -105,10 +120,12 @@ export class RegisterPage extends LitElement {
     .link a {
       text-decoration: none;
       font-size: 0.9rem;
+      color: var(--color-primary);
+      transition: opacity 0.2s;
     }
 
     .link a:hover {
-      text-decoration: underline;
+      opacity: 0.8;
     }
   `
 

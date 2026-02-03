@@ -14,26 +14,29 @@ export class GuideDetailPage extends LitElement {
   static styles = css`
     :host {
       display: block;
+      background-color: var(--color-background);
+      color: var(--color-text-primary);
     }
 
     .back-link {
       display: inline-block;
       margin-bottom: 1rem;
-      color: #3498db;
+      color: var(--color-primary);
       text-decoration: none;
+      transition: opacity 0.2s;
     }
 
     .back-link:hover {
-      text-decoration: underline;
+      opacity: 0.8;
     }
 
     h1 {
-      color: #2c3e50;
+      color: var(--color-primary);
       margin-bottom: 0.5rem;
     }
 
     .description {
-      color: #666;
+      color: var(--color-text-secondary);
       font-size: 1.125rem;
       line-height: 1.6;
       margin-bottom: 2rem;
@@ -42,15 +45,15 @@ export class GuideDetailPage extends LitElement {
     .loading {
       text-align: center;
       padding: 2rem;
-      color: #666;
+      color: var(--color-text-secondary);
     }
 
     .error {
-      background: #fee;
-      border: 1px solid #fcc;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid var(--color-danger);
       border-radius: 4px;
       padding: 1rem;
-      color: #c33;
+      color: var(--color-danger);
     }
 
     .steps-section {
@@ -58,16 +61,17 @@ export class GuideDetailPage extends LitElement {
     }
 
     .steps-section h2 {
-      color: #2c3e50;
+      color: var(--color-primary);
       margin-bottom: 1rem;
     }
 
     .steps-placeholder {
       padding: 2rem;
-      background: #f8f9fa;
+      background: var(--color-card);
       border-radius: 8px;
       text-align: center;
-      color: #666;
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
     }
   `
 

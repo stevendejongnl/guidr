@@ -7,13 +7,35 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content="Execute step-by-step guides for recipes, workouts, and lab protocols" />
     <style>
+      :root {
+        /* Dark mode (default) */
+        --color-background: #0B0F14;
+        --color-surface: #121923;
+        --color-card: #182233;
+        --color-elevated: #1E2A3A;
+        --color-primary: #9AF5CF;
+        --color-primary-muted: #5F8F7C;
+        --color-primary-subtle: #3E5F54;
+        --color-text-primary: #E6EDF3;
+        --color-text-secondary: #9AA4B2;
+        --color-text-tertiary: #6B7280;
+        --color-text-disabled: #4B5563;
+        --color-border: #2A3A4D;
+        --color-input-background: #182233;
+        --color-success: #4ADE80;
+        --color-danger: #f44336;
+        --color-warning: #FBBF24;
+        --color-info: #60A5FA;
+      }
+
       html, body {
         margin: 0;
         padding: 0;
         height: 100%;
         width: 100%;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-        background-color: #f9f9f9;
+        background-color: var(--color-background);
+        color: var(--color-text-primary);
       }
     </style>
   </head>

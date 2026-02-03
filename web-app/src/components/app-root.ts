@@ -12,13 +12,16 @@ export class AppRoot extends LitElement {
       display: block;
       min-height: 100vh;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--color-background);
+      color: var(--color-text-primary);
     }
 
     nav {
-      background: #2c3e50;
-      color: white;
+      background: var(--color-surface);
+      color: var(--color-text-primary);
       padding: 1rem 2rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .nav-content {
@@ -33,6 +36,7 @@ export class AppRoot extends LitElement {
       font-size: 1.5rem;
       font-weight: bold;
       margin: 0;
+      color: var(--color-primary);
     }
 
     .nav-links {
@@ -44,19 +48,20 @@ export class AppRoot extends LitElement {
     }
 
     nav a {
-      color: white;
+      color: var(--color-text-primary);
       text-decoration: none;
-      transition: opacity 0.2s;
+      transition: color 0.2s;
     }
 
     nav a:hover {
-      opacity: 0.8;
+      color: var(--color-primary);
     }
 
     main {
       max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
+      background-color: var(--color-background);
     }
 
     #outlet {

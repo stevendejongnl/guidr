@@ -6,6 +6,8 @@ export class NotFoundPage extends LitElement {
   static styles = css`
     :host {
       display: block;
+      background-color: var(--color-background);
+      color: var(--color-text-primary);
     }
 
     .container {
@@ -15,19 +17,19 @@ export class NotFoundPage extends LitElement {
 
     h1 {
       font-size: 4rem;
-      color: #2c3e50;
+      color: var(--color-primary);
       margin: 0 0 1rem 0;
     }
 
     h2 {
       font-size: 1.5rem;
-      color: #666;
+      color: var(--color-text-secondary);
       font-weight: normal;
       margin: 0 0 2rem 0;
     }
 
     p {
-      color: #666;
+      color: var(--color-text-secondary);
       margin-bottom: 2rem;
     }
 
@@ -40,24 +42,25 @@ export class NotFoundPage extends LitElement {
     a {
       display: inline-block;
       padding: 0.75rem 2rem;
-      background: #3498db;
-      color: white;
+      background: var(--color-primary);
+      color: var(--color-background);
       text-decoration: none;
       border-radius: 4px;
       font-weight: 500;
-      transition: background 0.2s;
+      transition: opacity 0.2s;
     }
 
     a:hover {
-      background: #2980b9;
+      opacity: 0.8;
     }
 
     a.secondary {
-      background: #95a5a6;
+      background: var(--color-text-tertiary);
+      color: var(--color-background);
     }
 
     a.secondary:hover {
-      background: #7f8c8d;
+      opacity: 0.8;
     }
   `
 

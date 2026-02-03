@@ -14,25 +14,27 @@ export class GuidesPage extends LitElement {
   static styles = css`
     :host {
       display: block;
+      background-color: var(--color-background);
+      color: var(--color-text-primary);
     }
 
     h1 {
-      color: #2c3e50;
+      color: var(--color-primary);
       margin-bottom: 2rem;
     }
 
     .loading {
       text-align: center;
       padding: 2rem;
-      color: #666;
+      color: var(--color-text-secondary);
     }
 
     .error {
-      background: #fee;
-      border: 1px solid #fcc;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid var(--color-danger);
       border-radius: 4px;
       padding: 1rem;
-      color: #c33;
+      color: var(--color-danger);
     }
 
     .guides-grid {
@@ -42,8 +44,8 @@ export class GuidesPage extends LitElement {
     }
 
     .guide-card {
-      background: white;
-      border: 1px solid #e0e0e0;
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       padding: 1.5rem;
       transition: box-shadow 0.2s;
@@ -51,16 +53,16 @@ export class GuidesPage extends LitElement {
     }
 
     .guide-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .guide-card h3 {
       margin: 0 0 0.5rem 0;
-      color: #2c3e50;
+      color: var(--color-primary);
     }
 
     .guide-card p {
-      color: #666;
+      color: var(--color-text-secondary);
       line-height: 1.6;
       margin: 0;
     }
@@ -68,13 +70,13 @@ export class GuidesPage extends LitElement {
     .guide-meta {
       margin-top: 1rem;
       font-size: 0.875rem;
-      color: #999;
+      color: var(--color-text-tertiary);
     }
 
     .empty {
       text-align: center;
       padding: 3rem;
-      color: #666;
+      color: var(--color-text-secondary);
     }
   `
 
