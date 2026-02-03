@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite'
 import typescript from '@rollup/plugin-typescript'
 import tspCompiler from 'ts-patch/compiler'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [
@@ -37,10 +41,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@components': '/src/components',
-      '@services': '/src/services',
-      '@models': '/src/models',
-      '@styles': '/src/styles'
+      '@components': resolve(__dirname, 'src/components'),
+      '@services': resolve(__dirname, 'src/services'),
+      '@models': resolve(__dirname, 'src/models'),
+      '@styles': resolve(__dirname, 'src/styles'),
+      '@guidr/shared': resolve(__dirname, '../shared/src/tokens'),
+      '@guidr/shared/': resolve(__dirname, '../shared/src/')
     }
   }
 })
