@@ -1,7 +1,7 @@
 import { html, LitElement, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { consume } from '@lit/context'
-import { colors, spacing, borderRadius, typography } from '@styles/tokens'
+import { colors, spacingWeb, borderRadius, typography } from '@guidr/shared/tokens'
 import { authContext, AuthContextValue } from '../../contexts/auth-context'
 
 @customElement('admin-styleguide-page')
@@ -289,7 +289,7 @@ export class AdminStyleguidePage extends LitElement {
           </div>
 
           <!-- Text -->
-          <div class="token-label" style="margin-top: ${spacing.lg}; color: ${colors.textSecondary};">Text</div>
+          <div class="token-label" style="margin-top: ${spacingWeb.lg}; color: ${colors.textSecondary};">Text</div>
           <div class="grid">
             ${this.renderColorToken('textPrimary', colors.textPrimary)}
             ${this.renderColorToken('textSecondary', colors.textSecondary)}
@@ -297,7 +297,7 @@ export class AdminStyleguidePage extends LitElement {
           </div>
 
           <!-- Interactive -->
-          <div class="token-label" style="margin-top: ${spacing.lg}; color: ${colors.textSecondary};">Interactive</div>
+          <div class="token-label" style="margin-top: ${spacingWeb.lg}; color: ${colors.textSecondary};">Interactive</div>
           <div class="grid">
             ${this.renderColorToken('primary', colors.primary)}
             ${this.renderColorToken('primaryDisabled', colors.primaryDisabled)}
@@ -307,7 +307,7 @@ export class AdminStyleguidePage extends LitElement {
           </div>
 
           <!-- Inputs & Borders -->
-          <div class="token-label" style="margin-top: ${spacing.lg}; color: ${colors.textSecondary};">Inputs & Borders</div>
+          <div class="token-label" style="margin-top: ${spacingWeb.lg}; color: ${colors.textSecondary};">Inputs & Borders</div>
           <div class="grid">
             ${this.renderColorToken('inputBackground', colors.inputBackground)}
             ${this.renderColorToken('border', colors.border)}
@@ -315,7 +315,7 @@ export class AdminStyleguidePage extends LitElement {
           </div>
 
           <!-- Buttons -->
-          <div class="token-label" style="margin-top: ${spacing.lg}; color: ${colors.textSecondary};">Buttons</div>
+          <div class="token-label" style="margin-top: ${spacingWeb.lg}; color: ${colors.textSecondary};">Buttons</div>
           <div class="grid">
             ${this.renderColorToken('buttonSecondary', colors.buttonSecondary)}
           </div>
@@ -325,13 +325,13 @@ export class AdminStyleguidePage extends LitElement {
         <div class="section">
           <h2 class="section-title" style="color: ${colors.textPrimary}; border-color: ${colors.border};">Spacing</h2>
           <div class="token-card" style="background-color: ${colors.surface}; border-color: ${colors.border};">
-            ${this.renderSpacingItem('xs', spacing.xs)}
-            ${this.renderSpacingItem('sm', spacing.sm)}
-            ${this.renderSpacingItem('md', spacing.md)}
-            ${this.renderSpacingItem('lg', spacing.lg)}
-            ${this.renderSpacingItem('xl', spacing.xl)}
-            ${this.renderSpacingItem('xxl', spacing.xxl)}
-            ${this.renderSpacingItem('xxxl', spacing.xxxl)}
+            ${this.renderSpacingItem('xs', spacingWeb.xs)}
+            ${this.renderSpacingItem('sm', spacingWeb.sm)}
+            ${this.renderSpacingItem('md', spacingWeb.md)}
+            ${this.renderSpacingItem('lg', spacingWeb.lg)}
+            ${this.renderSpacingItem('xl', spacingWeb.xl)}
+            ${this.renderSpacingItem('xxl', spacingWeb.xxl)}
+            ${this.renderSpacingItem('xxxl', spacingWeb.xxxl)}
           </div>
         </div>
 
@@ -350,7 +350,7 @@ export class AdminStyleguidePage extends LitElement {
             ${this.renderTypographyExample('sizeXxxl', 'Extra Extra Extra Large', '32px')}
           </div>
 
-          <div class="token-label" style="margin-top: ${spacing.lg}; color: ${colors.textSecondary};">Font Weights</div>
+          <div class="token-label" style="margin-top: ${spacingWeb.lg}; color: ${colors.textSecondary};">Font Weights</div>
           <div class="token-card" style="background-color: ${colors.surface}; border-color: ${colors.border};">
             <div class="typography-item">
               <div class="typography-label">weightNormal (400)</div>
@@ -419,21 +419,21 @@ export class AdminStyleguidePage extends LitElement {
             <!-- Typography -->
             <div class="component-group" style="background-color: ${colors.surface}; border-color: ${colors.border};">
               <div class="component-title" style="color: ${colors.textPrimary}; border-color: ${colors.border};">Typography</div>
-              <h3 style="font-size: ${typography.sizeXl}; font-weight: ${typography.weightBold}; margin: 0 0 ${spacing.sm} 0; color: ${colors.textPrimary};">Title XL</h3>
-              <h4 style="font-size: ${typography.sizeLg}; font-weight: ${typography.weightSemibold}; margin: 0 0 ${spacing.sm} 0; color: ${colors.textSecondary};">Subtitle</h4>
-              <p style="font-size: ${typography.sizeMd}; margin: 0 0 ${spacing.md} 0; color: ${colors.textMuted};">Description text</p>
+              <h3 style="font-size: ${typography.sizeXl}; font-weight: ${typography.weightBold}; margin: 0 0 ${spacingWeb.sm} 0; color: ${colors.textPrimary};">Title XL</h3>
+              <h4 style="font-size: ${typography.sizeLg}; font-weight: ${typography.weightSemibold}; margin: 0 0 ${spacingWeb.sm} 0; color: ${colors.textSecondary};">Subtitle</h4>
+              <p style="font-size: ${typography.sizeMd}; margin: 0 0 ${spacingWeb.md} 0; color: ${colors.textMuted};">Description text</p>
             </div>
 
             <!-- Border Radius -->
             <div class="component-group" style="background-color: ${colors.surface}; border-color: ${colors.border};">
               <div class="component-title" style="color: ${colors.textPrimary}; border-color: ${colors.border};">Border Radius</div>
-              <div style="background-color: ${colors.primary}; border-radius: ${borderRadius.sm}; padding: ${spacing.md}; margin-bottom: ${spacing.md}; text-align: center; color: ${colors.textPrimary};">
+              <div style="background-color: ${colors.primary}; border-radius: ${borderRadius.sm}; padding: ${spacingWeb.md}; margin-bottom: ${spacingWeb.md}; text-align: center; color: ${colors.textPrimary};">
                 <div style="font-size: ${typography.sizeSm};">sm (4px)</div>
               </div>
-              <div style="background-color: ${colors.primary}; border-radius: ${borderRadius.md}; padding: ${spacing.md}; margin-bottom: ${spacing.md}; text-align: center; color: ${colors.textPrimary};">
+              <div style="background-color: ${colors.primary}; border-radius: ${borderRadius.md}; padding: ${spacingWeb.md}; margin-bottom: ${spacingWeb.md}; text-align: center; color: ${colors.textPrimary};">
                 <div style="font-size: ${typography.sizeSm};">md (8px)</div>
               </div>
-              <div style="background-color: ${colors.primary}; border-radius: ${borderRadius.lg}; padding: ${spacing.md}; text-align: center; color: ${colors.textPrimary};">
+              <div style="background-color: ${colors.primary}; border-radius: ${borderRadius.lg}; padding: ${spacingWeb.md}; text-align: center; color: ${colors.textPrimary};">
                 <div style="font-size: ${typography.sizeSm};">lg (12px)</div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { html, LitElement, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { consume } from '@lit/context'
+import { colors } from '@guidr/shared/tokens'
 import { authContext, AuthContextValue } from '../../contexts/auth-context'
 
 @customElement('login-page')
@@ -32,7 +33,6 @@ export class LoginPage extends LitElement {
 
     .description {
       text-align: center;
-      color: #666;
       margin-bottom: 2rem;
       font-size: 0.95rem;
     }
@@ -45,7 +45,6 @@ export class LoginPage extends LitElement {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
-      color: #333;
     }
 
     input {
@@ -60,8 +59,7 @@ export class LoginPage extends LitElement {
 
     input:focus {
       outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
     }
 
     input.error {
@@ -81,23 +79,21 @@ export class LoginPage extends LitElement {
       width: 100%;
       padding: 0.75rem;
       margin-top: 1rem;
-      background: #3498db;
-      color: white;
       border: none;
       border-radius: 4px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: opacity 0.2s;
       font-family: inherit;
     }
 
     button:hover:not(:disabled) {
-      background: #2980b9;
+      opacity: 0.9;
     }
 
     button:disabled {
-      background: #bdc3c7;
+      opacity: 0.6;
       cursor: not-allowed;
     }
 
@@ -107,7 +103,6 @@ export class LoginPage extends LitElement {
     }
 
     .link a {
-      color: #3498db;
       text-decoration: none;
       font-size: 0.9rem;
     }
@@ -173,15 +168,16 @@ export class LoginPage extends LitElement {
     return html`
       <div class="container">
         <h1>Welcome to Guidr</h1>
-        <p class="description">Sign in to continue</p>
+        <p class="description" style="color: ${colors.textSecondary};">Sign in to continue</p>
 
         <form @submit=${this.handleSubmit}>
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email" style="color: ${colors.textPrimary};">Email</label>
             <input
               id="email"
               type="email"
               class=${this.error ? 'error' : ''}
+              style="border-color: ${this.error ? colors.danger : '#ddd'}; color: ${colors.textPrimary}; background-color: white;"
               .value=${this.email}
               @input=${(e: Event) => {
                 this.email = (e.target as HTMLInputElement).value
@@ -194,11 +190,12 @@ export class LoginPage extends LitElement {
           </div>
 
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password" style="color: ${colors.textPrimary};">Password</label>
             <input
               id="password"
               type="password"
               class=${this.error ? 'error' : ''}
+              style="border-color: ${this.error ? colors.danger : '#ddd'}; color: ${colors.textPrimary}; background-color: white;"
               .value=${this.password}
               @input=${(e: Event) => {
                 this.password = (e.target as HTMLInputElement).value
@@ -214,13 +211,13 @@ export class LoginPage extends LitElement {
             ? html`<div class="error-message">${this.error}</div>`
             : ''}
 
-          <button type="submit" ?disabled=${this.loading}>
+          <button type="submit" ?disabled=${this.loading} style="background-color: ${colors.primary}; color: white;">
             ${this.loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
         <div class="link">
-          <a href="/register">Don't have an account? Register</a>
+          <a href="/register" style="color: ${colors.primary};">Don't have an account? Register</a>
         </div>
       </div>
     `

@@ -1,34 +1,24 @@
-import { ApiClient, ApiError } from './api-client'
-import { AuthResponse } from '../models/user'
+import { AuthClient, AuthResponse } from './auth-client'
 import { AuthError } from '../models/auth-error'
 import { AuthStorage } from '../storage/auth-storage'
 
 /**
  * Authentication service handling login, register, logout
- * Mirrors mobile AuthClient implementation
+ * Uses OAuth2-compliant AuthClient for API interactions
  */
 export class AuthService {
   constructor(
-    private apiClient: ApiClient,
+    private authClient: AuthClient,
     private storage: AuthStorage,
   ) {}
 
   /**
    * Login user and persist auth data
+   * Uses OAuth2 form-encoded credentials
    */
   async login(email: string, password: string): Promise<AuthResponse> {
-    if (!email || email.trim() === '') {
-      throw new AuthError(400, 'Email cannot be empty')
-    }
-    if (!password || password.trim() === '') {
-      throw new AuthError(400, 'Password cannot be empty')
-    }
-
     try {
-      const response = await this.apiClient.post<AuthResponse>('/auth/login', {
-        email,
-        password,
-      })
+      const response = await this.authClient.login(email, password)
 
       // Validate response
       if (!response.accessToken || !response.user || !response.user.email) {
@@ -45,8 +35,8 @@ export class AuthService {
       if (error instanceof AuthError) {
         throw error
       }
-      if (error instanceof ApiError) {
-        throw new AuthError(error.status, error.message)
+      if (error instanceof Error) {
+        throw new AuthError(500, error.message)
       }
       throw new AuthError(500, 'Login failed')
     }
@@ -56,21 +46,12 @@ export class AuthService {
    * Register new user and persist auth data
    */
   async register(email: string, password: string): Promise<AuthResponse> {
-    if (!email || email.trim() === '') {
-      throw new AuthError(400, 'Email cannot be empty')
-    }
-    if (!password || password.trim() === '') {
-      throw new AuthError(400, 'Password cannot be empty')
-    }
     if (password.length < 6) {
       throw new AuthError(400, 'Password must be at least 6 characters')
     }
 
     try {
-      const response = await this.apiClient.post<AuthResponse>('/auth/register', {
-        email,
-        password,
-      })
+      const response = await this.authClient.register(email, password)
 
       // Validate response
       if (!response.accessToken || !response.user || !response.user.email || !response.user.id) {
@@ -87,8 +68,8 @@ export class AuthService {
       if (error instanceof AuthError) {
         throw error
       }
-      if (error instanceof ApiError) {
-        throw new AuthError(error.status, error.message)
+      if (error instanceof Error) {
+        throw new AuthError(500, error.message)
       }
       throw new AuthError(500, 'Registration failed')
     }
@@ -131,6 +112,6 @@ export class AuthService {
 }
 
 // Export singleton instances
-const apiClient = new ApiClient('/api/v1')
+const authClient = new AuthClient(window.location.origin)
 const storage = new AuthStorage()
-export const authService = new AuthService(apiClient, storage)
+export const authService = new AuthService(authClient, storage)

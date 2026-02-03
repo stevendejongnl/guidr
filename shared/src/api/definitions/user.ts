@@ -1,32 +1,31 @@
 /**
  * User API type definitions and validators
+ * Matches actual API contract from api-server/src/presentation/api/models/user_models.py
  */
 
 import typia from 'typia'
 
 /**
- * User role type
- */
-export type UserRole = 'admin' | 'user'
-
-/**
  * User DTO (API response)
+ * Matches UserResponse from API server
  */
 export interface UserDto {
   id: string
   email: string
-  name: string | null
-  role: UserRole
-  isActive: boolean
   createdAt: string
   updatedAt: string
+  name?: string | null
+  interests?: string[] | null
+  isAdmin: boolean
 }
 
 /**
- * Current user info (includes auth token info)
+ * Authentication response from login/register endpoints
  */
-export interface CurrentUserDto extends UserDto {
-  isAdmin: boolean
+export interface AuthResponse {
+  accessToken: string
+  tokenType: string
+  user: UserDto
 }
 
 /**
@@ -34,8 +33,7 @@ export interface CurrentUserDto extends UserDto {
  */
 export interface UserCreateRequest {
   email: string
-  name: string | null
-  role: UserRole
+  name?: string | null
 }
 
 /**
@@ -43,15 +41,14 @@ export interface UserCreateRequest {
  */
 export interface UserUpdateRequest {
   name?: string | null
-  role?: UserRole
-  isActive?: boolean
+  interests?: string[] | null
 }
 
 /**
  * Typia validators
  */
 export const validateUserDto = typia.createAssert<UserDto>()
-export const validateCurrentUserDto = typia.createAssert<CurrentUserDto>()
+export const validateAuthResponse = typia.createAssert<AuthResponse>()
 export const validateUserList = typia.createAssert<UserDto[]>()
 export const validateUserCreateRequest = typia.createAssert<UserCreateRequest>()
 export const validateUserUpdateRequest = typia.createAssert<UserUpdateRequest>()
@@ -60,4 +57,4 @@ export const validateUserUpdateRequest = typia.createAssert<UserUpdateRequest>()
  * Type guards
  */
 export const isUserDto = typia.createIs<UserDto>()
-export const isCurrentUserDto = typia.createIs<CurrentUserDto>()
+export const isAuthResponse = typia.createIs<AuthResponse>()
