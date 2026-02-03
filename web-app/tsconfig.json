@@ -18,7 +18,6 @@
       "@services/*": ["src/services/*"],
       "@models/*": ["src/models/*"],
       "@styles/*": ["src/styles/*"],
-      "@guidr/shared": ["../shared/src/tokens"],
       "@guidr/shared/*": ["../shared/src/*"]
     },
     "declaration": true,

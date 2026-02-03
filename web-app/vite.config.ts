@@ -45,8 +45,7 @@ export default defineConfig({
       '@services': resolve(__dirname, 'src/services'),
       '@models': resolve(__dirname, 'src/models'),
       '@styles': resolve(__dirname, 'src/styles'),
-      '@guidr/shared': resolve(__dirname, '../shared/src/tokens'),
-      '@guidr/shared/': resolve(__dirname, '../shared/src/')
+      '@guidr/shared': resolve(__dirname, '../shared/src')
     }
   }
 })
