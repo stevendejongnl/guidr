@@ -19,6 +19,7 @@ import { CategoryRepository } from '../../infrastructure/repositories/CategoryRe
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { SafeScreen } from '../components/SafeScreen'
 import { CategoryPickerButton } from '../components/CategoryPickerButton'
+import { InfoBanner } from '../components/InfoBanner'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { formStyles } from '@guidr/shared/styles/react-native'
@@ -30,6 +31,7 @@ interface GuideFormScreenProps {
   onSave: (guideId: string) => void
   onCancel: () => void
   isAdmin: boolean
+  isEditingOthersContent?: boolean
   guideService?: GuideService
   categoryService?: CategoryService
   authStorage?: AuthStorage
@@ -43,6 +45,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   onSave,
   onCancel,
   isAdmin,
+  isEditingOthersContent = false,
   guideService: _guideService,
   categoryService: _categoryService,
   authStorage: injectedAuthStorage,
@@ -266,6 +269,12 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
     <SafeScreen testID="guide-form-screen">
       <ScrollView style={formStyles.scrollView}>
         <View style={formStyles.container}>
+          <InfoBanner
+            message="You are editing content created by another user"
+            visible={mode === 'edit' && isAdmin && isEditingOthersContent}
+            testID="editing-others-content-banner"
+          />
+
           <Text style={commonStyles.titleLarge}>
             {mode === 'create' ? 'New Guide' : 'Edit Guide'}
           </Text>

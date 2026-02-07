@@ -1,6 +1,7 @@
 const AUTH_TOKEN_KEY = 'Guidr_Web_AuthToken'
 const USER_EMAIL_KEY = 'Guidr_Web_UserEmail'
 const USER_IS_ADMIN_KEY = 'Guidr_Web_UserIsAdmin'
+const USER_ID_KEY = 'Guidr_Web_UserId'
 
 /**
  * Manages auth persistence in localStorage
@@ -54,9 +55,25 @@ export class AuthStorage {
     localStorage.removeItem(USER_IS_ADMIN_KEY)
   }
 
+  getUserId(): string | null {
+    return localStorage.getItem(USER_ID_KEY)
+  }
+
+  setUserId(userId: string): void {
+    if (!userId || userId.trim() === '') {
+      throw new Error('User ID cannot be empty')
+    }
+    localStorage.setItem(USER_ID_KEY, userId)
+  }
+
+  clearUserId(): void {
+    localStorage.removeItem(USER_ID_KEY)
+  }
+
   clearAll(): void {
     localStorage.removeItem(AUTH_TOKEN_KEY)
     localStorage.removeItem(USER_EMAIL_KEY)
     localStorage.removeItem(USER_IS_ADMIN_KEY)
+    localStorage.removeItem(USER_ID_KEY)
   }
 }

@@ -80,6 +80,8 @@ export const AppNavigator: React.FC = () => {
   const [editingStepGuideId, setEditingStepGuideId] = useState<string | null>(null)
   const [newStepOrder, setNewStepOrder] = useState(0)
   const [canEditCurrentGuide, setCanEditCurrentGuide] = useState(false)
+  const [editingGuideOwnerId, setEditingGuideOwnerId] = useState<string | null>(null)
+  const [editingStepGuideOwnerId, setEditingStepGuideOwnerId] = useState<string | null>(null)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -370,7 +372,21 @@ export const AppNavigator: React.FC = () => {
     setGuideFormMode('create')
   }
 
-  const handleEditGuide = (guideId: string) => {
+  const handleEditGuide = async (guideId: string) => {
+    try {
+      // Load guide to get ownership information
+      if (servicesRef.current) {
+        const token = await authStorage.getAuthToken()
+        if (token) {
+          const guide = await servicesRef.current.guide.getGuideById(guideId, token)
+          if (guide) {
+            setEditingGuideOwnerId(guide.createdByUserId || null)
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load guide for ownership check:', error)
+    }
     setEditingGuideId(guideId)
     setGuideFormMode('edit')
   }
@@ -378,6 +394,7 @@ export const AppNavigator: React.FC = () => {
   const handleGuideFormSave = () => {
     setGuideFormMode(null)
     setEditingGuideId(null)
+    setEditingGuideOwnerId(null)
     setSelectedGuideCategoryId(null)
     setShowGuideList(true)
   }
@@ -385,6 +402,7 @@ export const AppNavigator: React.FC = () => {
   const handleGuideFormCancel = () => {
     setGuideFormMode(null)
     setEditingGuideId(null)
+    setEditingGuideOwnerId(null)
     setSelectedGuideCategoryId(null)
   }
 
@@ -432,8 +450,20 @@ export const AppNavigator: React.FC = () => {
   }
 
   const handleEditStep = async (stepId: string) => {
-    // Note: We need to get the guideId from somewhere to check authorization
-    // The guideId should be passed here or we load it from the step
+    try {
+      // Load step to get guide ID, then load guide to get ownership
+      if (servicesRef.current && editingStepGuideId) {
+        const token = await authStorage.getAuthToken()
+        if (token) {
+          const guide = await servicesRef.current.guide.getGuideById(editingStepGuideId, token)
+          if (guide) {
+            setEditingStepGuideOwnerId(guide.createdByUserId || null)
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load step guide for ownership check:', error)
+    }
     setEditingStepId(stepId)
     setStepFormMode('edit')
     setShowStepForm(true)
@@ -444,6 +474,7 @@ export const AppNavigator: React.FC = () => {
     setShowStepForm(false)
     setStepFormMode(null)
     setEditingStepId(null)
+    setEditingStepGuideOwnerId(null)
 
     // Reload guide detail by keeping it visible
     // The GuideDetailScreen will reload its steps on re-mount
@@ -454,6 +485,7 @@ export const AppNavigator: React.FC = () => {
     setStepFormMode(null)
     setEditingStepId(null)
     setEditingStepGuideId(null)
+    setEditingStepGuideOwnerId(null)
   }
 
   if (loading) {
@@ -624,6 +656,13 @@ export const AppNavigator: React.FC = () => {
   }
 
   if (guideFormMode && serverUrl) {
+    const isEditingOthersGuide =
+      guideFormMode === 'edit' &&
+      isAdmin &&
+      userId !== null &&
+      editingGuideOwnerId !== null &&
+      editingGuideOwnerId !== userId
+
     return (
       <GuideFormScreen
         mode={guideFormMode}
@@ -632,6 +671,7 @@ export const AppNavigator: React.FC = () => {
         onSave={handleGuideFormSave}
         onCancel={handleGuideFormCancel}
         isAdmin={isAdmin}
+        isEditingOthersContent={isEditingOthersGuide}
       />
     )
   }
@@ -660,6 +700,13 @@ export const AppNavigator: React.FC = () => {
   }
 
   if (showStepForm && stepFormMode && editingStepGuideId) {
+    const isEditingOthersStep =
+      stepFormMode === 'edit' &&
+      isAdmin &&
+      userId !== null &&
+      editingStepGuideOwnerId !== null &&
+      editingStepGuideOwnerId !== userId
+
     return (
       <StepFormScreen
         mode={stepFormMode}
@@ -670,6 +717,7 @@ export const AppNavigator: React.FC = () => {
         onCancel={handleStepFormCancel}
         canEdit={canEditCurrentGuide}
         isAdmin={isAdmin}
+        isEditingOthersContent={isEditingOthersStep}
       />
     )
   }

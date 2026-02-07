@@ -13,8 +13,14 @@ from src.application.use_cases.step import (
     UpdateStep,
 )
 from src.container import Container
-from src.domain.exceptions import EntityNotFoundException, ValidationException
+from src.domain.entities import User
+from src.domain.exceptions import (
+    AuthorizationException,
+    EntityNotFoundException,
+    ValidationException,
+)
 
+from ..dependencies.auth import get_current_user, get_optional_current_user
 from ..models import ErrorResponse, StepCreate, StepResponse, StepUpdate
 
 router = APIRouter(prefix="/steps", tags=["steps"])
@@ -65,13 +71,14 @@ def get_delete_step_use_case() -> DeleteStep:
     "",
     response_model=StepResponse,
     status_code=status.HTTP_201_CREATED,
-    responses={400: {"model": ErrorResponse}},
+    responses={400: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
 )
 async def create_step(
     step: StepCreate,
     use_case: CreateStep = Depends(get_create_step_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> StepResponse:
-    """Create a new step."""
+    """Create a new step (guide owner or admin only)."""
     try:
         dto = StepCreateDTO(
             guide_id=step.guide_id,
@@ -80,7 +87,7 @@ async def create_step(
             description=step.description,
             duration=step.duration,
         )
-        result = await use_case.execute(dto)
+        result = await use_case.execute(dto, current_user)
         return StepResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -93,6 +100,8 @@ async def create_step(
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except AuthorizationException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
 
 @router.get(
@@ -103,9 +112,10 @@ async def create_step(
 async def get_step(
     step_id: str,
     use_case: GetStep = Depends(get_get_step_use_case),
+    current_user: User | None = Depends(get_optional_current_user),
 ) -> StepResponse:
-    """Get a step by ID."""
-    result = await use_case.execute(step_id)
+    """Get a step by ID (respects guide visibility)."""
+    result = await use_case.execute(step_id, current_user)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -123,17 +133,25 @@ async def get_step(
     )
 
 
-@router.get("", response_model=list[StepResponse])
+@router.get(
+    "",
+    response_model=list[StepResponse],
+    responses={403: {"model": ErrorResponse}},
+)
 async def list_steps(
     guide_id: str | None = None,
     use_case_all: GetAllSteps = Depends(get_get_all_steps_use_case),
     use_case_by_guide: GetStepsByGuide = Depends(get_get_steps_by_guide_use_case),
+    current_user: User | None = Depends(get_optional_current_user),
 ) -> list[StepResponse]:
-    """List steps with optional guide filter (returns ordered by order field)."""
-    if guide_id:
-        results = await use_case_by_guide.execute(guide_id)
-    else:
-        results = await use_case_all.execute()
+    """List steps with optional guide filter (respects guide visibility)."""
+    try:
+        if guide_id:
+            results = await use_case_by_guide.execute(guide_id, current_user)
+        else:
+            results = await use_case_all.execute()
+    except AuthorizationException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
     return [
         StepResponse(
@@ -153,14 +171,19 @@ async def list_steps(
 @router.patch(
     "/{step_id}",
     response_model=StepResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def update_step(
     step_id: str,
     step: StepUpdate,
     use_case: UpdateStep = Depends(get_update_step_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> StepResponse:
-    """Update a step (partial update)."""
+    """Update a step (guide owner or admin only)."""
     try:
         dto = StepUpdateDTO(
             order=step.order,
@@ -168,7 +191,7 @@ async def update_step(
             description=step.description,
             duration=step.duration,
         )
-        result = await use_case.execute(step_id, dto)
+        result = await use_case.execute(step_id, dto, current_user)
         if result is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -188,12 +211,26 @@ async def update_step(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except AuthorizationException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
 
-@router.delete("/{step_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{step_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+)
 async def delete_step(
     step_id: str,
     use_case: DeleteStep = Depends(get_delete_step_use_case),
+    current_user: User = Depends(get_current_user),
 ) -> None:
-    """Delete a step."""
-    await use_case.execute(step_id)
+    """Delete a step (guide owner or admin only)."""
+    try:
+        await use_case.execute(step_id, current_user)
+    except EntityNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except AuthorizationException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))

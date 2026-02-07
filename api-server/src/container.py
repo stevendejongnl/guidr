@@ -212,6 +212,7 @@ class Container(containers.DeclarativeContainer):
     get_step_use_case = providers.Factory(
         GetStep,
         step_repository=step_repository,
+        guide_repository=guide_repository,
     )
 
     get_all_steps_use_case = providers.Factory(
@@ -222,16 +223,19 @@ class Container(containers.DeclarativeContainer):
     get_steps_by_guide_use_case = providers.Factory(
         GetStepsByGuide,
         step_repository=step_repository,
+        guide_repository=guide_repository,
     )
 
     update_step_use_case = providers.Factory(
         UpdateStep,
         step_repository=step_repository,
+        guide_repository=guide_repository,
     )
 
     delete_step_use_case = providers.Factory(
         DeleteStep,
         step_repository=step_repository,
+        guide_repository=guide_repository,
     )
 
     # Session Use Cases (Factories)

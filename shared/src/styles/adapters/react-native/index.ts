@@ -26,10 +26,12 @@ import {
   layoutDefinitions,
   formDefinitions,
   commonDefinitions,
+  bannerDefinitions,
 } from '../../definitions'
 
 // Re-export helper functions and types
 export * from './helpers'
+export { getBannerStyle } from './banners'
 
 // Re-export types from definitions
 export type {
@@ -40,6 +42,7 @@ export type {
   BadgeSize,
   StatusBadgeStatus,
   FormFieldSize,
+  BannerVariant,
 } from '../../definitions'
 
 // Re-export constants
@@ -106,6 +109,10 @@ export const styles = {
   get common() {
     return createCachedStyleSheet('common', commonDefinitions)
   },
+
+  get banners() {
+    return createCachedStyleSheet('banners', bannerDefinitions)
+  },
 }
 
 // ============================================================================
@@ -124,3 +131,4 @@ export const typographyStyles = styles.typography
 export const layoutStyles = styles.layout
 export const formStyles = styles.forms
 export const commonStyles = styles.common
+export const bannerStyles = styles.banners

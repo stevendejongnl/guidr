@@ -14,6 +14,7 @@ import { StepService } from '../../domain/services/StepService'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { SafeScreen } from '../components/SafeScreen'
+import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { colors, spacing, typography } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
@@ -27,6 +28,7 @@ interface StepFormScreenProps {
   onCancel: () => void
   canEdit?: boolean
   isAdmin?: boolean
+  isEditingOthersContent?: boolean
   // Optional dependencies (for testing/DI)
   stepService?: StepService
 }
@@ -42,6 +44,8 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   onSave,
   onCancel,
   canEdit = true,
+  isAdmin = false,
+  isEditingOthersContent = false,
   stepService: injectedStepService,
 }) => {
   const [title, setTitle] = useState('')
@@ -262,6 +266,12 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
     <SafeScreen testID="step-form-screen">
       <ScrollView style={styles.scrollView}>
         <View style={styles.container}>
+          <InfoBanner
+            message="You are editing content created by another user"
+            visible={mode === 'edit' && isAdmin && isEditingOthersContent}
+            testID="editing-others-content-banner"
+          />
+
           {/* Header */}
           <Text style={commonStyles.titleLarge}>
             {mode === 'create' ? 'New Step' : 'Edit Step'}
