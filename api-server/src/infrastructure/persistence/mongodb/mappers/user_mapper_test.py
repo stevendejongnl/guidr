@@ -328,3 +328,63 @@ class TestUserMapper:
 
         # Assert
         assert recovered_user.is_admin == original_user.is_admin
+
+    def test_to_document_includes_refresh_token_hash(self):
+        """Test converting User to document includes refreshTokenHash."""
+        user = User(
+            id=EntityId("123e4567-e89b-12d3-a456-426614174000"),
+            email=Email("test@example.com"),
+            password_hash="hashed_password_123",
+            refresh_token_hash="abc123hash",
+        )
+
+        document = UserMapper.to_document(user)
+
+        assert document["refreshTokenHash"] == "abc123hash"
+
+    def test_to_document_with_none_refresh_token_hash(self):
+        """Test converting User to document with None refreshTokenHash."""
+        user = User(
+            id=EntityId("123e4567-e89b-12d3-a456-426614174000"),
+            email=Email("test@example.com"),
+            password_hash="hashed_password_123",
+        )
+
+        document = UserMapper.to_document(user)
+
+        assert document["refreshTokenHash"] is None
+
+    def test_to_entity_with_refresh_token_hash(self):
+        """Test converting document to User with refreshTokenHash."""
+        created_at = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        updated_at = datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC)
+
+        document = {
+            "_id": "123e4567-e89b-12d3-a456-426614174000",
+            "email": "test@example.com",
+            "passwordHash": "hashed_password_123",
+            "createdAt": created_at,
+            "updatedAt": updated_at,
+            "refreshTokenHash": "abc123hash",
+        }
+
+        user = UserMapper.to_entity(document)
+
+        assert user.refresh_token_hash == "abc123hash"
+
+    def test_to_entity_without_refresh_token_hash_defaults_to_none(self):
+        """Test converting old document without refreshTokenHash defaults to None."""
+        created_at = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        updated_at = datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC)
+
+        document = {
+            "_id": "123e4567-e89b-12d3-a456-426614174000",
+            "email": "test@example.com",
+            "passwordHash": "hashed_password_123",
+            "createdAt": created_at,
+            "updatedAt": updated_at,
+        }
+
+        user = UserMapper.to_entity(document)
+
+        assert user.refresh_token_hash is None

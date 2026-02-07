@@ -22,6 +22,8 @@ from src.application.use_cases.user import (
 from src.container import Container
 from src.domain.entities import User
 from src.domain.exceptions import ValidationException
+from src.domain.value_objects import EntityId
+from src.infrastructure.auth.token_hasher import hash_token, verify_token_hash
 
 from ..dependencies.auth import get_current_user
 from ..models import (
@@ -29,7 +31,7 @@ from ..models import (
     ChangePasswordRequest,
     DeleteAccountRequest,
     ErrorResponse,
-    TokenResponse,
+    RefreshTokenRequest,
     UpdateProfileRequest,
     UserRegister,
     UserResponse,
@@ -65,6 +67,12 @@ def get_jwt_service():
     return _container.jwt_service()
 
 
+def get_user_repository():
+    """Get user repository."""
+    assert _container is not None, "Container not initialized"
+    return _container.user_repository()
+
+
 def get_change_password_use_case() -> ChangePassword:
     """Get ChangePassword use case."""
     assert _container is not None, "Container not initialized"
@@ -98,6 +106,7 @@ async def register(
     user: UserRegister,
     use_case: RegisterUser = Depends(get_register_user_use_case),
     jwt_service=Depends(get_jwt_service),
+    user_repository=Depends(get_user_repository),
 ):
     """Register a new user and return access token.
 
@@ -107,8 +116,16 @@ async def register(
         dto = UserCreateDTO(email=user.email, password=user.password)
         result = await use_case.execute(dto)
 
-        # Generate JWT token
-        token = jwt_service.create_access_token(data={"sub": result.id})
+        # Generate JWT tokens
+        token_data = {"sub": result.id}
+        access_token = jwt_service.create_access_token(data=token_data)
+        refresh_token = jwt_service.create_refresh_token(data=token_data)
+
+        # Store refresh token hash on user
+        user_entity = await user_repository.find_by_id(EntityId(result.id))
+        if user_entity:
+            user_entity.update_refresh_token_hash(hash_token(refresh_token))
+            await user_repository.save(user_entity)
 
         # Return response with both OAuth2 format and client format
         user_response = UserResponse(
@@ -123,9 +140,10 @@ async def register(
 
         # Build response dict with OAuth2 format (snake_case) and client format (camelCase)
         response_data = {
-            "access_token": token,  # OAuth2 format for Swagger UI
+            "access_token": access_token,  # OAuth2 format for Swagger UI
             "token_type": "bearer",  # OAuth2 format for Swagger UI
-            "accessToken": token,  # Client format (backward compatibility)
+            "accessToken": access_token,  # Client format (backward compatibility)
+            "refreshToken": refresh_token,
             "tokenType": "bearer",  # Client format (backward compatibility)
             "user": user_response.model_dump(by_alias=True),
         }
@@ -144,6 +162,7 @@ async def login(
     password: str = Form(...),
     use_case: LoginUser = Depends(get_login_user_use_case),
     jwt_service=Depends(get_jwt_service),
+    user_repository=Depends(get_user_repository),
 ):
     """Login and return access token.
 
@@ -163,8 +182,16 @@ async def login(
                 detail="Invalid credentials",
             )
 
-        # Generate JWT token
-        token = jwt_service.create_access_token(data={"sub": result.id})
+        # Generate JWT tokens
+        token_data = {"sub": result.id}
+        access_token = jwt_service.create_access_token(data=token_data)
+        refresh_token = jwt_service.create_refresh_token(data=token_data)
+
+        # Store refresh token hash on user
+        user_entity = await user_repository.find_by_id(EntityId(result.id))
+        if user_entity:
+            user_entity.update_refresh_token_hash(hash_token(refresh_token))
+            await user_repository.save(user_entity)
 
         # Return response with both OAuth2 format and client format
         user_response = UserResponse(
@@ -179,9 +206,10 @@ async def login(
 
         # Build response dict with OAuth2 format (snake_case) and client format (camelCase)
         response_data = {
-            "access_token": token,  # OAuth2 format for Swagger UI
+            "access_token": access_token,  # OAuth2 format for Swagger UI
             "token_type": "bearer",  # OAuth2 format for Swagger UI
-            "accessToken": token,  # Client format (backward compatibility)
+            "accessToken": access_token,  # Client format (backward compatibility)
+            "refreshToken": refresh_token,
             "tokenType": "bearer",  # Client format (backward compatibility)
             "user": user_response.model_dump(by_alias=True),
         }
@@ -189,6 +217,82 @@ async def login(
         return JSONResponse(status_code=status.HTTP_200_OK, content=response_data)
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+
+@router.post(
+    "/refresh",
+    responses={401: {"model": ErrorResponse}},
+)
+async def refresh(
+    request: RefreshTokenRequest,
+    jwt_service=Depends(get_jwt_service),
+    user_repository=Depends(get_user_repository),
+):
+    """Refresh access token using a refresh token.
+
+    Implements token rotation: each refresh token can only be used once.
+    A new refresh token is issued with each refresh.
+    """
+    # Verify the refresh token JWT
+    payload = jwt_service.verify_refresh_token(request.refresh_token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        )
+
+    # Extract user ID
+    user_id = payload.get("sub")
+    if not isinstance(user_id, str):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token payload",
+        )
+
+    # Fetch user
+    user = await user_repository.find_by_id(EntityId(user_id))
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    # Verify refresh token hash matches (rotation check)
+    if user.refresh_token_hash is None or not verify_token_hash(
+        request.refresh_token, user.refresh_token_hash
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has been revoked",
+        )
+
+    # Generate new tokens (rotation)
+    token_data = {"sub": user.id.value}
+    new_access_token = jwt_service.create_access_token(data=token_data)
+    new_refresh_token = jwt_service.create_refresh_token(data=token_data)
+
+    # Store new refresh token hash
+    user.update_refresh_token_hash(hash_token(new_refresh_token))
+    await user_repository.save(user)
+
+    user_response = UserResponse(
+        id=user.id.value,
+        email=user.email.value,
+        createdAt=user.created_at.isoformat(),
+        updatedAt=user.updated_at.isoformat(),
+        name=user.name,
+        interests=user.interests,
+        isAdmin=user.is_admin,
+    )
+
+    response_data = {
+        "accessToken": new_access_token,
+        "refreshToken": new_refresh_token,
+        "tokenType": "bearer",
+        "user": user_response.model_dump(by_alias=True),
+    }
+
+    return JSONResponse(status_code=status.HTTP_200_OK, content=response_data)
 
 
 @router.post(
@@ -230,7 +334,6 @@ async def change_password(
 
 @router.post(
     "/change-email",
-    response_model=TokenResponse,
     status_code=status.HTTP_200_OK,
     responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}},
 )
@@ -239,7 +342,8 @@ async def change_email(
     current_user: User = Depends(get_current_user),
     use_case: ChangeEmail = Depends(get_change_email_use_case),
     jwt_service=Depends(get_jwt_service),
-) -> TokenResponse:
+    user_repository=Depends(get_user_repository),
+):
     """Change user email (requires authentication).
 
     Args:
@@ -247,6 +351,7 @@ async def change_email(
         current_user: Authenticated user from JWT token
         use_case: Email change use case
         jwt_service: JWT service for token generation
+        user_repository: User repository
 
     Returns:
         New access token with updated email and user data
@@ -267,22 +372,33 @@ async def change_email(
         # (User entity was updated in use case)
         updated_email = current_user.email.value
 
-        # Generate new JWT token with updated email
-        token = jwt_service.create_access_token(data={"sub": current_user.id.value})
+        # Generate new JWT tokens with updated email
+        token_data = {"sub": current_user.id.value}
+        access_token = jwt_service.create_access_token(data=token_data)
+        refresh_token = jwt_service.create_refresh_token(data=token_data)
 
-        return TokenResponse(
-            accessToken=token,
-            tokenType="bearer",
-            user=UserResponse(
-                id=current_user.id.value,
-                email=updated_email,
-                createdAt=current_user.created_at.isoformat(),
-                updatedAt=current_user.updated_at.isoformat(),
-                name=current_user.name,
-                interests=current_user.interests,
-                isAdmin=current_user.is_admin,
-            ),
+        # Store new refresh token hash
+        current_user.update_refresh_token_hash(hash_token(refresh_token))
+        await user_repository.save(current_user)
+
+        user_response = UserResponse(
+            id=current_user.id.value,
+            email=updated_email,
+            createdAt=current_user.created_at.isoformat(),
+            updatedAt=current_user.updated_at.isoformat(),
+            name=current_user.name,
+            interests=current_user.interests,
+            isAdmin=current_user.is_admin,
         )
+
+        response_data = {
+            "accessToken": access_token,
+            "refreshToken": refresh_token,
+            "tokenType": "bearer",
+            "user": user_response.model_dump(by_alias=True),
+        }
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content=response_data)
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

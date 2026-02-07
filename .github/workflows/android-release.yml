@@ -179,6 +179,33 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create Sentry release with commits
+        if: success()
+        continue-on-error: true
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          BUILD_CODE=$(grep 'versionCode' mobile/android/app/build.gradle | head -1 | sed 's/.*versionCode //' | tr -d '[:space:]')
+          RELEASE_NAME="com.guidr@${VERSION}+${BUILD_CODE}"
+
+          echo "📤 Creating Sentry release: $RELEASE_NAME"
+
+          npx @sentry/cli releases new "$RELEASE_NAME" \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr
+
+          npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr
+
+          npx @sentry/cli releases finalize "$RELEASE_NAME" \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr
+
+          echo "✅ Sentry release created and finalized"
+
       - name: Notify Android success
         if: success()
         run: |

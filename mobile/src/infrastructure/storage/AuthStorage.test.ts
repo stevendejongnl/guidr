@@ -84,6 +84,58 @@ describe('AuthStorage', () => {
     })
   })
 
+  describe('getRefreshToken', () => {
+    it('should return null when no refresh token is stored', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue(null)
+
+      const result = await storage.getRefreshToken()
+
+      expect(result).toBeNull()
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_RefreshToken')
+    })
+
+    it('should return stored refresh token when it exists', async () => {
+      const token = 'mock-refresh-token-123'
+      mockAsyncStorage.getItem.mockResolvedValue(token)
+
+      const result = await storage.getRefreshToken()
+
+      expect(result).toBe(token)
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_RefreshToken')
+    })
+  })
+
+  describe('setRefreshToken', () => {
+    it('should store refresh token', async () => {
+      const token = 'mock-refresh-token-123'
+      mockAsyncStorage.setItem.mockResolvedValue()
+
+      await storage.setRefreshToken(token)
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith('Guidr_RefreshToken', token)
+    })
+
+    it('should throw error for empty token', async () => {
+      await expect(storage.setRefreshToken('')).rejects.toThrow('Refresh token cannot be empty')
+      expect(mockAsyncStorage.setItem).not.toHaveBeenCalled()
+    })
+
+    it('should throw error for whitespace-only token', async () => {
+      await expect(storage.setRefreshToken('   ')).rejects.toThrow('Refresh token cannot be empty')
+      expect(mockAsyncStorage.setItem).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('clearRefreshToken', () => {
+    it('should remove refresh token from storage', async () => {
+      mockAsyncStorage.removeItem.mockResolvedValue()
+
+      await storage.clearRefreshToken()
+
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_RefreshToken')
+    })
+  })
+
   describe('getUserEmail', () => {
     it('should return null when no email is stored', async () => {
       mockAsyncStorage.getItem.mockResolvedValue(null)
@@ -252,10 +304,11 @@ describe('AuthStorage', () => {
       await storage.clearAll()
 
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_AuthToken')
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_RefreshToken')
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserEmail')
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserIsAdmin')
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_UserId')
-      expect(mockAsyncStorage.removeItem).toHaveBeenCalledTimes(4)
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledTimes(5)
     })
   })
 })

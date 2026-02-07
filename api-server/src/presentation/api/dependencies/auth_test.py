@@ -9,6 +9,8 @@ from src.domain.entities import User
 from src.domain.value_objects import Email, EntityId
 from src.presentation.api.dependencies.auth import get_current_user
 
+TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
+
 
 class TestGetCurrentUser:
     """Test get_current_user authentication dependency."""
@@ -29,7 +31,7 @@ class TestGetCurrentUser:
     def valid_user(self):
         """Create a valid user entity."""
         return User(
-            id=EntityId("550e8400-e29b-41d4-a716-446655440000"),
+            id=EntityId(TEST_USER_ID),
             email=Email("test@example.com"),
             password_hash="$argon2id$v=19$m=65536,t=3,p=4$..."
         )
@@ -41,7 +43,7 @@ class TestGetCurrentUser:
         """Should return user when token is valid."""
         # Arrange
         token = "valid_token_here"
-        mock_jwt_service.verify_token.return_value = {"sub": "550e8400-e29b-41d4-a716-446655440000"}
+        mock_jwt_service.verify_access_token.return_value = {"sub": TEST_USER_ID}
         mock_user_repository.find_by_id.return_value = valid_user
 
         # Act
@@ -53,12 +55,12 @@ class TestGetCurrentUser:
 
         # Assert
         assert result == valid_user
-        mock_jwt_service.verify_token.assert_called_once_with("valid_token_here")
+        mock_jwt_service.verify_access_token.assert_called_once_with("valid_token_here")
         mock_user_repository.find_by_id.assert_called_once()
         # Verify EntityId was passed
         call_args = mock_user_repository.find_by_id.call_args[0]
         assert isinstance(call_args[0], EntityId)
-        assert call_args[0].value == "550e8400-e29b-41d4-a716-446655440000"
+        assert call_args[0].value == TEST_USER_ID
 
     @pytest.mark.asyncio
     async def test_get_current_user_with_invalid_token(
@@ -67,7 +69,7 @@ class TestGetCurrentUser:
         """Should raise 401 when token is invalid or expired."""
         # Arrange
         token = "invalid_token"
-        mock_jwt_service.verify_token.return_value = None  # Invalid token
+        mock_jwt_service.verify_access_token.return_value = None  # Invalid token
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
@@ -87,7 +89,7 @@ class TestGetCurrentUser:
         """Should raise 401 when token payload is missing 'sub' field."""
         # Arrange
         token = "valid_token"
-        mock_jwt_service.verify_token.return_value = {}  # Missing 'sub' field
+        mock_jwt_service.verify_access_token.return_value = {}  # Missing 'sub' field
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
@@ -107,7 +109,7 @@ class TestGetCurrentUser:
         """Should raise 401 when user no longer exists (deleted)."""
         # Arrange
         token = "valid_token"
-        mock_jwt_service.verify_token.return_value = {"sub": "550e8400-e29b-41d4-a716-446655440000"}
+        mock_jwt_service.verify_access_token.return_value = {"sub": TEST_USER_ID}
         mock_user_repository.find_by_id.return_value = None  # User not found
 
         # Act & Assert
@@ -128,7 +130,7 @@ class TestGetCurrentUser:
         """Should correctly extract and verify token."""
         # Arrange
         token = "abc123xyz"
-        mock_jwt_service.verify_token.return_value = {"sub": "550e8400-e29b-41d4-a716-446655440000"}
+        mock_jwt_service.verify_access_token.return_value = {"sub": TEST_USER_ID}
         mock_user_repository.find_by_id.return_value = valid_user
 
         # Act
@@ -139,4 +141,4 @@ class TestGetCurrentUser:
         )
 
         # Assert - Token verified correctly
-        mock_jwt_service.verify_token.assert_called_once_with("abc123xyz")
+        mock_jwt_service.verify_access_token.assert_called_once_with("abc123xyz")

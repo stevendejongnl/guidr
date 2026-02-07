@@ -4,6 +4,7 @@ import { HomeScreen } from './HomeScreen'
 import { Guide } from '../../domain/entities/Guide'
 import { Session, SessionStatus } from '../../domain/entities/Session'
 import { Category } from '../../domain/entities/Category'
+import { AuthenticationError } from '../../common/ApiErrorUtils'
 import {
   createMockAuthStorage,
   createMockServerConfigStorage,
@@ -516,6 +517,121 @@ describe('HomeScreen', () => {
 
       fireEvent.press(getByText('Browse Categories'))
       expect(mockOnBrowseCategories).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('token refresh on AuthenticationError', () => {
+    it('should refresh token and retry loadData when AuthenticationError occurs', async () => {
+      // First call throws AuthenticationError, second call succeeds
+      let callCount = 0
+      mockAuthClient.getProfile.mockImplementation(async () => {
+        callCount++
+        if (callCount === 1) {
+          throw new AuthenticationError('Invalid or expired token')
+        }
+        return {
+          id: 'user-1',
+          email: 'test@example.com',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          name: 'Test User',
+          interests: [],
+          isAdmin: false,
+        }
+      })
+
+      mockAuthStorage.getRefreshToken.mockResolvedValue('test-refresh-token')
+      mockAuthClient.refreshToken.mockResolvedValue({
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
+        tokenType: 'Bearer',
+        user: {
+          id: 'user-1',
+          email: 'test@example.com',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isAdmin: false,
+        },
+      })
+
+      const { getByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockAuthClient.refreshToken).toHaveBeenCalledWith('test-refresh-token')
+        expect(mockAuthStorage.setAuthToken).toHaveBeenCalledWith('new-access-token')
+        expect(mockAuthStorage.setRefreshToken).toHaveBeenCalledWith('new-refresh-token')
+      })
+
+      // loadData should have been retried — verify by checking the welcome text rendered
+      await waitFor(() => {
+        expect(getByText('Guidr')).toBeTruthy()
+      })
+    })
+
+    it('should call onLogout when refresh token fails', async () => {
+      mockAuthClient.getProfile.mockRejectedValue(
+        new AuthenticationError('Invalid or expired token')
+      )
+      mockAuthStorage.getRefreshToken.mockResolvedValue('expired-refresh-token')
+      mockAuthClient.refreshToken.mockRejectedValue(new Error('Refresh token expired'))
+
+      render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockOnLogout).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    it('should call onLogout when no refresh token is available', async () => {
+      mockAuthClient.getProfile.mockRejectedValue(
+        new AuthenticationError('Invalid or expired token')
+      )
+      mockAuthStorage.getRefreshToken.mockResolvedValue(null)
+
+      render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          categoryService={mockCategoryService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockOnLogout).toHaveBeenCalledTimes(1)
+      })
     })
   })
 })

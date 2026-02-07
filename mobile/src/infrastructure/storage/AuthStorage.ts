@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const AUTH_TOKEN_KEY = 'Guidr_AuthToken'
+const REFRESH_TOKEN_KEY = 'Guidr_RefreshToken'
 const USER_EMAIL_KEY = 'Guidr_UserEmail'
 const USER_IS_ADMIN_KEY = 'Guidr_UserIsAdmin'
 const USER_ID_KEY = 'Guidr_UserId'
@@ -24,6 +25,21 @@ export class AuthStorage {
 
   async clearAuthToken(): Promise<void> {
     await AsyncStorage.removeItem(AUTH_TOKEN_KEY)
+  }
+
+  async getRefreshToken(): Promise<string | null> {
+    return await AsyncStorage.getItem(REFRESH_TOKEN_KEY)
+  }
+
+  async setRefreshToken(token: string): Promise<void> {
+    if (!token || token.trim() === '') {
+      throw new Error('Refresh token cannot be empty')
+    }
+    await AsyncStorage.setItem(REFRESH_TOKEN_KEY, token)
+  }
+
+  async clearRefreshToken(): Promise<void> {
+    await AsyncStorage.removeItem(REFRESH_TOKEN_KEY)
   }
 
   async getUserEmail(): Promise<string | null> {
@@ -72,6 +88,7 @@ export class AuthStorage {
   async clearAll(): Promise<void> {
     await Promise.all([
       AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+      AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
       AsyncStorage.removeItem(USER_EMAIL_KEY),
       AsyncStorage.removeItem(USER_IS_ADMIN_KEY),
       AsyncStorage.removeItem(USER_ID_KEY),

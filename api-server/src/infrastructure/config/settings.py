@@ -33,7 +33,8 @@ class Settings(BaseSettings):
     # JWT
     jwt_secret_key: str = "your-secret-key-change-in-production"
     jwt_algorithm: str = "HS256"
-    jwt_expiration_minutes: int = 60 * 24 * 7  # 7 days
+    jwt_expiration_minutes: int = 60  # 1 hour
+    jwt_refresh_expiration_minutes: int = 60 * 24 * 30  # 30 days
 
     # CORS
     cors_origins: list[str] = ["*"]

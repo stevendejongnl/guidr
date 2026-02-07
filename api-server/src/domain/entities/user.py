@@ -20,6 +20,7 @@ class User:
         interests: list[str] | None = None,
         role: Role | None = None,
         is_admin: bool = False,
+        refresh_token_hash: str | None = None,
     ):
         """Initialize a User.
 
@@ -33,6 +34,7 @@ class User:
             interests: Optional list of interest categories (defaults to empty list)
             role: User role (defaults to USER if not provided). Preferred over is_admin.
             is_admin: DEPRECATED - use role instead. Kept for backward compatibility.
+            refresh_token_hash: Optional hashed refresh token for token rotation
 
         Raises:
             ValidationException: If password_hash is empty
@@ -53,6 +55,7 @@ class User:
             role = Role(RoleType.ADMIN if is_admin else RoleType.USER)
 
         self._role = role
+        self._refresh_token_hash = refresh_token_hash
 
     @property
     def id(self) -> EntityId:
@@ -139,4 +142,18 @@ class User:
             interests: List of interest category IDs
         """
         self._interests = interests.copy()
+        self._updated_at = datetime.now(UTC)
+
+    @property
+    def refresh_token_hash(self) -> str | None:
+        """Get refresh token hash."""
+        return self._refresh_token_hash
+
+    def update_refresh_token_hash(self, hash: str | None) -> None:
+        """Update refresh token hash.
+
+        Args:
+            hash: New hashed refresh token, or None to clear
+        """
+        self._refresh_token_hash = hash
         self._updated_at = datetime.now(UTC)

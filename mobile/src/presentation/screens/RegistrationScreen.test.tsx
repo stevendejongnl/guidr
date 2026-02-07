@@ -334,6 +334,7 @@ describe('RegistrationScreen', () => {
     it('should register user and auto-login on successful registration', async () => {
       mockAuthClient.register = jest.fn().mockResolvedValue({
         accessToken: 'mock-token-123',
+        refreshToken: 'mock-refresh-token-123',
         tokenType: 'bearer',
         user: {
           id: 'user-123',
@@ -343,6 +344,7 @@ describe('RegistrationScreen', () => {
         },
       })
       mockAuthStorage.setAuthToken = jest.fn().mockResolvedValue(undefined)
+      mockAuthStorage.setRefreshToken = jest.fn().mockResolvedValue(undefined)
       mockAuthStorage.setUserEmail = jest.fn().mockResolvedValue(undefined)
 
       const { getByPlaceholderText, getAllByText } = render(
@@ -369,6 +371,7 @@ describe('RegistrationScreen', () => {
       await waitFor(() => {
         expect(mockAuthClient.register).toHaveBeenCalledWith('test@example.com', 'password123')
         expect(mockAuthStorage.setAuthToken).toHaveBeenCalledWith('mock-token-123')
+        expect(mockAuthStorage.setRefreshToken).toHaveBeenCalledWith('mock-refresh-token-123')
         expect(mockAuthStorage.setUserEmail).toHaveBeenCalledWith('test@example.com')
         expect(mockOnComplete).toHaveBeenCalledTimes(1)
       })

@@ -29,6 +29,7 @@ class UserMapper:
             "interests": user.interests,
             "role": user.role.value,  # New: Store role string
             "isAdmin": user.is_admin,  # Keep: Backward compatibility
+            "refreshTokenHash": user.refresh_token_hash,
         }
 
     @staticmethod
@@ -59,4 +60,5 @@ class UserMapper:
             name=document.get("name"),
             interests=document.get("interests", []),
             role=role,
+            refresh_token_hash=document.get("refreshTokenHash"),
         )

@@ -271,6 +271,7 @@ describe('LoginScreen', () => {
     it('should login successfully and call onComplete', async () => {
       mockAuthClient.login.mockResolvedValue({
         accessToken: 'mock-token-123',
+        refreshToken: 'mock-refresh-token-123',
         tokenType: 'bearer',
         user: {
           id: 'user-123',
@@ -280,6 +281,7 @@ describe('LoginScreen', () => {
         },
       })
       mockAuthStorage.setAuthToken.mockResolvedValue()
+      mockAuthStorage.setRefreshToken.mockResolvedValue()
       mockAuthStorage.setUserEmail.mockResolvedValue()
 
       const { getByPlaceholderText, getByText } = render(
@@ -306,6 +308,7 @@ describe('LoginScreen', () => {
 
       await waitFor(() => {
         expect(mockAuthStorage.setAuthToken).toHaveBeenCalledWith('mock-token-123')
+        expect(mockAuthStorage.setRefreshToken).toHaveBeenCalledWith('mock-refresh-token-123')
         expect(mockAuthStorage.setUserEmail).toHaveBeenCalledWith('test@example.com')
       })
 
@@ -345,6 +348,7 @@ describe('LoginScreen', () => {
     it('should show error from AuthStorage on storage failure', async () => {
       mockAuthClient.login.mockResolvedValue({
         accessToken: 'mock-token-123',
+        refreshToken: 'mock-refresh-token',
         tokenType: 'bearer',
         user: {
           id: 'user-123',
@@ -442,6 +446,7 @@ describe('LoginScreen', () => {
 
       resolveLogin!({
         accessToken: 'mock-token',
+        refreshToken: 'mock-refresh-token',
         tokenType: 'bearer',
         user: {
           id: 'user-123',
@@ -485,6 +490,7 @@ describe('LoginScreen', () => {
 
       resolveLogin!({
         accessToken: 'mock-token',
+        refreshToken: 'mock-refresh-token',
         tokenType: 'bearer',
         user: {
           id: 'user-123',
@@ -530,6 +536,7 @@ describe('LoginScreen', () => {
 
       resolveLogin!({
         accessToken: 'mock-token',
+        refreshToken: 'mock-refresh-token',
         tokenType: 'bearer',
         user: {
           id: 'user-123',
@@ -632,6 +639,7 @@ describe('LoginScreen', () => {
 
       resolveLogin!({
         accessToken: 'token',
+        refreshToken: 'mock-refresh-token',
         tokenType: 'bearer',
         user: {
           id: 'user-123',

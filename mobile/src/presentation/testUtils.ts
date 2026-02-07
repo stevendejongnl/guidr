@@ -17,6 +17,9 @@ export const createMockAuthStorage = (overrides: Partial<jest.Mocked<AuthStorage
   setAuthToken: jest.fn().mockResolvedValue(undefined),
   hasAuthToken: jest.fn().mockResolvedValue(true),
   clearAuthToken: jest.fn().mockResolvedValue(undefined),
+  getRefreshToken: jest.fn().mockResolvedValue('test-refresh-token'),
+  setRefreshToken: jest.fn().mockResolvedValue(undefined),
+  clearRefreshToken: jest.fn().mockResolvedValue(undefined),
   getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
   setUserEmail: jest.fn().mockResolvedValue(undefined),
   clearUserEmail: jest.fn().mockResolvedValue(undefined),
@@ -53,6 +56,7 @@ export const createMockServerConfigStorage = (
 export const createMockAuthClient = (overrides: Partial<jest.Mocked<AuthClient>> = {}): jest.Mocked<AuthClient> => ({
   login: jest.fn().mockResolvedValue({
     accessToken: 'test-token',
+    refreshToken: 'test-refresh-token',
     tokenType: 'Bearer',
     user: {
       id: 'user-1',
@@ -64,6 +68,7 @@ export const createMockAuthClient = (overrides: Partial<jest.Mocked<AuthClient>>
   }),
   register: jest.fn().mockResolvedValue({
     accessToken: 'test-token',
+    refreshToken: 'test-refresh-token',
     tokenType: 'Bearer',
     user: {
       id: 'user-1',
@@ -85,10 +90,23 @@ export const createMockAuthClient = (overrides: Partial<jest.Mocked<AuthClient>>
   changePassword: jest.fn().mockResolvedValue(undefined),
   changeEmail: jest.fn().mockResolvedValue({
     accessToken: 'test-token',
+    refreshToken: 'test-refresh-token',
     tokenType: 'Bearer',
     user: {
       id: 'user-1',
       email: 'newemail@example.com',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isAdmin: false,
+    },
+  }),
+  refreshToken: jest.fn().mockResolvedValue({
+    accessToken: 'new-test-token',
+    refreshToken: 'new-test-refresh-token',
+    tokenType: 'Bearer',
+    user: {
+      id: 'user-1',
+      email: 'test@example.com',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isAdmin: false,

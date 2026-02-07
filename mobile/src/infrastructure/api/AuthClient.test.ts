@@ -1,4 +1,5 @@
 import { AuthClient } from './AuthClient'
+import { AuthenticationError } from '../../common/ApiErrorUtils'
 
 // Mock fetch globally
 global.fetch = jest.fn()
@@ -455,6 +456,71 @@ describe('AuthClient', () => {
     })
   })
 
+  describe('refreshToken', () => {
+    it('should return new tokens on successful refresh', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          accessToken: 'new-access-token',
+          refreshToken: 'new-refresh-token',
+          tokenType: 'bearer',
+          user: {
+            id: 'user-123',
+            email: 'test@example.com',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            isAdmin: false,
+          },
+        }),
+      } as Response)
+
+      const result = await authClient.refreshToken('old-refresh-token')
+
+      expect(result.accessToken).toBe('new-access-token')
+      expect(result.refreshToken).toBe('new-refresh-token')
+      expect(result.user.id).toBe('user-123')
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/auth/refresh',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: 'old-refresh-token' }),
+        }
+      )
+    })
+
+    it('should throw error for empty refresh token', async () => {
+      await expect(authClient.refreshToken('')).rejects.toThrow('Refresh token cannot be empty')
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('should throw error on 401 (expired/revoked refresh token)', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Invalid or expired refresh token' }),
+      } as Response)
+
+      await expect(authClient.refreshToken('expired-token'))
+        .rejects.toThrow('Invalid or expired refresh token')
+    })
+
+    it('should throw error on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network request failed'))
+
+      await expect(authClient.refreshToken('some-token'))
+        .rejects.toThrow('Network request failed')
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      mockFetch.mockRejectedValue('unexpected error')
+
+      await expect(authClient.refreshToken('some-token'))
+        .rejects.toThrow('An unexpected error occurred during token refresh')
+    })
+  })
+
   describe('changePassword', () => {
     const authToken = 'mock-auth-token-123'
 
@@ -507,7 +573,7 @@ describe('AuthClient', () => {
       ).rejects.toThrow('Password must be at least 6 characters')
     })
 
-    it('should throw error when auth token is expired', async () => {
+    it('should throw AuthenticationError when auth token is expired', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
@@ -516,7 +582,7 @@ describe('AuthClient', () => {
 
       await expect(
         authClient.changePassword('OldPassword123', 'NewPassword456', 'expired-token')
-      ).rejects.toThrow('Unauthorized')
+      ).rejects.toThrow(AuthenticationError)
     })
 
     it('should throw generic error when response has no detail', async () => {
@@ -691,7 +757,7 @@ describe('AuthClient', () => {
       ).rejects.toThrow('Email already in use')
     })
 
-    it('should throw error when auth token is expired', async () => {
+    it('should throw AuthenticationError when auth token is expired', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
@@ -700,7 +766,7 @@ describe('AuthClient', () => {
 
       await expect(
         authClient.changeEmail('newemail@example.com', 'Password123', 'expired-token')
-      ).rejects.toThrow('Unauthorized')
+      ).rejects.toThrow(AuthenticationError)
     })
 
     it('should throw generic error when response has no detail', async () => {
@@ -824,7 +890,7 @@ describe('AuthClient', () => {
   describe('getProfile', () => {
     const authToken = 'mock-auth-token-123'
 
-    it('should throw error on 401 unauthorized', async () => {
+    it('should throw AuthenticationError on 401 unauthorized', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
@@ -832,7 +898,7 @@ describe('AuthClient', () => {
       } as Response)
 
       await expect(authClient.getProfile(authToken))
-        .rejects.toThrow('Unauthorized')
+        .rejects.toThrow(AuthenticationError)
     })
 
     it('should handle FastAPI validation error array', async () => {
@@ -939,7 +1005,7 @@ describe('AuthClient', () => {
       expect(result.interests).toEqual(['cooking'])
     })
 
-    it('should throw error when auth token is expired', async () => {
+    it('should throw AuthenticationError when auth token is expired', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
@@ -948,7 +1014,7 @@ describe('AuthClient', () => {
 
       await expect(
         authClient.updateProfile('John', ['sports'], 'expired-token')
-      ).rejects.toThrow('Unauthorized')
+      ).rejects.toThrow(AuthenticationError)
     })
 
     it('should throw generic error when response has no detail', async () => {
@@ -1063,7 +1129,7 @@ describe('AuthClient', () => {
       ).rejects.toThrow('Password is incorrect')
     })
 
-    it('should throw error when auth token is expired', async () => {
+    it('should throw AuthenticationError when auth token is expired', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 401,
@@ -1072,7 +1138,7 @@ describe('AuthClient', () => {
 
       await expect(
         authClient.deleteAccount('Password123', 'expired-token')
-      ).rejects.toThrow('Unauthorized')
+      ).rejects.toThrow(AuthenticationError)
     })
 
     it('should throw generic error when response has no detail', async () => {

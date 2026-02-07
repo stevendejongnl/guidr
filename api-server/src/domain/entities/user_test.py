@@ -307,3 +307,57 @@ class TestUser:
 
         with pytest.raises(AttributeError):
             user.is_admin = True
+
+    def test_create_user_with_refresh_token_hash(self):
+        """Should create user with refresh_token_hash."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            refresh_token_hash="abc123hash",
+        )
+
+        assert user.refresh_token_hash == "abc123hash"
+
+    def test_create_user_defaults_refresh_token_hash_to_none(self):
+        """Should default refresh_token_hash to None."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+
+        user = User(id=id, email=email, password_hash=password_hash)
+
+        assert user.refresh_token_hash is None
+
+    def test_update_refresh_token_hash(self):
+        """Should update refresh_token_hash and timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(id=id, email=email, password_hash=password_hash)
+        original_updated = user.updated_at
+
+        user.update_refresh_token_hash("newhash456")
+
+        assert user.refresh_token_hash == "newhash456"
+        assert user.updated_at > original_updated
+
+    def test_update_refresh_token_hash_to_none(self):
+        """Should allow clearing refresh_token_hash."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            refresh_token_hash="abc123hash",
+        )
+
+        user.update_refresh_token_hash(None)
+
+        assert user.refresh_token_hash is None

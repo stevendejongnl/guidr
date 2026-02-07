@@ -1,4 +1,15 @@
 /**
+ * Error thrown when an API call receives a 401 Unauthorized response.
+ * Used to trigger token refresh flows.
+ */
+export class AuthenticationError extends Error {
+  constructor(message: string = 'Authentication failed') {
+    super(message)
+    this.name = 'AuthenticationError'
+  }
+}
+
+/**
  * FastAPI validation error structure
  * Ensures proper error handling across API calls
  */

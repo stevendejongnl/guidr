@@ -383,6 +383,66 @@ jobs:
 
           echo "✅ Debug symbols uploaded to Sentry"
 
+      # Upload JS source maps to Sentry for readable stack traces
+      - name: Upload JS source maps to Sentry
+        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        continue-on-error: true
+        run: |
+          cd mobile
+
+          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          RELEASE_NAME="com.guidr@${VERSION}+${BUILD_NUMBER}"
+
+          echo "📤 Uploading JS source maps for release: $RELEASE_NAME"
+
+          # Find the JS bundle and source map from the archive
+          BUNDLE_PATH="ios/build/guidr.xcarchive/Products/Applications/guidr.app/main.jsbundle"
+          MAP_PATH="ios/build/guidr.xcarchive/Products/Applications/guidr.app/main.jsbundle.map"
+
+          if [ ! -f "$BUNDLE_PATH" ]; then
+            echo "⚠️ JS bundle not found at $BUNDLE_PATH, searching..."
+            find ios/build -name "main.jsbundle" -type f 2>/dev/null || echo "No main.jsbundle found"
+            exit 0
+          fi
+
+          npx @sentry/cli sourcemaps upload \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr \
+            --release "$RELEASE_NAME" \
+            "$BUNDLE_PATH" ${MAP_PATH:+"$MAP_PATH"}
+
+          echo "✅ JS source maps uploaded to Sentry"
+
+      # Create Sentry release linked to commits for suspect commits
+      - name: Create Sentry release with commits
+        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        continue-on-error: true
+        run: |
+          cd mobile
+
+          VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          RELEASE_NAME="com.guidr@${VERSION}+${BUILD_NUMBER}"
+
+          echo "📤 Creating Sentry release: $RELEASE_NAME"
+
+          npx @sentry/cli releases new "$RELEASE_NAME" \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr
+
+          npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr
+
+          npx @sentry/cli releases finalize "$RELEASE_NAME" \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr
+
+          echo "✅ Sentry release created and finalized"
+
       # Export signed IPA
       - name: Export IPA
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'

@@ -290,6 +290,7 @@ describe('ProfileScreen', () => {
     it('changes email successfully', async () => {
       mockAuthClient.changeEmail.mockResolvedValue({
         accessToken: 'new-token',
+        refreshToken: 'mock-refresh-token',
         tokenType: 'bearer',
         user: {
           id: '123',
@@ -603,6 +604,7 @@ describe('ProfileScreen', () => {
             setTimeout(() => {
               resolve({
                 accessToken: 'new-token',
+                refreshToken: 'mock-refresh-token',
                 tokenType: 'bearer',
                 user: {
                   id: '123',

@@ -18,6 +18,7 @@ import { StatCard } from '../components/StatCard'
 import { QuickActionButton } from '../components/QuickActionButton'
 import { ActivityItem } from '../components/ActivityItem'
 import { GuideCard } from '../components/GuideCard'
+import { AuthenticationError } from '../../common/ApiErrorUtils'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
@@ -241,6 +242,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
       setRecentSessions(recentSessionsList)
     } catch (err) {
+      if (err instanceof AuthenticationError) {
+        const refreshToken = await authStorage.getRefreshToken()
+        if (refreshToken) {
+          try {
+            const serverUrl = await serverConfigStorage.getServerUrl()
+            if (serverUrl) {
+              const authClient = injectedAuthClient || new AuthClient(serverUrl)
+              const response = await authClient.refreshToken(refreshToken)
+              await authStorage.setAuthToken(response.accessToken)
+              await authStorage.setRefreshToken(response.refreshToken)
+              await loadData()
+              return
+            }
+          } catch {
+            // Refresh failed — fall through to logout
+          }
+        }
+        await onLogout()
+        return
+      }
       ErrorReporter.capture(err, { component: 'HomeScreen', action: 'loadData' })
       console.error('Failed to load home screen data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load data')

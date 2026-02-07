@@ -202,6 +202,32 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+      - name: Create Sentry release for API
+        if: env.SHOULD_RELEASE == 'true'
+        continue-on-error: true
+        run: |
+          VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          RELEASE_NAME="guidr-api@${VERSION}"
+
+          echo "📤 Creating Sentry release for API: $RELEASE_NAME"
+
+          npx @sentry/cli releases new "$RELEASE_NAME" \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr-api
+
+          npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr-api
+
+          npx @sentry/cli releases finalize "$RELEASE_NAME" \
+            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+            --org madebysteven \
+            --project guidr-api
+
+          echo "✅ API Sentry release created and finalized"
+
       - name: Trigger downstream workflows
         if: env.SHOULD_RELEASE == 'true'
         working-directory: .

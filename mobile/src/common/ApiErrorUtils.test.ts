@@ -1,4 +1,33 @@
-import { extractErrorMessage } from './ApiErrorUtils'
+import { extractErrorMessage, AuthenticationError } from './ApiErrorUtils'
+
+describe('AuthenticationError', () => {
+  it('should be an instance of Error', () => {
+    const error = new AuthenticationError()
+    expect(error).toBeInstanceOf(Error)
+  })
+
+  it('should have name AuthenticationError', () => {
+    const error = new AuthenticationError()
+    expect(error.name).toBe('AuthenticationError')
+  })
+
+  it('should have default message', () => {
+    const error = new AuthenticationError()
+    expect(error.message).toBe('Authentication failed')
+  })
+
+  it('should accept custom message', () => {
+    const error = new AuthenticationError('Token expired')
+    expect(error.message).toBe('Token expired')
+  })
+
+  it('should be distinguishable from regular Error via instanceof', () => {
+    const authError = new AuthenticationError()
+    const regularError = new Error('some error')
+    expect(authError instanceof AuthenticationError).toBe(true)
+    expect(regularError instanceof AuthenticationError).toBe(false)
+  })
+})
 
 describe('ApiErrorUtils', () => {
   describe('extractErrorMessage', () => {

@@ -62,7 +62,7 @@ async def get_current_user(
         HTTPException(401): If token is missing, invalid, expired, or user not found
     """
     # Verify JWT token
-    payload = jwt_service.verify_token(token)
+    payload = jwt_service.verify_access_token(token)
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -116,7 +116,7 @@ async def get_optional_current_user(
         return None
 
     # Verify JWT token
-    payload = jwt_service.verify_token(token)
+    payload = jwt_service.verify_access_token(token)
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

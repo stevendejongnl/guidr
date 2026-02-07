@@ -11,6 +11,7 @@ from .user_models import (
     ChangeEmailRequest,
     ChangePasswordRequest,
     DeleteAccountRequest,
+    RefreshTokenRequest,
     Token,
     TokenResponse,
     UpdateProfileRequest,
@@ -50,6 +51,7 @@ __all__ = [
     "UserRegister",
     "UserLogin",
     "UserResponse",
+    "RefreshTokenRequest",
     "Token",
     "TokenResponse",
     # Config
