@@ -9,6 +9,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from .container import Container
+from .infrastructure.monitoring.sentry_config import init_sentry
 from .presentation.api.app import create_app
 from .presentation.api.dependencies import auth as auth_dependencies
 from .presentation.api.routers import (
@@ -32,6 +33,9 @@ from .presentation.api.routers import (
 from .presentation.api.routers import (
     users as users_router,
 )
+
+# Initialize Sentry (only if SENTRY_DSN is set in environment)
+init_sentry()
 
 logger = logging.getLogger(__name__)
 

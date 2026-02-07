@@ -69,10 +69,17 @@ api-server/.pytest_cache/
 # Sentry
 android/sentry.properties
 ios/sentry.properties
+mobile/android/sentry.properties
+mobile/ios/sentry.properties
 
-# Misc
-.idea/
+# Environment variables
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+mobile/.env
+api-server/.env
+
+# Misc
+.idea/

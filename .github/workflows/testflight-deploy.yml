@@ -113,6 +113,15 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: npm run build:shared
 
+      - name: Create mobile .env file with Sentry DSN
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+        run: |
+          cat > mobile/.env <<EOF
+          SENTRY_DSN=${{ secrets.MOBILE_SENTRY_DSN }}
+          EOF
+
+          echo "✅ Created mobile .env file with Sentry configuration"
+
       - name: Restore CocoaPods cache
         uses: actions/cache@v4
         with:

@@ -68,6 +68,14 @@ jobs:
       - name: Build shared package
         run: npm run build:shared
 
+      - name: Create mobile .env file with Sentry DSN
+        run: |
+          cat > mobile/.env <<EOF
+          SENTRY_DSN=${{ secrets.MOBILE_SENTRY_DSN }}
+          EOF
+
+          echo "✅ Created mobile .env file with Sentry configuration"
+
       - name: Create Sentry properties file
         run: |
           cat > mobile/android/sentry.properties <<EOF
