@@ -59,6 +59,7 @@ Guidr is a personal project with security measures in place for the safety of it
 **Semantic-Release Bundled Dependencies** (dev-time only)
 - **GHSA-8qq5-rm4j-mr97** (tar file overwrite): HIGH - Bundled in npm CLI
 - **GHSA-5j98-mcp5-4vw2** (glob command injection): HIGH - Bundled in npm CLI
+- **GHSA-7h2j-956f-4vf2** (brace-expansion unbounded expansion DoS): HIGH - Bundled in npm CLI
 - **GHSA-73rr-hh4g-fpgx** (jsdiff DoS): LOW - Bundled in npm CLI
 - **GHSA-37qj-frw5-hhjh** (fast-xml-parser RangeError DoS): HIGH - Bundled in @react-native-community/cli
 - **Status**: Accepted (dev-time dependencies only)

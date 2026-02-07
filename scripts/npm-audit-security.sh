@@ -8,6 +8,7 @@
 #
 # Accepted GHSA advisories (all in devDependencies only):
 # - GHSA-5j98-mcp5-4vw2: glob command injection (HIGH)
+# - GHSA-7h2j-956f-4vf2: brace-expansion unbounded expansion DoS (HIGH)
 # - GHSA-73rr-hh4g-fpgx: jsdiff DoS (LOW)
 # - GHSA-8qq5-rm4j-mr97: tar arbitrary file overwrite (HIGH)
 # - GHSA-r6q2-hw4h-h46w: tar race condition on macOS APFS (HIGH)
@@ -25,6 +26,7 @@ WORKSPACE="${3:-}"
 # GHSA advisories to ignore (dev-time only, bundled in semantic-release or web dev tools)
 ACCEPTED_ADVISORIES=(
   "GHSA-5j98-mcp5-4vw2"
+  "GHSA-7h2j-956f-4vf2"
   "GHSA-73rr-hh4g-fpgx"
   "GHSA-8qq5-rm4j-mr97"
   "GHSA-r6q2-hw4h-h46w"
