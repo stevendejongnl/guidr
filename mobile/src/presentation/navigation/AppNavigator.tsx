@@ -774,6 +774,7 @@ export const AppNavigator: React.FC = () => {
       onManageGuides={handleManageGuides}
       onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
+      onViewGuideDetail={handleViewGuide}
       isAdmin={isAdmin}
       {...(servicesRef.current && {
         guideService: servicesRef.current.guide,
