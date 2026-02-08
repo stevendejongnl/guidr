@@ -281,11 +281,13 @@ jobs:
       - name: Create Sentry properties file
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
+          source .sentry/config.env
+
           cat > mobile/ios/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
+          defaults.org=$SENTRY_ORG
+          defaults.project=$SENTRY_PROJECT_MOBILE
+          defaults.url=$SENTRY_URL
           EOF
 
           echo "✅ Created iOS Sentry properties file"
@@ -374,11 +376,13 @@ jobs:
 
           echo "📤 Uploading debug symbols to Sentry..."
 
+          source "$GITHUB_WORKSPACE/.sentry/config.env"
+
           # Upload using sentry-cli
           npx @sentry/cli debug-files upload \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr \
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE" \
             "$DSYM_PATH"
 
           echo "✅ Debug symbols uploaded to Sentry"
@@ -395,6 +399,8 @@ jobs:
 
           echo "📤 Uploading JS source maps for release: $RELEASE_NAME"
 
+          source "$GITHUB_WORKSPACE/.sentry/config.env"
+
           # Find the JS bundle and source map from the archive
           BUNDLE_PATH="ios/build/guidr.xcarchive/Products/Applications/guidr.app/main.jsbundle"
           MAP_PATH="ios/build/guidr.xcarchive/Products/Applications/guidr.app/main.jsbundle.map"
@@ -407,8 +413,8 @@ jobs:
 
           npx @sentry/cli sourcemaps upload \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr \
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE" \
             --release "$RELEASE_NAME" \
             "$BUNDLE_PATH" ${MAP_PATH:+"$MAP_PATH"}
 
@@ -426,20 +432,22 @@ jobs:
 
           echo "📤 Creating Sentry release: $RELEASE_NAME"
 
+          source "$GITHUB_WORKSPACE/.sentry/config.env"
+
           npx @sentry/cli releases new "$RELEASE_NAME" \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE"
 
           npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE"
 
           npx @sentry/cli releases finalize "$RELEASE_NAME" \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE"
 
           echo "✅ Sentry release created and finalized"
 

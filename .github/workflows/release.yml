@@ -43,18 +43,20 @@ jobs:
 
       - name: Create Sentry properties files
         run: |
+          source .sentry/config.env
+
           cat > mobile/android/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
+          defaults.org=$SENTRY_ORG
+          defaults.project=$SENTRY_PROJECT_MOBILE
+          defaults.url=$SENTRY_URL
           EOF
 
           cat > mobile/ios/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
+          defaults.org=$SENTRY_ORG
+          defaults.project=$SENTRY_PROJECT_MOBILE
+          defaults.url=$SENTRY_URL
           EOF
 
           echo "✅ Created Sentry properties files for Android and iOS"
@@ -206,6 +208,8 @@ jobs:
         if: env.SHOULD_RELEASE == 'true'
         continue-on-error: true
         run: |
+          source .sentry/config.env
+
           VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
           RELEASE_NAME="guidr-api@${VERSION}"
 
@@ -213,18 +217,18 @@ jobs:
 
           npx @sentry/cli releases new "$RELEASE_NAME" \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr-api
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_API"
 
           npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr-api
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_API"
 
           npx @sentry/cli releases finalize "$RELEASE_NAME" \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr-api
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_API"
 
           echo "✅ API Sentry release created and finalized"
 

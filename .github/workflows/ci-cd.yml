@@ -184,11 +184,13 @@ jobs:
 
       - name: Create Sentry properties file
         run: |
+          source .sentry/config.env
+
           cat > mobile/android/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
+          defaults.org=$SENTRY_ORG
+          defaults.project=$SENTRY_PROJECT_MOBILE
+          defaults.url=$SENTRY_URL
           EOF
 
           echo "✅ Created Android Sentry properties file"
@@ -266,11 +268,13 @@ jobs:
 
       - name: Create Sentry properties file
         run: |
+          source .sentry/config.env
+
           cat > mobile/ios/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
+          defaults.org=$SENTRY_ORG
+          defaults.project=$SENTRY_PROJECT_MOBILE
+          defaults.url=$SENTRY_URL
           EOF
 
           echo "✅ Created iOS Sentry properties file"

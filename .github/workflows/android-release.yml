@@ -78,11 +78,13 @@ jobs:
 
       - name: Create Sentry properties file
         run: |
+          source .sentry/config.env
+
           cat > mobile/android/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=madebysteven
-          defaults.project=guidr
-          defaults.url=https://sentry.io/
+          defaults.org=$SENTRY_ORG
+          defaults.project=$SENTRY_PROJECT_MOBILE
+          defaults.url=$SENTRY_URL
           EOF
 
           echo "✅ Created Android Sentry properties file"
@@ -183,6 +185,8 @@ jobs:
         if: success()
         continue-on-error: true
         run: |
+          source .sentry/config.env
+
           VERSION="${{ steps.version.outputs.VERSION }}"
           BUILD_CODE=$(grep 'versionCode' mobile/android/app/build.gradle | head -1 | sed 's/.*versionCode //' | tr -d '[:space:]')
           RELEASE_NAME="com.guidr@${VERSION}+${BUILD_CODE}"
@@ -191,18 +195,18 @@ jobs:
 
           npx @sentry/cli releases new "$RELEASE_NAME" \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE"
 
           npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE"
 
           npx @sentry/cli releases finalize "$RELEASE_NAME" \
             --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --org madebysteven \
-            --project guidr
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE"
 
           echo "✅ Sentry release created and finalized"
 
