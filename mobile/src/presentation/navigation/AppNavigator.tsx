@@ -636,6 +636,7 @@ export const AppNavigator: React.FC = () => {
         onEditGuide={handleEditGuide}
         onViewGuide={handleViewGuide}
         onBack={handleGuideListBack}
+        isAdmin={isAdmin}
       />
     )
   }

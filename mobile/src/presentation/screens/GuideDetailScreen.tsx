@@ -21,6 +21,7 @@ import { colors, spacing, typography } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { SafeScreen } from '../components/SafeScreen'
 import { StepListItem } from '../components/StepListItem'
+import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 
 interface GuideDetailScreenProps {
@@ -57,6 +58,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const [loadingSteps, setLoadingSteps] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [canEditSteps, setCanEditSteps] = useState(false)
+  const [isViewingOthersGuide, setIsViewingOthersGuide] = useState(false)
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
@@ -129,6 +131,9 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       // Calculate edit permission: admin OR owner
       const canEdit = Boolean(isAdmin || (userId && loadedGuide.isOwnedBy(userId)))
       setCanEditSteps(canEdit)
+
+      // Detect when admin is viewing another user's guide
+      setIsViewingOthersGuide(isAdmin && !!userId && !loadedGuide.isOwnedBy(userId))
 
       // Derive guide type label
       const label = GUIDE_TYPE_LABELS[loadedGuide.guideType as GuideType] || loadedGuide.guideType
@@ -357,6 +362,13 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
             )}
           </View>
         </View>
+
+        {/* Admin banner for viewing other's guide */}
+        <InfoBanner
+          message="You are viewing a guide from another user"
+          visible={isViewingOthersGuide}
+          testID={`${testID}:info-banner`}
+        />
 
         {/* Guide Content */}
         <View style={styles.content}>

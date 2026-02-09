@@ -119,4 +119,46 @@ describe('GuideListScreen', () => {
     fireEvent.press(getByText('+ New'))
     expect(mockOnCreateGuide).toHaveBeenCalled()
   })
+
+  it('defaults to "My Guides" tab when isAdmin is true', () => {
+    const { getByTestId } = render(
+      <GuideListScreen
+        onCreateGuide={mockOnCreateGuide}
+        onEditGuide={mockOnEditGuide}
+        onViewGuide={mockOnViewGuide}
+        onBack={mockOnBack}
+        isAdmin={true}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+    const mineTab = getByTestId('filter-tab-mine')
+    expect(mineTab.props['style']).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ backgroundColor: expect.any(String) }),
+      ])
+    )
+  })
+
+  it('defaults to "All" tab when isAdmin is false', () => {
+    const { getByTestId } = render(
+      <GuideListScreen
+        onCreateGuide={mockOnCreateGuide}
+        onEditGuide={mockOnEditGuide}
+        onViewGuide={mockOnViewGuide}
+        onBack={mockOnBack}
+        isAdmin={false}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+    const allTab = getByTestId('filter-tab-all')
+    expect(allTab.props['style']).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ backgroundColor: expect.any(String) }),
+      ])
+    )
+  })
 })

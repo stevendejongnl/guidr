@@ -232,6 +232,117 @@ describe('GuideDetailScreen', () => {
     })
   })
 
+  it('shows info banner when admin views another user\'s guide', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Other User Guide',
+      'A guide by someone else',
+      'other-user-456',
+      true,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = {
+      getStepsByGuideId: jest.fn().mockResolvedValue([]),
+      updateStepOrder: jest.fn(),
+      deleteStep: jest.fn(),
+    } as unknown as StepService
+
+    const { getByText } = render(
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="detail"
+        isAdmin={true}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByText('You are viewing a guide from another user')).toBeTruthy()
+    })
+  })
+
+  it('does not show info banner when admin views own guide', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'My Guide',
+      'A guide by me',
+      'user-123',
+      true,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = {
+      getStepsByGuideId: jest.fn().mockResolvedValue([]),
+      updateStepOrder: jest.fn(),
+      deleteStep: jest.fn(),
+    } as unknown as StepService
+
+    const { queryByText } = render(
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="detail"
+        isAdmin={true}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(queryByText('You are viewing a guide from another user')).toBeNull()
+    })
+  })
+
+  it('does not show info banner for non-admin users', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Some Guide',
+      'A guide',
+      'other-user-456',
+      true,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = {
+      getStepsByGuideId: jest.fn().mockResolvedValue([]),
+      updateStepOrder: jest.fn(),
+      deleteStep: jest.fn(),
+    } as unknown as StepService
+
+    const { queryByText } = render(
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="detail"
+        isAdmin={false}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(queryByText('You are viewing a guide from another user')).toBeNull()
+    })
+  })
+
   it('displays notes for general guides', async () => {
     const guide = new Guide(
       'guide-1',
