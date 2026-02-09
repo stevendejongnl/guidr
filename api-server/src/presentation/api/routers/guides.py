@@ -232,6 +232,7 @@ async def update_guide(
         dto = GuideUpdateDTO(
             title=guide.title,
             description=guide.description,
+            metadata=guide.metadata,
             is_public=guide.is_public,
             is_highlighted=guide.is_highlighted,
         )

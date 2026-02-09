@@ -1,6 +1,7 @@
 import React from 'react'
-import { render } from '@testing-library/react-native'
+import { render, waitFor } from '@testing-library/react-native'
 import { GuideDetailScreen } from './GuideDetailScreen'
+import { Guide } from '../../domain/entities/Guide'
 import { StepService } from '../../domain/services/StepService'
 import {
   createMockAuthStorage,
@@ -138,5 +139,47 @@ describe('GuideDetailScreen', () => {
     )
 
     expect(getByTestId('test')).toBeTruthy()
+  })
+
+  it('displays ingredients for cooking guides', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Cookies',
+      'Delicious cookies',
+      'user-123',
+      true,
+      false,
+      { ingredients: [
+        { name: 'flour', quantity: '200', unit: 'g' },
+        { name: 'sugar', quantity: '100', unit: 'g' },
+      ] }
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = {
+      getStepsByGuideId: jest.fn().mockResolvedValue([]),
+      updateStepOrder: jest.fn(),
+      deleteStep: jest.fn(),
+    } as unknown as StepService
+
+    const { getByText } = render(
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="detail"
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByText('Ingredients')).toBeTruthy()
+      expect(getByText('200 g — flour')).toBeTruthy()
+      expect(getByText('100 g — sugar')).toBeTruthy()
+    })
   })
 })

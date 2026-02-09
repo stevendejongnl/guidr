@@ -3,6 +3,7 @@ import pytest
 from src.domain.value_objects.guide_type import (
     METADATA_SCHEMAS,
     GuideType,
+    validate_ingredient_items,
     validate_metadata,
 )
 
@@ -44,7 +45,16 @@ class TestValidateMetadata:
     def test_cooking_valid_ingredients(self):
         validate_metadata(
             GuideType.COOKING,
-            {"ingredients": ["flour", "sugar"]},
+            {"ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+                {"name": "sugar", "quantity": "100", "unit": "g"},
+            ]},
+        )
+
+    def test_cooking_empty_ingredients_list(self):
+        validate_metadata(
+            GuideType.COOKING,
+            {"ingredients": []},
         )
 
     def test_cooking_invalid_key(self):
@@ -87,3 +97,43 @@ class TestValidateMetadata:
 
     def test_general_empty_dict_valid(self):
         validate_metadata(GuideType.GENERAL, {})
+
+
+class TestValidateIngredientItems:
+    """Test structured ingredient validation."""
+
+    def test_valid_ingredient_objects(self):
+        validate_ingredient_items([
+            {"name": "flour", "quantity": "200", "unit": "g"},
+            {"name": "eggs", "quantity": "2", "unit": "piece"},
+        ])
+
+    def test_empty_list_valid(self):
+        validate_ingredient_items([])
+
+    def test_non_dict_item_raises(self):
+        with pytest.raises(ValueError, match="must be an object"):
+            validate_ingredient_items(["flour"])
+
+    def test_missing_keys_raises(self):
+        with pytest.raises(ValueError, match="missing keys"):
+            validate_ingredient_items([{"name": "flour"}])
+
+    def test_extra_keys_raises(self):
+        with pytest.raises(ValueError, match="unexpected keys"):
+            validate_ingredient_items([
+                {"name": "flour", "quantity": "200", "unit": "g", "notes": "sifted"},
+            ])
+
+    def test_non_string_value_raises(self):
+        with pytest.raises(ValueError, match="must be str"):
+            validate_ingredient_items([
+                {"name": "flour", "quantity": 200, "unit": "g"},
+            ])
+
+    def test_ingredient_validation_through_metadata(self):
+        with pytest.raises(ValueError, match="must be an object"):
+            validate_metadata(
+                GuideType.COOKING,
+                {"ingredients": ["just a string"]},
+            )

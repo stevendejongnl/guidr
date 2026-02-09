@@ -8,8 +8,12 @@ module.exports = {
   KeyboardAvoidingView: 'KeyboardAvoidingView',
   SafeAreaView: 'SafeAreaView',
   ScrollView: 'ScrollView',
+  Switch: 'Switch',
   Modal: 'Modal',
   Pressable: 'Pressable',
+  Alert: {
+    alert: jest.fn(),
+  },
   Platform: {
     OS: 'ios',
     select: (obj) => obj.ios,

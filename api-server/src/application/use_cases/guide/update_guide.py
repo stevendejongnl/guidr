@@ -66,6 +66,9 @@ class UpdateGuide:
         if dto.description is not None:
             guide.update_description(dto.description)
 
+        if dto.metadata is not None:
+            guide.update_metadata(dto.metadata)
+
         # Handle visibility (owner or admin can change)
         if dto.is_public is not None:
             if dto.is_public:

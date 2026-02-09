@@ -28,14 +28,14 @@ class TestGuideCreateDTO:
             guide_type="cooking",
             title="Learn Python",
             description="A guide to Python",
-            metadata={"ingredients": ["flour"]},
+            metadata={"ingredients": [{"name": "flour", "quantity": "200", "unit": "g"}]},
             is_public=True,
         )
 
         assert dto.guide_type == "cooking"
         assert dto.title == "Learn Python"
         assert dto.description == "A guide to Python"
-        assert dto.metadata == {"ingredients": ["flour"]}
+        assert dto.metadata == {"ingredients": [{"name": "flour", "quantity": "200", "unit": "g"}]}
         assert dto.is_public is True
 
 
@@ -78,7 +78,7 @@ class TestGuideResponseDTO:
             guide_type="cooking",
             title="Learn Python",
             description="A guide to Python",
-            metadata={"ingredients": ["flour"]},
+            metadata={"ingredients": [{"name": "flour", "quantity": "200", "unit": "g"}]},
             step_ids=["step-1", "step-2"],
             created_by_user_id="user-123",
             is_public=True,
@@ -91,7 +91,7 @@ class TestGuideResponseDTO:
         assert dto.guide_type == "cooking"
         assert dto.title == "Learn Python"
         assert dto.description == "A guide to Python"
-        assert dto.metadata == {"ingredients": ["flour"]}
+        assert dto.metadata == {"ingredients": [{"name": "flour", "quantity": "200", "unit": "g"}]}
         assert dto.step_ids == ["step-1", "step-2"]
         assert dto.created_by_user_id == "user-123"
         assert dto.is_public is True

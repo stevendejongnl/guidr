@@ -35,7 +35,7 @@ class TestGuideModels:
             guideType="cooking",
             title="Learn Python",
             description="A guide",
-            metadata={"ingredients": ["flour"]},
+            metadata={"ingredients": [{"name": "flour", "quantity": "200", "unit": "g"}]},
             stepIds=[],
             createdByUserId="user-123",
             isPublic=True,

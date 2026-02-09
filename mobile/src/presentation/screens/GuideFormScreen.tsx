@@ -17,11 +17,13 @@ import { StepRepository } from '../../infrastructure/repositories/StepRepository
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { SafeScreen } from '../components/SafeScreen'
 import { GuideTypeSelector } from '../components/GuideTypeSelector'
+import { IngredientsEditor } from '../components/IngredientsEditor'
+import type { Ingredient } from '../components/IngredientsEditor'
 import { InfoBanner } from '../components/InfoBanner'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { formStyles } from '@guidr/shared/styles/react-native'
-import { GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
+import { GUIDE_TYPES, GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 
 interface GuideFormScreenProps {
   mode: 'create' | 'edit'
@@ -52,6 +54,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   const [selectedGuideType, setSelectedGuideType] = useState<GuideType | null>(null)
   const [isPublic, setIsPublic] = useState(false)
   const [isHighlighted, setIsHighlighted] = useState(false)
+  const [ingredients, setIngredients] = useState<Ingredient[]>([])
 
   // UI states
   const [loading, setLoading] = useState(false)
@@ -117,6 +120,9 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           setSelectedGuideType(guide.guideType as GuideType)
           setIsPublic(guide.isPublic)
           setIsHighlighted(guide.isHighlighted)
+          if (guide.metadata?.ingredients && Array.isArray(guide.metadata.ingredients)) {
+            setIngredients(guide.metadata.ingredients as Ingredient[])
+          }
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading guide'
@@ -162,13 +168,18 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           setError('Guide type is required')
           return
         }
+        const metadata =
+          selectedGuideType === GUIDE_TYPES.COOKING && ingredients.length > 0
+            ? { ingredients }
+            : undefined
         const guide = await guideService.createGuide(
           selectedGuideType,
           title,
           description || undefined,
           authToken,
           undefined,
-          isPublic
+          isPublic,
+          metadata
         )
         onSave(guide.id)
       } else if (guideId) {
@@ -180,6 +191,15 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
         // Update description
         if (description) {
           await guideService.updateGuideDescription(guideId, description, authToken)
+        }
+
+        // Update metadata (ingredients) for cooking guides
+        if (selectedGuideType === GUIDE_TYPES.COOKING) {
+          await guideService.updateGuideMetadata(
+            guideId,
+            { ingredients },
+            authToken
+          )
         }
 
         // Update visibility
@@ -308,6 +328,15 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
               </View>
             )}
           </View>
+
+          {selectedGuideType === GUIDE_TYPES.COOKING && (
+            <IngredientsEditor
+              ingredients={ingredients}
+              onChange={setIngredients}
+              disabled={saving}
+              testID="ingredients-editor"
+            />
+          )}
 
           <View style={formStyles.toggleGroup}>
             <View style={formStyles.toggleContainer}>

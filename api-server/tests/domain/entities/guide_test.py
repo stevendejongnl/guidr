@@ -43,7 +43,11 @@ class TestGuide:
             guide_type=GuideType.COOKING,
             title=title,
             description="A guide to Python",
-            metadata={"ingredients": ["flour"]},
+            metadata={
+                "ingredients": [
+                    {"name": "flour", "quantity": "200", "unit": "g"},
+                ]
+            },
             step_ids=[EntityId(str(uuid4())), EntityId(str(uuid4()))],
             created_by_user_id=user_id,
             is_public=True,
@@ -56,7 +60,12 @@ class TestGuide:
         assert guide.guide_type == GuideType.COOKING
         assert guide.title == title
         assert guide.description == "A guide to Python"
-        assert guide.metadata == {"ingredients": ["flour"]}
+        expected_metadata = {
+            "ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+            ]
+        }
+        assert guide.metadata == expected_metadata
         assert len(guide.step_ids) == 2
         assert guide.created_by_user_id == user_id
         assert guide.is_public is True

@@ -47,7 +47,12 @@ class TestGuide:
         )
 
     def test_create_guide_with_metadata(self):
-        metadata = {"ingredients": ["flour", "eggs"]}
+        metadata = {
+            "ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+                {"name": "eggs", "quantity": "3", "unit": "piece"},
+            ]
+        }
         guide = _make_guide(metadata=metadata)
         assert guide.metadata == metadata
 
@@ -93,7 +98,7 @@ class TestGuide:
         guide = _make_guide()
         original_updated = guide.updated_at
 
-        new_metadata = {"ingredients": ["butter"]}
+        new_metadata = {"ingredients": [{"name": "butter", "quantity": "50", "unit": "g"}]}
         guide.update_metadata(new_metadata)
 
         assert guide.metadata == new_metadata

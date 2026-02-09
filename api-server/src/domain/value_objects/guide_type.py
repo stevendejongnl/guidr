@@ -12,6 +12,9 @@ class GuideType(str, Enum):
     GENERAL = "general"
 
 
+INGREDIENT_REQUIRED_KEYS = {"name", "quantity", "unit"}
+
+
 METADATA_SCHEMAS: dict[GuideType, dict[str, type]] = {
     GuideType.COOKING: {
         "ingredients": list,
@@ -22,6 +25,43 @@ METADATA_SCHEMAS: dict[GuideType, dict[str, type]] = {
     },
     GuideType.GENERAL: {},
 }
+
+
+def validate_ingredient_items(items: list[Any]) -> None:
+    """Validate that ingredient list items are structured objects.
+
+    Each item must be a dict with keys: name, quantity, unit (all strings).
+
+    Args:
+        items: The list of ingredient items to validate
+
+    Raises:
+        ValueError: If any item is not a valid ingredient object
+    """
+    for i, item in enumerate(items):
+        if not isinstance(item, dict):
+            raise ValueError(
+                f"Ingredient at index {i} must be an object, "
+                f"got {type(item).__name__}"
+            )
+        missing = INGREDIENT_REQUIRED_KEYS - set(item.keys())
+        if missing:
+            raise ValueError(
+                f"Ingredient at index {i} missing keys: "
+                f"{sorted(missing)}"
+            )
+        extra = set(item.keys()) - INGREDIENT_REQUIRED_KEYS
+        if extra:
+            raise ValueError(
+                f"Ingredient at index {i} has unexpected keys: "
+                f"{sorted(extra)}"
+            )
+        for key in INGREDIENT_REQUIRED_KEYS:
+            if not isinstance(item[key], str):
+                raise ValueError(
+                    f"Ingredient at index {i} key '{key}' "
+                    f"must be str, got {type(item[key]).__name__}"
+                )
 
 
 def validate_metadata(
@@ -63,3 +103,5 @@ def validate_metadata(
                 f"{expected_type.__name__}, "
                 f"got {type(value).__name__}"
             )
+        if key == "ingredients" and isinstance(value, list):
+            validate_ingredient_items(value)

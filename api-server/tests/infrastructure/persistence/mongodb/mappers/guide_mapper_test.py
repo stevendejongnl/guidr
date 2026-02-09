@@ -22,7 +22,11 @@ class TestGuideMapper:
             guide_type=GuideType.COOKING,
             title=GuideTitle("Learn Python"),
             description="A guide to Python",
-            metadata={"ingredients": ["flour"]},
+            metadata={
+                "ingredients": [
+                    {"name": "flour", "quantity": "200", "unit": "g"},
+                ]
+            },
             step_ids=[EntityId(str(uuid4())), EntityId(str(uuid4()))],
             created_by_user_id=user_id,
             is_public=True,
@@ -37,7 +41,12 @@ class TestGuideMapper:
         assert document["guideType"] == "cooking"
         assert document["title"] == "Learn Python"
         assert document["description"] == "A guide to Python"
-        assert document["metadata"] == {"ingredients": ["flour"]}
+        expected_meta = {
+            "ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+            ]
+        }
+        assert document["metadata"] == expected_meta
         assert len(document["stepIds"]) == 2
         assert document["createdByUserId"] == user_id.value
         assert document["isPublic"] is True
@@ -57,7 +66,11 @@ class TestGuideMapper:
             "guideType": "cooking",
             "title": "Learn Python",
             "description": "A guide to Python",
-            "metadata": {"ingredients": ["flour"]},
+            "metadata": {
+                "ingredients": [
+                    {"name": "flour", "quantity": "200", "unit": "g"},
+                ]
+            },
             "stepIds": step_ids,
             "createdByUserId": user_id,
             "isPublic": True,
@@ -72,7 +85,12 @@ class TestGuideMapper:
         assert guide.guide_type == GuideType.COOKING
         assert guide.title == GuideTitle("Learn Python")
         assert guide.description == "A guide to Python"
-        assert guide.metadata == {"ingredients": ["flour"]}
+        expected_meta = {
+            "ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+            ]
+        }
+        assert guide.metadata == expected_meta
         assert len(guide.step_ids) == 2
         assert guide.created_by_user_id == EntityId(user_id)
         assert guide.is_public is True

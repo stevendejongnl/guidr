@@ -102,13 +102,19 @@ class TestCreateGuide:
         dto = GuideCreateDTO(
             guide_type="cooking",
             title="Pasta Guide",
-            metadata={"ingredients": ["flour", "eggs"]},
+            metadata={"ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+                {"name": "eggs", "quantity": "3", "unit": "piece"},
+            ]},
         )
 
         result = await use_case.execute(dto)
 
         assert result.metadata == {
-            "ingredients": ["flour", "eggs"]
+            "ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+                {"name": "eggs", "quantity": "3", "unit": "piece"},
+            ]
         }
 
     async def test_create_guide_invalid_type(
@@ -278,6 +284,37 @@ class TestUpdateGuide:
                 dto,
                 non_admin_user,
             )
+
+    async def test_update_guide_metadata(
+        self,
+        mock_guide_repository,
+        mock_event_persistence_service,
+        admin_user,
+    ):
+        """Test updating guide metadata."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.COOKING,
+            title=GuideTitle("Test Guide"),
+        )
+        mock_guide_repository.find_by_id.return_value = guide
+        use_case = UpdateGuide(
+            mock_guide_repository,
+            mock_event_persistence_service,
+        )
+        metadata = {
+            "ingredients": [
+                {"name": "flour", "quantity": "200", "unit": "g"},
+            ]
+        }
+        dto = GuideUpdateDTO(metadata=metadata)
+
+        result = await use_case.execute(
+            guide.id.value, dto, admin_user
+        )
+
+        assert result.metadata == metadata
+        mock_guide_repository.save.assert_called_once()
 
     async def test_update_guide_owner_can_update(
         self,

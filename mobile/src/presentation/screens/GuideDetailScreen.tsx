@@ -13,7 +13,7 @@ import { GuideService } from '../../domain/services/GuideService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { StepService } from '../../domain/services/StepService'
-import { GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
+import { GUIDE_TYPES, GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
@@ -313,6 +313,13 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     )
   }
 
+  const ingredients: Array<{ name: string; quantity: string; unit: string }> =
+    guide.guideType === GUIDE_TYPES.COOKING &&
+    guide.metadata?.ingredients &&
+    Array.isArray(guide.metadata.ingredients)
+      ? (guide.metadata.ingredients as Array<{ name: string; quantity: string; unit: string }>)
+      : []
+
   return (
     <SafeScreen {...(testID && { testID })}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -357,6 +364,20 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>About This Guide</Text>
               <Text style={styles.sectionContent}>{guide.description}</Text>
+            </View>
+          )}
+
+          {/* Ingredients Section (cooking guides only) */}
+          {ingredients.length > 0 && (
+            <View style={styles.section} testID={`${testID}:ingredients`}>
+              <Text style={styles.sectionTitle}>Ingredients</Text>
+              {ingredients.map((ingredient, index) => (
+                <View key={index} style={styles.ingredientItem}>
+                  <Text style={styles.ingredientText}>
+                    {ingredient.quantity} {ingredient.unit} — {ingredient.name}
+                  </Text>
+                </View>
+              ))}
             </View>
           )}
 
@@ -521,5 +542,15 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     paddingVertical: spacing.xl,
+  },
+  ingredientItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+  },
+  ingredientText: {
+    fontSize: typography.sizeMd,
+    color: colors.textSecondary,
+    lineHeight: 24,
   },
 })

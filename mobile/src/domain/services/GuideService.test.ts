@@ -184,6 +184,29 @@ describe('GuideService', () => {
     })
   })
 
+  describe('updateGuideMetadata', () => {
+    it('should update guide metadata and save', async () => {
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
+      mockGuideRepository.findById.mockResolvedValue(guide)
+      const metadata = {
+        ingredients: [{ name: 'flour', quantity: '200', unit: 'g' }],
+      }
+
+      await guideService.updateGuideMetadata('guide-1', metadata, authToken)
+
+      expect(guide.metadata).toEqual(metadata)
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
+    })
+
+    it('should throw error if guide not found', async () => {
+      mockGuideRepository.findById.mockResolvedValue(null)
+
+      await expect(
+        guideService.updateGuideMetadata('guide-999', { ingredients: [] }, authToken)
+      ).rejects.toThrow('Guide with id guide-999 not found')
+    })
+  })
+
   describe('addStepToGuide', () => {
     it('should add step to guide and save', async () => {
       const guide = new Guide('guide-1', 'cooking', 'Cookies')
