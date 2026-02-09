@@ -182,4 +182,97 @@ describe('GuideDetailScreen', () => {
       expect(getByText('100 g — sugar')).toBeTruthy()
     })
   })
+
+  it('displays target muscles and equipment for workout guides', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'workout',
+      'Chest Day',
+      'Upper body workout',
+      'user-123',
+      true,
+      false,
+      {
+        target_muscles: [
+          { name: 'chest', focus: 'primary' },
+          { name: 'triceps', focus: 'secondary' },
+        ],
+        equipment: [
+          { name: 'dumbbells', weight: '15kg' },
+        ],
+      }
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = {
+      getStepsByGuideId: jest.fn().mockResolvedValue([]),
+      updateStepOrder: jest.fn(),
+      deleteStep: jest.fn(),
+    } as unknown as StepService
+
+    const { getByText } = render(
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="detail"
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByText('Target Muscles')).toBeTruthy()
+      expect(getByText('chest (primary)')).toBeTruthy()
+      expect(getByText('triceps (secondary)')).toBeTruthy()
+      expect(getByText('Equipment')).toBeTruthy()
+      expect(getByText('dumbbells — 15kg')).toBeTruthy()
+    })
+  })
+
+  it('displays notes for general guides', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'general',
+      'Study Guide',
+      'A study guide',
+      'user-123',
+      true,
+      false,
+      {
+        notes: [
+          { key: 'difficulty', value: 'beginner' },
+          { key: 'duration', value: '30min' },
+        ],
+      }
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = {
+      getStepsByGuideId: jest.fn().mockResolvedValue([]),
+      updateStepOrder: jest.fn(),
+      deleteStep: jest.fn(),
+    } as unknown as StepService
+
+    const { getByText } = render(
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="detail"
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByText('Notes')).toBeTruthy()
+      expect(getByText('difficulty: beginner')).toBeTruthy()
+      expect(getByText('duration: 30min')).toBeTruthy()
+    })
+  })
 })

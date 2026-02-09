@@ -13,6 +13,9 @@ class GuideType(str, Enum):
 
 
 INGREDIENT_REQUIRED_KEYS = {"name", "quantity", "unit"}
+MUSCLE_REQUIRED_KEYS = {"name", "focus"}
+EQUIPMENT_REQUIRED_KEYS = {"name", "weight"}
+NOTE_REQUIRED_KEYS = {"key", "value"}
 
 
 METADATA_SCHEMAS: dict[GuideType, dict[str, type]] = {
@@ -23,7 +26,9 @@ METADATA_SCHEMAS: dict[GuideType, dict[str, type]] = {
         "target_muscles": list,
         "equipment": list,
     },
-    GuideType.GENERAL: {},
+    GuideType.GENERAL: {
+        "notes": list,
+    },
 }
 
 
@@ -61,6 +66,120 @@ def validate_ingredient_items(items: list[Any]) -> None:
                 raise ValueError(
                     f"Ingredient at index {i} key '{key}' "
                     f"must be str, got {type(item[key]).__name__}"
+                )
+
+
+def validate_muscle_items(items: list[Any]) -> None:
+    """Validate that target muscle items are structured objects.
+
+    Each item must be a dict with keys: name, focus (all strings).
+
+    Args:
+        items: The list of muscle items to validate
+
+    Raises:
+        ValueError: If any item is not a valid muscle object
+    """
+    for i, item in enumerate(items):
+        if not isinstance(item, dict):
+            raise ValueError(
+                f"Muscle at index {i} must be an object, "
+                f"got {type(item).__name__}"
+            )
+        missing = MUSCLE_REQUIRED_KEYS - set(item.keys())
+        if missing:
+            raise ValueError(
+                f"Muscle at index {i} missing keys: "
+                f"{sorted(missing)}"
+            )
+        extra = set(item.keys()) - MUSCLE_REQUIRED_KEYS
+        if extra:
+            raise ValueError(
+                f"Muscle at index {i} has unexpected keys: "
+                f"{sorted(extra)}"
+            )
+        for key in MUSCLE_REQUIRED_KEYS:
+            if not isinstance(item[key], str):
+                raise ValueError(
+                    f"Muscle at index {i} key '{key}' "
+                    f"must be str, "
+                    f"got {type(item[key]).__name__}"
+                )
+
+
+def validate_equipment_items(items: list[Any]) -> None:
+    """Validate that equipment items are structured objects.
+
+    Each item must be a dict with keys: name, weight (all strings).
+
+    Args:
+        items: The list of equipment items to validate
+
+    Raises:
+        ValueError: If any item is not a valid equipment object
+    """
+    for i, item in enumerate(items):
+        if not isinstance(item, dict):
+            raise ValueError(
+                f"Equipment at index {i} must be an object, "
+                f"got {type(item).__name__}"
+            )
+        missing = EQUIPMENT_REQUIRED_KEYS - set(item.keys())
+        if missing:
+            raise ValueError(
+                f"Equipment at index {i} missing keys: "
+                f"{sorted(missing)}"
+            )
+        extra = set(item.keys()) - EQUIPMENT_REQUIRED_KEYS
+        if extra:
+            raise ValueError(
+                f"Equipment at index {i} has unexpected "
+                f"keys: {sorted(extra)}"
+            )
+        for key in EQUIPMENT_REQUIRED_KEYS:
+            if not isinstance(item[key], str):
+                raise ValueError(
+                    f"Equipment at index {i} key '{key}' "
+                    f"must be str, "
+                    f"got {type(item[key]).__name__}"
+                )
+
+
+def validate_note_items(items: list[Any]) -> None:
+    """Validate that note items are structured objects.
+
+    Each item must be a dict with keys: key, value (all strings).
+
+    Args:
+        items: The list of note items to validate
+
+    Raises:
+        ValueError: If any item is not a valid note object
+    """
+    for i, item in enumerate(items):
+        if not isinstance(item, dict):
+            raise ValueError(
+                f"Note at index {i} must be an object, "
+                f"got {type(item).__name__}"
+            )
+        missing = NOTE_REQUIRED_KEYS - set(item.keys())
+        if missing:
+            raise ValueError(
+                f"Note at index {i} missing keys: "
+                f"{sorted(missing)}"
+            )
+        extra = set(item.keys()) - NOTE_REQUIRED_KEYS
+        if extra:
+            raise ValueError(
+                f"Note at index {i} has unexpected keys: "
+                f"{sorted(extra)}"
+            )
+        for key in NOTE_REQUIRED_KEYS:
+            if not isinstance(item[key], str):
+                raise ValueError(
+                    f"Note at index {i} key '{key}' "
+                    f"must be str, "
+                    f"got {type(item[key]).__name__}"
                 )
 
 
@@ -105,3 +224,9 @@ def validate_metadata(
             )
         if key == "ingredients" and isinstance(value, list):
             validate_ingredient_items(value)
+        if key == "target_muscles" and isinstance(value, list):
+            validate_muscle_items(value)
+        if key == "equipment" and isinstance(value, list):
+            validate_equipment_items(value)
+        if key == "notes" and isinstance(value, list):
+            validate_note_items(value)

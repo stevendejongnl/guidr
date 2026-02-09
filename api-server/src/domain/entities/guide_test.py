@@ -176,8 +176,12 @@ class TestGuide:
 
     def test_workout_with_metadata(self):
         metadata = {
-            "target_muscles": ["chest"],
-            "equipment": ["dumbbells"],
+            "target_muscles": [
+                {"name": "chest", "focus": "primary"},
+            ],
+            "equipment": [
+                {"name": "dumbbells", "weight": "15kg"},
+            ],
         }
         guide = _make_guide(
             guide_type=GuideType.WORKOUT,

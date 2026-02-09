@@ -19,6 +19,10 @@ import { SafeScreen } from '../components/SafeScreen'
 import { GuideTypeSelector } from '../components/GuideTypeSelector'
 import { IngredientsEditor } from '../components/IngredientsEditor'
 import type { Ingredient } from '../components/IngredientsEditor'
+import { WorkoutEditor } from '../components/WorkoutEditor'
+import type { TargetMuscle, Equipment } from '../components/WorkoutEditor'
+import { NotesEditor } from '../components/NotesEditor'
+import type { Note } from '../components/NotesEditor'
 import { InfoBanner } from '../components/InfoBanner'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
@@ -55,6 +59,9 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   const [isPublic, setIsPublic] = useState(false)
   const [isHighlighted, setIsHighlighted] = useState(false)
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
+  const [targetMuscles, setTargetMuscles] = useState<TargetMuscle[]>([])
+  const [equipment, setEquipment] = useState<Equipment[]>([])
+  const [notes, setNotes] = useState<Note[]>([])
 
   // UI states
   const [loading, setLoading] = useState(false)
@@ -123,6 +130,15 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           if (guide.metadata?.ingredients && Array.isArray(guide.metadata.ingredients)) {
             setIngredients(guide.metadata.ingredients as Ingredient[])
           }
+          if (guide.metadata?.target_muscles && Array.isArray(guide.metadata.target_muscles)) {
+            setTargetMuscles(guide.metadata.target_muscles as TargetMuscle[])
+          }
+          if (guide.metadata?.equipment && Array.isArray(guide.metadata.equipment)) {
+            setEquipment(guide.metadata.equipment as Equipment[])
+          }
+          if (guide.metadata?.notes && Array.isArray(guide.metadata.notes)) {
+            setNotes(guide.metadata.notes as Note[])
+          }
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading guide'
@@ -135,6 +151,22 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 
     loadGuide()
   }, [mode, guideId, guideService, authToken])
+
+  const buildMetadata = (guideType: GuideType | null): Record<string, unknown> | undefined => {
+    if (guideType === GUIDE_TYPES.COOKING && ingredients.length > 0) {
+      return { ingredients }
+    }
+    if (guideType === GUIDE_TYPES.WORKOUT) {
+      const meta: Record<string, unknown> = {}
+      if (targetMuscles.length > 0) meta.target_muscles = targetMuscles
+      if (equipment.length > 0) meta.equipment = equipment
+      return Object.keys(meta).length > 0 ? meta : undefined
+    }
+    if (guideType === GUIDE_TYPES.GENERAL && notes.length > 0) {
+      return { notes }
+    }
+    return undefined
+  }
 
   const validateForm = (): boolean => {
     if (!title.trim()) {
@@ -168,10 +200,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           setError('Guide type is required')
           return
         }
-        const metadata =
-          selectedGuideType === GUIDE_TYPES.COOKING && ingredients.length > 0
-            ? { ingredients }
-            : undefined
+        const metadata = buildMetadata(selectedGuideType)
         const guide = await guideService.createGuide(
           selectedGuideType,
           title,
@@ -193,11 +222,12 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           await guideService.updateGuideDescription(guideId, description, authToken)
         }
 
-        // Update metadata (ingredients) for cooking guides
-        if (selectedGuideType === GUIDE_TYPES.COOKING) {
+        // Update metadata per guide type
+        const editMetadata = buildMetadata(selectedGuideType)
+        if (editMetadata) {
           await guideService.updateGuideMetadata(
             guideId,
-            { ingredients },
+            editMetadata,
             authToken
           )
         }
@@ -335,6 +365,26 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
               onChange={setIngredients}
               disabled={saving}
               testID="ingredients-editor"
+            />
+          )}
+
+          {selectedGuideType === GUIDE_TYPES.WORKOUT && (
+            <WorkoutEditor
+              targetMuscles={targetMuscles}
+              equipment={equipment}
+              onChangeTargetMuscles={setTargetMuscles}
+              onChangeEquipment={setEquipment}
+              disabled={saving}
+              testID="workout-editor"
+            />
+          )}
+
+          {selectedGuideType === GUIDE_TYPES.GENERAL && (
+            <NotesEditor
+              notes={notes}
+              onChange={setNotes}
+              disabled={saving}
+              testID="notes-editor"
             />
           )}
 

@@ -320,6 +320,27 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       ? (guide.metadata.ingredients as Array<{ name: string; quantity: string; unit: string }>)
       : []
 
+  const targetMuscles: Array<{ name: string; focus: string }> =
+    guide.guideType === GUIDE_TYPES.WORKOUT &&
+    guide.metadata?.target_muscles &&
+    Array.isArray(guide.metadata.target_muscles)
+      ? (guide.metadata.target_muscles as Array<{ name: string; focus: string }>)
+      : []
+
+  const equipmentItems: Array<{ name: string; weight: string }> =
+    guide.guideType === GUIDE_TYPES.WORKOUT &&
+    guide.metadata?.equipment &&
+    Array.isArray(guide.metadata.equipment)
+      ? (guide.metadata.equipment as Array<{ name: string; weight: string }>)
+      : []
+
+  const notes: Array<{ key: string; value: string }> =
+    guide.guideType === GUIDE_TYPES.GENERAL &&
+    guide.metadata?.notes &&
+    Array.isArray(guide.metadata.notes)
+      ? (guide.metadata.notes as Array<{ key: string; value: string }>)
+      : []
+
   return (
     <SafeScreen {...(testID && { testID })}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -375,6 +396,48 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                 <View key={index} style={styles.ingredientItem}>
                   <Text style={styles.ingredientText}>
                     {ingredient.quantity} {ingredient.unit} — {ingredient.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Target Muscles Section (workout guides only) */}
+          {targetMuscles.length > 0 && (
+            <View style={styles.section} testID={`${testID}:target-muscles`}>
+              <Text style={styles.sectionTitle}>Target Muscles</Text>
+              {targetMuscles.map((muscle, index) => (
+                <View key={index} style={styles.ingredientItem}>
+                  <Text style={styles.ingredientText}>
+                    {muscle.name} ({muscle.focus})
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Equipment Section (workout guides only) */}
+          {equipmentItems.length > 0 && (
+            <View style={styles.section} testID={`${testID}:equipment`}>
+              <Text style={styles.sectionTitle}>Equipment</Text>
+              {equipmentItems.map((item, index) => (
+                <View key={index} style={styles.ingredientItem}>
+                  <Text style={styles.ingredientText}>
+                    {item.name} — {item.weight}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Notes Section (general guides only) */}
+          {notes.length > 0 && (
+            <View style={styles.section} testID={`${testID}:notes`}>
+              <Text style={styles.sectionTitle}>Notes</Text>
+              {notes.map((note, index) => (
+                <View key={index} style={styles.ingredientItem}>
+                  <Text style={styles.ingredientText}>
+                    {note.key}: {note.value}
                   </Text>
                 </View>
               ))}

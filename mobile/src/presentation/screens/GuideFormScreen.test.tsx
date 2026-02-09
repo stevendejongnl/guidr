@@ -117,4 +117,124 @@ describe('GuideFormScreen', () => {
       expect(getByText('200 g — flour')).toBeTruthy()
     })
   })
+
+  it('shows WorkoutEditor when workout type is selected', async () => {
+    const { getByTestId, queryByTestId } = render(
+      <GuideFormScreen
+        mode="create"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('guide-form-screen')).toBeTruthy()
+    })
+
+    expect(queryByTestId('workout-editor')).toBeNull()
+
+    fireEvent.press(getByTestId('guide-type-selector:workout'))
+
+    expect(getByTestId('workout-editor')).toBeTruthy()
+    expect(queryByTestId('ingredients-editor')).toBeNull()
+    expect(queryByTestId('notes-editor')).toBeNull()
+  })
+
+  it('shows NotesEditor when general type is selected', async () => {
+    const { getByTestId, queryByTestId } = render(
+      <GuideFormScreen
+        mode="create"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('guide-form-screen')).toBeTruthy()
+    })
+
+    expect(queryByTestId('notes-editor')).toBeNull()
+
+    fireEvent.press(getByTestId('guide-type-selector:general'))
+
+    expect(getByTestId('notes-editor')).toBeTruthy()
+    expect(queryByTestId('ingredients-editor')).toBeNull()
+    expect(queryByTestId('workout-editor')).toBeNull()
+  })
+
+  it('loads existing muscles and equipment in edit mode for workout guide', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'workout',
+      'Chest Day',
+      'Upper body workout',
+      'user-123',
+      false,
+      false,
+      {
+        target_muscles: [{ name: 'chest', focus: 'primary' }],
+        equipment: [{ name: 'dumbbells', weight: '15kg' }],
+      }
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const { getByText } = render(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByText('chest (primary)')).toBeTruthy()
+      expect(getByText('dumbbells — 15kg')).toBeTruthy()
+    })
+  })
+
+  it('loads existing notes in edit mode for general guide', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'general',
+      'Study Guide',
+      'A study guide',
+      'user-123',
+      false,
+      false,
+      { notes: [{ key: 'difficulty', value: 'beginner' }] }
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const { getByText } = render(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByText('difficulty: beginner')).toBeTruthy()
+    })
+  })
 })
