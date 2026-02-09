@@ -17,7 +17,7 @@ Guidr monorepo: Mobile (React Native) + API (FastAPI) + Web (React). DDD/TDD arc
 ## Project Overview
 **Status**: 870 tests passing (49 test suites), Admin auth (ADR-006, ADR-007, ADR-008), Android Gradle 8.13
 **Stack**: Mobile RN 0.83.1 | API FastAPI 3.12+ | Web React | TypeScript strict | Jest
-**Domain**: Category → Guide → Steps (duration) → Session (state machine)
+**Domain**: GuideType (cooking/workout/general) → Guide → Steps (duration) → Session (state machine)
 
 ## Structure
 ```

@@ -6,9 +6,6 @@ from uuid import uuid4
 from ..entities import AuditLog
 from ..events import (
     BaseDomainEvent,
-    CategoryCreated,
-    CategoryDeleted,
-    CategoryUpdated,
     GuideCreated,
     GuideDeleted,
     GuideUpdated,
@@ -171,7 +168,7 @@ class EventPersistenceService:
                 resource_type="guide",
                 resource_id=event.guide_id,
                 action="created",
-                details={"title": event.title, "category_id": event.category_id},
+                details={"title": event.title, "guide_type": event.guide_type},
             )
 
         elif isinstance(event, GuideUpdated):
@@ -202,51 +199,6 @@ class EventPersistenceService:
                 resource_id=event.guide_id,
                 action="deleted",
                 details={"title": event.title},
-            )
-
-        elif isinstance(event, CategoryCreated):
-            return AuditLog(
-                id=audit_id,
-                event_type=event.event_type,
-                event_id=event.event_id,
-                occurred_at=event.occurred_at,
-                user_id=user_id,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                resource_type="category",
-                resource_id=event.category_id,
-                action="created",
-                details={"name": event.name},
-            )
-
-        elif isinstance(event, CategoryUpdated):
-            return AuditLog(
-                id=audit_id,
-                event_type=event.event_type,
-                event_id=event.event_id,
-                occurred_at=event.occurred_at,
-                user_id=user_id,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                resource_type="category",
-                resource_id=event.category_id,
-                action="updated",
-                details={"name": event.name},
-            )
-
-        elif isinstance(event, CategoryDeleted):
-            return AuditLog(
-                id=audit_id,
-                event_type=event.event_type,
-                event_id=event.event_id,
-                occurred_at=event.occurred_at,
-                user_id=user_id,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                resource_type="category",
-                resource_id=event.category_id,
-                action="deleted",
-                details={"name": event.name},
             )
 
         elif isinstance(event, StepCreated):

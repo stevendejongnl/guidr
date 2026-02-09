@@ -1,15 +1,17 @@
 """Guide DTOs for application layer."""
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
 class GuideCreateDTO:
     """DTO for creating a guide."""
 
-    category_id: str
+    guide_type: str
     title: str
     description: str | None = None
+    metadata: dict[str, Any] | None = None
     is_public: bool = False
 
 
@@ -19,6 +21,7 @@ class GuideUpdateDTO:
 
     title: str | None = None
     description: str | None = None
+    metadata: dict[str, Any] | None = None
     is_public: bool | None = None
     is_highlighted: bool | None = None
 
@@ -28,9 +31,10 @@ class GuideResponseDTO:
     """DTO for guide response."""
 
     id: str
-    category_id: str
+    guide_type: str
     title: str
     description: str | None
+    metadata: dict[str, Any] | None
     step_ids: list[str]
     created_by_user_id: str | None
     is_public: bool

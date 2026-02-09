@@ -2,7 +2,6 @@
 
 import os
 from collections.abc import AsyncGenerator
-from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -26,7 +25,6 @@ async def app():
 
     # Clear test data before each test
     test_db = db_instance.db
-    await test_db.categories.delete_many({})
     await test_db.users.delete_many({})
     await test_db.guides.delete_many({})
 
@@ -50,38 +48,6 @@ async def db(app) -> AsyncGenerator[AsyncIOMotorDatabase, None]:
     container = app.state.container
     database = container.database()
     yield database.db
-
-
-@pytest.fixture
-async def test_category_id(db: AsyncIOMotorDatabase) -> str:
-    """Create and return a test category ID."""
-    category_id = str(uuid4())
-    await db.categories.insert_one({
-        "_id": category_id,
-        "name": "Test Category",
-        "description": "For testing",
-        "parentId": None,
-        "createdAt": "2026-01-30T00:00:00Z",
-        "updatedAt": "2026-01-30T00:00:00Z",
-    })
-    return category_id
-
-
-@pytest.fixture
-async def create_category(db: AsyncIOMotorDatabase):
-    """Helper to create test categories."""
-    async def _create(name: str = "Test Category") -> str:
-        category_id = str(uuid4())
-        await db.categories.insert_one({
-            "_id": category_id,
-            "name": name,
-            "description": "For testing",
-            "parentId": None,
-            "createdAt": "2026-01-30T00:00:00Z",
-            "updatedAt": "2026-01-30T00:00:00Z",
-        })
-        return category_id
-    return _create
 
 
 @pytest.fixture

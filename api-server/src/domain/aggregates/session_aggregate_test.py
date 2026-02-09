@@ -3,7 +3,13 @@ import pytest
 from src.domain.aggregates import SessionAggregate
 from src.domain.entities import Guide, Session, Step
 from src.domain.exceptions import ValidationException
-from src.domain.value_objects import EntityId, GuideTitle, SessionStatus, StepDuration
+from src.domain.value_objects import (
+    EntityId,
+    GuideTitle,
+    GuideType,
+    SessionStatus,
+    StepDuration,
+)
 
 
 class TestSessionAggregate:
@@ -13,12 +19,11 @@ class TestSessionAggregate:
         """Should create session aggregate."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -34,12 +39,11 @@ class TestSessionAggregate:
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         other_guide_id = EntityId("550e8400-e29b-41d4-a716-446655440099")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=other_guide_id,  # Mismatched!
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -52,12 +56,11 @@ class TestSessionAggregate:
         """Should create aggregate with steps."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -85,12 +88,11 @@ class TestSessionAggregate:
         """Should start session."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
         aggregate = SessionAggregate(session=session, guide=guide)
@@ -104,12 +106,11 @@ class TestSessionAggregate:
         """Should start session with initial step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -132,12 +133,11 @@ class TestSessionAggregate:
         """Should pause session."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
         aggregate = SessionAggregate(session=session, guide=guide)
@@ -151,12 +151,11 @@ class TestSessionAggregate:
         """Should resume session."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
         aggregate = SessionAggregate(session=session, guide=guide)
@@ -171,12 +170,11 @@ class TestSessionAggregate:
         """Should complete session."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
         aggregate = SessionAggregate(session=session, guide=guide)
@@ -191,12 +189,11 @@ class TestSessionAggregate:
         """Should cancel session."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
         aggregate = SessionAggregate(session=session, guide=guide)
@@ -210,12 +207,11 @@ class TestSessionAggregate:
         """Should move to specific step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -239,12 +235,11 @@ class TestSessionAggregate:
         """Should raise ValidationException for invalid step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
         aggregate = SessionAggregate(session=session, guide=guide)
@@ -262,12 +257,11 @@ class TestSessionAggregate:
         """Should move to next step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -301,12 +295,11 @@ class TestSessionAggregate:
         """Should return None when at last step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -332,12 +325,11 @@ class TestSessionAggregate:
         """Should move to previous step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -371,12 +363,11 @@ class TestSessionAggregate:
         """Should return None when at first step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -402,12 +393,11 @@ class TestSessionAggregate:
         """Should calculate progress percentage."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 
@@ -436,12 +426,11 @@ class TestSessionAggregate:
         """Should check if at last step."""
         session_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
 
         session = Session(id=session_id, guide_id=guide_id)
         guide = Guide(
             id=guide_id,
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Perfect Pasta")
         )
 

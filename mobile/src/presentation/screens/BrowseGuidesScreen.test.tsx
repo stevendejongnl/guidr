@@ -2,9 +2,7 @@ import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { BrowseGuidesScreen } from './BrowseGuidesScreen'
 import { GuideService } from '../../domain/services/GuideService'
-import { CategoryService } from '../../domain/services/CategoryService'
 import { Guide } from '../../domain/entities/Guide'
-import { Category } from '../../domain/entities/Category'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
@@ -14,21 +12,13 @@ jest.mock('../../infrastructure/storage/AuthStorage')
 jest.mock('../../infrastructure/storage/ServerConfigStorage')
 jest.mock('../../infrastructure/api/AuthClient')
 
-// Create mock service factories
+// Create mock service factory
 const createMockGuideService = (guides: Guide[] = []): jest.Mocked<GuideService> => {
   const mock = {
     getAllGuides: jest.fn().mockResolvedValue(guides),
     getGuideById: jest.fn(),
-    getGuidesByCategoryId: jest.fn(),
+    getGuidesByType: jest.fn(),
   } as unknown as jest.Mocked<GuideService>
-  return mock
-}
-
-const createMockCategoryService = (categories: Category[] = []): jest.Mocked<CategoryService> => {
-  const mock = {
-    getAllCategories: jest.fn().mockResolvedValue(categories),
-    getCategoryById: jest.fn(),
-  } as unknown as jest.Mocked<CategoryService>
   return mock
 }
 
@@ -36,7 +26,6 @@ describe('BrowseGuidesScreen', () => {
   const mockOnBack = jest.fn()
   const mockOnViewGuide = jest.fn()
   let mockGuideService: jest.Mocked<GuideService>
-  let mockCategoryService: jest.Mocked<CategoryService>
 
   beforeEach(() => {
     mockOnBack.mockClear()
@@ -44,7 +33,6 @@ describe('BrowseGuidesScreen', () => {
 
     // Create default mock services with empty data
     mockGuideService = createMockGuideService([])
-    mockCategoryService = createMockCategoryService([])
 
     // Mock storage
     const mockAuthStorage = {
@@ -80,7 +68,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -94,7 +81,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -108,7 +94,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -123,7 +108,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -132,42 +116,21 @@ describe('BrowseGuidesScreen', () => {
     })
   })
 
-  it('renders category filter chips', async () => {
-    const mockCategories: Category[] = [
-      {
-        id: 'baking',
-        name: 'Baking',
-        description: 'Baking guides',
-        parentId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as unknown as Category,
-      {
-        id: 'cooking',
-        name: 'Cooking',
-        description: 'Cooking guides',
-        parentId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as unknown as Category,
-    ]
-
-    mockCategoryService = createMockCategoryService(mockCategories)
-
+  it('renders type filter chips', async () => {
     const { getByTestId } = render(
       <BrowseGuidesScreen
         onBack={mockOnBack}
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
     await waitFor(() => {
       expect(getByTestId('browse-guides:chip-All Guides')).toBeDefined()
-      expect(getByTestId('browse-guides:chip-Baking')).toBeDefined()
       expect(getByTestId('browse-guides:chip-Cooking')).toBeDefined()
+      expect(getByTestId('browse-guides:chip-Workout')).toBeDefined()
+      expect(getByTestId('browse-guides:chip-General')).toBeDefined()
     })
   })
 
@@ -177,7 +140,7 @@ describe('BrowseGuidesScreen', () => {
         id: 'g1',
         title: 'Sourdough Bread',
         description: 'Master the art of sourdough',
-        categoryId: 'baking',
+        guideType: 'cooking',
         stepCount: 8,
         duration: 180,
         thumbnail: '🍞',
@@ -186,19 +149,7 @@ describe('BrowseGuidesScreen', () => {
       } as unknown as Guide,
     ]
 
-    const mockCategories: Category[] = [
-      {
-        id: 'baking',
-        name: 'Baking',
-        description: 'Baking guides',
-        parentId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as unknown as Category,
-    ]
-
     mockGuideService = createMockGuideService(mockGuides)
-    mockCategoryService = createMockCategoryService(mockCategories)
 
     const { getByTestId, queryAllByText } = render(
       <BrowseGuidesScreen
@@ -206,7 +157,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -228,7 +178,7 @@ describe('BrowseGuidesScreen', () => {
         id: 'g1',
         title: 'Some Guide',
         description: 'A guide about something',
-        categoryId: 'category1',
+        guideType: 'general',
         stepCount: 5,
         duration: 100,
         thumbnail: '📚',
@@ -238,7 +188,6 @@ describe('BrowseGuidesScreen', () => {
     ]
 
     mockGuideService = createMockGuideService(mockGuides)
-    mockCategoryService = createMockCategoryService([])
 
     const { getByTestId, queryByText } = render(
       <BrowseGuidesScreen
@@ -246,7 +195,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -267,7 +215,7 @@ describe('BrowseGuidesScreen', () => {
         id: 'g1',
         title: 'Some Guide',
         description: 'A guide',
-        categoryId: 'cat1',
+        guideType: 'cooking',
         stepCount: 5,
         duration: 100,
         thumbnail: '📚',
@@ -284,7 +232,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -308,7 +255,7 @@ describe('BrowseGuidesScreen', () => {
         id: 'g1',
         title: 'Test Guide',
         description: 'A test guide',
-        categoryId: 'cat1',
+        guideType: 'cooking',
         stepCount: 3,
         duration: 60,
         thumbnail: '📖',
@@ -325,7 +272,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -344,7 +290,6 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 

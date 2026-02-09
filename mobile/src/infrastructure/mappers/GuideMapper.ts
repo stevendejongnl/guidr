@@ -17,12 +17,13 @@ export class GuideMapper {
   static toDomain(dto: GuideDto): Guide {
     const guide = new Guide(
       dto.id,
-      dto.categoryId,
+      dto.guideType,
       dto.title,
       dto.description ?? undefined,
       dto.createdByUserId,
       dto.isPublic,
-      dto.isHighlighted
+      dto.isHighlighted,
+      dto.metadata ?? undefined
     )
 
     // Reconstruct stepIds array
@@ -40,9 +41,10 @@ export class GuideMapper {
   static toDto(guide: Guide): GuideDto {
     return {
       id: guide.id,
-      categoryId: guide.categoryId,
+      guideType: guide.guideType,
       title: guide.title,
       description: guide.description ?? null,
+      metadata: guide.metadata ?? null,
       stepIds: guide.stepIds,
       createdAt: guide.createdAt.toISOString(),
       updatedAt: guide.updatedAt.toISOString(),
@@ -56,15 +58,17 @@ export class GuideMapper {
    * Convert to API create request format.
    */
   static toCreateRequest(
-    categoryId: string,
+    guideType: string,
     title: string,
     description?: string,
-    isPublic: boolean = false
+    isPublic: boolean = false,
+    metadata?: Record<string, unknown>
   ): GuideCreateRequest {
     return {
-      categoryId,
+      guideType,
       title,
       description: description ?? null,
+      metadata: metadata ?? null,
       isPublic,
     }
   }
@@ -77,6 +81,7 @@ export class GuideMapper {
     return {
       title: guide.title,
       description: guide.description ?? null,
+      metadata: guide.metadata ?? null,
       isPublic: guide.isPublic,
       isHighlighted: guide.isHighlighted,
     }

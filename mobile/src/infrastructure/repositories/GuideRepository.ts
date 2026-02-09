@@ -15,7 +15,7 @@ import type { GuideDto, GuideCreateRequest, GuideUpdateRequest } from '../api/dt
  * Cache keys:
  * - Single: Guidr_Cache_Guide_{id}
  * - List all: Guidr_Cache_Guide_List_all
- * - List by category: Guidr_Cache_Guide_List_category_{categoryId}
+ * - List by type: Guidr_Cache_Guide_List_type_{guideType}
  */
 export class GuideRepository implements IGuideRepository {
   private readonly cache: EntityCache<GuideDto>
@@ -110,8 +110,8 @@ export class GuideRepository implements IGuideRepository {
     }
   }
 
-  async findByCategoryId(categoryId: string, authToken: string): Promise<Guide[]> {
-    const cacheKey = `List_category_${categoryId}`
+  async findByType(guideType: string, authToken: string): Promise<Guide[]> {
+    const cacheKey = `List_type_${guideType}`
 
     // Check cache first
     const cached = await this.cache.get(cacheKey)
@@ -122,7 +122,7 @@ export class GuideRepository implements IGuideRepository {
     // Fetch from API
     try {
       const response = await fetch(
-        `${this.apiBaseUrl}/guides?categoryId=${categoryId}`,
+        `${this.apiBaseUrl}/guides?guideType=${guideType}`,
         {
           method: 'GET',
           headers: {
@@ -134,7 +134,7 @@ export class GuideRepository implements IGuideRepository {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to fetch guides by category')
+        throw new Error(errorData.detail || 'Failed to fetch guides by type')
       }
 
       const dtos: GuideDto[] = await response.json()
@@ -152,7 +152,7 @@ export class GuideRepository implements IGuideRepository {
       if (error instanceof Error) {
         throw error
       }
-      throw new Error('An unexpected error occurred while fetching guides by category')
+      throw new Error('An unexpected error occurred while fetching guides by type')
     }
   }
 
@@ -186,10 +186,11 @@ export class GuideRepository implements IGuideRepository {
       } else {
         // Create new guide (POST)
         const createRequest: GuideCreateRequest = GuideMapper.toCreateRequest(
-          guide.categoryId,
+          guide.guideType,
           guide.title,
           guide.description,
-          guide.isPublic
+          guide.isPublic,
+          guide.metadata
         )
 
         const response = await fetch(`${this.apiBaseUrl}/guides`, {
@@ -214,7 +215,7 @@ export class GuideRepository implements IGuideRepository {
 
       // Invalidate list caches
       await this.cache.remove('List_all')
-      await this.cache.remove(`List_category_${guide.categoryId}`)
+      await this.cache.remove(`List_type_${guide.guideType}`)
     } catch (error) {
       if (error instanceof Error) {
         throw error
@@ -246,7 +247,7 @@ export class GuideRepository implements IGuideRepository {
       // Invalidate caches
       await this.cache.remove(id)
       await this.cache.remove('List_all')
-      // Note: We don't know the categoryId, so we can't specifically invalidate that list
+      // Note: We don't know the guideType, so we can't specifically invalidate that list
       // The TTL will eventually clear stale data
     } catch (error) {
       if (error instanceof Error) {

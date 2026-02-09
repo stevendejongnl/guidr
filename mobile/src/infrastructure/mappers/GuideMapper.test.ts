@@ -5,9 +5,10 @@ import type { GuideDto } from '../api/dtos/GuideDto'
 describe('GuideMapper', () => {
   const mockGuideDto: GuideDto = {
     id: 'guide-1',
-    categoryId: 'cat-1',
+    guideType: 'cooking',
     title: 'Chocolate Chip Cookies',
     description: 'Classic recipe',
+    metadata: { ingredients: ['flour', 'sugar'] },
     stepIds: ['step-1', 'step-2'],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
@@ -18,9 +19,10 @@ describe('GuideMapper', () => {
 
   const mockGuideDtoWithoutOwner: GuideDto = {
     id: 'guide-2',
-    categoryId: 'cat-1',
+    guideType: 'workout',
     title: 'Brownies',
     description: null,
+    metadata: null,
     stepIds: [],
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
@@ -35,9 +37,10 @@ describe('GuideMapper', () => {
 
       expect(guide).toBeInstanceOf(Guide)
       expect(guide.id).toBe('guide-1')
-      expect(guide.categoryId).toBe('cat-1')
+      expect(guide.guideType).toBe('cooking')
       expect(guide.title).toBe('Chocolate Chip Cookies')
       expect(guide.description).toBe('Classic recipe')
+      expect(guide.metadata).toEqual({ ingredients: ['flour', 'sugar'] })
       expect(guide.stepIds).toEqual(['step-1', 'step-2'])
       expect(guide.createdByUserId).toBe('user-123')
       expect(guide.isPublic).toBe(true)
@@ -49,7 +52,9 @@ describe('GuideMapper', () => {
 
       expect(guide).toBeInstanceOf(Guide)
       expect(guide.id).toBe('guide-2')
+      expect(guide.guideType).toBe('workout')
       expect(guide.createdByUserId).toBeUndefined()
+      expect(guide.metadata).toBeUndefined()
       expect(guide.isPublic).toBe(false)
       expect(guide.isHighlighted).toBe(true)
     })
@@ -60,6 +65,14 @@ describe('GuideMapper', () => {
       const guide = GuideMapper.toDomain(dtoWithNullDescription)
 
       expect(guide.description).toBeUndefined()
+    })
+
+    it('should handle null metadata', () => {
+      const dtoWithNullMetadata = { ...mockGuideDto, metadata: null }
+
+      const guide = GuideMapper.toDomain(dtoWithNullMetadata)
+
+      expect(guide.metadata).toBeUndefined()
     })
 
     it('should reconstruct stepIds array', () => {
@@ -98,37 +111,47 @@ describe('GuideMapper', () => {
     it('should convert domain entity to DTO with all fields', () => {
       const guide = new Guide(
         'guide-1',
-        'cat-1',
+        'cooking',
         'Chocolate Chip Cookies',
         'Classic recipe',
         'user-123',
         true,
-        false
+        false,
+        { ingredients: ['flour', 'sugar'] }
       )
 
       const dto = GuideMapper.toDto(guide)
 
       expect(dto.id).toBe('guide-1')
-      expect(dto.categoryId).toBe('cat-1')
+      expect(dto.guideType).toBe('cooking')
       expect(dto.title).toBe('Chocolate Chip Cookies')
       expect(dto.description).toBe('Classic recipe')
+      expect(dto.metadata).toEqual({ ingredients: ['flour', 'sugar'] })
       expect(dto.createdByUserId).toBe('user-123')
       expect(dto.isPublic).toBe(true)
       expect(dto.isHighlighted).toBe(false)
     })
 
     it('should convert null description to null in DTO', () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Title')
+      const guide = new Guide('guide-1', 'cooking', 'Title')
 
       const dto = GuideMapper.toDto(guide)
 
       expect(dto.description).toBeNull()
     })
 
+    it('should convert undefined metadata to null in DTO', () => {
+      const guide = new Guide('guide-1', 'cooking', 'Title')
+
+      const dto = GuideMapper.toDto(guide)
+
+      expect(dto.metadata).toBeNull()
+    })
+
     it('should include createdByUserId when present', () => {
       const guide = new Guide(
         'guide-1',
-        'cat-1',
+        'cooking',
         'Title',
         undefined,
         'user-456',
@@ -142,7 +165,7 @@ describe('GuideMapper', () => {
     })
 
     it('should be undefined for createdByUserId when not provided', () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Title')
+      const guide = new Guide('guide-1', 'cooking', 'Title')
 
       const dto = GuideMapper.toDto(guide)
 
@@ -150,7 +173,7 @@ describe('GuideMapper', () => {
     })
 
     it('should include ISO formatted timestamps', () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Title')
+      const guide = new Guide('guide-1', 'cooking', 'Title')
 
       const dto = GuideMapper.toDto(guide)
 
@@ -159,7 +182,7 @@ describe('GuideMapper', () => {
     })
 
     it('should preserve stepIds', () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Title')
+      const guide = new Guide('guide-1', 'cooking', 'Title')
       guide.addStep('step-1')
       guide.addStep('step-2')
 
@@ -172,21 +195,23 @@ describe('GuideMapper', () => {
   describe('toCreateRequest', () => {
     it('should create request with all fields', () => {
       const request = GuideMapper.toCreateRequest(
-        'cat-1',
+        'cooking',
         'New Recipe',
         'A tasty recipe',
-        true
+        true,
+        { ingredients: ['flour'] }
       )
 
-      expect(request.categoryId).toBe('cat-1')
+      expect(request.guideType).toBe('cooking')
       expect(request.title).toBe('New Recipe')
       expect(request.description).toBe('A tasty recipe')
+      expect(request.metadata).toEqual({ ingredients: ['flour'] })
       expect(request.isPublic).toBe(true)
     })
 
     it('should convert undefined description to null', () => {
       const request = GuideMapper.toCreateRequest(
-        'cat-1',
+        'cooking',
         'New Recipe',
         undefined,
         false
@@ -195,15 +220,24 @@ describe('GuideMapper', () => {
       expect(request.description).toBeNull()
     })
 
+    it('should convert undefined metadata to null', () => {
+      const request = GuideMapper.toCreateRequest(
+        'cooking',
+        'New Recipe'
+      )
+
+      expect(request.metadata).toBeNull()
+    })
+
     it('should default isPublic to false', () => {
-      const request = GuideMapper.toCreateRequest('cat-1', 'New Recipe')
+      const request = GuideMapper.toCreateRequest('cooking', 'New Recipe')
 
       expect(request.isPublic).toBe(false)
     })
 
     it('should allow isPublic true', () => {
       const request = GuideMapper.toCreateRequest(
-        'cat-1',
+        'cooking',
         'New Recipe',
         'Description',
         true
@@ -214,35 +248,45 @@ describe('GuideMapper', () => {
   })
 
   describe('toUpdateRequest', () => {
-    it('should convert guide to update request with visibility and highlight fields', () => {
+    it('should convert guide to update request with all mutable fields', () => {
       const guide = new Guide(
         'guide-1',
-        'cat-1',
+        'cooking',
         'Updated Title',
         'Updated description',
         'user-123',
         true,
-        false
+        false,
+        { ingredients: ['butter'] }
       )
 
       const request = GuideMapper.toUpdateRequest(guide)
 
       expect(request.title).toBe('Updated Title')
       expect(request.description).toBe('Updated description')
+      expect(request.metadata).toEqual({ ingredients: ['butter'] })
       expect(request.isPublic).toBe(true)
       expect(request.isHighlighted).toBe(false)
     })
 
     it('should convert null description to null in update request', () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Title')
+      const guide = new Guide('guide-1', 'cooking', 'Title')
 
       const request = GuideMapper.toUpdateRequest(guide)
 
       expect(request.description).toBeNull()
     })
 
+    it('should convert undefined metadata to null in update request', () => {
+      const guide = new Guide('guide-1', 'cooking', 'Title')
+
+      const request = GuideMapper.toUpdateRequest(guide)
+
+      expect(request.metadata).toBeNull()
+    })
+
     it('should include all mutable fields', () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Title')
+      const guide = new Guide('guide-1', 'cooking', 'Title')
       guide.makePublic()
       guide.highlight()
 
@@ -250,6 +294,7 @@ describe('GuideMapper', () => {
 
       expect(request).toHaveProperty('title')
       expect(request).toHaveProperty('description')
+      expect(request).toHaveProperty('metadata')
       expect(request).toHaveProperty('isPublic')
       expect(request).toHaveProperty('isHighlighted')
     })

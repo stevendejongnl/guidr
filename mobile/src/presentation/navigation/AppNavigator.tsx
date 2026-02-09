@@ -16,8 +16,6 @@ import { AdminScreen } from '../screens/AdminScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
 import { ProfileScreen } from '../screens/ProfileScreen'
 import { SessionExecutionScreen } from '../screens/SessionExecutionScreen'
-import { CategoryListScreen } from '../screens/CategoryListScreen'
-import { CategoryFormScreen } from '../screens/CategoryFormScreen'
 import { GuideListScreen } from '../screens/GuideListScreen'
 import { GuideFormScreen } from '../screens/GuideFormScreen'
 import { BrowseGuidesScreen } from '../screens/BrowseGuidesScreen'
@@ -32,12 +30,10 @@ import { UpdateService, UpdateCheckResult } from '../../domain/services/UpdateSe
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
-import { CategoryService } from '../../domain/services/CategoryService'
 import { StepService } from '../../domain/services/StepService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
-import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
@@ -63,14 +59,9 @@ export const AppNavigator: React.FC = () => {
   const [showSessionExecution, setShowSessionExecution] = useState(false)
   const [executingSessionId, setExecutingSessionId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
-  const [showCategoryList, setShowCategoryList] = useState(false)
-  const [categoryFormMode, setCategoryFormMode] = useState<'create' | 'edit' | null>(null)
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
-  const [selectedCategoryParentId, setSelectedCategoryParentId] = useState<string | null>(null)
   const [showGuideList, setShowGuideList] = useState(false)
   const [guideFormMode, setGuideFormMode] = useState<'create' | 'edit' | null>(null)
   const [editingGuideId, setEditingGuideId] = useState<string | null>(null)
-  const [selectedGuideCategoryId, setSelectedGuideCategoryId] = useState<string | null>(null)
   const [showBrowseGuides, setShowBrowseGuides] = useState(false)
   const [showGuideDetail, setShowGuideDetail] = useState(false)
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
@@ -91,7 +82,6 @@ export const AppNavigator: React.FC = () => {
   const servicesRef = React.useRef<{
     guide: GuideService
     session: SessionService
-    category: CategoryService
     step: StepService
   } | null>(null)
 
@@ -204,12 +194,10 @@ export const AppNavigator: React.FC = () => {
       const guideRepository = new GuideRepository(serverUrl)
       const sessionRepository = new SessionRepository(serverUrl)
       const stepRepository = new StepRepository(serverUrl)
-      const categoryRepository = new CategoryRepository(serverUrl)
 
       servicesRef.current = {
         guide: new GuideService(guideRepository, stepRepository),
         session: new SessionService(sessionRepository, guideRepository, stepRepository),
-        category: new CategoryService(categoryRepository),
         step: new StepService(stepRepository),
       }
     }
@@ -332,43 +320,11 @@ export const AppNavigator: React.FC = () => {
     setShowGuideDetail(true)
   }
 
-  const handleBrowseCategories = () => {
-    setShowCategoryList(true)
-    setEditingCategoryId(null)
-    setCategoryFormMode(null)
-  }
-
-  const handleCreateCategory = () => {
-    setCategoryFormMode('create')
-    setEditingCategoryId(null)
-    setSelectedCategoryParentId(null)
-  }
-
-  const handleEditCategory = (categoryId: string) => {
-    setEditingCategoryId(categoryId)
-    setCategoryFormMode('edit')
-  }
-
-  const handleCategoryFormSave = () => {
-    setCategoryFormMode(null)
-    setEditingCategoryId(null)
-  }
-
-  const handleCategoryFormCancel = () => {
-    setCategoryFormMode(null)
-    setEditingCategoryId(null)
-  }
-
-  const handleCategoryListBack = () => {
-    setShowCategoryList(false)
-  }
-
   const handleManageGuides = () => {
     setShowGuideList(true)
   }
 
-  const handleCreateGuide = (categoryId?: string) => {
-    setSelectedGuideCategoryId(categoryId || null)
+  const handleCreateGuide = () => {
     setGuideFormMode('create')
   }
 
@@ -395,7 +351,6 @@ export const AppNavigator: React.FC = () => {
     setGuideFormMode(null)
     setEditingGuideId(null)
     setEditingGuideOwnerId(null)
-    setSelectedGuideCategoryId(null)
     setShowGuideList(true)
   }
 
@@ -403,7 +358,6 @@ export const AppNavigator: React.FC = () => {
     setGuideFormMode(null)
     setEditingGuideId(null)
     setEditingGuideOwnerId(null)
-    setSelectedGuideCategoryId(null)
   }
 
   const handleViewGuide = (guideId: string) => {
@@ -667,7 +621,6 @@ export const AppNavigator: React.FC = () => {
       <GuideFormScreen
         mode={guideFormMode}
         {...(editingGuideId && { guideId: editingGuideId })}
-        {...(selectedGuideCategoryId && { categoryId: selectedGuideCategoryId })}
         onSave={handleGuideFormSave}
         onCancel={handleGuideFormCancel}
         isAdmin={isAdmin}
@@ -683,18 +636,6 @@ export const AppNavigator: React.FC = () => {
         onEditGuide={handleEditGuide}
         onViewGuide={handleViewGuide}
         onBack={handleGuideListBack}
-      />
-    )
-  }
-
-  if (categoryFormMode && serverUrl) {
-    return (
-      <CategoryFormScreen
-        mode={categoryFormMode}
-        {...(editingCategoryId && { categoryId: editingCategoryId })}
-        parentId={selectedCategoryParentId}
-        onSave={handleCategoryFormSave}
-        onCancel={handleCategoryFormCancel}
       />
     )
   }
@@ -749,18 +690,7 @@ export const AppNavigator: React.FC = () => {
         onViewGuide={handleBrowseGuidesViewGuide}
         {...(servicesRef.current && {
           guideService: servicesRef.current.guide,
-          categoryService: servicesRef.current.category,
         })}
-      />
-    )
-  }
-
-  if (showCategoryList) {
-    return (
-      <CategoryListScreen
-        onCreateCategory={handleCreateCategory}
-        onEditCategory={handleEditCategory}
-        onBack={handleCategoryListBack}
       />
     )
   }
@@ -772,14 +702,12 @@ export const AppNavigator: React.FC = () => {
       onOpenProfile={() => setShowProfileScreen(true)}
       onBrowseGuides={handleBrowseGuides}
       onManageGuides={handleManageGuides}
-      onBrowseCategories={handleBrowseCategories}
       onViewSessionDetail={handleViewSessionDetail}
       onViewGuideDetail={handleViewGuide}
       isAdmin={isAdmin}
       {...(servicesRef.current && {
         guideService: servicesRef.current.guide,
         sessionService: servicesRef.current.session,
-        categoryService: servicesRef.current.category,
       })}
     />
   )

@@ -1,7 +1,6 @@
 """Domain events."""
 
 from .base import BaseDomainEvent
-from .category_events import CategoryCreated, CategoryDeleted, CategoryUpdated
 from .guide_events import (
     GuideCreated,
     GuideDeleted,
@@ -35,10 +34,6 @@ __all__ = [
     "UserPasswordChanged",
     "UserRoleChanged",
     "UserPromotedToAdmin",
-    # Category events
-    "CategoryCreated",
-    "CategoryUpdated",
-    "CategoryDeleted",
     # Guide events
     "GuideCreated",
     "GuideUpdated",

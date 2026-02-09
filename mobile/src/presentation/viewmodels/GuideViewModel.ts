@@ -1,9 +1,10 @@
 import { Guide } from '../../domain/entities/Guide'
+import { GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 
 export interface GuideViewModel {
   // Domain fields
   id: string
-  categoryId: string
+  guideType: string
   title: string
   description?: string
   stepCount: number
@@ -14,7 +15,7 @@ export interface GuideViewModel {
   isHighlighted: boolean
 
   // UI-specific fields
-  categoryName: string
+  guideTypeLabel: string
   thumbnailEmoji: string
 
   // Future features (currently optional)
@@ -49,11 +50,13 @@ function generateThumbnailEmoji(title: string): string {
   return emojis[index] ?? '📚'
 }
 
-export function createGuideViewModel(guide: Guide, categoryName: string): GuideViewModel {
+export function createGuideViewModel(guide: Guide): GuideViewModel {
+  const guideTypeLabel = GUIDE_TYPE_LABELS[guide.guideType as GuideType] || guide.guideType
+
   const vm: GuideViewModel = {
     // Domain fields
     id: guide.id,
-    categoryId: guide.categoryId,
+    guideType: guide.guideType,
     title: guide.title,
     stepCount: guide.stepCount,
     createdAt: guide.createdAt,
@@ -63,7 +66,7 @@ export function createGuideViewModel(guide: Guide, categoryName: string): GuideV
     isHighlighted: guide.isHighlighted,
 
     // UI-specific fields
-    categoryName,
+    guideTypeLabel,
     thumbnailEmoji: generateThumbnailEmoji(guide.title),
   }
 

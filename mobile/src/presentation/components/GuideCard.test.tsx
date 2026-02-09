@@ -8,8 +8,8 @@ describe('GuideCard', () => {
     id: 'g1',
     title: 'Perfect Sourdough Bread',
     description: 'Master the art of sourdough with this step-by-step guide to creating artisan bread.',
-    categoryId: 'baking',
-    categoryName: 'Baking',
+    guideType: 'cooking',
+    guideTypeLabel: 'Cooking',
     stepCount: 8,
     duration: 180,
     thumbnailEmoji: '🍞',
@@ -37,14 +37,14 @@ describe('GuideCard', () => {
     expect(getByText('🍞')).toBeDefined()
   })
 
-  it('shows step count, duration, and category metadata', () => {
+  it('shows step count, duration, and guide type metadata', () => {
     const { getByText } = render(
       <GuideCard guide={mockGuide} testID="guide-card" />,
     )
 
     expect(getByText(/8 steps/)).toBeDefined()
     expect(getByText(/3h 0m/)).toBeDefined()
-    expect(getByText(/Baking/)).toBeDefined()
+    expect(getByText(/Cooking/)).toBeDefined()
   })
 
   it('calls onPress callback when pressed', () => {
@@ -80,7 +80,7 @@ describe('GuideCard', () => {
     const cookingGuide = {
       ...mockGuide,
       thumbnailEmoji: '🍳',
-      categoryName: 'Cooking',
+      guideTypeLabel: 'Cooking',
     }
 
     const { getByText } = render(

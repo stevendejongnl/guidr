@@ -19,7 +19,7 @@ class AuditLog:
     event_id: str  # Original domain event ID (for deduplication)
     occurred_at: datetime  # When event occurred
     user_id: str | None  # User who triggered event (None = system)
-    resource_type: str | None  # Entity type (e.g., "guide", "category")
+    resource_type: str | None  # Entity type (e.g., "guide", "session")
     resource_id: str | None  # Entity ID
     action: str  # Human-readable action (e.g., "created", "deleted")
     details: dict[str, Any]  # Event-specific data (JSON-serializable)
@@ -32,5 +32,5 @@ class AuditLog:
         """Check if action was performed by admin."""
         return (
             self.action in ["deleted", "updated"]
-            and self.resource_type in ["guide", "category"]
+            and self.resource_type in ["guide", "step"]
         )

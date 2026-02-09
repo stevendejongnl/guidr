@@ -3,7 +3,6 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { HomeScreen } from './HomeScreen'
 import { Guide } from '../../domain/entities/Guide'
 import { Session, SessionStatus } from '../../domain/entities/Session'
-import { Category } from '../../domain/entities/Category'
 import { AuthenticationError } from '../../common/ApiErrorUtils'
 import {
   createMockAuthStorage,
@@ -11,7 +10,6 @@ import {
   createMockAuthClient,
   createMockGuideService,
   createMockSessionService,
-  createMockCategoryService,
 } from '../testUtils'
 
 describe('HomeScreen', () => {
@@ -20,7 +18,6 @@ describe('HomeScreen', () => {
   let mockOnOpenProfile: jest.Mock
   let mockGuideService: jest.Mocked<ReturnType<typeof createMockGuideService>>
   let mockSessionService: jest.Mocked<ReturnType<typeof createMockSessionService>>
-  let mockCategoryService: jest.Mocked<ReturnType<typeof createMockCategoryService>>
   let mockAuthStorage: jest.Mocked<ReturnType<typeof createMockAuthStorage>>
   let mockServerConfigStorage: jest.Mocked<ReturnType<typeof createMockServerConfigStorage>>
   let mockAuthClient: jest.Mocked<ReturnType<typeof createMockAuthClient>>
@@ -38,7 +35,6 @@ describe('HomeScreen', () => {
     // Create mock services
     mockGuideService = createMockGuideService([])
     mockSessionService = createMockSessionService([])
-    mockCategoryService = createMockCategoryService([])
   })
 
   describe('rendering', () => {
@@ -51,7 +47,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -73,7 +68,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -93,7 +87,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -112,7 +105,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -120,46 +112,6 @@ describe('HomeScreen', () => {
       )
 
       expect(getByText('Browse Guides')).toBeTruthy()
-      expect(getByText('My Guides')).toBeTruthy()
-    })
-
-    it('should render Browse Categories button only for admins', () => {
-      const { queryByText } = render(
-        <HomeScreen
-          onLogout={mockOnLogout}
-          onOpenSettings={mockOnOpenSettings}
-          onOpenProfile={mockOnOpenProfile}
-          isAdmin={false}
-          guideService={mockGuideService}
-          sessionService={mockSessionService}
-          categoryService={mockCategoryService}
-          authStorage={mockAuthStorage}
-          serverConfigStorage={mockServerConfigStorage}
-          authClient={mockAuthClient}
-        />
-      )
-
-      expect(queryByText('Browse Categories')).toBeFalsy()
-    })
-
-    it('should render all buttons for admin users', () => {
-      const { getByText } = render(
-        <HomeScreen
-          onLogout={mockOnLogout}
-          onOpenSettings={mockOnOpenSettings}
-          onOpenProfile={mockOnOpenProfile}
-          isAdmin={true}
-          guideService={mockGuideService}
-          sessionService={mockSessionService}
-          categoryService={mockCategoryService}
-          authStorage={mockAuthStorage}
-          serverConfigStorage={mockServerConfigStorage}
-          authClient={mockAuthClient}
-        />
-      )
-
-      expect(getByText('Browse Guides')).toBeTruthy()
-      expect(getByText('Browse Categories')).toBeTruthy()
       expect(getByText('My Guides')).toBeTruthy()
     })
   })
@@ -174,7 +126,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -198,7 +149,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -226,7 +176,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -249,7 +198,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -268,7 +216,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -290,7 +237,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -311,7 +257,7 @@ describe('HomeScreen', () => {
           id: 'g1',
           title: 'Perfect Sourdough Bread',
           description: 'Master the art of sourdough',
-          categoryId: 'baking',
+          guideType: 'cooking',
           stepCount: 8,
           duration: 180,
           thumbnail: '🍞',
@@ -348,7 +294,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -368,7 +313,7 @@ describe('HomeScreen', () => {
           id: 'g1',
           title: 'Guide Title',
           description: 'Master the art of something',
-          categoryId: 'category1',
+          guideType: 'general',
           stepCount: 8,
           duration: 180,
           thumbnail: '🎯',
@@ -398,7 +343,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -416,7 +360,7 @@ describe('HomeScreen', () => {
           id: 'g1',
           title: 'Perfect Sourdough Bread',
           description: 'Master the art of sourdough',
-          categoryId: 'baking',
+          guideType: 'cooking',
           stepCount: 8,
           duration: 180,
           thumbnail: '🍞',
@@ -425,19 +369,7 @@ describe('HomeScreen', () => {
         } as unknown as Guide,
       ]
 
-      const mockCategories: Category[] = [
-        {
-          id: 'baking',
-          name: 'Baking',
-          description: 'Baking guides',
-          parentId: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as unknown as Category,
-      ]
-
       mockGuideService = createMockGuideService(mockGuides)
-      mockCategoryService = createMockCategoryService(mockCategories)
 
       const { getByText } = render(
         <HomeScreen
@@ -447,7 +379,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -473,7 +404,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
         />
       )
 
@@ -492,31 +422,11 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
         />
       )
 
       fireEvent.press(getByText('My Guides'))
       expect(mockOnManageGuides).toHaveBeenCalledTimes(1)
-    })
-
-    it('should call onBrowseCategories when Browse Categories button is pressed', () => {
-      const mockOnBrowseCategories = jest.fn()
-      const { getByText } = render(
-        <HomeScreen
-          onLogout={mockOnLogout}
-          onOpenSettings={mockOnOpenSettings}
-          onOpenProfile={mockOnOpenProfile}
-          onBrowseCategories={mockOnBrowseCategories}
-          isAdmin={true}
-          guideService={mockGuideService}
-          sessionService={mockSessionService}
-          categoryService={mockCategoryService}
-        />
-      )
-
-      fireEvent.press(getByText('Browse Categories'))
-      expect(mockOnBrowseCategories).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -562,7 +472,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -596,7 +505,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}
@@ -622,7 +530,6 @@ describe('HomeScreen', () => {
           isAdmin={false}
           guideService={mockGuideService}
           sessionService={mockSessionService}
-          categoryService={mockCategoryService}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
           authClient={mockAuthClient}

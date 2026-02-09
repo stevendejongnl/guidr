@@ -47,7 +47,7 @@ async def query_audit_logs(
 
     Query parameters:
     - userId: Filter by user ID
-    - resourceType: Filter by resource type (guide, category, session, etc.)
+    - resourceType: Filter by resource type (guide, session, step, etc.)
     - resourceId: Filter by resource ID (must be used with resourceType)
     - startDate: Filter by start date (ISO format)
     - endDate: Filter by end date (ISO format)

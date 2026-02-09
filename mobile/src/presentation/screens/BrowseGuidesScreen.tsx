@@ -9,10 +9,9 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native'
-import { colors, spacing, typography } from '@guidr/shared/tokens'
+import { colors, spacing, typography, borderRadius, componentDefaults } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { SearchBar } from '../components/SearchBar'
-import { CategoryChip } from '../components/CategoryChip'
 import { GuideCard } from '../components/GuideCard'
 import { EmptyState } from '../components/EmptyState'
 import { NodeProgressIndicator } from '../components/NodeProgressIndicator'
@@ -20,11 +19,10 @@ import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewMod
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { GuideService } from '../../domain/services/GuideService'
-import { CategoryService } from '../../domain/services/CategoryService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
-import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
+import { ALL_GUIDE_TYPES, GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 
 interface BrowseGuidesScreenProps {
   onBack: () => void
@@ -32,7 +30,6 @@ interface BrowseGuidesScreenProps {
   testID?: string
   // Optional dependencies (for testing/DI)
   guideService?: GuideService
-  categoryService?: CategoryService
 }
 
 export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
@@ -40,12 +37,10 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   onViewGuide,
   testID,
   guideService: injectedGuideService,
-  categoryService: injectedCategoryService,
 }) => {
   const [searchText, setSearchText] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('All Guides')
+  const [selectedType, setSelectedType] = useState<GuideType | 'all'>('all')
   const [guides, setGuides] = useState<GuideViewModel[]>([])
-  const [categories, setCategories] = useState<string[]>(['All Guides'])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -56,7 +51,6 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   // Initialize services (use injected or create new)
   const servicesRef = React.useRef<{
     guideService: GuideService
-    categoryService: CategoryService
   } | null>(null)
 
   const getServices = (serverUrl: string) => {
@@ -64,21 +58,18 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
       return servicesRef.current
     }
 
-    if (injectedGuideService && injectedCategoryService) {
+    if (injectedGuideService) {
       servicesRef.current = {
         guideService: injectedGuideService,
-        categoryService: injectedCategoryService,
       }
       return servicesRef.current
     }
 
     const guideRepository = new GuideRepository(serverUrl)
     const stepRepository = new StepRepository(serverUrl)
-    const categoryRepository = new CategoryRepository(serverUrl)
 
     servicesRef.current = {
       guideService: new GuideService(guideRepository, stepRepository),
-      categoryService: new CategoryService(categoryRepository),
     }
     return servicesRef.current
   }
@@ -103,30 +94,15 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
       // Get services
       const services = getServices(serverUrl)
 
-      // Load guides and categories in parallel
-      const [allGuides, allCategories] = await Promise.all([
-        services.guideService.getAllGuides(authToken),
-        services.categoryService.getAllCategories(authToken),
-      ])
+      // Load guides
+      const allGuides = await services.guideService.getAllGuides(authToken)
 
       // Convert guides to view models
-      const guideViewModels: GuideViewModel[] = allGuides.map(guide => {
-        const category = allCategories.find(c => c.id === guide.categoryId)
-        return createGuideViewModel(guide, category?.name || 'Uncategorized')
-      })
+      const guideViewModels: GuideViewModel[] = allGuides.map(guide =>
+        createGuideViewModel(guide)
+      )
 
       setGuides(guideViewModels)
-
-      // Extract unique category names and prepend "All Guides"
-      const categoryNames = Array.from(
-        new Set(allCategories.map(c => c.name))
-      ).sort()
-      setCategories(['All Guides', ...categoryNames])
-
-      // Reset category filter if it's no longer available
-      if (selectedCategory !== 'All Guides' && !categoryNames.includes(selectedCategory)) {
-        setSelectedCategory('All Guides')
-      }
     } catch (err) {
       ErrorReporter.capture(err, { component: 'BrowseGuidesScreen', action: 'loadData' })
       console.error('Failed to load guides:', err)
@@ -147,19 +123,23 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
     await loadData()
   }
 
-  // Filter guides based on search and category
+  // Filter guides based on search and type
   const filteredGuides = useMemo(() => {
     return guides.filter(guide => {
       const matchesSearch =
         guide.title.toLowerCase().includes(searchText.toLowerCase()) ||
         (guide.description && guide.description.toLowerCase().includes(searchText.toLowerCase()))
 
-      const matchesCategory =
-        selectedCategory === 'All Guides' || guide.categoryName === selectedCategory
+      const matchesType =
+        selectedType === 'all' || guide.guideType === selectedType
 
-      return matchesSearch && matchesCategory
+      return matchesSearch && matchesType
     })
-  }, [guides, searchText, selectedCategory])
+  }, [guides, searchText, selectedType])
+
+  const selectedTypeLabel = selectedType === 'all'
+    ? 'All Guides'
+    : GUIDE_TYPE_LABELS[selectedType]
 
   // Show loading state
   if (isLoading && !refreshing) {
@@ -212,21 +192,33 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
           />
         </View>
 
-        {/* Category Filter Chips */}
+        {/* Type Filter Chips */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.categorySection}
-          contentContainerStyle={styles.categoryChipsContainer}
+          style={styles.filterSection}
+          contentContainerStyle={styles.filterChipsContainer}
         >
-          {categories.map(category => (
-            <CategoryChip
-              key={category}
-              label={category}
-              selected={selectedCategory === category}
-              onPress={() => setSelectedCategory(category)}
-              testID={`${testID}:chip-${category}`}
-            />
+          <TouchableOpacity
+            style={[styles.filterChip, selectedType === 'all' && styles.filterChipSelected]}
+            onPress={() => setSelectedType('all')}
+            testID={`${testID}:chip-All Guides`}
+          >
+            <Text style={[styles.filterChipLabel, selectedType === 'all' && styles.filterChipLabelSelected]}>
+              All Guides
+            </Text>
+          </TouchableOpacity>
+          {ALL_GUIDE_TYPES.map(type => (
+            <TouchableOpacity
+              key={type}
+              style={[styles.filterChip, selectedType === type && styles.filterChipSelected]}
+              onPress={() => setSelectedType(type)}
+              testID={`${testID}:chip-${GUIDE_TYPE_LABELS[type]}`}
+            >
+              <Text style={[styles.filterChipLabel, selectedType === type && styles.filterChipLabelSelected]}>
+                {GUIDE_TYPE_LABELS[type]}
+              </Text>
+            </TouchableOpacity>
           ))}
         </ScrollView>
 
@@ -235,9 +227,9 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
           {filteredGuides.length > 0 ? (
             <>
               <Text style={styles.sectionTitle}>
-                {selectedCategory === 'All Guides'
+                {selectedType === 'all'
                   ? 'Popular Guides'
-                  : `${selectedCategory} Guides`}
+                  : `${selectedTypeLabel} Guides`}
               </Text>
               {filteredGuides.map(guide => (
                 <GuideCard
@@ -252,11 +244,11 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
             <View style={styles.emptyStateContainer}>
               <EmptyState
                 icon="📭"
-                message={`No guides found for "${searchText}" in ${selectedCategory}`}
+                message={`No guides found for "${searchText}" in ${selectedTypeLabel}`}
                 actionLabel="Reset Filters"
                 onAction={() => {
                   setSearchText('')
-                  setSelectedCategory('All Guides')
+                  setSelectedType('all')
                 }}
               />
             </View>
@@ -308,15 +300,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.lg,
   },
-  categorySection: {
+  filterSection: {
     paddingLeft: spacing.xl,
     paddingBottom: spacing.lg,
     marginBottom: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  categoryChipsContainer: {
+  filterChipsContainer: {
     paddingRight: spacing.xl,
+  },
+  filterChip: {
+    height: componentDefaults.chipHeight,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.textTertiary,
+  },
+  filterChipSelected: {
+    backgroundColor: colors.buttonPrimary,
+    borderWidth: 0,
+    borderColor: 'transparent',
+  },
+  filterChipLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightMedium,
+    color: colors.textSecondary,
+  },
+  filterChipLabelSelected: {
+    color: colors.textPrimary,
   },
   guidesSection: {
     paddingHorizontal: spacing.xl,

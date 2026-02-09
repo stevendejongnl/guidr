@@ -39,7 +39,7 @@ export const validateStoredAuthToken = typia.createAssert<StoredAuthToken>()
 
 /**
  * Generic cached data validator helper
- * Usage: createCachedDataValidator<CategoryDto>(validateCategoryDto)
+ * Usage: createCachedDataValidator<GuideDto>(validateGuideDto)
  *
  * Note: This function signature exists for API compatibility and type inference.
  * The actual validation is performed on CachedData<T> which includes the data field.

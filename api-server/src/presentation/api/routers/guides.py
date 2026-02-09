@@ -9,7 +9,7 @@ from src.application.use_cases.guide import (
     DeleteGuide,
     GetAllGuides,
     GetGuide,
-    GetGuidesByCategory,
+    GetGuidesByType,
     UpdateGuide,
 )
 from src.container import Container
@@ -52,9 +52,9 @@ def get_get_all_guides_use_case() -> GetAllGuides:
     return _container.get_all_guides_use_case()
 
 
-def get_get_guides_by_category_use_case() -> GetGuidesByCategory:
+def get_get_guides_by_type_use_case() -> GetGuidesByType:
     assert _container is not None, "Container not initialized"
-    return _container.get_guides_by_category_use_case()
+    return _container.get_guides_by_type_use_case()
 
 
 def get_update_guide_use_case() -> UpdateGuide:
@@ -71,9 +71,10 @@ def _guide_response_from_dto(result) -> GuideResponse:  # type: ignore
     """Convert GuideResponseDTO to GuideResponse Pydantic model."""
     return GuideResponse(
         id=result.id,
-        categoryId=result.category_id,
+        guideType=result.guide_type,
         title=result.title,
         description=result.description,
+        metadata=result.metadata,
         stepIds=result.step_ids,
         createdByUserId=result.created_by_user_id,
         isPublic=result.is_public,
@@ -97,14 +98,15 @@ async def create_guide(
     """Create a new guide."""
     try:
         dto = GuideCreateDTO(
-            category_id=guide.category_id,
+            guide_type=guide.guide_type,
             title=guide.title,
             description=guide.description,
+            metadata=guide.metadata,
             is_public=guide.is_public,
         )
         result = await use_case.execute(dto, current_user)  # type: ignore[call-arg]
         return _guide_response_from_dto(result)
-    except ValidationException as e:
+    except (ValidationException, ValueError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
@@ -141,18 +143,18 @@ async def get_guide(
 
 @router.get("", response_model=list[GuideResponse])
 async def list_guides(
-    category_id: str | None = None,
+    guide_type: str | None = None,
     my_guides: bool = False,
     highlighted: bool = False,
     use_case_all: GetAllGuides = Depends(get_get_all_guides_use_case),
-    use_case_by_category: GetGuidesByCategory = Depends(
-        get_get_guides_by_category_use_case
+    use_case_by_type: GetGuidesByType = Depends(
+        get_get_guides_by_type_use_case
     ),
     current_user: User | None = Depends(get_optional_current_user),
 ) -> list[GuideResponse]:
-    """List guides (filtered by visibility) with optional category filter."""
-    if category_id:
-        results = await use_case_by_category.execute(category_id, current_user)  # type: ignore[call-arg]
+    """List guides (filtered by visibility) with optional type filter."""
+    if guide_type:
+        results = await use_case_by_type.execute(guide_type, current_user)  # type: ignore[call-arg]
     else:
         results = await use_case_all.execute(current_user)  # type: ignore[call-arg]
 

@@ -5,7 +5,6 @@ import {
   createMockAuthStorage,
   createMockServerConfigStorage,
   createMockGuideService,
-  createMockCategoryService,
 } from '../testUtils'
 
 // Mock only ErrorReporter (static utility)
@@ -17,7 +16,6 @@ describe('GuideListScreen', () => {
   const mockOnViewGuide = jest.fn()
   const mockOnBack = jest.fn()
   let mockGuideService: ReturnType<typeof createMockGuideService>
-  let mockCategoryService: ReturnType<typeof createMockCategoryService>
   let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
   let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
 
@@ -28,7 +26,6 @@ describe('GuideListScreen', () => {
     mockAuthStorage = createMockAuthStorage()
     mockServerConfigStorage = createMockServerConfigStorage()
     mockGuideService = createMockGuideService([])
-    mockCategoryService = createMockCategoryService([])
   })
 
   it('renders guide list screen without errors', () => {
@@ -39,7 +36,6 @@ describe('GuideListScreen', () => {
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
@@ -55,7 +51,6 @@ describe('GuideListScreen', () => {
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
@@ -71,7 +66,6 @@ describe('GuideListScreen', () => {
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
@@ -87,7 +81,6 @@ describe('GuideListScreen', () => {
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
@@ -103,7 +96,6 @@ describe('GuideListScreen', () => {
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
@@ -120,29 +112,11 @@ describe('GuideListScreen', () => {
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
     )
     fireEvent.press(getByText('+ New'))
     expect(mockOnCreateGuide).toHaveBeenCalled()
-  })
-
-  it('accepts optional category filter', () => {
-    render(
-      <GuideListScreen
-        categoryId="cat-1"
-        onCreateGuide={mockOnCreateGuide}
-        onEditGuide={mockOnEditGuide}
-        onViewGuide={mockOnViewGuide}
-        onBack={mockOnBack}
-        guideService={mockGuideService}
-        categoryService={mockCategoryService}
-        authStorage={mockAuthStorage}
-        serverConfigStorage={mockServerConfigStorage}
-      />
-    )
-    expect(mockOnCreateGuide).toBeDefined()
   })
 })

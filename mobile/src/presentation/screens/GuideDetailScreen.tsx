@@ -13,8 +13,7 @@ import { GuideService } from '../../domain/services/GuideService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { StepService } from '../../domain/services/StepService'
-import { CategoryService } from '../../domain/services/CategoryService'
-import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
+import { GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
@@ -33,7 +32,6 @@ interface GuideDetailScreenProps {
   isAdmin?: boolean
   stepService?: StepService
   guideService?: GuideService
-  categoryService?: CategoryService
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
   testID?: string
@@ -48,13 +46,12 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   isAdmin = false,
   stepService: injectedStepService,
   guideService: injectedGuideService,
-  categoryService: injectedCategoryService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
   testID,
 }) => {
   const [guide, setGuide] = useState<Guide | null>(null)
-  const [categoryName, setCategoryName] = useState<string>('')
+  const [guideTypeLabel, setGuideTypeLabel] = useState<string>('')
   const [steps, setSteps] = useState<Step[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingSteps, setLoadingSteps] = useState(false)
@@ -68,7 +65,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const servicesRef = React.useRef<{
     guideService: GuideService
     stepService: StepService
-    categoryService: CategoryService
   } | null>(null)
 
   const getServices = (serverUrl: string) => {
@@ -76,23 +72,20 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       return servicesRef.current
     }
 
-    if (injectedGuideService && injectedStepService && injectedCategoryService) {
+    if (injectedGuideService && injectedStepService) {
       servicesRef.current = {
         guideService: injectedGuideService,
         stepService: injectedStepService,
-        categoryService: injectedCategoryService,
       }
       return servicesRef.current
     }
 
     const guideRepository = new GuideRepository(serverUrl)
     const stepRepository = new StepRepository(serverUrl)
-    const categoryRepository = new CategoryRepository(serverUrl)
 
     servicesRef.current = {
       guideService: new GuideService(guideRepository, stepRepository),
       stepService: new StepService(stepRepository),
-      categoryService: new CategoryService(categoryRepository),
     }
     return servicesRef.current
   }
@@ -105,7 +98,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   useEffect(() => {
     loadGuideDetail()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guideId, injectedGuideService, injectedStepService, injectedCategoryService])
+  }, [guideId, injectedGuideService, injectedStepService])
 
   const loadGuideDetail = async () => {
     try {
@@ -137,9 +130,9 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       const canEdit = Boolean(isAdmin || (userId && loadedGuide.isOwnedBy(userId)))
       setCanEditSteps(canEdit)
 
-      // Load category name
-      const category = await services.categoryService.getCategoryById(loadedGuide.categoryId, authToken)
-      setCategoryName(category?.name || 'Unknown')
+      // Derive guide type label
+      const label = GUIDE_TYPE_LABELS[loadedGuide.guideType as GuideType] || loadedGuide.guideType
+      setGuideTypeLabel(label)
 
       // Load steps if service is available
       if (injectedStepService || servicesRef.current) {
@@ -340,7 +333,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
         {/* Guide Content */}
         <View style={styles.content}>
           <Text style={styles.title}>{guide.title}</Text>
-          <Text style={styles.category}>{categoryName}</Text>
+          <Text style={styles.guideType}>{guideTypeLabel}</Text>
           {guide.description && (
             <Text style={styles.description}>{guide.description}</Text>
           )}
@@ -454,7 +447,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  category: {
+  guideType: {
     fontSize: typography.sizeSm,
     color: colors.primary,
     fontWeight: typography.weightSemibold,

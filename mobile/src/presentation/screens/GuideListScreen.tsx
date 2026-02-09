@@ -11,11 +11,8 @@ import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { GuideService } from '../../domain/services/GuideService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
-import { CategoryService } from '../../domain/services/CategoryService'
-import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { Guide } from '../../domain/entities/Guide'
-import { Category } from '../../domain/entities/Category'
 import { SafeScreen } from '../components/SafeScreen'
 import { GuideCard } from '../components/GuideCard'
 import { SearchBar } from '../components/SearchBar'
@@ -26,30 +23,25 @@ import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
 interface GuideListScreenProps {
-  categoryId?: string
-  onCreateGuide: (categoryId?: string) => void
+  onCreateGuide: () => void
   onEditGuide: (guideId: string) => void
   onViewGuide: (guideId: string) => void
   onBack: () => void
   // Optional dependency injection
   guideService?: GuideService
-  categoryService?: CategoryService
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
 }
 
 export const GuideListScreen: React.FC<GuideListScreenProps> = ({
-  categoryId,
   onCreateGuide,
   onViewGuide,
   onBack,
   guideService: injectedGuideService,
-  categoryService: injectedCategoryService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
 }) => {
   const [guides, setGuides] = useState<Guide[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -62,7 +54,6 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   // Initialize services (use injected or create new)
   const servicesRef = React.useRef<{
     guideService: GuideService
-    categoryService: CategoryService
   } | null>(null)
 
   const getServices = (serverUrl: string) => {
@@ -70,21 +61,18 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
       return servicesRef.current
     }
 
-    if (injectedGuideService && injectedCategoryService) {
+    if (injectedGuideService) {
       servicesRef.current = {
         guideService: injectedGuideService,
-        categoryService: injectedCategoryService,
       }
       return servicesRef.current
     }
 
     const guideRepository = new GuideRepository(serverUrl)
     const stepRepository = new StepRepository(serverUrl)
-    const categoryRepository = new CategoryRepository(serverUrl)
 
     servicesRef.current = {
       guideService: new GuideService(guideRepository, stepRepository),
-      categoryService: new CategoryService(categoryRepository),
     }
     return servicesRef.current
   }
@@ -106,17 +94,8 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
       const services = getServices(serverUrl)
 
       // Load guides
-      let loadedGuides: Guide[]
-      if (categoryId) {
-        loadedGuides = await services.guideService.getGuidesByCategoryId(categoryId, authToken)
-      } else {
-        loadedGuides = await services.guideService.getAllGuides(authToken)
-      }
+      const loadedGuides = await services.guideService.getAllGuides(authToken)
       setGuides(loadedGuides)
-
-      // Load categories for category name mapping
-      const loadedCategories = await services.categoryService.getAllCategories(authToken)
-      setCategories(loadedCategories)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'GuideListScreen', action: 'loadGuides' })
       console.error('Failed to load guides:', err)
@@ -134,29 +113,17 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     loadUserId()
     loadGuides()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId, injectedGuideService, injectedCategoryService])
+  }, [injectedGuideService])
 
   const handleRefresh = async () => {
     setRefreshing(true)
     await loadGuides()
   }
 
-  // Create a mapping of category ID to name for quick lookup
-  const categoryMap = useMemo(() => {
-    const map: Record<string, string> = {}
-    categories.forEach(cat => {
-      map[cat.id] = cat.name
-    })
-    return map
-  }, [categories])
-
   // Convert guides to viewmodels
   const guideViewModels = useMemo(() => {
-    return guides.map(guide => {
-      const categoryName = categoryMap[guide.categoryId] || 'Unknown'
-      return createGuideViewModel(guide, categoryName)
-    })
-  }, [guides, categoryMap])
+    return guides.map(guide => createGuideViewModel(guide))
+  }, [guides])
 
   // Filter guides based on search query and filter tab
   const filteredGuides = useMemo(() => {
@@ -179,7 +146,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
       guide =>
         guide.title.toLowerCase().includes(query) ||
         guide.description?.toLowerCase().includes(query) ||
-        guide.categoryName.toLowerCase().includes(query)
+        guide.guideTypeLabel.toLowerCase().includes(query)
     )
   }, [guideViewModels, searchQuery, filterTab, userId])
 
@@ -195,7 +162,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
             <Text style={commonStyles.linkText}>← Back</Text>
           </TouchableOpacity>
           <Text style={commonStyles.titleLarge}>Guides</Text>
-          <TouchableOpacity onPress={() => onCreateGuide(categoryId)}>
+          <TouchableOpacity onPress={onCreateGuide}>
             <Text style={commonStyles.linkText}>+ New</Text>
           </TouchableOpacity>
         </View>
@@ -266,7 +233,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
             icon="📚"
             message={searchQuery ? 'No guides match your search' : 'No guides yet'}
             actionLabel={searchQuery ? 'Clear search' : 'Create Guide'}
-            onAction={searchQuery ? () => setSearchQuery('') : () => onCreateGuide(categoryId)}
+            onAction={searchQuery ? () => setSearchQuery('') : onCreateGuide}
           />
         ) : (
           <View style={styles.listContainer}>

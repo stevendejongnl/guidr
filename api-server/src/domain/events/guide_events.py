@@ -10,7 +10,7 @@ class GuideCreated(BaseDomainEvent):
     """Event raised when a guide is created."""
 
     guide_id: str
-    category_id: str
+    guide_type: str
     title: str
     description: str | None = None
 

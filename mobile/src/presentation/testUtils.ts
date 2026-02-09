@@ -3,10 +3,8 @@ import { ServerConfigStorage } from '../infrastructure/storage/ServerConfigStora
 import { AuthClient } from '../infrastructure/api/AuthClient'
 import { GuideService } from '../domain/services/GuideService'
 import { SessionService } from '../domain/services/SessionService'
-import { CategoryService } from '../domain/services/CategoryService'
 import { Guide } from '../domain/entities/Guide'
 import { Session } from '../domain/entities/Session'
-import { Category } from '../domain/entities/Category'
 
 /**
  * Create a mock AuthStorage instance for testing
@@ -135,7 +133,7 @@ export const createMockGuideService = (
 ): jest.Mocked<GuideService> => ({
   getAllGuides: jest.fn().mockResolvedValue(guides),
   getGuideById: jest.fn(),
-  getGuidesByCategoryId: jest.fn(),
+  getGuidesByType: jest.fn(),
   ...overrides,
 } as unknown as jest.Mocked<GuideService>)
 
@@ -160,17 +158,3 @@ export const createMockSessionService = (
   moveToStep: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 } as unknown as jest.Mocked<SessionService>)
-
-/**
- * Create a mock CategoryService instance for testing
- * @param categories Optional list of categories to return
- * @param overrides Optional method overrides
- */
-export const createMockCategoryService = (
-  categories: Category[] = [],
-  overrides: Partial<jest.Mocked<CategoryService>> = {},
-): jest.Mocked<CategoryService> => ({
-  getAllCategories: jest.fn().mockResolvedValue(categories),
-  getCategoryById: jest.fn(),
-  ...overrides,
-} as unknown as jest.Mocked<CategoryService>)

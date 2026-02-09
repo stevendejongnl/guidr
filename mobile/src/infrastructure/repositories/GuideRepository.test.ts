@@ -16,9 +16,10 @@ describe('GuideRepository', () => {
 
   const mockGuideDto: GuideDto = {
     id: 'guide-1',
-    categoryId: 'cat-1',
+    guideType: 'cooking',
     title: 'Chocolate Chip Cookies',
     description: 'Classic recipe',
+    metadata: { ingredients: ['flour', 'sugar'] },
     stepIds: ['step-1', 'step-2'],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
@@ -29,9 +30,10 @@ describe('GuideRepository', () => {
 
   const mockGuideDto2: GuideDto = {
     id: 'guide-2',
-    categoryId: 'cat-1',
+    guideType: 'workout',
     title: 'Brownies',
     description: 'Fudgy brownies',
+    metadata: null,
     stepIds: ['step-3'],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
@@ -242,39 +244,38 @@ describe('GuideRepository', () => {
     })
   })
 
-  describe('findByCategoryId', () => {
-    it('should return guides by category ID from cache', async () => {
-      const cacheKey = 'Guidr_Cache_Guide_List_category_cat-1'
+  describe('findByType', () => {
+    it('should return guides by type from cache', async () => {
+      const cacheKey = 'Guidr_Cache_Guide_List_type_cooking'
       const cachedData = {
-        data: [mockGuideDto, mockGuideDto2],
+        data: [mockGuideDto],
         timestamp: Date.now(),
         ttl: 5 * 60 * 1000,
       }
       ;(AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(cachedData))
 
-      const result = await repository.findByCategoryId('cat-1', authToken)
+      const result = await repository.findByType('cooking', authToken)
 
-      expect(result).toHaveLength(2)
+      expect(result).toHaveLength(1)
       expect(result[0]!.id).toBe('guide-1')
-      expect(result[0]!.categoryId).toBe('cat-1')
-      expect(result[1]!.id).toBe('guide-2')
+      expect(result[0]!.guideType).toBe('cooking')
       expect(AsyncStorage.getItem).toHaveBeenCalledWith(cacheKey)
       expect(global.fetch).not.toHaveBeenCalled()
     })
 
-    it('should fetch guides by category ID from API on cache miss', async () => {
+    it('should fetch guides by type from API on cache miss', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [mockGuideDto, mockGuideDto2],
+        json: async () => [mockGuideDto],
       })
 
-      const result = await repository.findByCategoryId('cat-1', authToken)
+      const result = await repository.findByType('cooking', authToken)
 
-      expect(result).toHaveLength(2)
+      expect(result).toHaveLength(1)
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/guides?categoryId=cat-1',
+        'http://localhost:8000/api/v1/guides?guideType=cooking',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -284,20 +285,20 @@ describe('GuideRepository', () => {
       )
     })
 
-    it('should cache individual items after fetching by category', async () => {
+    it('should cache individual items after fetching by type', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [mockGuideDto, mockGuideDto2],
+        json: async () => [mockGuideDto],
       })
 
-      await repository.findByCategoryId('cat-1', authToken)
+      await repository.findByType('cooking', authToken)
 
-      // Should cache the list + 2 individual items = 3 setItem calls
-      expect(AsyncStorage.setItem).toHaveBeenCalledTimes(3)
+      // Should cache the list + 1 individual item = 2 setItem calls
+      expect(AsyncStorage.setItem).toHaveBeenCalledTimes(2)
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        'Guidr_Cache_Guide_List_category_cat-1',
+        'Guidr_Cache_Guide_List_type_cooking',
         expect.any(String)
       )
     })
@@ -463,7 +464,7 @@ describe('GuideRepository', () => {
 
   describe('save', () => {
     it('should create new guide via POST', async () => {
-      const newGuide = new Guide('guide-3', 'cat-2', 'New Recipe')
+      const newGuide = new Guide('guide-3', 'cooking', 'New Recipe')
 
       // findById returns null (doesn't exist)
       ;(AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null)
@@ -474,9 +475,10 @@ describe('GuideRepository', () => {
           status: 201,
           json: async () => ({
             id: 'guide-3',
-            categoryId: 'cat-2',
+            guideType: 'cooking',
             title: 'New Recipe',
-            description: undefined,
+            description: null,
+            metadata: null,
             stepIds: [],
             createdAt: '2024-01-01T00:00:00Z',
             updatedAt: '2024-01-01T00:00:00Z',
@@ -492,16 +494,17 @@ describe('GuideRepository', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          categoryId: 'cat-2',
+          guideType: 'cooking',
           title: 'New Recipe',
           description: null,
+          metadata: null,
           isPublic: false,
         }),
       })
     })
 
     it('should update existing guide via PATCH', async () => {
-      const existingGuide = new Guide('guide-1', 'cat-1', 'Updated Title')
+      const existingGuide = new Guide('guide-1', 'cooking', 'Updated Title')
 
       // findById returns existing (cache hit)
       const cachedData = {
@@ -515,9 +518,10 @@ describe('GuideRepository', () => {
         status: 200,
         json: async () => ({
           id: 'guide-1',
-          categoryId: 'cat-1',
+          guideType: 'cooking',
           title: 'Updated Title',
-          description: undefined,
+          description: null,
+          metadata: null,
           stepIds: [],
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-02T00:00:00Z',
@@ -537,6 +541,7 @@ describe('GuideRepository', () => {
           body: JSON.stringify({
             title: 'Updated Title',
             description: null,
+            metadata: null,
             isPublic: false,
             isHighlighted: false,
           }),
@@ -545,7 +550,7 @@ describe('GuideRepository', () => {
     })
 
     it('should invalidate cache on save', async () => {
-      const newGuide = new Guide('guide-3', 'cat-2', 'New Recipe')
+      const newGuide = new Guide('guide-3', 'cooking', 'New Recipe')
 
       ;(AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null)
       ;(global.fetch as jest.Mock)
@@ -558,15 +563,15 @@ describe('GuideRepository', () => {
 
       await repository.save(newGuide, authToken)
 
-      // Should remove List_all and List_category caches
+      // Should remove List_all and List_type caches
       expect(AsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_Cache_Guide_List_all')
       expect(AsyncStorage.removeItem).toHaveBeenCalledWith(
-        'Guidr_Cache_Guide_List_category_cat-2'
+        'Guidr_Cache_Guide_List_type_cooking'
       )
     })
 
     it('should throw error on create failure', async () => {
-      const newGuide = new Guide('guide-3', 'cat-2', 'New Recipe')
+      const newGuide = new Guide('guide-3', 'cooking', 'New Recipe')
 
       ;(AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null)
       ;(global.fetch as jest.Mock)

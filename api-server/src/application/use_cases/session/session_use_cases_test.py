@@ -23,6 +23,7 @@ from src.domain.exceptions import EntityNotFoundException, ValidationException
 from src.domain.value_objects import (
     EntityId,
     GuideTitle,
+    GuideType,
     SessionStatus,
     StepDuration,
 )
@@ -51,7 +52,7 @@ def sample_guide():
     """Create a sample guide."""
     return Guide(
         id=EntityId(str(uuid4())),
-        category_id=EntityId(str(uuid4())),
+        guide_type=GuideType.GENERAL,
         title=GuideTitle("Test Guide"),
     )
 

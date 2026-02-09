@@ -10,30 +10,27 @@ import {
   Alert,
 } from 'react-native'
 import { GuideService } from '../../domain/services/GuideService'
-import { CategoryService } from '../../domain/services/CategoryService'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
-import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { SafeScreen } from '../components/SafeScreen'
-import { CategoryPickerButton } from '../components/CategoryPickerButton'
+import { GuideTypeSelector } from '../components/GuideTypeSelector'
 import { InfoBanner } from '../components/InfoBanner'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { formStyles } from '@guidr/shared/styles/react-native'
+import { GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 
 interface GuideFormScreenProps {
   mode: 'create' | 'edit'
   guideId?: string
-  categoryId?: string
   onSave: (guideId: string) => void
   onCancel: () => void
   isAdmin: boolean
   isEditingOthersContent?: boolean
   guideService?: GuideService
-  categoryService?: CategoryService
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
 }
@@ -41,21 +38,18 @@ interface GuideFormScreenProps {
 export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   mode,
   guideId,
-  categoryId: _categoryId,
   onSave,
   onCancel,
   isAdmin,
   isEditingOthersContent = false,
   guideService: _guideService,
-  categoryService: _categoryService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
 }) => {
   // Form fields
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(_categoryId || null)
-  const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null)
+  const [selectedGuideType, setSelectedGuideType] = useState<GuideType | null>(null)
   const [isPublic, setIsPublic] = useState(false)
   const [isHighlighted, setIsHighlighted] = useState(false)
 
@@ -68,7 +62,6 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   // Services
   const [authToken, setAuthToken] = useState<string | null>(null)
   const [guideService, setGuideService] = useState<GuideService | null>(_guideService || null)
-  const [categoryService, setCategoryService] = useState<CategoryService | null>(_categoryService || null)
 
   // Initialize services
   useEffect(() => {
@@ -94,11 +87,6 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           const guideRepo = new GuideRepository(url)
           const stepRepo = new StepRepository(url)
           setGuideService(new GuideService(guideRepo, stepRepo))
-        }
-
-        if (!_categoryService) {
-          const categoryRepo = new CategoryRepository(url)
-          setCategoryService(new CategoryService(categoryRepo))
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error initializing services'
@@ -126,18 +114,9 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
         if (guide) {
           setTitle(guide.title)
           setDescription(guide.description || '')
-          setSelectedCategoryId(guide.categoryId)
+          setSelectedGuideType(guide.guideType as GuideType)
           setIsPublic(guide.isPublic)
           setIsHighlighted(guide.isHighlighted)
-
-          // Load category name if categoryService is available
-          if (categoryService) {
-            const categories = await categoryService.getAllCategories(authToken)
-            const category = categories.find((c) => c.id === guide.categoryId)
-            if (category) {
-              setSelectedCategoryName(category.name)
-            }
-          }
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading guide'
@@ -149,15 +128,15 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
     }
 
     loadGuide()
-  }, [mode, guideId, guideService, categoryService, authToken])
+  }, [mode, guideId, guideService, authToken])
 
   const validateForm = (): boolean => {
     if (!title.trim()) {
       setValidationError('Guide title is required')
       return false
     }
-    if (!selectedCategoryId) {
-      setValidationError('Category is required')
+    if (!selectedGuideType) {
+      setValidationError('Guide type is required')
       return false
     }
     setValidationError(null)
@@ -179,12 +158,12 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
       setError(null)
 
       if (mode === 'create') {
-        if (!selectedCategoryId) {
-          setError('Category is required')
+        if (!selectedGuideType) {
+          setError('Guide type is required')
           return
         }
         const guide = await guideService.createGuide(
-          selectedCategoryId,
+          selectedGuideType,
           title,
           description || undefined,
           authToken,
@@ -311,19 +290,20 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           </View>
 
           <View style={formStyles.formGroup}>
-            <Text style={formStyles.label}>Category *</Text>
-            {mode === 'create' && categoryService && authToken ? (
-              <CategoryPickerButton
-                selectedCategoryId={selectedCategoryId}
-                onSelectCategory={setSelectedCategoryId}
-                authToken={authToken}
-                categoryService={categoryService}
+            <Text style={formStyles.label}>Guide Type *</Text>
+            {mode === 'create' ? (
+              <GuideTypeSelector
+                selectedType={selectedGuideType}
+                onSelectType={setSelectedGuideType}
                 disabled={saving}
+                testID="guide-type-selector"
               />
             ) : (
-              <View style={formStyles.categoryReadOnly}>
-                <Text style={formStyles.categoryReadOnlyText}>
-                  {selectedCategoryName || 'No category selected'}
+              <View style={formStyles.typeReadOnly}>
+                <Text style={formStyles.typeReadOnlyText}>
+                  {selectedGuideType
+                    ? GUIDE_TYPE_LABELS[selectedGuideType]
+                    : 'No type selected'}
                 </Text>
               </View>
             )}
@@ -392,7 +372,3 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
     </SafeScreen>
   )
 }
-
-// Use shared form styles - no component-specific StyleSheet needed
-// formStyles provides: formGroup, label, readOnlyContainer, toggleContainer, buttonGroup, etc.
-// For any overrides, compose with formStyles using array syntax: [formStyles.base, { customProp: value }]

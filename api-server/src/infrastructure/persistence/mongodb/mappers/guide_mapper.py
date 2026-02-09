@@ -3,7 +3,7 @@
 from typing import Any
 
 from src.domain.entities import Guide
-from src.domain.value_objects import EntityId, GuideTitle
+from src.domain.value_objects import EntityId, GuideTitle, GuideType
 
 
 class GuideMapper:
@@ -11,21 +11,22 @@ class GuideMapper:
 
     @staticmethod
     def to_document(guide: Guide) -> dict[str, Any]:
-        """Convert Guide entity to MongoDB document.
-
-        Args:
-            guide: Guide entity to convert
-
-        Returns:
-            MongoDB document dict
-        """
+        """Convert Guide entity to MongoDB document."""
         return {
             "_id": guide.id.value,
-            "categoryId": guide.category_id.value,
+            "guideType": guide.guide_type.value,
             "title": guide.title.value,
             "description": guide.description,
-            "stepIds": [step_id.value for step_id in guide.step_ids],
-            "createdByUserId": guide.created_by_user_id.value if guide.created_by_user_id else None,
+            "metadata": guide.metadata,
+            "stepIds": [
+                step_id.value
+                for step_id in guide.step_ids
+            ],
+            "createdByUserId": (
+                guide.created_by_user_id.value
+                if guide.created_by_user_id
+                else None
+            ),
             "isPublic": guide.is_public,
             "isHighlighted": guide.is_highlighted,
             "createdAt": guide.created_at,
@@ -34,24 +35,29 @@ class GuideMapper:
 
     @staticmethod
     def to_entity(document: dict[str, Any]) -> Guide:
-        """Convert MongoDB document to Guide entity.
-
-        Args:
-            document: MongoDB document dict
-
-        Returns:
-            Guide entity
-        """
-        created_by_user_id = document.get("createdByUserId")
+        """Convert MongoDB document to Guide entity."""
+        created_by_user_id = document.get(
+            "createdByUserId"
+        )
         return Guide(
             id=EntityId(str(document["_id"])),
-            category_id=EntityId(str(document["categoryId"])),
+            guide_type=GuideType(document["guideType"]),
             title=GuideTitle(document["title"]),
             description=document.get("description"),
-            step_ids=[EntityId(str(step_id)) for step_id in document.get("stepIds", [])],
-            created_by_user_id=EntityId(str(created_by_user_id)) if created_by_user_id else None,
+            metadata=document.get("metadata"),
+            step_ids=[
+                EntityId(str(sid))
+                for sid in document.get("stepIds", [])
+            ],
+            created_by_user_id=(
+                EntityId(str(created_by_user_id))
+                if created_by_user_id
+                else None
+            ),
             is_public=document.get("isPublic", False),
-            is_highlighted=document.get("isHighlighted", False),
+            is_highlighted=document.get(
+                "isHighlighted", False
+            ),
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
         )

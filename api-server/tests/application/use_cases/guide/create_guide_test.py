@@ -6,7 +6,7 @@ import pytest
 
 from src.domain.entities import Guide, User
 from src.domain.repositories import IGuideRepository
-from src.domain.value_objects import Email, EntityId, GuideTitle
+from src.domain.value_objects import Email, EntityId, GuideTitle, GuideType
 
 
 class MockGuideRepository(IGuideRepository):
@@ -24,8 +24,8 @@ class MockGuideRepository(IGuideRepository):
     async def find_all(self) -> list[Guide]:
         return self.saved_guides
 
-    async def find_by_category_id(self, category_id: EntityId) -> list[Guide]:
-        return [g for g in self.saved_guides if g.category_id == category_id]
+    async def find_by_type(self, guide_type: GuideType) -> list[Guide]:
+        return [g for g in self.saved_guides if g.guide_type == guide_type]
 
     async def find_by_user_id(self, user_id: EntityId) -> list[Guide]:
         return [g for g in self.saved_guides if g.created_by_user_id == user_id]
@@ -72,10 +72,9 @@ class TestCreateGuideOwnership:
         self, repository: MockGuideRepository, user: User
     ) -> None:
         """Test that guides can be created with owner ID set."""
-        category_id = EntityId(str(uuid4()))
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Learn Python"),
             created_by_user_id=user.id,  # Owner set from user
             is_public=False,
@@ -94,10 +93,9 @@ class TestCreateGuideOwnership:
         self, repository: MockGuideRepository, user: User
     ) -> None:
         """Test that guides can be created as public."""
-        category_id = EntityId(str(uuid4()))
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Learn Python"),
             created_by_user_id=user.id,
             is_public=True,
@@ -112,16 +110,15 @@ class TestCreateGuideOwnership:
     @pytest.mark.asyncio
     async def test_find_user_guides(self, repository: MockGuideRepository, user: User) -> None:
         """Test finding all guides by a user."""
-        category_id = EntityId(str(uuid4()))
         guide1 = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Guide 1"),
             created_by_user_id=user.id,
         )
         guide2 = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Guide 2"),
             created_by_user_id=user.id,
         )
@@ -133,7 +130,7 @@ class TestCreateGuideOwnership:
         )
         guide3 = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Guide 3"),
             created_by_user_id=other_user.id,
         )
@@ -154,12 +151,11 @@ class TestCreateGuideOwnership:
         self, repository: MockGuideRepository, user: User
     ) -> None:
         """Test finding guides accessible to authenticated user."""
-        category_id = EntityId(str(uuid4()))
 
         # User's own private guide
         private_guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("My Private Guide"),
             created_by_user_id=user.id,
             is_public=False,
@@ -168,7 +164,7 @@ class TestCreateGuideOwnership:
         # Public guide from another user
         public_guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Public Guide"),
             created_by_user_id=EntityId(str(uuid4())),
             is_public=True,
@@ -177,7 +173,7 @@ class TestCreateGuideOwnership:
         # Private guide from another user
         other_private = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Someone Else's Private"),
             created_by_user_id=EntityId(str(uuid4())),
             is_public=False,
@@ -198,12 +194,11 @@ class TestCreateGuideOwnership:
         self, repository: MockGuideRepository
     ) -> None:
         """Test finding guides accessible to unauthenticated user (only public)."""
-        category_id = EntityId(str(uuid4()))
 
         user_id = EntityId(str(uuid4()))
         private_guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Private Guide"),
             created_by_user_id=user_id,
             is_public=False,
@@ -211,7 +206,7 @@ class TestCreateGuideOwnership:
 
         public_guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Public Guide"),
             created_by_user_id=user_id,
             is_public=True,

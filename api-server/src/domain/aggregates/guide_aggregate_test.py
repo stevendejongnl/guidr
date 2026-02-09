@@ -3,7 +3,7 @@ import pytest
 from src.domain.aggregates import GuideAggregate
 from src.domain.entities import Guide, Step
 from src.domain.exceptions import ValidationException
-from src.domain.value_objects import EntityId, GuideTitle, StepDuration
+from src.domain.value_objects import EntityId, GuideTitle, GuideType, StepDuration
 
 
 class TestGuideAggregate:
@@ -12,9 +12,8 @@ class TestGuideAggregate:
     def test_create_aggregate_with_guide_only(self):
         """Should create aggregate with guide and no steps."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         aggregate = GuideAggregate(guide=guide)
 
@@ -25,9 +24,8 @@ class TestGuideAggregate:
     def test_create_aggregate_with_steps(self):
         """Should create aggregate with guide and steps."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step1_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
         step2_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
@@ -55,9 +53,8 @@ class TestGuideAggregate:
         """Should raise ValidationException for step from different guide."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         other_guide_id = EntityId("550e8400-e29b-41d4-a716-446655440099")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
         step = Step(
@@ -76,9 +73,8 @@ class TestGuideAggregate:
     def test_get_ordered_steps(self):
         """Should return steps ordered by order field."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         # Create steps out of order
         step1 = Step(
@@ -112,9 +108,8 @@ class TestGuideAggregate:
     def test_get_step(self):
         """Should get specific step by ID."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
         step = Step(
@@ -133,9 +128,8 @@ class TestGuideAggregate:
     def test_get_nonexistent_step(self):
         """Should return None for nonexistent step."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         aggregate = GuideAggregate(guide=guide)
 
@@ -147,9 +141,8 @@ class TestGuideAggregate:
     def test_add_step(self):
         """Should add step to aggregate."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
         aggregate = GuideAggregate(guide=guide)
 
         step_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
@@ -171,9 +164,8 @@ class TestGuideAggregate:
         """Should raise ValidationException when adding step from different guide."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
         other_guide_id = EntityId("550e8400-e29b-41d4-a716-446655440099")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
         aggregate = GuideAggregate(guide=guide)
 
         step = Step(
@@ -192,9 +184,8 @@ class TestGuideAggregate:
     def test_add_duplicate_step(self):
         """Should raise ValidationException when adding duplicate step ID."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
         step = Step(
@@ -215,9 +206,8 @@ class TestGuideAggregate:
     def test_remove_step(self):
         """Should remove step from aggregate."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
         step = Step(
@@ -238,9 +228,8 @@ class TestGuideAggregate:
     def test_remove_nonexistent_step(self):
         """Should not raise error when removing nonexistent step."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
         aggregate = GuideAggregate(guide=guide)
 
         nonexistent_id = EntityId("550e8400-e29b-41d4-a716-446655440099")
@@ -251,9 +240,8 @@ class TestGuideAggregate:
     def test_reorder_steps(self):
         """Should reorder step."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
         step = Step(
@@ -272,9 +260,8 @@ class TestGuideAggregate:
     def test_reorder_nonexistent_step(self):
         """Should raise ValidationException when reordering nonexistent step."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
         aggregate = GuideAggregate(guide=guide)
 
         nonexistent_id = EntityId("550e8400-e29b-41d4-a716-446655440099")
@@ -287,9 +274,8 @@ class TestGuideAggregate:
     def test_update_title(self):
         """Should update guide title."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Original Title")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
         aggregate = GuideAggregate(guide=guide)
 
         new_title = GuideTitle("New Title")
@@ -300,9 +286,8 @@ class TestGuideAggregate:
     def test_update_description(self):
         """Should update guide description."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
         aggregate = GuideAggregate(guide=guide)
 
         aggregate.update_description("New description")
@@ -312,9 +297,8 @@ class TestGuideAggregate:
     def test_validate_consistency(self):
         """Should validate aggregate consistency."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step_id = EntityId("550e8400-e29b-41d4-a716-446655440002")
         step = Step(
@@ -332,9 +316,8 @@ class TestGuideAggregate:
     def test_validate_consistency_with_duplicate_orders(self):
         """Should raise ValidationException for duplicate step orders."""
         guide_id = EntityId("550e8400-e29b-41d4-a716-446655440000")
-        category_id = EntityId("550e8400-e29b-41d4-a716-446655440001")
         title = GuideTitle("Perfect Pasta")
-        guide = Guide(id=guide_id, category_id=category_id, title=title)
+        guide = Guide(id=guide_id, guide_type=GuideType.GENERAL, title=title)
 
         step1 = Step(
             id=EntityId("550e8400-e29b-41d4-a716-446655440002"),

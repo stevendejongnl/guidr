@@ -6,7 +6,6 @@ import {
   createMockAuthStorage,
   createMockServerConfigStorage,
   createMockGuideService,
-  createMockCategoryService,
 } from '../testUtils'
 
 // Mock only ErrorReporter (static utility)
@@ -15,7 +14,6 @@ jest.mock('../../infrastructure/monitoring/ErrorReporter')
 describe('GuideDetailScreen', () => {
   const mockOnBack = jest.fn()
   let mockGuideService: ReturnType<typeof createMockGuideService>
-  let mockCategoryService: ReturnType<typeof createMockCategoryService>
   let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
   let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
 
@@ -26,7 +24,6 @@ describe('GuideDetailScreen', () => {
     mockAuthStorage = createMockAuthStorage()
     mockServerConfigStorage = createMockServerConfigStorage()
     mockGuideService = createMockGuideService([])
-    mockCategoryService = createMockCategoryService([])
   })
 
   it('renders guide detail screen without errors', () => {
@@ -36,7 +33,6 @@ describe('GuideDetailScreen', () => {
         onBack={mockOnBack}
         testID="test"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
@@ -52,7 +48,6 @@ describe('GuideDetailScreen', () => {
         onBack={mockOnBack}
         onEdit={mockOnEdit}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
     expect(mockOnEdit).toBeDefined()
@@ -65,7 +60,6 @@ describe('GuideDetailScreen', () => {
         onBack={mockOnBack}
         testID="test"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
@@ -80,7 +74,6 @@ describe('GuideDetailScreen', () => {
         guideId="guide-1"
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -89,7 +82,6 @@ describe('GuideDetailScreen', () => {
         guideId="guide-2"
         onBack={mockOnBack}
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -110,7 +102,6 @@ describe('GuideDetailScreen', () => {
         stepService={mockStepService}
         testID="test"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -127,7 +118,6 @@ describe('GuideDetailScreen', () => {
         onAddStep={mockOnAddStep}
         testID="test"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 
@@ -144,7 +134,6 @@ describe('GuideDetailScreen', () => {
         onEditStep={mockOnEditStep}
         testID="test"
         guideService={mockGuideService}
-        categoryService={mockCategoryService}
       />
     )
 

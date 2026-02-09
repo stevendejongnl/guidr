@@ -5,9 +5,8 @@ from uuid import uuid4
 from src.application.dtos import GuideCreateDTO, GuideResponseDTO
 from src.application.mappers import GuideMapper
 from src.domain.entities import Guide
-from src.domain.exceptions import ValidationException
-from src.domain.repositories import ICategoryRepository, IGuideRepository
-from src.domain.value_objects import EntityId, GuideTitle
+from src.domain.repositories import IGuideRepository
+from src.domain.value_objects import EntityId, GuideTitle, GuideType
 
 
 class CreateGuide:
@@ -16,16 +15,9 @@ class CreateGuide:
     def __init__(
         self,
         guide_repository: IGuideRepository,
-        category_repository: ICategoryRepository,
     ):
-        """Initialize use case.
-
-        Args:
-            guide_repository: Repository for guide persistence
-            category_repository: Repository for category validation
-        """
+        """Initialize use case."""
         self._guide_repository = guide_repository
-        self._category_repository = category_repository
         self._mapper = GuideMapper()
 
     async def execute(self, dto: GuideCreateDTO, user=None) -> GuideResponseDTO:  # type: ignore[no-untyped-def]
@@ -33,32 +25,27 @@ class CreateGuide:
 
         Args:
             dto: Guide creation data
-            user: Current user (optional, for setting created_by_user_id)
+            user: Current user (optional)
 
         Returns:
             GuideResponseDTO with created guide data
 
         Raises:
-            ValidationException: If category doesn't exist
+            ValueError: If guide_type is invalid
         """
-        # Validate category exists
-        category_id = EntityId(dto.category_id)
-        category = await self._category_repository.find_by_id(category_id)
-        if not category:
-            raise ValidationException(f"Category not found: {dto.category_id}")
+        guide_type = GuideType(dto.guide_type)
+        created_by_user_id = (
+            EntityId(user.id) if user else None
+        )
 
-        # Get user ID if available
-        created_by_user_id = EntityId(user.id) if user else None
-
-        # Create entity
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=category_id,
+            guide_type=guide_type,
             title=GuideTitle(dto.title),
             description=dto.description,
+            metadata=dto.metadata,
             created_by_user_id=created_by_user_id,
         )
 
-        # Save and return
         await self._guide_repository.save(guide)
         return self._mapper.to_response_dto(guide)

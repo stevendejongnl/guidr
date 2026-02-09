@@ -1,8 +1,10 @@
 """Guide domain entity."""
 
 from datetime import UTC, datetime
+from typing import Any
 
-from ..value_objects import EntityId, GuideTitle
+from ..value_objects import EntityId, GuideTitle, GuideType
+from ..value_objects.guide_type import validate_metadata
 
 
 class Guide:
@@ -11,9 +13,10 @@ class Guide:
     def __init__(
         self,
         id: EntityId,
-        category_id: EntityId,
+        guide_type: GuideType,
         title: GuideTitle,
         description: str | None = None,
+        metadata: dict[str, Any] | None = None,
         step_ids: list[EntityId] | None = None,
         created_by_user_id: EntityId | None = None,
         is_public: bool = False,
@@ -25,20 +28,27 @@ class Guide:
 
         Args:
             id: Unique identifier
-            category_id: Parent category ID
+            guide_type: Predefined guide type
             title: Guide title (non-empty)
             description: Optional description
+            metadata: Optional type-specific metadata
             step_ids: Optional list of step IDs
             created_by_user_id: Optional ID of user who created the guide
-            is_public: Whether the guide is publicly visible (default: False)
-            is_highlighted: Whether the guide is highlighted for homepage (default: False)
-            created_at: Optional creation timestamp (defaults to now)
-            updated_at: Optional update timestamp (defaults to now)
+            is_public: Whether the guide is publicly visible
+            is_highlighted: Whether the guide is highlighted
+            created_at: Optional creation timestamp
+            updated_at: Optional update timestamp
+
+        Raises:
+            ValueError: If metadata is invalid for the guide type
         """
+        validate_metadata(guide_type, metadata)
+
         self._id = id
-        self._category_id = category_id
+        self._guide_type = guide_type
         self._title = title
         self._description = description
+        self._metadata = metadata
         self._step_ids = step_ids or []
         self._created_by_user_id = created_by_user_id
         self._is_public = is_public
@@ -52,9 +62,9 @@ class Guide:
         return self._id
 
     @property
-    def category_id(self) -> EntityId:
-        """Get category ID."""
-        return self._category_id
+    def guide_type(self) -> GuideType:
+        """Get guide type."""
+        return self._guide_type
 
     @property
     def title(self) -> GuideTitle:
@@ -65,6 +75,11 @@ class Guide:
     def description(self) -> str | None:
         """Get guide description."""
         return self._description
+
+    @property
+    def metadata(self) -> dict[str, Any] | None:
+        """Get guide metadata."""
+        return self._metadata
 
     @property
     def step_ids(self) -> list[EntityId]:
@@ -102,45 +117,38 @@ class Guide:
         return self._is_highlighted
 
     def update_title(self, new_title: GuideTitle) -> None:
-        """Update guide title.
-
-        Args:
-            new_title: New title (non-empty)
-        """
+        """Update guide title."""
         self._title = new_title
         self._updated_at = datetime.now(UTC)
 
     def update_description(self, new_description: str) -> None:
-        """Update guide description.
-
-        Args:
-            new_description: New description
-        """
+        """Update guide description."""
         self._description = new_description
         self._updated_at = datetime.now(UTC)
 
-    def add_step(self, step_id: EntityId) -> None:
-        """Add a step to this guide.
+    def update_metadata(
+        self, new_metadata: dict[str, Any] | None
+    ) -> None:
+        """Update guide metadata.
 
         Args:
-            step_id: ID of step to add
+            new_metadata: New metadata (validated against type schema)
 
-        Note:
-            Step is only added if not already in the list
+        Raises:
+            ValueError: If metadata is invalid for the guide type
         """
+        validate_metadata(self._guide_type, new_metadata)
+        self._metadata = new_metadata
+        self._updated_at = datetime.now(UTC)
+
+    def add_step(self, step_id: EntityId) -> None:
+        """Add a step to this guide."""
         if step_id not in self._step_ids:
             self._step_ids.append(step_id)
             self._updated_at = datetime.now(UTC)
 
     def remove_step(self, step_id: EntityId) -> None:
-        """Remove a step from this guide.
-
-        Args:
-            step_id: ID of step to remove
-
-        Note:
-            No error if step_id not found
-        """
+        """Remove a step from this guide."""
         if step_id in self._step_ids:
             self._step_ids.remove(step_id)
             self._updated_at = datetime.now(UTC)
@@ -151,7 +159,7 @@ class Guide:
         self._updated_at = datetime.now(UTC)
 
     def make_private(self) -> None:
-        """Make this guide private (only visible to creator and admins)."""
+        """Make this guide private."""
         self._is_public = False
         self._updated_at = datetime.now(UTC)
 

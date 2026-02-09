@@ -14,7 +14,7 @@ describe('GuideService', () => {
     mockGuideRepository = {
       findById: jest.fn(),
       findAll: jest.fn(),
-      findByCategoryId: jest.fn(),
+      findByType: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
       findMyGuides: jest.fn(),
@@ -33,21 +33,17 @@ describe('GuideService', () => {
 
   describe('createGuide', () => {
     it('should create a new guide with generated ID', async () => {
-      const categoryId = 'cat-1'
-      const title = 'Chocolate Chip Cookies'
-      const description = 'Classic recipe'
-
-      const guide = await guideService.createGuide(categoryId, title, description, authToken)
+      const guide = await guideService.createGuide('cooking', 'Chocolate Chip Cookies', 'Classic recipe', authToken)
 
       expect(guide.id).toBeDefined()
-      expect(guide.categoryId).toBe(categoryId)
-      expect(guide.title).toBe(title)
-      expect(guide.description).toBe(description)
+      expect(guide.guideType).toBe('cooking')
+      expect(guide.title).toBe('Chocolate Chip Cookies')
+      expect(guide.description).toBe('Classic recipe')
       expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
     it('should create a guide without description', async () => {
-      const guide = await guideService.createGuide('cat-1', 'Cookies', undefined, authToken)
+      const guide = await guideService.createGuide('cooking', 'Cookies', undefined, authToken)
 
       expect(guide.description).toBeUndefined()
       expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
@@ -55,21 +51,43 @@ describe('GuideService', () => {
 
     it('should create a guide with owner and visibility', async () => {
       const userId = 'user-123'
-      const guide = await guideService.createGuide('cat-1', 'Cookies', 'Classic recipe', authToken, userId, true)
+      const guide = await guideService.createGuide(
+        'cooking',
+        'Cookies',
+        'Classic recipe',
+        authToken,
+        userId,
+        true
+      )
 
       expect(guide.createdByUserId).toBe(userId)
       expect(guide.isPublic).toBe(true)
       expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
     })
 
-    it('should throw error if categoryId is empty', async () => {
-      await expect(guideService.createGuide('', 'Cookies', undefined, authToken)).rejects.toThrow(
-        'Category id cannot be empty'
+    it('should create a guide with metadata', async () => {
+      const metadata = { ingredients: ['flour', 'sugar'] }
+      const guide = await guideService.createGuide(
+        'cooking',
+        'Cookies',
+        undefined,
+        authToken,
+        undefined,
+        false,
+        metadata
+      )
+
+      expect(guide.metadata).toEqual(metadata)
+    })
+
+    it('should throw error if guideType is invalid', async () => {
+      await expect(guideService.createGuide('invalid', 'Cookies', undefined, authToken)).rejects.toThrow(
+        'Invalid guide type'
       )
     })
 
     it('should throw error if title is empty', async () => {
-      await expect(guideService.createGuide('cat-1', '', undefined, authToken)).rejects.toThrow(
+      await expect(guideService.createGuide('cooking', '', undefined, authToken)).rejects.toThrow(
         'Guide title cannot be empty'
       )
     })
@@ -77,7 +95,7 @@ describe('GuideService', () => {
 
   describe('getGuideById', () => {
     it('should return guide if found', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
       const result = await guideService.getGuideById('guide-1', authToken)
@@ -99,8 +117,8 @@ describe('GuideService', () => {
   describe('getAllGuides', () => {
     it('should return all guides', async () => {
       const guides = [
-        new Guide('guide-1', 'cat-1', 'Cookies'),
-        new Guide('guide-2', 'cat-1', 'Brownies'),
+        new Guide('guide-1', 'cooking', 'Cookies'),
+        new Guide('guide-2', 'cooking', 'Brownies'),
       ]
       mockGuideRepository.findAll.mockResolvedValue(guides)
 
@@ -111,24 +129,24 @@ describe('GuideService', () => {
     })
   })
 
-  describe('getGuidesByCategoryId', () => {
-    it('should return guides for category', async () => {
+  describe('getGuidesByType', () => {
+    it('should return guides for type', async () => {
       const guides = [
-        new Guide('guide-1', 'cat-1', 'Cookies'),
-        new Guide('guide-2', 'cat-1', 'Brownies'),
+        new Guide('guide-1', 'cooking', 'Cookies'),
+        new Guide('guide-2', 'cooking', 'Brownies'),
       ]
-      mockGuideRepository.findByCategoryId.mockResolvedValue(guides)
+      mockGuideRepository.findByType.mockResolvedValue(guides)
 
-      const result = await guideService.getGuidesByCategoryId('cat-1', authToken)
+      const result = await guideService.getGuidesByType('cooking', authToken)
 
       expect(result).toEqual(guides)
-      expect(mockGuideRepository.findByCategoryId).toHaveBeenCalledWith('cat-1', authToken)
+      expect(mockGuideRepository.findByType).toHaveBeenCalledWith('cooking', authToken)
     })
   })
 
   describe('updateGuideTitle', () => {
     it('should update guide title and save', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
       await guideService.updateGuideTitle('guide-1', 'Chocolate Cookies', authToken)
@@ -148,7 +166,7 @@ describe('GuideService', () => {
 
   describe('updateGuideDescription', () => {
     it('should update guide description and save', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
       await guideService.updateGuideDescription('guide-1', 'A delicious recipe', authToken)
@@ -168,7 +186,7 @@ describe('GuideService', () => {
 
   describe('addStepToGuide', () => {
     it('should add step to guide and save', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       const step = new Step('step-1', 'guide-1', 1, 'Mix ingredients', 180)
       mockGuideRepository.findById.mockResolvedValue(guide)
       mockStepRepository.findById.mockResolvedValue(step)
@@ -188,7 +206,7 @@ describe('GuideService', () => {
     })
 
     it('should throw error if step not found', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
       mockStepRepository.findById.mockResolvedValue(null)
 
@@ -198,7 +216,7 @@ describe('GuideService', () => {
     })
 
     it('should throw error if step belongs to different guide', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       const step = new Step('step-1', 'guide-2', 1, 'Mix', 180)
       mockGuideRepository.findById.mockResolvedValue(guide)
       mockStepRepository.findById.mockResolvedValue(step)
@@ -211,7 +229,7 @@ describe('GuideService', () => {
 
   describe('removeStepFromGuide', () => {
     it('should remove step from guide and save', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       guide.addStep('step-1')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
@@ -232,7 +250,7 @@ describe('GuideService', () => {
 
   describe('deleteGuide', () => {
     it('should delete guide and all its steps', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       guide.addStep('step-1')
       guide.addStep('step-2')
       mockGuideRepository.findById.mockResolvedValue(guide)
@@ -245,7 +263,7 @@ describe('GuideService', () => {
     })
 
     it('should delete guide even if it has no steps', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
       await guideService.deleteGuide('guide-1', authToken)
@@ -265,7 +283,7 @@ describe('GuideService', () => {
 
   describe('visibility management', () => {
     it('should toggle guide to public', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
       await guideService.toggleVisibility('guide-1', true, authToken)
@@ -275,7 +293,7 @@ describe('GuideService', () => {
     })
 
     it('should toggle guide to private', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       guide.makePublic()
       mockGuideRepository.findById.mockResolvedValue(guide)
 
@@ -296,7 +314,7 @@ describe('GuideService', () => {
 
   describe('highlight management', () => {
     it('should highlight guide', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
       await guideService.toggleHighlight('guide-1', true, authToken)
@@ -306,7 +324,7 @@ describe('GuideService', () => {
     })
 
     it('should unhighlight guide', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       guide.highlight()
       mockGuideRepository.findById.mockResolvedValue(guide)
 

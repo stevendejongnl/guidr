@@ -4,20 +4,12 @@ from dependency_injector import containers, providers
 
 # Import all use cases
 from .application.use_cases.audit_log import GetAuditLogs
-from .application.use_cases.category import (
-    CreateCategory,
-    DeleteCategory,
-    GetAllCategories,
-    GetCategoriesByParent,
-    GetCategory,
-    UpdateCategory,
-)
 from .application.use_cases.guide import (
     CreateGuide,
     DeleteGuide,
     GetAllGuides,
     GetGuide,
-    GetGuidesByCategory,
+    GetGuidesByType,
     UpdateGuide,
 )
 from .application.use_cases.session import (
@@ -58,7 +50,6 @@ from .infrastructure.notifications import TelegramNotificationService
 from .infrastructure.persistence.mongodb.database import Database
 from .infrastructure.persistence.mongodb.repositories import (
     MongoAuditLogRepository,
-    MongoCategoryRepository,
     MongoGuideRepository,
     MongoSessionRepository,
     MongoStepRepository,
@@ -99,11 +90,6 @@ class Container(containers.DeclarativeContainer):
     )
 
     # Repositories (Singletons)
-    category_repository = providers.Singleton(
-        MongoCategoryRepository,
-        database=database.provided.db,
-    )
-
     guide_repository = providers.Singleton(
         MongoGuideRepository,
         database=database.provided.db,
@@ -135,44 +121,10 @@ class Container(containers.DeclarativeContainer):
         audit_log_repository=audit_log_repository,
     )
 
-    # Category Use Cases (Factories)
-    create_category_use_case = providers.Factory(
-        CreateCategory,
-        category_repository=category_repository,
-    )
-
-    get_category_use_case = providers.Factory(
-        GetCategory,
-        category_repository=category_repository,
-    )
-
-    get_all_categories_use_case = providers.Factory(
-        GetAllCategories,
-        category_repository=category_repository,
-    )
-
-    get_categories_by_parent_use_case = providers.Factory(
-        GetCategoriesByParent,
-        category_repository=category_repository,
-    )
-
-    update_category_use_case = providers.Factory(
-        UpdateCategory,
-        category_repository=category_repository,
-        event_persistence_service=event_persistence_service,
-    )
-
-    delete_category_use_case = providers.Factory(
-        DeleteCategory,
-        category_repository=category_repository,
-        event_persistence_service=event_persistence_service,
-    )
-
     # Guide Use Cases (Factories)
     create_guide_use_case = providers.Factory(
         CreateGuide,
         guide_repository=guide_repository,
-        category_repository=category_repository,
     )
 
     get_guide_use_case = providers.Factory(
@@ -185,8 +137,8 @@ class Container(containers.DeclarativeContainer):
         guide_repository=guide_repository,
     )
 
-    get_guides_by_category_use_case = providers.Factory(
-        GetGuidesByCategory,
+    get_guides_by_type_use_case = providers.Factory(
+        GetGuidesByType,
         guide_repository=guide_repository,
     )
 

@@ -17,7 +17,13 @@ from src.domain.exceptions import (
     EntityNotFoundException,
     ValidationException,
 )
-from src.domain.value_objects import Email, EntityId, GuideTitle, StepDuration
+from src.domain.value_objects import (
+    Email,
+    EntityId,
+    GuideTitle,
+    GuideType,
+    StepDuration,
+)
 
 
 @pytest.fixture
@@ -60,7 +66,7 @@ def sample_guide(sample_user):
     """Create a sample guide."""
     return Guide(
         id=EntityId(str(uuid4())),
-        category_id=EntityId(str(uuid4())),
+        guide_type=GuideType.GENERAL,
         title=GuideTitle("Test Guide"),
         created_by_user_id=sample_user.id,
     )

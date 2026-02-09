@@ -10,17 +10,14 @@ class TestGuideVisibilityIntegration:
     """Integration tests for guide visibility features."""
 
     async def test_create_guide_is_private_by_default(
-        self, client: AsyncClient, auth_headers: dict, create_category
+        self, client: AsyncClient, auth_headers: dict
     ) -> None:
         """Test that created guides are private by default."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create a guide
         response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "New Guide",
                 "description": "Test guide",
             },
@@ -34,17 +31,14 @@ class TestGuideVisibilityIntegration:
         assert guide_data["isHighlighted"] is False
 
     async def test_user_can_make_guide_public(
-        self, client: AsyncClient, auth_headers: dict, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, auth_headers: dict, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that user can toggle guide visibility to public."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create a guide
         create_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Public Guide",
                 "description": "Test",
             },
@@ -62,18 +56,15 @@ class TestGuideVisibilityIntegration:
         assert response.json()["isPublic"] is True
 
     async def test_user_cannot_edit_others_private_guide(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that users cannot edit other users' private guides."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create first user and guide
         user1_headers = await self._login_user(client, "user1@test.com")
         create_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Private Guide",
                 "description": "User 1's private guide",
             },
@@ -91,18 +82,15 @@ class TestGuideVisibilityIntegration:
         assert response.status_code == 403
 
     async def test_admin_can_edit_any_guide(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that admins can edit any guide."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create regular user and guide
         user_headers = await self._login_user(client, "user@test.com")
         create_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Original Title",
                 "description": "User's guide",
             },
@@ -121,17 +109,14 @@ class TestGuideVisibilityIntegration:
         assert response.json()["title"] == "Admin Modified Title"
 
     async def test_public_guides_visible_to_all(
-        self, client: AsyncClient, auth_headers: dict, create_category
+        self, client: AsyncClient, auth_headers: dict
     ) -> None:
         """Test that public guides are visible in list for all users."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create public guide
         create_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Public Guide",
                 "description": "Anyone can see",
             },
@@ -155,18 +140,15 @@ class TestGuideVisibilityIntegration:
         assert response.status_code == 200
 
     async def test_private_guides_hidden_from_others(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that private guides are not visible to other users."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create private guide
         user_headers = await self._login_user(client, "user@test.com")
         create_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Private Guide",
                 "description": "Only I can see",
             },
@@ -183,17 +165,14 @@ class TestGuideVisibilityIntegration:
         assert response.status_code == 404
 
     async def test_admin_can_highlight_guide(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, auth_headers: dict, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase, auth_headers: dict
     ) -> None:
         """Test that admin can highlight guides."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create and make public
         create_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Featured Guide",
                 "description": "Will be highlighted",
             },
@@ -218,17 +197,14 @@ class TestGuideVisibilityIntegration:
         assert response.json()["isHighlighted"] is True
 
     async def test_non_admin_cannot_highlight_guide(
-        self, client: AsyncClient, auth_headers: dict, create_category
+        self, client: AsyncClient, auth_headers: dict
     ) -> None:
         """Test that non-admins cannot highlight guides."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create guide as first/admin user
         create_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Guide",
                 "description": "Test",
             },
@@ -248,12 +224,9 @@ class TestGuideVisibilityIntegration:
         assert response.status_code == 403
 
     async def test_get_my_guides_returns_only_user_guides(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that my_guides endpoint returns only user's guides."""
-        # Create a category first
-        category_id = await create_category()
-
         headers = await self._login_user(client, "user@test.com")
 
         # Create 2 guides
@@ -261,7 +234,7 @@ class TestGuideVisibilityIntegration:
             await client.post(
                 "/api/v1/guides",
                 json={
-                    "categoryId": category_id,
+                    "guideType": "general",
                     "title": f"My Guide {i}",
                     "description": "Mine",
                 },
@@ -274,7 +247,7 @@ class TestGuideVisibilityIntegration:
             await client.post(
                 "/api/v1/guides",
                 json={
-                    "categoryId": category_id,
+                    "guideType": "general",
                     "title": f"Other Guide {i}",
                     "description": "Theirs",
                 },
@@ -292,12 +265,9 @@ class TestGuideVisibilityIntegration:
         assert all("My Guide" in g["title"] for g in guides)
 
     async def test_get_highlighted_guides_for_homepage(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that highlighted guides endpoint returns featured guides."""
-        # Create a category first
-        category_id = await create_category()
-
         # Create regular user
         user_headers = await self._login_user(client, "user@test.com")
 
@@ -307,7 +277,7 @@ class TestGuideVisibilityIntegration:
             create_response = await client.post(
                 "/api/v1/guides",
                 json={
-                    "categoryId": category_id,
+                    "guideType": "general",
                     "title": f"Guide {i}",
                     "description": "Test",
                 },

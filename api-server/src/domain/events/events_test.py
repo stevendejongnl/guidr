@@ -4,9 +4,6 @@ import pytest
 
 from src.domain.events import (
     BaseDomainEvent,
-    CategoryCreated,
-    CategoryDeleted,
-    CategoryUpdated,
     GuideCreated,
     GuideDeleted,
     GuideUpdated,
@@ -82,52 +79,6 @@ class TestUserEvents:
         assert event.event_type == "UserPasswordChanged"
 
 
-class TestCategoryEvents:
-    """Test category domain events."""
-
-    def test_category_created_event(self):
-        """Should create CategoryCreated event."""
-        event = CategoryCreated(
-            category_id="cat123",
-            name="Cooking",
-            parent_id="parent123"
-        )
-
-        assert event.category_id == "cat123"
-        assert event.name == "Cooking"
-        assert event.parent_id == "parent123"
-        assert event.event_type == "CategoryCreated"
-
-    def test_category_created_event_without_parent(self):
-        """Should create CategoryCreated event without parent."""
-        event = CategoryCreated(
-            category_id="cat123",
-            name="Cooking"
-        )
-
-        assert event.parent_id is None
-
-    def test_category_updated_event(self):
-        """Should create CategoryUpdated event."""
-        event = CategoryUpdated(
-            category_id="cat123",
-            name="Italian Cooking",
-            parent_id="parent123"
-        )
-
-        assert event.category_id == "cat123"
-        assert event.name == "Italian Cooking"
-        assert event.event_type == "CategoryUpdated"
-
-    def test_category_deleted_event(self):
-        """Should create CategoryDeleted event."""
-        event = CategoryDeleted(category_id="cat123", name="Cooking")
-
-        assert event.category_id == "cat123"
-        assert event.name == "Cooking"
-        assert event.event_type == "CategoryDeleted"
-
-
 class TestGuideEvents:
     """Test guide domain events."""
 
@@ -135,13 +86,13 @@ class TestGuideEvents:
         """Should create GuideCreated event."""
         event = GuideCreated(
             guide_id="guide123",
-            category_id="cat123",
+            guide_type="cooking",
             title="Perfect Pasta",
             description="Learn to make pasta"
         )
 
         assert event.guide_id == "guide123"
-        assert event.category_id == "cat123"
+        assert event.guide_type == "cooking"
         assert event.title == "Perfect Pasta"
         assert event.description == "Learn to make pasta"
         assert event.event_type == "GuideCreated"
@@ -150,7 +101,7 @@ class TestGuideEvents:
         """Should create GuideCreated event without description."""
         event = GuideCreated(
             guide_id="guide123",
-            category_id="cat123",
+            guide_type="general",
             title="Perfect Pasta"
         )
 
@@ -358,7 +309,7 @@ class TestEventImmutability:
         """Should not be able to modify event fields."""
         event = GuideCreated(
             guide_id="guide123",
-            category_id="cat123",
+            guide_type="cooking",
             title="Perfect Pasta"
         )
 
@@ -376,12 +327,12 @@ class TestEventIdentity:
         """Should generate unique event IDs."""
         event1 = GuideCreated(
             guide_id="guide123",
-            category_id="cat123",
+            guide_type="cooking",
             title="Perfect Pasta"
         )
         event2 = GuideCreated(
             guide_id="guide123",
-            category_id="cat123",
+            guide_type="cooking",
             title="Perfect Pasta"
         )
 
@@ -391,7 +342,7 @@ class TestEventIdentity:
         """Should have occurred_at timestamp."""
         event = GuideCreated(
             guide_id="guide123",
-            category_id="cat123",
+            guide_type="cooking",
             title="Perfect Pasta"
         )
 

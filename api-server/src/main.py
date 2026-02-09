@@ -16,9 +16,6 @@ from .presentation.api.routers import (
     audit_logs as audit_logs_router,
 )
 from .presentation.api.routers import (
-    categories as categories_router,
-)
-from .presentation.api.routers import (
     guides as guides_router,
 )
 from .presentation.api.routers import (
@@ -110,7 +107,6 @@ def create_application() -> FastAPI:
 
     # Inject container into routers and dependencies
     audit_logs_router.set_container(container)
-    categories_router.set_container(container)
     guides_router.set_container(container)
     steps_router.set_container(container)
     sessions_router.set_container(container)

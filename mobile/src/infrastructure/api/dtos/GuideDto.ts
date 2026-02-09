@@ -4,9 +4,10 @@
  */
 export interface GuideDto {
   id: string
-  categoryId: string
+  guideType: string
   title: string
   description: string | null
+  metadata: Record<string, unknown> | null
   stepIds: string[]
   createdAt: string // ISO 8601
   updatedAt: string // ISO 8601
@@ -19,9 +20,10 @@ export interface GuideDto {
  * Request body for creating a new guide.
  */
 export interface GuideCreateRequest {
-  categoryId: string
+  guideType: string
   title: string
   description?: string | null
+  metadata?: Record<string, unknown> | null
   isPublic?: boolean // Default: false
 }
 
@@ -32,6 +34,7 @@ export interface GuideCreateRequest {
 export interface GuideUpdateRequest {
   title?: string
   description?: string | null
+  metadata?: Record<string, unknown> | null
   isPublic?: boolean
   isHighlighted?: boolean
 }

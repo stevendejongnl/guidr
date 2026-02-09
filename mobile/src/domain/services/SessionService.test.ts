@@ -31,7 +31,7 @@ describe('SessionService', () => {
     mockGuideRepository = {
       findById: jest.fn(),
       findAll: jest.fn(),
-      findByCategoryId: jest.fn(),
+      findByType: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
       findMyGuides: jest.fn(),
@@ -54,7 +54,7 @@ describe('SessionService', () => {
 
   describe('createSession', () => {
     it('should create a new session with generated ID', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       mockGuideRepository.findById.mockResolvedValue(guide)
 
       const session = await sessionService.createSession('guide-1', authToken)
@@ -237,7 +237,7 @@ describe('SessionService', () => {
 
   describe('moveToStep', () => {
     it('should move session to step and save', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       guide.addStep('step-1')
       const session = new Session('session-1', 'guide-1')
       session.start()
@@ -273,7 +273,7 @@ describe('SessionService', () => {
     })
 
     it('should throw error if step not found', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       guide.addStep('step-1')
       const session = new Session('session-1', 'guide-1')
       session.start()
@@ -288,7 +288,7 @@ describe('SessionService', () => {
     })
 
     it('should throw error if step does not belong to guide', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       const session = new Session('session-1', 'guide-1')
       session.start()
       const step = new Step('step-1', 'guide-2', 1, 'Mix', 180)
@@ -303,7 +303,7 @@ describe('SessionService', () => {
     })
 
     it('should throw error if step is not in guide steps list', async () => {
-      const guide = new Guide('guide-1', 'cat-1', 'Cookies')
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
       const session = new Session('session-1', 'guide-1')
       session.start()
       const step = new Step('step-1', 'guide-1', 1, 'Mix', 180)

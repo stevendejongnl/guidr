@@ -10,15 +10,25 @@ export class GuideService {
   ) {}
 
   async createGuide(
-    categoryId: string,
+    guideType: string,
     title: string,
     description: string | undefined,
     authToken: string,
     createdByUserId?: string,
-    isPublic: boolean = false
+    isPublic: boolean = false,
+    metadata?: Record<string, unknown>
   ): Promise<Guide> {
     const id = uuid.v4() as string
-    const guide = new Guide(id, categoryId, title, description, createdByUserId, isPublic)
+    const guide = new Guide(
+      id,
+      guideType,
+      title,
+      description,
+      createdByUserId,
+      isPublic,
+      false,
+      metadata
+    )
     await this.guideRepository.save(guide, authToken)
     return guide
   }
@@ -31,8 +41,8 @@ export class GuideService {
     return await this.guideRepository.findAll(authToken)
   }
 
-  async getGuidesByCategoryId(categoryId: string, authToken: string): Promise<Guide[]> {
-    return await this.guideRepository.findByCategoryId(categoryId, authToken)
+  async getGuidesByType(guideType: string, authToken: string): Promise<Guide[]> {
+    return await this.guideRepository.findByType(guideType, authToken)
   }
 
   async updateGuideTitle(id: string, newTitle: string, authToken: string): Promise<void> {

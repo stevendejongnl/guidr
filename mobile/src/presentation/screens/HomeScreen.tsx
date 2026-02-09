@@ -26,13 +26,11 @@ import { UserDto } from '../../infrastructure/api/dtos/UserDto'
 import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewModel'
 import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
-import { CategoryService } from '../../domain/services/CategoryService'
 import { SessionStatus as DomainSessionStatus } from '../../domain/entities/Session'
 import { Guide } from '../../domain/entities/Guide'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
-import { CategoryRepository } from '../../infrastructure/repositories/CategoryRepository'
 
 // Mock session status enum for ActivityItem compatibility
 enum ActivityItemSessionStatus {
@@ -75,14 +73,12 @@ interface HomeScreenProps {
   onOpenProfile: () => void
   onBrowseGuides?: () => void
   onManageGuides?: () => void
-  onBrowseCategories?: () => void
   onViewSessionDetail?: (sessionId: string) => void
   onViewGuideDetail?: (guideId: string) => void
   isAdmin: boolean
   // Optional dependencies (for testing/DI)
   guideService?: GuideService
   sessionService?: SessionService
-  categoryService?: CategoryService
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
   authClient?: AuthClient
@@ -94,13 +90,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenProfile,
   onBrowseGuides,
   onManageGuides,
-  onBrowseCategories,
   onViewSessionDetail,
   onViewGuideDetail,
   isAdmin,
   guideService: injectedGuideService,
   sessionService: injectedSessionService,
-  categoryService: injectedCategoryService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
   authClient: injectedAuthClient,
@@ -131,7 +125,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const servicesRef = React.useRef<{
     guideService: GuideService
     sessionService: SessionService
-    categoryService: CategoryService
   } | null>(null)
 
   const getServices = (serverUrl: string) => {
@@ -139,11 +132,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       return servicesRef.current
     }
 
-    if (injectedGuideService && injectedSessionService && injectedCategoryService) {
+    if (injectedGuideService && injectedSessionService) {
       servicesRef.current = {
         guideService: injectedGuideService,
         sessionService: injectedSessionService,
-        categoryService: injectedCategoryService,
       }
       return servicesRef.current
     }
@@ -151,12 +143,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     const guideRepository = new GuideRepository(serverUrl)
     const sessionRepository = new SessionRepository(serverUrl)
     const stepRepository = new StepRepository(serverUrl)
-    const categoryRepository = new CategoryRepository(serverUrl)
 
     servicesRef.current = {
       guideService: new GuideService(guideRepository, stepRepository),
       sessionService: new SessionService(sessionRepository, guideRepository, stepRepository),
-      categoryService: new CategoryService(categoryRepository),
     }
     return servicesRef.current
   }
@@ -188,11 +178,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       // Get services (either injected or create new)
       const services = getServices(serverUrl)
 
-      // Load all guides, sessions, and categories in parallel
-      const [allGuides, allSessions, allCategories] = await Promise.all([
+      // Load all guides and sessions in parallel
+      const [allGuides, allSessions] = await Promise.all([
         services.guideService.getAllGuides(authToken),
         services.sessionService.getAllSessions(authToken),
-        services.categoryService.getAllCategories(authToken),
       ])
 
       // Calculate stats
@@ -208,10 +197,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       const userInterests = profile.interests || []
       const recommendedList = getRecommendedGuides(allGuides, userInterests, 3)
 
-      const recommendedViewModels: GuideViewModel[] = recommendedList.map(guide => {
-        const category = allCategories.find(c => c.id === guide.categoryId)
-        return createGuideViewModel(guide, category?.name || 'Uncategorized')
-      })
+      const recommendedViewModels: GuideViewModel[] = recommendedList.map(guide =>
+        createGuideViewModel(guide)
+      )
 
       setRecommendedGuides(recommendedViewModels)
 
@@ -220,10 +208,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         .filter(guide => guide.isPublic && guide.isHighlighted)
         .slice(0, 3)
 
-      const featuredViewModels: GuideViewModel[] = featuredList.map(guide => {
-        const category = allCategories.find(c => c.id === guide.categoryId)
-        return createGuideViewModel(guide, category?.name || 'Uncategorized')
-      })
+      const featuredViewModels: GuideViewModel[] = featuredList.map(guide =>
+        createGuideViewModel(guide)
+      )
 
       setFeaturedGuides(featuredViewModels)
 
@@ -294,14 +281,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       onBrowseGuides()
     } else {
       Alert.alert('Browse Guides', 'Feature coming soon!')
-    }
-  }
-
-  const handleBrowseCategories = () => {
-    if (onBrowseCategories) {
-      onBrowseCategories()
-    } else {
-      Alert.alert('Browse Categories', 'Feature coming soon!')
     }
   }
 
@@ -393,13 +372,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             label="My Guides"
             onPress={handleManageGuides}
           />
-          {isAdmin && (
-            <QuickActionButton
-              icon="📁"
-              label="Browse Categories"
-              onPress={handleBrowseCategories}
-            />
-          )}
         </View>
 
         {/* Featured Guides */}

@@ -93,7 +93,7 @@ class MongoAuditLogRepository(IAuditLogRepository):
             self._collection.find(
                 {
                     "action": {"$in": ["deleted", "updated"]},
-                    "resourceType": {"$in": ["guide", "category"]},
+                    "resourceType": {"$in": ["guide", "step"]},
                 }
             )
             .sort("occurredAt", -1)

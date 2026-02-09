@@ -9,9 +9,10 @@ import typia from 'typia'
  */
 export interface GuideDto {
   id: string
-  categoryId: string
+  guideType: string
   title: string
   description: string | null
+  metadata: Record<string, unknown> | null
   stepIds: string[]
   createdAt: string
   updatedAt: string
@@ -24,9 +25,10 @@ export interface GuideDto {
  * Guide create request
  */
 export interface GuideCreateRequest {
-  categoryId: string
+  guideType: string
   title: string
   description: string | null
+  metadata: Record<string, unknown> | null
   isPublic: boolean
   isHighlighted: boolean
 }
@@ -37,7 +39,7 @@ export interface GuideCreateRequest {
 export interface GuideUpdateRequest {
   title?: string
   description?: string | null
-  categoryId?: string
+  metadata?: Record<string, unknown> | null
   isPublic?: boolean
   isHighlighted?: boolean
 }

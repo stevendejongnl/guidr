@@ -1,9 +1,12 @@
+import { isValidGuideType } from '../constants/GuideTypes'
+
 export class Guide {
   readonly id: string
-  readonly categoryId: string
+  readonly guideType: string
   readonly createdByUserId: string | undefined
   private _title: string
   private _description: string | undefined
+  private _metadata: Record<string, unknown> | undefined
   private _stepIds: string[]
   private _isPublic: boolean
   private _isHighlighted: boolean
@@ -12,28 +15,30 @@ export class Guide {
 
   constructor(
     id: string,
-    categoryId: string,
+    guideType: string,
     title: string,
     description?: string,
     createdByUserId?: string,
     isPublic: boolean = false,
-    isHighlighted: boolean = false
+    isHighlighted: boolean = false,
+    metadata?: Record<string, unknown>
   ) {
     if (!id || id.trim() === '') {
       throw new Error('Guide id cannot be empty')
     }
-    if (!categoryId || categoryId.trim() === '') {
-      throw new Error('Category id cannot be empty')
+    if (!isValidGuideType(guideType)) {
+      throw new Error(`Invalid guide type: ${guideType}`)
     }
     if (!title || title.trim() === '') {
       throw new Error('Guide title cannot be empty')
     }
 
     this.id = id
-    this.categoryId = categoryId
+    this.guideType = guideType
     this.createdByUserId = createdByUserId
     this._title = title
     this._description = description
+    this._metadata = metadata
     this._stepIds = []
     this._isPublic = isPublic
     this._isHighlighted = isHighlighted
@@ -47,6 +52,10 @@ export class Guide {
 
   get description(): string | undefined {
     return this._description
+  }
+
+  get metadata(): Record<string, unknown> | undefined {
+    return this._metadata
   }
 
   get stepIds(): string[] {
@@ -83,6 +92,11 @@ export class Guide {
 
   updateDescription(newDescription: string): void {
     this._description = newDescription
+    this._updatedAt = new Date()
+  }
+
+  updateMetadata(newMetadata: Record<string, unknown> | undefined): void {
+    this._metadata = newMetadata
     this._updatedAt = new Date()
   }
 

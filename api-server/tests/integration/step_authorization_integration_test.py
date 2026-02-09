@@ -16,17 +16,17 @@ class TestStepAuthorizationIntegration:
     # ═══════════════════════════════════════════════════════════════════════
 
     async def test_guide_owner_can_create_step(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that guide owner can create steps."""
-        category_id = await create_category()
+
         user_headers = await self._login_user(client, "owner@test.com")
 
         # Create guide
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Owner's Guide",
                 "description": "Test",
             },
@@ -49,17 +49,17 @@ class TestStepAuthorizationIntegration:
         assert response.json()["title"] == "Step 1"
 
     async def test_admin_can_create_step_in_others_guide(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that admin can create steps in any guide."""
-        category_id = await create_category()
+
         user_headers = await self._login_user(client, "user@test.com")
 
         # Regular user creates guide
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "User's Guide",
                 "description": "Test",
             },
@@ -82,17 +82,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 201
 
     async def test_non_owner_cannot_create_step(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that non-owner cannot create steps in other's guide."""
-        category_id = await create_category()
+
 
         # User 1 creates guide
         user1_headers = await self._login_user(client, "user1@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "User1's Guide",
                 "description": "Test",
             },
@@ -114,17 +114,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 403
 
     async def test_unauthenticated_cannot_create_step(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that unauthenticated users cannot create steps."""
-        category_id = await create_category()
+
 
         # Create guide as logged-in user
         headers = await self._login_user(client, "user@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Test Guide",
                 "description": "Test",
             },
@@ -144,17 +144,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 401  # No authentication token provided
 
     async def test_guide_owner_can_update_step(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that guide owner can update steps."""
-        category_id = await create_category()
+
         user_headers = await self._login_user(client, "owner@test.com")
 
         # Create guide and step
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Owner's Guide",
                 "description": "Test",
             },
@@ -183,17 +183,17 @@ class TestStepAuthorizationIntegration:
         assert response.json()["title"] == "Updated Title"
 
     async def test_non_owner_cannot_update_step(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that non-owner cannot update steps."""
-        category_id = await create_category()
+
 
         # User 1 creates guide and step
         user1_headers = await self._login_user(client, "user1@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "User1's Guide",
                 "description": "Test",
             },
@@ -222,17 +222,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 403
 
     async def test_admin_can_update_any_step(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that admin can update any step."""
-        category_id = await create_category()
+
 
         # Regular user creates guide and step
         user_headers = await self._login_user(client, "user@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "User's Guide",
                 "description": "Test",
             },
@@ -262,17 +262,17 @@ class TestStepAuthorizationIntegration:
         assert response.json()["title"] == "Admin Updated Title"
 
     async def test_guide_owner_can_delete_step(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that guide owner can delete steps."""
-        category_id = await create_category()
+
         user_headers = await self._login_user(client, "owner@test.com")
 
         # Create guide and step
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Owner's Guide",
                 "description": "Test",
             },
@@ -299,17 +299,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 204
 
     async def test_non_owner_cannot_delete_step(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that non-owner cannot delete steps."""
-        category_id = await create_category()
+
 
         # User 1 creates guide and step
         user1_headers = await self._login_user(client, "user1@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "User1's Guide",
                 "description": "Test",
             },
@@ -337,17 +337,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 403
 
     async def test_admin_can_delete_any_step(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that admin can delete any step."""
-        category_id = await create_category()
+
 
         # Regular user creates guide and step
         user_headers = await self._login_user(client, "user@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "User's Guide",
                 "description": "Test",
             },
@@ -379,17 +379,17 @@ class TestStepAuthorizationIntegration:
     # ═══════════════════════════════════════════════════════════════════════
 
     async def test_public_guide_steps_visible_to_all(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that steps in public guides are visible to all users."""
-        category_id = await create_category()
+
 
         # User 1 creates public guide with step
         user1_headers = await self._login_user(client, "user1@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Public Guide",
                 "description": "Test",
             },
@@ -426,17 +426,17 @@ class TestStepAuthorizationIntegration:
         assert response.json()["title"] == "Public Step"
 
     async def test_unauthenticated_can_view_public_guide_steps(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that unauthenticated users can view steps in public guides."""
-        category_id = await create_category()
+
 
         # User creates public guide with step
         user_headers = await self._login_user(client, "user@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Public Guide",
                 "description": "Test",
             },
@@ -469,17 +469,17 @@ class TestStepAuthorizationIntegration:
         assert response.json()["title"] == "Public Step"
 
     async def test_private_guide_steps_hidden_from_non_owner(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that steps in private guides are hidden from non-owners."""
-        category_id = await create_category()
+
 
         # User 1 creates private guide with step
         user1_headers = await self._login_user(client, "user1@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Private Guide",
                 "description": "Test",
             },
@@ -508,17 +508,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 404
 
     async def test_unauthenticated_cannot_view_private_guide_steps(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that unauthenticated users cannot view steps in private guides."""
-        category_id = await create_category()
+
 
         # User creates private guide with step
         user_headers = await self._login_user(client, "user@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Private Guide",
                 "description": "Test",
             },
@@ -543,17 +543,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 404
 
     async def test_admin_can_view_any_guide_steps(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that admin can view steps in any guide."""
-        category_id = await create_category()
+
 
         # Regular user creates private guide with step
         user_headers = await self._login_user(client, "user@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Private Guide",
                 "description": "Test",
             },
@@ -582,17 +582,17 @@ class TestStepAuthorizationIntegration:
         assert response.json()["title"] == "Private Step"
 
     async def test_list_steps_respects_guide_visibility(
-        self, client: AsyncClient, create_category
+        self, client: AsyncClient
     ) -> None:
         """Test that list steps respects guide visibility."""
-        category_id = await create_category()
+
 
         # User 1 creates private guide with step
         user1_headers = await self._login_user(client, "user1@test.com")
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Private Guide",
                 "description": "Test",
             },
@@ -639,17 +639,17 @@ class TestStepAuthorizationIntegration:
         assert response.status_code == 400  # Invalid guide
 
     async def test_get_step_from_deleted_guide_returns_not_found(
-        self, client: AsyncClient, db: AsyncIOMotorDatabase, create_category
+        self, client: AsyncClient, db: AsyncIOMotorDatabase
     ) -> None:
         """Test that getting step from deleted guide returns 404."""
-        category_id = await create_category()
+
         user_headers = await self._login_user(client, "user@test.com")
 
         # Create guide and step
         guide_response = await client.post(
             "/api/v1/guides",
             json={
-                "categoryId": category_id,
+                "guideType": "general",
                 "title": "Temp Guide",
                 "description": "Test",
             },

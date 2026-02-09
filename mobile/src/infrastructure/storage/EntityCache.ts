@@ -16,9 +16,9 @@ interface CacheEntry<T> {
  * - Cache key pattern: Guidr_Cache_{prefix}_{key}
  *
  * @example
- * const cache = new EntityCache<Category>('Category', 5 * 60 * 1000) // 5 min TTL
- * await cache.set('cat-1', category)
- * const category = await cache.get('cat-1')
+ * const cache = new EntityCache<Guide>('Guide', 5 * 60 * 1000) // 5 min TTL
+ * await cache.set('guide-1', guide)
+ * const guide = await cache.get('guide-1')
  */
 export class EntityCache<T> {
   constructor(

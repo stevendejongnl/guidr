@@ -80,7 +80,7 @@ export const GuideCard: React.FC<GuideCardProps> = ({ guide, onPress, testID }) 
       <View style={styles.metadata}>
         <Text style={styles.metadataText}>📝 {guide.stepCount} steps</Text>
         <Text style={styles.metadataText}>⏱ {durationDisplay}</Text>
-        <Text style={styles.metadataText}>🏷️ {guide.categoryName}</Text>
+        <Text style={styles.metadataText}>🏷️ {guide.guideTypeLabel}</Text>
       </View>
     </TouchableOpacity>
   )

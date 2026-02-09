@@ -7,7 +7,7 @@ import pytest
 from src.application.authorization import can_view_guide, require_owner_or_admin
 from src.domain.entities import Guide, User
 from src.domain.exceptions import AuthorizationException
-from src.domain.value_objects import Email, EntityId, GuideTitle
+from src.domain.value_objects import Email, EntityId, GuideTitle, GuideType
 
 
 class TestRequireOwnerOrAdmin:
@@ -81,7 +81,7 @@ class TestCanViewGuide:
         )
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Private Guide"),
             is_public=False,
         )
@@ -99,7 +99,7 @@ class TestCanViewGuide:
         )
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("My Private Guide"),
             created_by_user_id=user_id,
             is_public=False,
@@ -118,7 +118,7 @@ class TestCanViewGuide:
         other_user_id = EntityId(str(uuid4()))
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Public Guide"),
             created_by_user_id=other_user_id,
             is_public=True,
@@ -137,7 +137,7 @@ class TestCanViewGuide:
         other_user_id = EntityId(str(uuid4()))
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Someone Else's Private Guide"),
             created_by_user_id=other_user_id,
             is_public=False,
@@ -149,7 +149,7 @@ class TestCanViewGuide:
         """Test that unauthenticated users can view public guides."""
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Public Guide"),
             is_public=True,
         )
@@ -161,7 +161,7 @@ class TestCanViewGuide:
         """Test that unauthenticated users cannot view private guides."""
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Private Guide"),
             is_public=False,
         )
@@ -186,7 +186,7 @@ class TestCanViewGuide:
         # Legacy guide with no owner
         guide = Guide(
             id=EntityId(str(uuid4())),
-            category_id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
             title=GuideTitle("Legacy Guide"),
             created_by_user_id=None,
             is_public=False,

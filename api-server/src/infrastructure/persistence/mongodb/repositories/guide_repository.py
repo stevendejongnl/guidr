@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from src.domain.entities import Guide
 from src.domain.repositories import IGuideRepository
-from src.domain.value_objects import EntityId
+from src.domain.value_objects import EntityId, GuideType
 
 from ..mappers import GuideMapper
 
@@ -14,64 +14,80 @@ class MongoGuideRepository(IGuideRepository):
     """MongoDB implementation of IGuideRepository."""
 
     def __init__(self, database: AsyncIOMotorDatabase):
-        """Initialize repository.
-
-        Args:
-            database: MongoDB database instance
-        """
+        """Initialize repository."""
         self._collection = database["guides"]
         self._mapper = GuideMapper()
 
-    async def find_by_id(self, id: EntityId) -> Guide | None:
+    async def find_by_id(
+        self, id: EntityId
+    ) -> Guide | None:
         """Find guide by ID."""
-        document = await self._collection.find_one({"_id": id.value})
-        return self._mapper.to_entity(document) if document else None
+        doc = await self._collection.find_one(
+            {"_id": id.value}
+        )
+        return self._mapper.to_entity(doc) if doc else None
 
     async def find_all(self) -> list[Guide]:
         """Find all guides."""
         cursor = self._collection.find()
-        documents = await cursor.to_list(length=None)
-        return [self._mapper.to_entity(doc) for doc in documents]
+        docs = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(d) for d in docs]
 
-    async def find_by_category_id(self, category_id: EntityId) -> list[Guide]:
-        """Find guides by category ID."""
-        cursor = self._collection.find({"categoryId": category_id.value})
-        documents = await cursor.to_list(length=None)
-        return [self._mapper.to_entity(doc) for doc in documents]
+    async def find_by_type(
+        self, guide_type: GuideType
+    ) -> list[Guide]:
+        """Find guides by type."""
+        cursor = self._collection.find(
+            {"guideType": guide_type.value}
+        )
+        docs = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(d) for d in docs]
 
-    async def find_by_user_id(self, user_id: EntityId) -> list[Guide]:
+    async def find_by_user_id(
+        self, user_id: EntityId
+    ) -> list[Guide]:
         """Find all guides created by a specific user."""
-        cursor = self._collection.find({"createdByUserId": user_id.value})
-        documents = await cursor.to_list(length=None)
-        return [self._mapper.to_entity(doc) for doc in documents]
+        cursor = self._collection.find(
+            {"createdByUserId": user_id.value}
+        )
+        docs = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(d) for d in docs]
 
     async def find_public_guides(self) -> list[Guide]:
         """Find all public guides."""
         cursor = self._collection.find({"isPublic": True})
-        documents = await cursor.to_list(length=None)
-        return [self._mapper.to_entity(doc) for doc in documents]
+        docs = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(d) for d in docs]
 
     async def find_highlighted_guides(self) -> list[Guide]:
         """Find all highlighted guides."""
-        cursor = self._collection.find({"isHighlighted": True, "isPublic": True})
-        documents = await cursor.to_list(length=None)
-        return [self._mapper.to_entity(doc) for doc in documents]
+        cursor = self._collection.find(
+            {"isHighlighted": True, "isPublic": True}
+        )
+        docs = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(d) for d in docs]
 
-    async def find_accessible_by_user(self, user_id: EntityId | None) -> list[Guide]:
-        """Find guides accessible by a user (public + user's own guides)."""
+    async def find_accessible_by_user(
+        self, user_id: EntityId | None
+    ) -> list[Guide]:
+        """Find guides accessible by a user."""
         if user_id is None:
-            # Unauthenticated: only public guides
-            cursor = self._collection.find({"isPublic": True})
+            cursor = self._collection.find(
+                {"isPublic": True}
+            )
         else:
-            # Authenticated: public guides + own guides
-            cursor = self._collection.find({
-                "$or": [
-                    {"isPublic": True},
-                    {"createdByUserId": user_id.value}
-                ]
-            })
-        documents = await cursor.to_list(length=None)
-        return [self._mapper.to_entity(doc) for doc in documents]
+            cursor = self._collection.find(
+                {
+                    "$or": [
+                        {"isPublic": True},
+                        {
+                            "createdByUserId": user_id.value
+                        },
+                    ]
+                }
+            )
+        docs = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(d) for d in docs]
 
     async def save(self, entity: Guide) -> None:
         """Save guide (upsert)."""
@@ -79,9 +95,11 @@ class MongoGuideRepository(IGuideRepository):
         await self._collection.replace_one(
             {"_id": entity.id.value},
             document,
-            upsert=True
+            upsert=True,
         )
 
     async def delete(self, id: EntityId) -> None:
         """Delete guide by ID."""
-        await self._collection.delete_one({"_id": id.value})
+        await self._collection.delete_one(
+            {"_id": id.value}
+        )

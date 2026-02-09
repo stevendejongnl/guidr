@@ -8,9 +8,9 @@
  *   getAuthToken: async () => authToken,
  * })
  *
- * const categories = await client.get(
- *   '/api/categories',
- *   validateCategoryList
+ * const guides = await client.get(
+ *   '/api/guides',
+ *   validateGuideList
  * )
  */
 

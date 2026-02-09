@@ -75,7 +75,7 @@ export const formDefinitions = {
     padding: spacing.md,
     justifyContent: 'center',
   },
-  categoryReadOnly: {
+  typeReadOnly: {
     backgroundColor: colors.surface,
     borderRadius: 8,
     padding: spacing.md,
@@ -85,7 +85,7 @@ export const formDefinitions = {
     fontSize: typography.sizeMd,
     color: colors.textSecondary,
   },
-  categoryReadOnlyText: {
+  typeReadOnlyText: {
     fontSize: typography.sizeMd,
     color: colors.textSecondary,
   },
