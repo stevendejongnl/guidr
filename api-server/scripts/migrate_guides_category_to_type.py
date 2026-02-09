@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Migrate guides from categoryId to guideType + metadata.
+"""DEPRECATED: Migrate guides from categoryId to guideType + metadata.
+
+This script is deprecated. The migration now runs automatically on
+API server startup via src/infrastructure/migrations/.
 
 Maps existing categoryId values to the new guideType field and adds
 an empty metadata field. Unknown category IDs default to "general".

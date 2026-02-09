@@ -126,3 +126,58 @@ class TestGuideMapper:
         assert guide.created_by_user_id is None
         assert guide.is_public is False
         assert guide.is_highlighted is False
+
+    def test_map_document_with_old_category_id(self) -> None:
+        """Test backward compatibility with old categoryId field."""
+        guide_id = str(uuid4())
+        now = datetime.now(UTC)
+
+        # Old document format with categoryId instead of guideType
+        document = {
+            "_id": guide_id,
+            "categoryId": "cooking",
+            "title": "Old Recipe",
+            "createdAt": now,
+            "updatedAt": now,
+        }
+
+        guide = GuideMapper.to_entity(document)
+
+        assert guide.id == EntityId(guide_id)
+        assert guide.guide_type == GuideType.COOKING
+        assert guide.title == GuideTitle("Old Recipe")
+
+    def test_map_document_with_invalid_category_id(self) -> None:
+        """Test backward compatibility with invalid categoryId defaults to general."""
+        guide_id = str(uuid4())
+        now = datetime.now(UTC)
+
+        document = {
+            "_id": guide_id,
+            "categoryId": "invalid_category",
+            "title": "Unknown Category Guide",
+            "createdAt": now,
+            "updatedAt": now,
+        }
+
+        guide = GuideMapper.to_entity(document)
+
+        assert guide.id == EntityId(guide_id)
+        assert guide.guide_type == GuideType.GENERAL
+
+    def test_map_document_without_guide_type_or_category(self) -> None:
+        """Test document without guideType or categoryId defaults to general."""
+        guide_id = str(uuid4())
+        now = datetime.now(UTC)
+
+        document = {
+            "_id": guide_id,
+            "title": "No Type Guide",
+            "createdAt": now,
+            "updatedAt": now,
+        }
+
+        guide = GuideMapper.to_entity(document)
+
+        assert guide.id == EntityId(guide_id)
+        assert guide.guide_type == GuideType.GENERAL

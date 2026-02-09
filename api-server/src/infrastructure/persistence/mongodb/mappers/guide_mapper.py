@@ -35,13 +35,29 @@ class GuideMapper:
 
     @staticmethod
     def to_entity(document: dict[str, Any]) -> Guide:
-        """Convert MongoDB document to Guide entity."""
+        """Convert MongoDB document to Guide entity.
+
+        Supports both old (categoryId) and new (guideType) formats for
+        backward compatibility during migration.
+        """
         created_by_user_id = document.get(
             "createdByUserId"
         )
+
+        # Backward compatibility: handle old categoryId or missing guideType
+        guide_type_value = document.get("guideType")
+        if not guide_type_value:
+            # Fallback to categoryId if guideType doesn't exist
+            category_id = document.get("categoryId", "general")
+            # Map categoryId to valid GuideType values
+            if category_id in {"cooking", "workout", "general"}:
+                guide_type_value = category_id
+            else:
+                guide_type_value = "general"
+
         return Guide(
             id=EntityId(str(document["_id"])),
-            guide_type=GuideType(document["guideType"]),
+            guide_type=GuideType(guide_type_value),
             title=GuideTitle(document["title"]),
             description=document.get("description"),
             metadata=document.get("metadata"),

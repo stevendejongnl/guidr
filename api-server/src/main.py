@@ -9,6 +9,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from .container import Container
+from .infrastructure.migrations import MIGRATIONS, MigrationRunner
 from .infrastructure.monitoring.sentry_config import init_sentry
 from .presentation.api.app import create_app
 from .presentation.api.dependencies import auth as auth_dependencies
@@ -43,6 +44,12 @@ async def lifespan(app: FastAPI):
     # Startup: Connect to database
     container = app.state.container
     await container.database().connect()
+
+    # Run database migrations
+    logger.info("Running database migrations...")
+    db = container.database()
+    migration_runner = MigrationRunner(db._db)
+    await migration_runner.run_migrations(MIGRATIONS)
 
     # Ensure coordination indexes exist
     coordinator = container.startup_coordinator()
