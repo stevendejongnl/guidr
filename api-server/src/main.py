@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
     # Run database migrations
     logger.info("Running database migrations...")
     db = container.database()
-    migration_runner = MigrationRunner(db._db)
+    migration_runner = MigrationRunner(db.db)
     await migration_runner.run_migrations(MIGRATIONS)
 
     # Ensure coordination indexes exist
