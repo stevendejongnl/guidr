@@ -629,18 +629,6 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
-  if (showGuideList) {
-    return (
-      <GuideListScreen
-        onCreateGuide={handleCreateGuide}
-        onEditGuide={handleEditGuide}
-        onViewGuide={handleViewGuide}
-        onBack={handleGuideListBack}
-        isAdmin={isAdmin}
-      />
-    )
-  }
-
   if (showStepForm && stepFormMode && editingStepGuideId) {
     const isEditingOthersStep =
       stepFormMode === 'edit' &&
@@ -680,6 +668,18 @@ export const AppNavigator: React.FC = () => {
         {...(servicesRef.current && {
           stepService: servicesRef.current.step,
         })}
+      />
+    )
+  }
+
+  if (showGuideList) {
+    return (
+      <GuideListScreen
+        onCreateGuide={handleCreateGuide}
+        onEditGuide={handleEditGuide}
+        onViewGuide={handleViewGuide}
+        onBack={handleGuideListBack}
+        isAdmin={isAdmin}
       />
     )
   }
