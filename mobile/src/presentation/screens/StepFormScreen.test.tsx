@@ -526,6 +526,49 @@ describe('StepFormScreen', () => {
     })
   })
 
+  describe('authorization', () => {
+    it('shows auth error when canEdit is false (non-owner, non-admin)', async () => {
+      const { getByText, queryByTestId } = render(
+        <StepFormScreen
+          mode="create"
+          guideId={guideId}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+          canEdit={false}
+          stepService={mockStepService}
+        />
+      )
+
+      await waitFor(() => {
+        expect(getByText(/Only the guide owner or administrators can edit steps/)).toBeTruthy()
+      })
+
+      // Form inputs should not be rendered
+      expect(queryByTestId('step-title-input')).toBeNull()
+    })
+
+    it('shows form when canEdit is true (owner, non-admin)', async () => {
+      const { getByTestId, queryByText } = render(
+        <StepFormScreen
+          mode="create"
+          guideId={guideId}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+          canEdit={true}
+          isAdmin={false}
+          stepService={mockStepService}
+        />
+      )
+
+      await waitFor(() => {
+        expect(getByTestId('step-title-input')).toBeTruthy()
+      })
+
+      // Auth error should not be shown
+      expect(queryByText(/Only the guide owner or administrators can edit steps/)).toBeNull()
+    })
+  })
+
   describe('user interactions', () => {
     it('calls onCancel when cancel button is pressed', async () => {
       const { getByTestId } = render(

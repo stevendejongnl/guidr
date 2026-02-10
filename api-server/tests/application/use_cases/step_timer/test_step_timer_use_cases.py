@@ -263,6 +263,96 @@ class TestResetStepTimer:
         repository.save.assert_not_called()
 
 
+class TestStartStepTimerTimezone:
+    """Test suite for timezone handling in started_at."""
+
+    @pytest.fixture
+    def repository(self) -> AsyncMock:
+        """Create mock repository."""
+        mock = AsyncMock(spec=IStepTimerRepository)
+        return mock
+
+    @pytest.fixture
+    def use_case(self, repository: AsyncMock) -> StartStepTimer:
+        """Create use case with mock repository."""
+        return StartStepTimer(repository)
+
+    @pytest.mark.asyncio
+    async def test_started_at_includes_utc_offset_for_naive_datetime(
+        self, use_case: StartStepTimer, repository: AsyncMock
+    ) -> None:
+        """Test started_at includes +00:00 even with naive datetime.
+
+        PyMongo returns naive datetimes (no tzinfo). The mapper must
+        add UTC offset so JavaScript Date.parse() interprets correctly.
+        """
+        step_id = str(uuid4())
+        guide_id = str(uuid4())
+        user_id = str(uuid4())
+
+        # Naive datetime — simulates what PyMongo returns after
+        # round-tripping through MongoDB
+        naive_started_at = datetime(2026, 2, 10, 14, 30, 45, 123456)
+
+        existing_timer = StepTimer(
+            id=EntityId(str(uuid4())),
+            step_id=EntityId(step_id),
+            guide_id=EntityId(guide_id),
+            user_id=EntityId(user_id),
+            status=StepTimerStatus.RUNNING,
+            started_at=naive_started_at,
+            accumulated_seconds=0,
+            duration_seconds=60,
+        )
+        repository.find_by_step_and_user.return_value = existing_timer
+
+        result = await use_case.execute(
+            step_id=step_id,
+            guide_id=guide_id,
+            duration_seconds=60,
+            user_id=user_id,
+        )
+
+        assert result.started_at is not None
+        assert result.started_at.endswith("+00:00")
+
+    @pytest.mark.asyncio
+    async def test_started_at_includes_utc_offset_for_aware_datetime(
+        self, use_case: StartStepTimer, repository: AsyncMock
+    ) -> None:
+        """Test started_at preserves offset for aware datetime."""
+        step_id = str(uuid4())
+        guide_id = str(uuid4())
+        user_id = str(uuid4())
+
+        # Aware datetime — what datetime.now(UTC) produces
+        aware_started_at = datetime(
+            2026, 2, 10, 14, 30, 45, 123456, tzinfo=UTC
+        )
+
+        existing_timer = StepTimer(
+            id=EntityId(str(uuid4())),
+            step_id=EntityId(step_id),
+            guide_id=EntityId(guide_id),
+            user_id=EntityId(user_id),
+            status=StepTimerStatus.RUNNING,
+            started_at=aware_started_at,
+            accumulated_seconds=0,
+            duration_seconds=60,
+        )
+        repository.find_by_step_and_user.return_value = existing_timer
+
+        result = await use_case.execute(
+            step_id=step_id,
+            guide_id=guide_id,
+            duration_seconds=60,
+            user_id=user_id,
+        )
+
+        assert result.started_at is not None
+        assert result.started_at.endswith("+00:00")
+
+
 class TestGetStepTimersByGuide:
     """Test suite for GetStepTimersByGuide use case."""
 

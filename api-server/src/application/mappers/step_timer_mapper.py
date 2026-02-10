@@ -1,5 +1,7 @@
 """Step timer mapper for entity-DTO conversion."""
 
+from datetime import UTC
+
 from src.application.dtos import StepTimerResponseDTO
 from src.domain.entities import StepTimer
 
@@ -24,9 +26,13 @@ class StepTimerMapper:
             user_id=timer.user_id.value,
             status=timer.status.value,
             started_at=(
-                timer.started_at.isoformat()
-                if timer.started_at
-                else None
+                timer.started_at.replace(tzinfo=UTC).isoformat()
+                if timer.started_at and timer.started_at.tzinfo is None
+                else (
+                    timer.started_at.isoformat()
+                    if timer.started_at
+                    else None
+                )
             ),
             accumulated_seconds=timer.accumulated_seconds,
             duration_seconds=timer.duration_seconds,

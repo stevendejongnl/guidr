@@ -25,7 +25,9 @@ function calculateDisplay(dto: StepTimerDto): StepTimerDisplay {
 
   if (dto.status === 'running' && dto.startedAt) {
     const startedMs = Date.parse(dto.startedAt)
-    elapsed += Math.floor((Date.now() - startedMs) / 1000)
+    if (!isNaN(startedMs)) {
+      elapsed += Math.floor((Date.now() - startedMs) / 1000)
+    }
   }
 
   let displaySeconds: number

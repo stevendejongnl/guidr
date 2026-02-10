@@ -242,6 +242,44 @@ describe('useStepTimers', () => {
     expect(display.isComplete).toBe(false) // never complete in stopwatch
   })
 
+  it('running timer loaded from API shows correct countdown, not completed', async () => {
+    // Simulate a timer started 10 seconds ago — as returned by the API
+    // with a proper UTC ISO string (the fix ensures +00:00 suffix)
+    const tenSecondsAgo = new Date(Date.now() - 10_000).toISOString()
+
+    const runningTimer: StepTimerDto = {
+      id: 'timer-1',
+      stepId: 'step-1',
+      guideId: 'guide-1',
+      userId: 'user-1',
+      status: 'running',
+      startedAt: tenSecondsAgo,
+      accumulatedSeconds: 0,
+      durationSeconds: 300, // 5 minute countdown
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    const mockClient = createMockStepTimerClient()
+    mockClient.getTimersByGuide.mockResolvedValue([runningTimer])
+
+    const { result } = renderHook(() =>
+      useStepTimers('guide-1', 'test-token', mockClient),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    const display = result.current.timers['step-1']!
+    expect(display).toBeDefined()
+    expect(display.isRunning).toBe(true)
+    expect(display.isComplete).toBe(false)
+    // Should show ~290 seconds remaining (300 - ~10), allow some tolerance
+    expect(display.displaySeconds).toBeGreaterThan(280)
+    expect(display.displaySeconds).toBeLessThanOrEqual(300)
+  })
+
   it('marks countdown timer as complete when elapsed >= duration', async () => {
     const completedTimer: StepTimerDto = {
       id: 'timer-1',

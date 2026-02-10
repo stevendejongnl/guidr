@@ -422,11 +422,14 @@ export const AppNavigator: React.FC = () => {
           const guide = await servicesRef.current.guide.getGuideById(targetGuideId, token)
           if (guide) {
             setEditingStepGuideOwnerId(guide.createdByUserId || null)
+            const canEdit = Boolean(adminModeActive || (userId && guide.isOwnedBy(userId)))
+            setCanEditCurrentGuide(canEdit)
           }
         }
       }
     } catch (error) {
       console.warn('Failed to load step guide for ownership check:', error)
+      setCanEditCurrentGuide(false)
     }
     setEditingStepId(stepId)
     setStepFormMode('edit')
