@@ -1,6 +1,7 @@
 import { AuthStorage } from '../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../infrastructure/api/AuthClient'
+import { StepTimerClient } from '../infrastructure/api/StepTimerClient'
 import { GuideService } from '../domain/services/GuideService'
 import { SessionService } from '../domain/services/SessionService'
 import { StepService } from '../domain/services/StepService'
@@ -181,3 +182,18 @@ export const createMockStepService = (
   deleteStep: jest.fn(),
   ...overrides,
 } as unknown as jest.Mocked<StepService>)
+
+/**
+ * Create a mock StepTimerClient instance for testing
+ * @param overrides Optional method overrides
+ */
+export const createMockStepTimerClient = (
+  overrides: Partial<jest.Mocked<StepTimerClient>> = {},
+): jest.Mocked<StepTimerClient> => ({
+  startTimer: jest.fn().mockResolvedValue({}),
+  pauseTimer: jest.fn().mockResolvedValue({}),
+  resetTimer: jest.fn().mockResolvedValue({}),
+  getTimersByGuide: jest.fn().mockResolvedValue([]),
+  getActiveTimers: jest.fn().mockResolvedValue([]),
+  ...overrides,
+} as unknown as jest.Mocked<StepTimerClient>)

@@ -19,7 +19,7 @@ export interface UseStepTimersReturn {
   loading: boolean
 }
 
-function calculateDisplay(dto: StepTimerDto): StepTimerDisplay {
+export function calculateDisplay(dto: StepTimerDto): StepTimerDisplay {
   const mode = dto.durationSeconds > 0 ? 'countdown' : 'stopwatch'
   let elapsed = dto.accumulatedSeconds
 

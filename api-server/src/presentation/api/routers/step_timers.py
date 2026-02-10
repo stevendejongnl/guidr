@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.application.use_cases.step_timer import (
+    GetActiveTimers,
     GetStepTimersByGuide,
     PauseStepTimer,
     ResetStepTimer,
@@ -17,6 +18,7 @@ from src.domain.exceptions import (
 
 from ..dependencies.auth import get_current_user
 from ..models import (
+    ActiveStepTimerResponse,
     ErrorResponse,
     StepTimerResponse,
     StepTimerStart,
@@ -54,6 +56,11 @@ def get_reset_step_timer_use_case() -> ResetStepTimer:
 def get_get_step_timers_use_case() -> GetStepTimersByGuide:
     assert _container is not None, "Container not initialized"
     return _container.get_step_timers_by_guide_use_case()
+
+
+def get_get_active_timers_use_case() -> GetActiveTimers:
+    assert _container is not None, "Container not initialized"
+    return _container.get_active_timers_use_case()
 
 
 def _to_response(dto) -> StepTimerResponse:
@@ -99,6 +106,39 @@ async def start_timer(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
+
+
+@router.get(
+    "/active",
+    response_model=list[ActiveStepTimerResponse],
+)
+async def get_active_timers(
+    current_user: User = Depends(get_current_user),
+    use_case: GetActiveTimers = Depends(
+        get_get_active_timers_use_case
+    ),
+) -> list[ActiveStepTimerResponse]:
+    """Get all active (running/paused) timers for current user."""
+    results = await use_case.execute(
+        user_id=current_user.id.value,
+    )
+    return [
+        ActiveStepTimerResponse(
+            id=dto.id,
+            stepId=dto.step_id,
+            guideId=dto.guide_id,
+            userId=dto.user_id,
+            status=dto.status,
+            startedAt=dto.started_at,
+            accumulatedSeconds=dto.accumulated_seconds,
+            durationSeconds=dto.duration_seconds,
+            createdAt=dto.created_at,
+            updatedAt=dto.updated_at,
+            guideTitle=dto.guide_title,
+            stepTitle=dto.step_title,
+        )
+        for dto in results
+    ]
 
 
 @router.post(

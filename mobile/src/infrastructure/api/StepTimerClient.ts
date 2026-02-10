@@ -1,3 +1,4 @@
+import { ActiveStepTimerDto } from './dtos/ActiveStepTimerDto'
 import { StepTimerDto } from './dtos/StepTimerDto'
 import { extractErrorMessage } from '../../common/ApiErrorUtils'
 
@@ -74,6 +75,23 @@ export class StepTimerClient {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to reset timer'))
+    }
+
+    return response.json()
+  }
+
+  async getActiveTimers(authToken: string): Promise<ActiveStepTimerDto[]> {
+    const response = await fetch(`${this.apiBaseUrl}/step-timers/active`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(extractErrorMessage(errorData, 'Failed to load active timers'))
     }
 
     return response.json()

@@ -30,3 +30,10 @@ class StepTimerResponse(BaseModel):
     updated_at: str = Field(..., alias="updatedAt")
 
     model_config = ConfigDict(populate_by_name=True)
+
+
+class ActiveStepTimerResponse(StepTimerResponse):
+    """Response model for active timer with guide/step titles."""
+
+    guide_title: str = Field(..., alias="guideTitle")
+    step_title: str = Field(..., alias="stepTitle")

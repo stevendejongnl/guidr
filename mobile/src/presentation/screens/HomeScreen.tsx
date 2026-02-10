@@ -19,10 +19,13 @@ import { QuickActionButton } from '../components/QuickActionButton'
 import { ActivityItem } from '../components/ActivityItem'
 import { GuideCard } from '../components/GuideCard'
 import { AuthenticationError } from '../../common/ApiErrorUtils'
+import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { UserDto } from '../../infrastructure/api/dtos/UserDto'
+import { ActiveTimerCard } from '../components/ActiveTimerCard'
+import { useActiveTimers } from '../hooks/useActiveTimers'
 import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewModel'
 import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
@@ -84,6 +87,7 @@ interface HomeScreenProps {
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
   authClient?: AuthClient
+  stepTimerClient?: StepTimerClient
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -102,6 +106,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
   authClient: injectedAuthClient,
+  stepTimerClient: injectedStepTimerClient,
 }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
@@ -121,6 +126,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [authToken, setAuthToken] = useState<string | null>(null)
+  const [stepTimerClient, setStepTimerClient] = useState<StepTimerClient | null>(
+    injectedStepTimerClient || null,
+  )
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
@@ -155,6 +164,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     return servicesRef.current
   }
 
+  const {
+    activeTimers,
+    refresh: refreshActiveTimers,
+  } = useActiveTimers(authToken, stepTimerClient)
+
   const loadData = async () => {
     try {
       setError(null)
@@ -165,18 +179,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       setUserEmail(email)
 
       // Get auth token for API calls
-      const authToken = await authStorage.getAuthToken()
-      if (!authToken) {
+      const token = await authStorage.getAuthToken()
+      if (!token) {
         throw new Error('No auth token found')
       }
+      setAuthToken(token)
 
       // Fetch user profile
       const serverUrl = await serverConfigStorage.getServerUrl()
       if (!serverUrl) {
         throw new Error('No server URL configured')
       }
+
+      // Initialize StepTimerClient if not injected
+      if (!injectedStepTimerClient) {
+        setStepTimerClient(new StepTimerClient(serverUrl))
+      }
+
       const authClient = injectedAuthClient || new AuthClient(serverUrl)
-      const profile = await authClient.getProfile(authToken)
+      const profile = await authClient.getProfile(token)
       setUserProfile(profile)
 
       // Get services (either injected or create new)
@@ -184,8 +205,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
       // Load all guides and sessions in parallel
       const [allGuides, allSessions] = await Promise.all([
-        services.guideService.getAllGuides(authToken),
-        services.sessionService.getAllSessions(authToken),
+        services.guideService.getAllGuides(token),
+        services.sessionService.getAllSessions(token),
       ])
 
       // Calculate stats
@@ -269,7 +290,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const handleRefresh = async () => {
     setRefreshing(true)
-    await loadData()
+    await Promise.all([loadData(), refreshActiveTimers()])
   }
 
   const handleLogout = async () => {
@@ -388,6 +409,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             />
           )}
         </View>
+
+        {/* Active Timers */}
+        {!isLoading && activeTimers.length > 0 && (
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Active Timers</Text>
+            {activeTimers.map(timer => (
+              <ActiveTimerCard
+                key={timer.timerId}
+                timer={timer}
+                onPress={() => handleViewGuide(timer.guideId)}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Featured Guides (hidden in admin mode) */}
         {!isLoading && !adminModeActive && featuredGuides.length > 0 && (

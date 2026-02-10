@@ -41,6 +41,20 @@ class IStepTimerRepository(IRepository[StepTimer]):
         pass
 
     @abstractmethod
+    async def find_active_by_user(
+        self, user_id: EntityId
+    ) -> list[StepTimer]:
+        """Find all active (running/paused) timers for a user.
+
+        Args:
+            user_id: User ID to filter by
+
+        Returns:
+            List of active timers (may be empty)
+        """
+        pass
+
+    @abstractmethod
     async def delete_by_guide_and_user(
         self, guide_id: EntityId, user_id: EntityId
     ) -> None:

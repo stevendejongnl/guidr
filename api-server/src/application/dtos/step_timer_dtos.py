@@ -26,3 +26,11 @@ class StepTimerResponseDTO:
     duration_seconds: int
     created_at: str  # ISO format
     updated_at: str  # ISO format
+
+
+@dataclass
+class ActiveStepTimerResponseDTO(StepTimerResponseDTO):
+    """DTO for active step timer with enriched guide/step titles."""
+
+    guide_title: str = ""
+    step_title: str = ""

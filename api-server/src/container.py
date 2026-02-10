@@ -35,6 +35,7 @@ from .application.use_cases.step import (
     UpdateStep,
 )
 from .application.use_cases.step_timer import (
+    GetActiveTimers,
     GetStepTimersByGuide,
     PauseStepTimer,
     ResetStepTimer,
@@ -284,6 +285,13 @@ class Container(containers.DeclarativeContainer):
     get_step_timers_by_guide_use_case = providers.Factory(
         GetStepTimersByGuide,
         step_timer_repository=step_timer_repository,
+    )
+
+    get_active_timers_use_case = providers.Factory(
+        GetActiveTimers,
+        step_timer_repository=step_timer_repository,
+        guide_repository=guide_repository,
+        step_repository=step_repository,
     )
 
     # User Use Cases (Factories)

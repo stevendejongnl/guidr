@@ -51,6 +51,19 @@ class MongoStepTimerRepository(IStepTimerRepository):
         documents = await cursor.to_list(length=None)
         return [self._mapper.to_entity(doc) for doc in documents]
 
+    async def find_active_by_user(
+        self, user_id: EntityId
+    ) -> list[StepTimer]:
+        """Find all active (running/paused) timers for a user."""
+        cursor = self._collection.find(
+            {
+                "userId": user_id.value,
+                "status": {"$in": ["running", "paused"]},
+            }
+        )
+        documents = await cursor.to_list(length=None)
+        return [self._mapper.to_entity(doc) for doc in documents]
+
     async def save(self, entity: StepTimer) -> None:
         """Save timer (upsert)."""
         document = self._mapper.to_document(entity)
