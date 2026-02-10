@@ -18,7 +18,9 @@ describe('SettingsScreen', () => {
     onBack: jest.fn(),
     onChangeServer: jest.fn(),
     onOpenAdmin: jest.fn(),
-    adminMode: false,
+    isAdmin: false,
+    adminModeActive: false,
+    onToggleAdminMode: jest.fn(),
     serverUrl: 'https://api.example.com',
     healthCheckService: mockHealthCheckService,
   }
@@ -113,27 +115,49 @@ describe('SettingsScreen', () => {
     expect(defaultProps.onChangeServer).toHaveBeenCalledTimes(1)
   })
 
-  it('shows admin section when adminMode is true', () => {
+  it('shows admin section when isAdmin is true', () => {
     mockHealthCheckService.validateServer.mockResolvedValue({
       healthy: true,
       responseTime: 100,
     })
     const { getByText, getByTestId } = render(
-      <SettingsScreen {...defaultProps} adminMode={true} />
+      <SettingsScreen {...defaultProps} isAdmin={true} />
     )
     expect(getByText('Admin')).toBeTruthy()
-    expect(getByTestId('open-admin-button')).toBeTruthy()
+    expect(getByTestId('admin-mode-toggle')).toBeTruthy()
   })
 
-  it('hides admin section when adminMode is false', () => {
+  it('hides admin section when isAdmin is false', () => {
     mockHealthCheckService.validateServer.mockResolvedValue({
       healthy: true,
       responseTime: 100,
     })
     const { queryByText, queryByTestId } = render(
-      <SettingsScreen {...defaultProps} adminMode={false} />
+      <SettingsScreen {...defaultProps} isAdmin={false} />
     )
     expect(queryByText('Admin')).toBeNull()
+    expect(queryByTestId('admin-mode-toggle')).toBeNull()
+  })
+
+  it('shows admin tools button only when adminModeActive is true', () => {
+    mockHealthCheckService.validateServer.mockResolvedValue({
+      healthy: true,
+      responseTime: 100,
+    })
+    const { getByTestId } = render(
+      <SettingsScreen {...defaultProps} isAdmin={true} adminModeActive={true} />
+    )
+    expect(getByTestId('open-admin-button')).toBeTruthy()
+  })
+
+  it('hides admin tools button when adminModeActive is false', () => {
+    mockHealthCheckService.validateServer.mockResolvedValue({
+      healthy: true,
+      responseTime: 100,
+    })
+    const { queryByTestId } = render(
+      <SettingsScreen {...defaultProps} isAdmin={true} adminModeActive={false} />
+    )
     expect(queryByTestId('open-admin-button')).toBeNull()
   })
 
@@ -143,28 +167,23 @@ describe('SettingsScreen', () => {
       responseTime: 100,
     })
     const { getByTestId } = render(
-      <SettingsScreen {...defaultProps} adminMode={true} />
+      <SettingsScreen {...defaultProps} isAdmin={true} adminModeActive={true} />
     )
     fireEvent.press(getByTestId('open-admin-button'))
     expect(defaultProps.onOpenAdmin).toHaveBeenCalledTimes(1)
   })
 
-  it('hides admin section when onOpenAdmin is not provided', () => {
+  it('fires onToggleAdminMode when toggle is changed', () => {
     mockHealthCheckService.validateServer.mockResolvedValue({
       healthy: true,
       responseTime: 100,
     })
-    const propsWithoutAdmin = {
-      onBack: jest.fn(),
-      onChangeServer: jest.fn(),
-      adminMode: true,
-      serverUrl: 'https://api.example.com',
-      healthCheckService: mockHealthCheckService,
-    }
-    const { queryByText } = render(
-      <SettingsScreen {...propsWithoutAdmin} />
+    const mockToggle = jest.fn()
+    const { getByTestId } = render(
+      <SettingsScreen {...defaultProps} isAdmin={true} onToggleAdminMode={mockToggle} />
     )
-    expect(queryByText('Admin')).toBeNull()
+    fireEvent(getByTestId('admin-mode-toggle'), 'onValueChange', true)
+    expect(mockToggle).toHaveBeenCalledWith(true)
   })
 })
 

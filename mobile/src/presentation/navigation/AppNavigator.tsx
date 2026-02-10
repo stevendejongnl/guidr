@@ -42,6 +42,7 @@ export const AppNavigator: React.FC = () => {
   const [hasAuthToken, setHasAuthToken] = useState(false)
   const [userEmail, setUserEmail] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
+  const [adminModeActive, setAdminModeActive] = useState(false)
   const [serverUrl, setServerUrl] = useState<string | null>(null)
   const [serverConfig, setServerConfig] = useState<{
     minAppVersion?: string | null
@@ -252,6 +253,7 @@ export const AppNavigator: React.FC = () => {
       setHasAuthToken(false)
       setUserId(null)
       setIsAdmin(false)
+      setAdminModeActive(false)
     } catch (error) {
       ErrorReporter.capture(error, { component: 'AppNavigator', action: 'logout' })
       console.error('Logout failed:', error)
@@ -259,6 +261,7 @@ export const AppNavigator: React.FC = () => {
       setHasAuthToken(false)
       setUserId(null)
       setIsAdmin(false)
+      setAdminModeActive(false)
     }
   }
 
@@ -387,7 +390,7 @@ export const AppNavigator: React.FC = () => {
       if (services) {
         const guide = await services.guide.getGuideById(guideId, authToken)
         if (guide) {
-          const canEdit = Boolean(isAdmin || (userId && guide.isOwnedBy(userId)))
+          const canEdit = Boolean(adminModeActive || (userId && guide.isOwnedBy(userId)))
           setCanEditCurrentGuide(canEdit)
         }
       }
@@ -591,7 +594,9 @@ export const AppNavigator: React.FC = () => {
           setShowSettingsScreen(false)
           setShowAdminScreen(true)
         }}
-        adminMode={isAdmin}
+        isAdmin={isAdmin}
+        adminModeActive={adminModeActive}
+        onToggleAdminMode={setAdminModeActive}
         serverUrl={serverUrl}
         healthCheckService={healthCheckService}
       />
@@ -612,7 +617,7 @@ export const AppNavigator: React.FC = () => {
   if (guideFormMode && serverUrl) {
     const isEditingOthersGuide =
       guideFormMode === 'edit' &&
-      isAdmin &&
+      adminModeActive &&
       userId !== null &&
       editingGuideOwnerId !== null &&
       editingGuideOwnerId !== userId
@@ -623,7 +628,7 @@ export const AppNavigator: React.FC = () => {
         {...(editingGuideId && { guideId: editingGuideId })}
         onSave={handleGuideFormSave}
         onCancel={handleGuideFormCancel}
-        isAdmin={isAdmin}
+        isAdmin={adminModeActive}
         isEditingOthersContent={isEditingOthersGuide}
       />
     )
@@ -632,7 +637,7 @@ export const AppNavigator: React.FC = () => {
   if (showStepForm && stepFormMode && editingStepGuideId) {
     const isEditingOthersStep =
       stepFormMode === 'edit' &&
-      isAdmin &&
+      adminModeActive &&
       userId !== null &&
       editingStepGuideOwnerId !== null &&
       editingStepGuideOwnerId !== userId
@@ -646,7 +651,7 @@ export const AppNavigator: React.FC = () => {
         onSave={handleStepFormSave}
         onCancel={handleStepFormCancel}
         canEdit={canEditCurrentGuide}
-        isAdmin={isAdmin}
+        isAdmin={adminModeActive}
         isEditingOthersContent={isEditingOthersStep}
       />
     )
@@ -664,7 +669,7 @@ export const AppNavigator: React.FC = () => {
         onEdit={handleGuideDetailEdit}
         onAddStep={handleAddStep}
         onEditStep={handleEditStep}
-        isAdmin={isAdmin}
+        isAdmin={adminModeActive}
         {...(servicesRef.current && {
           stepService: servicesRef.current.step,
         })}
@@ -679,7 +684,7 @@ export const AppNavigator: React.FC = () => {
         onEditGuide={handleEditGuide}
         onViewGuide={handleViewGuide}
         onBack={handleGuideListBack}
-        isAdmin={isAdmin}
+        isAdmin={adminModeActive}
       />
     )
   }
@@ -706,6 +711,8 @@ export const AppNavigator: React.FC = () => {
       onViewSessionDetail={handleViewSessionDetail}
       onViewGuideDetail={handleViewGuide}
       isAdmin={isAdmin}
+      adminModeActive={adminModeActive}
+      onToggleAdminMode={setAdminModeActive}
       {...(servicesRef.current && {
         guideService: servicesRef.current.guide,
         sessionService: servicesRef.current.session,

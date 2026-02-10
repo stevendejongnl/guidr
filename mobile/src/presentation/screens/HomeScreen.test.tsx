@@ -430,6 +430,164 @@ describe('HomeScreen', () => {
     })
   })
 
+  describe('admin mode toggle', () => {
+    it('should show admin toggle in menu when isAdmin is true', () => {
+      const mockOnToggle = jest.fn()
+      const { getByTestId, getByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={true}
+          adminModeActive={false}
+          onToggleAdminMode={mockOnToggle}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      fireEvent.press(getByTestId('home-menu'))
+      expect(getByText('Admin Mode')).toBeTruthy()
+    })
+
+    it('should not show admin toggle in menu when isAdmin is false', () => {
+      const { getByTestId, queryByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      fireEvent.press(getByTestId('home-menu'))
+      expect(queryByText('Admin Mode')).toBeNull()
+    })
+
+    it('should hide Featured Guides when adminModeActive is true', async () => {
+      const mockGuides: Guide[] = [
+        {
+          id: 'g1',
+          title: 'Featured Guide',
+          description: 'A featured guide',
+          guideType: 'cooking',
+          stepCount: 3,
+          duration: 60,
+          isPublic: true,
+          isHighlighted: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Guide,
+      ]
+
+      mockGuideService = createMockGuideService(mockGuides)
+
+      const { queryByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={true}
+          adminModeActive={true}
+          onToggleAdminMode={jest.fn()}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      await waitFor(() => {
+        expect(queryByText('✨ Featured Guides')).toBeNull()
+      })
+    })
+
+    it('should hide Recommended for You when adminModeActive is true', async () => {
+      const mockGuides: Guide[] = [
+        {
+          id: 'g1',
+          title: 'Test Guide',
+          description: 'A test guide',
+          guideType: 'general',
+          stepCount: 3,
+          duration: 60,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Guide,
+      ]
+
+      mockGuideService = createMockGuideService(mockGuides)
+
+      const { queryByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={true}
+          adminModeActive={true}
+          onToggleAdminMode={jest.fn()}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      await waitFor(() => {
+        expect(queryByText('Recommended for You')).toBeNull()
+      })
+    })
+
+    it('should show Featured and Recommended when adminModeActive is false', async () => {
+      const mockGuides: Guide[] = [
+        {
+          id: 'g1',
+          title: 'Featured Guide',
+          description: 'A featured guide',
+          guideType: 'cooking',
+          stepCount: 3,
+          duration: 60,
+          isPublic: true,
+          isHighlighted: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as Guide,
+      ]
+
+      mockGuideService = createMockGuideService(mockGuides)
+
+      const { getByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={true}
+          adminModeActive={false}
+          onToggleAdminMode={jest.fn()}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      await waitFor(() => {
+        expect(getByText('Recommended for You')).toBeTruthy()
+      })
+    })
+  })
+
   describe('token refresh on AuthenticationError', () => {
     it('should refresh token and retry loadData when AuthenticationError occurs', async () => {
       // First call throws AuthenticationError, second call succeeds

@@ -13,7 +13,7 @@ import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigSt
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
-import { Menu, MenuItem } from '../components/Menu'
+import { Menu, MenuItem, MenuToggleItem } from '../components/Menu'
 import { StatCard } from '../components/StatCard'
 import { QuickActionButton } from '../components/QuickActionButton'
 import { ActivityItem } from '../components/ActivityItem'
@@ -76,6 +76,8 @@ interface HomeScreenProps {
   onViewSessionDetail?: (sessionId: string) => void
   onViewGuideDetail?: (guideId: string) => void
   isAdmin: boolean
+  adminModeActive?: boolean
+  onToggleAdminMode?: (value: boolean) => void
   // Optional dependencies (for testing/DI)
   guideService?: GuideService
   sessionService?: SessionService
@@ -93,6 +95,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onViewSessionDetail,
   onViewGuideDetail,
   isAdmin,
+  adminModeActive,
+  onToggleAdminMode,
   guideService: injectedGuideService,
   sessionService: injectedSessionService,
   authStorage: injectedAuthStorage,
@@ -330,6 +334,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     { id: 'logout', label: 'Logout', onPress: handleLogout },
   ]
 
+  const menuToggleItems: MenuToggleItem[] = isAdmin && onToggleAdminMode
+    ? [{
+      id: 'admin-mode',
+      label: 'Admin Mode',
+      value: adminModeActive ?? false,
+      onValueChange: onToggleAdminMode,
+    }]
+    : []
+
   const displayName = userProfile?.name || userEmail || 'User'
 
   return (
@@ -344,7 +357,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <Text style={commonStyles.titleLarge}>Guidr</Text>
             <Text style={commonStyles.subtitle}>Welcome, {displayName}!</Text>
           </View>
-          <Menu items={menuItems} testID="home-menu" />
+          <Menu items={menuItems} toggleItems={menuToggleItems} testID="home-menu" />
         </View>
 
         {error && <Text style={commonStyles.errorText}>{error}</Text>}
@@ -374,8 +387,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           />
         </View>
 
-        {/* Featured Guides */}
-        {!isLoading && featuredGuides.length > 0 && (
+        {/* Featured Guides (hidden in admin mode) */}
+        {!isLoading && !adminModeActive && featuredGuides.length > 0 && (
           <View style={commonStyles.section}>
             <Text style={commonStyles.sectionTitle}>✨ Featured Guides</Text>
             {featuredGuides.map(guide => (
@@ -403,8 +416,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         )}
 
-        {/* Recommendations */}
-        {!isLoading && recommendedGuides.length > 0 && (
+        {/* Recommendations (hidden in admin mode) */}
+        {!isLoading && !adminModeActive && recommendedGuides.length > 0 && (
           <View style={commonStyles.section}>
             <Text style={commonStyles.sectionTitle}>Recommended for You</Text>
             {recommendedGuides.map(guide => (

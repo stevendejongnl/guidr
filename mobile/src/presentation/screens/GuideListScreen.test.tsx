@@ -120,7 +120,7 @@ describe('GuideListScreen', () => {
     expect(mockOnCreateGuide).toHaveBeenCalled()
   })
 
-  it('defaults to "My Guides" tab when isAdmin is true', () => {
+  it('defaults to "All" tab regardless of isAdmin', () => {
     const { getByTestId } = render(
       <GuideListScreen
         onCreateGuide={mockOnCreateGuide}
@@ -133,8 +133,8 @@ describe('GuideListScreen', () => {
         serverConfigStorage={mockServerConfigStorage}
       />
     )
-    const mineTab = getByTestId('filter-tab-mine')
-    expect(mineTab.props['style']).toEqual(
+    const allTab = getByTestId('filter-tab-all')
+    expect(allTab.props['style']).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ backgroundColor: expect.any(String) }),
       ])

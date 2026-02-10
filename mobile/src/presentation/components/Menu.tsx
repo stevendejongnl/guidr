@@ -6,6 +6,7 @@ import {
   Modal,
   StyleSheet,
   Pressable,
+  Switch,
 } from 'react-native'
 import { colors, spacing, borderRadius, typography } from '@guidr/shared/tokens'
 
@@ -16,12 +17,21 @@ export interface MenuItem {
   testID?: string
 }
 
-interface MenuProps {
-  items: MenuItem[]
+export interface MenuToggleItem {
+  id: string
+  label: string
+  value: boolean
+  onValueChange: (value: boolean) => void
   testID?: string
 }
 
-export const Menu: React.FC<MenuProps> = ({ items, testID }) => {
+interface MenuProps {
+  items: MenuItem[]
+  toggleItems?: MenuToggleItem[]
+  testID?: string
+}
+
+export const Menu: React.FC<MenuProps> = ({ items, toggleItems, testID }) => {
   const [visible, setVisible] = useState(false)
 
   const handleItemPress = (item: MenuItem) => {
@@ -52,6 +62,20 @@ export const Menu: React.FC<MenuProps> = ({ items, testID }) => {
           testID="menu-overlay"
         >
           <View style={styles.menuContainer}>
+            {toggleItems?.map((item) => (
+              <View
+                key={item.id}
+                style={styles.toggleItem}
+                testID={item.testID ?? `menu-toggle-${item.id}`}
+              >
+                <Text style={styles.menuItemText}>{item.label}</Text>
+                <Switch
+                  value={item.value}
+                  onValueChange={item.onValueChange}
+                  testID={`menu-toggle-switch-${item.id}`}
+                />
+              </View>
+            ))}
             {items.map((item) => (
               <TouchableOpacity
                 key={item.id}
@@ -107,6 +131,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+  },
+  toggleItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   menuItem: {
     paddingVertical: spacing.md,

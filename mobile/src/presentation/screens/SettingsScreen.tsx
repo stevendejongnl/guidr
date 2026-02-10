@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Switch,
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
@@ -16,7 +17,9 @@ interface SettingsScreenProps {
   onBack: () => void
   onChangeServer: () => void
   onOpenAdmin?: () => void
-  adminMode: boolean
+  isAdmin: boolean
+  adminModeActive: boolean
+  onToggleAdminMode: (value: boolean) => void
   serverUrl: string | null
   healthCheckService: IHealthCheckService
 }
@@ -25,7 +28,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onBack,
   onChangeServer,
   onOpenAdmin,
-  adminMode,
+  isAdmin,
+  adminModeActive,
+  onToggleAdminMode,
   serverUrl,
   healthCheckService,
 }) => {
@@ -90,22 +95,32 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Admin Section - Only shown in admin mode */}
-          {adminMode && onOpenAdmin && (
+          {/* Admin Section - Shown when user has admin privileges */}
+          {isAdmin && (
             <View style={commonStyles.section}>
               <Text style={commonStyles.sectionTitle}>Admin</Text>
-              <TouchableOpacity
-                style={[commonStyles.buttonSecondary, styles.sectionButton]}
-                onPress={onOpenAdmin}
-                testID="open-admin-button"
-              >
-                <Text style={commonStyles.buttonText}>Admin Tools</Text>
-              </TouchableOpacity>
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Admin Mode</Text>
+                <Switch
+                  value={adminModeActive}
+                  onValueChange={onToggleAdminMode}
+                  testID="admin-mode-toggle"
+                />
+              </View>
+              {adminModeActive && onOpenAdmin && (
+                <TouchableOpacity
+                  style={[commonStyles.buttonSecondary, styles.sectionButton]}
+                  onPress={onOpenAdmin}
+                  testID="open-admin-button"
+                >
+                  <Text style={commonStyles.buttonText}>Admin Tools</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </ScrollView>
 
-        <VersionDisplay isVisible={adminMode} />
+        <VersionDisplay isVisible={isAdmin} />
       </View>
     </SafeScreen>
   )

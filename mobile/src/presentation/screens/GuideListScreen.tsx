@@ -38,7 +38,6 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   onCreateGuide,
   onViewGuide,
   onBack,
-  isAdmin: injectedIsAdmin,
   guideService: injectedGuideService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
@@ -47,9 +46,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public'>(
-    injectedIsAdmin ? 'mine' : 'all'
-  )
+  const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public'>('all')
   const [userId, setUserId] = useState<string | null>(null)
 
   const authStorage = injectedAuthStorage || new AuthStorage()
@@ -113,14 +110,6 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     const loadUserData = async () => {
       const id = await authStorage.getUserId()
       setUserId(id)
-
-      // If isAdmin not injected, load from storage and update default filter
-      if (injectedIsAdmin === undefined) {
-        const adminStatus = await authStorage.getUserIsAdmin()
-        if (adminStatus) {
-          setFilterTab('mine')
-        }
-      }
     }
     loadUserData()
     loadGuides()
