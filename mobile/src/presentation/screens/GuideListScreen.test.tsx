@@ -6,6 +6,7 @@ import {
   createMockAuthStorage,
   createMockServerConfigStorage,
   createMockGuideService,
+  createMockGuideFavoriteClient,
 } from '../testUtils'
 
 // Mock only ErrorReporter (static utility)
@@ -19,6 +20,7 @@ describe('GuideListScreen', () => {
   let mockGuideService: ReturnType<typeof createMockGuideService>
   let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
   let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
+  let mockGuideFavoriteClient: ReturnType<typeof createMockGuideFavoriteClient>
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -27,6 +29,7 @@ describe('GuideListScreen', () => {
     mockAuthStorage = createMockAuthStorage()
     mockServerConfigStorage = createMockServerConfigStorage()
     mockGuideService = createMockGuideService([])
+    mockGuideFavoriteClient = createMockGuideFavoriteClient([])
   })
 
   it('renders guide list screen without errors', () => {
@@ -240,6 +243,43 @@ describe('GuideListScreen', () => {
     fireEvent.press(getByTestId('filter-tab-all'))
     await waitFor(() => {
       expect(mockGuideService.getAllGuides).toHaveBeenCalledWith('test-token')
+    })
+  })
+
+  it('renders Favorites tab', () => {
+    const { getByTestId } = render(
+      <GuideListScreen
+        onCreateGuide={mockOnCreateGuide}
+        onEditGuide={mockOnEditGuide}
+        onViewGuide={mockOnViewGuide}
+        onBack={mockOnBack}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+        guideFavoriteClient={mockGuideFavoriteClient}
+      />
+    )
+    expect(getByTestId('filter-tab-favorites')).toBeTruthy()
+  })
+
+  it('calls getFavoriteGuideIds when Favorites tab is selected', async () => {
+    const { getByTestId } = render(
+      <GuideListScreen
+        onCreateGuide={mockOnCreateGuide}
+        onEditGuide={mockOnEditGuide}
+        onViewGuide={mockOnViewGuide}
+        onBack={mockOnBack}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+        guideFavoriteClient={mockGuideFavoriteClient}
+      />
+    )
+
+    fireEvent.press(getByTestId('filter-tab-favorites'))
+
+    await waitFor(() => {
+      expect(mockGuideFavoriteClient.getFavoriteGuideIds).toHaveBeenCalledWith('test-token')
     })
   })
 })

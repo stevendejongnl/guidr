@@ -45,3 +45,11 @@ async def create_indexes(database: AsyncIOMotorDatabase) -> None:
     await step_timers.create_index(
         [("stepId", 1), ("userId", 1)], unique=True
     )
+
+    # Guide favorites collection indexes
+    guide_favorites = database["guide_favorites"]
+
+    # Unique compound index for user+guide (prevents duplicate favorites)
+    await guide_favorites.create_index(
+        [("userId", 1), ("guideId", 1)], unique=True
+    )

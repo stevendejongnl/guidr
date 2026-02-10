@@ -59,7 +59,7 @@ describe('HomeScreen', () => {
       // Should render app title
       expect(getByText('Guidr')).toBeTruthy()
       // Should render quick actions section
-      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('Discover')).toBeTruthy()
     })
 
     it('should render logout menu item', () => {
@@ -96,7 +96,7 @@ describe('HomeScreen', () => {
         />
       )
 
-      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('Discover')).toBeTruthy()
     })
 
     it('should render My Guides button when not in admin mode', () => {
@@ -114,7 +114,7 @@ describe('HomeScreen', () => {
         />
       )
 
-      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('Discover')).toBeTruthy()
       expect(getByText('My Guides')).toBeTruthy()
     })
 
@@ -135,7 +135,7 @@ describe('HomeScreen', () => {
         />
       )
 
-      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('Discover')).toBeTruthy()
       expect(queryByText('My Guides')).toBeNull()
     })
 
@@ -156,7 +156,7 @@ describe('HomeScreen', () => {
         />
       )
 
-      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('Discover')).toBeTruthy()
       expect(getByText('My Guides')).toBeTruthy()
     })
   })
@@ -438,7 +438,7 @@ describe('HomeScreen', () => {
   })
 
   describe('quick action callbacks', () => {
-    it('should call onBrowseGuides when Browse Guides button is pressed', () => {
+    it('should call onBrowseGuides when Discover button is pressed', () => {
       const mockOnBrowseGuides = jest.fn()
       const { getByText } = render(
         <HomeScreen
@@ -452,7 +452,7 @@ describe('HomeScreen', () => {
         />
       )
 
-      fireEvent.press(getByText('Browse Guides'))
+      fireEvent.press(getByText('Discover'))
       expect(mockOnBrowseGuides).toHaveBeenCalledTimes(1)
     })
 

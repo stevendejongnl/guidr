@@ -305,7 +305,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     if (onBrowseGuides) {
       onBrowseGuides()
     } else {
-      Alert.alert('Browse Guides', 'Feature coming soon!')
+      Alert.alert('Discover Guides', 'Feature coming soon!')
     }
   }
 
@@ -398,7 +398,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <View style={styles.actionsSection}>
           <QuickActionButton
             icon="🔍"
-            label="Browse Guides"
+            label="Discover"
             onPress={handleBrowseGuides}
           />
           {!adminModeActive && (

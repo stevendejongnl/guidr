@@ -3,6 +3,7 @@
 from .audit_log_models import AuditLogResponse
 from .config_models import ConfigResponse
 from .error_models import ErrorDetail, ErrorResponse
+from .guide_favorite_models import GuideFavoriteListResponse, GuideFavoriteResponse
 from .guide_models import GuideCreate, GuideResponse, GuideUpdate
 from .session_models import MoveToStepRequest, PauseSessionRequest, SessionCreate, SessionResponse
 from .step_models import StepCreate, StepResponse, StepUpdate
@@ -34,6 +35,9 @@ __all__ = [
     "GuideCreate",
     "GuideUpdate",
     "GuideResponse",
+    # Guide Favorite
+    "GuideFavoriteListResponse",
+    "GuideFavoriteResponse",
     # Step
     "StepCreate",
     "StepUpdate",

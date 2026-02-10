@@ -151,4 +151,58 @@ describe('GuideCard', () => {
 
     expect(getByText('Perfect Sourdough Bread')).toBeDefined()
   })
+
+  it('shows "Yours" badge when isOwned is true', () => {
+    const { getByText } = render(
+      <GuideCard guide={mockGuide} isOwned={true} testID="guide-card" />,
+    )
+
+    expect(getByText('Yours')).toBeDefined()
+  })
+
+  it('does not show "Yours" badge when isOwned is false', () => {
+    const { queryByText } = render(
+      <GuideCard guide={mockGuide} isOwned={false} testID="guide-card" />,
+    )
+
+    expect(queryByText('Yours')).toBeNull()
+  })
+
+  it('shows filled heart when isFavorited is true', () => {
+    const onToggleFavorite = jest.fn()
+    const { getByTestId } = render(
+      <GuideCard
+        guide={mockGuide}
+        isFavorited={true}
+        onToggleFavorite={onToggleFavorite}
+        testID="guide-card"
+      />,
+    )
+
+    const favButton = getByTestId('guide-card:favorite')
+    expect(favButton).toBeDefined()
+  })
+
+  it('calls onToggleFavorite when heart is pressed', () => {
+    const onToggleFavorite = jest.fn()
+    const { getByTestId } = render(
+      <GuideCard
+        guide={mockGuide}
+        isFavorited={false}
+        onToggleFavorite={onToggleFavorite}
+        testID="guide-card"
+      />,
+    )
+
+    fireEvent.press(getByTestId('guide-card:favorite'))
+    expect(onToggleFavorite).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not show favorite button when onToggleFavorite is not provided', () => {
+    const { queryByTestId } = render(
+      <GuideCard guide={mockGuide} testID="guide-card" />,
+    )
+
+    expect(queryByTestId('guide-card:favorite')).toBeNull()
+  })
 })

@@ -38,6 +38,7 @@ describe('BrowseGuidesScreen', () => {
     const mockAuthStorage = {
       getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
       getAuthToken: jest.fn().mockResolvedValue('test-token'),
+      getUserId: jest.fn().mockResolvedValue('user1'),
     } as unknown as jest.Mocked<AuthStorage>
 
     const mockServerConfigStorage = {
@@ -71,7 +72,7 @@ describe('BrowseGuidesScreen', () => {
       />
     )
 
-    expect(getByText('Browse Guides')).toBeDefined()
+    expect(getByText('Discover Guides')).toBeDefined()
   })
 
   it('renders back button', () => {

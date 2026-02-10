@@ -14,6 +14,7 @@ from .middleware import RequestLoggingMiddleware
 from .routers import (
     audit_logs_router,
     config_router,
+    guide_favorites_router,
     guides_router,
     sessions_router,
     step_timers_router,
@@ -134,6 +135,7 @@ def create_app() -> FastAPI:
     app.include_router(steps_router, prefix="/api/v1")
     app.include_router(sessions_router, prefix="/api/v1")
     app.include_router(step_timers_router, prefix="/api/v1")
+    app.include_router(guide_favorites_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
     app.include_router(audit_logs_router, prefix="/api/v1")
 

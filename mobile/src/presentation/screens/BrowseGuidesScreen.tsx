@@ -22,6 +22,7 @@ import { GuideService } from '../../domain/services/GuideService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
+import { GuideFavoriteClient } from '../../infrastructure/api/GuideFavoriteClient'
 import { ALL_GUIDE_TYPES, GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 
 interface BrowseGuidesScreenProps {
@@ -30,6 +31,7 @@ interface BrowseGuidesScreenProps {
   testID?: string
   // Optional dependencies (for testing/DI)
   guideService?: GuideService
+  guideFavoriteClient?: GuideFavoriteClient
 }
 
 export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
@@ -37,6 +39,7 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   onViewGuide,
   testID,
   guideService: injectedGuideService,
+  guideFavoriteClient: injectedFavoriteClient,
 }) => {
   const [searchText, setSearchText] = useState('')
   const [selectedType, setSelectedType] = useState<GuideType | 'all'>('all')
@@ -44,6 +47,8 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const authStorage = new AuthStorage()
   const serverConfigStorage = new ServerConfigStorage()
@@ -74,6 +79,10 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
     return servicesRef.current
   }
 
+  const favoriteClientRef = React.useRef<GuideFavoriteClient | null>(
+    injectedFavoriteClient || null,
+  )
+
   const loadData = async () => {
     try {
       setError(null)
@@ -85,17 +94,31 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
         throw new Error('No auth token found')
       }
 
+      // Load current user ID
+      const userId = await authStorage.getUserId()
+      setCurrentUserId(userId)
+
       // Fetch server URL
       const serverUrl = await serverConfigStorage.getServerUrl()
       if (!serverUrl) {
         throw new Error('No server URL configured')
       }
 
+      // Initialize favorite client if not injected
+      if (!favoriteClientRef.current) {
+        favoriteClientRef.current = new GuideFavoriteClient(serverUrl)
+      }
+
       // Get services
       const services = getServices(serverUrl)
 
-      // Load guides
-      const allGuides = await services.guideService.getAllGuides(authToken)
+      // Load guides and favorites in parallel
+      const [allGuides, favIds] = await Promise.all([
+        services.guideService.getAllGuides(authToken),
+        favoriteClientRef.current.getFavoriteGuideIds(authToken).catch(() => []),
+      ])
+
+      setFavoriteIds(new Set(favIds))
 
       // Convert guides to view models
       const guideViewModels: GuideViewModel[] = allGuides.map(guide =>
@@ -110,6 +133,32 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
     } finally {
       setRefreshing(false)
       setIsLoading(false)
+    }
+  }
+
+  const handleToggleFavorite = async (guideId: string) => {
+    const client = favoriteClientRef.current
+    if (!client) return
+
+    try {
+      const authToken = await authStorage.getAuthToken()
+      if (!authToken) return
+
+      const isFav = favoriteIds.has(guideId)
+      if (isFav) {
+        await client.unfavoriteGuide(guideId, authToken)
+        setFavoriteIds(prev => {
+          const next = new Set(prev)
+          next.delete(guideId)
+          return next
+        })
+      } else {
+        await client.favoriteGuide(guideId, authToken)
+        setFavoriteIds(prev => new Set(prev).add(guideId))
+      }
+    } catch (err) {
+      ErrorReporter.capture(err, { component: 'BrowseGuidesScreen', action: 'toggleFavorite' })
+      console.error('Failed to toggle favorite:', err)
     }
   }
 
@@ -149,7 +198,7 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
           <TouchableOpacity onPress={onBack} testID={`${testID}:back`}>
             <Text style={styles.backButton}>← Back</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Browse Guides</Text>
+          <Text style={styles.title}>Discover Guides</Text>
           <View style={{ width: 50 }} />
         </View>
         <View style={styles.loadingContainer}>
@@ -166,7 +215,7 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
         <TouchableOpacity onPress={onBack} testID={`${testID}:back`}>
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Browse Guides</Text>
+        <Text style={styles.title}>Discover Guides</Text>
         <View style={{ width: 50 }} />
       </View>
 
@@ -231,14 +280,20 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
                   ? 'Popular Guides'
                   : `${selectedTypeLabel} Guides`}
               </Text>
-              {filteredGuides.map(guide => (
-                <GuideCard
-                  key={guide.id}
-                  guide={guide}
-                  onPress={() => onViewGuide(guide.id)}
-                  testID={`${testID}:card-${guide.id}`}
-                />
-              ))}
+              {filteredGuides.map(guide => {
+                const owned = Boolean(currentUserId && guide.createdByUserId === currentUserId)
+                return (
+                  <GuideCard
+                    key={guide.id}
+                    guide={guide}
+                    onPress={() => onViewGuide(guide.id)}
+                    isOwned={owned}
+                    isFavorited={favoriteIds.has(guide.id)}
+                    {...(!owned && { onToggleFavorite: () => handleToggleFavorite(guide.id) })}
+                    testID={`${testID}:card-${guide.id}`}
+                  />
+                )
+              })}
             </>
           ) : (
             <View style={styles.emptyStateContainer}>

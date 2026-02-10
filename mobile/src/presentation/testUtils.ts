@@ -1,6 +1,7 @@
 import { AuthStorage } from '../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../infrastructure/api/AuthClient'
+import { GuideFavoriteClient } from '../infrastructure/api/GuideFavoriteClient'
 import { StepTimerClient } from '../infrastructure/api/StepTimerClient'
 import { GuideService } from '../domain/services/GuideService'
 import { SessionService } from '../domain/services/SessionService'
@@ -197,3 +198,18 @@ export const createMockStepTimerClient = (
   getActiveTimers: jest.fn().mockResolvedValue([]),
   ...overrides,
 } as unknown as jest.Mocked<StepTimerClient>)
+
+/**
+ * Create a mock GuideFavoriteClient instance for testing
+ * @param favoriteIds Optional list of favorite guide IDs to return
+ * @param overrides Optional method overrides
+ */
+export const createMockGuideFavoriteClient = (
+  favoriteIds: string[] = [],
+  overrides: Partial<jest.Mocked<GuideFavoriteClient>> = {},
+): jest.Mocked<GuideFavoriteClient> => ({
+  favoriteGuide: jest.fn().mockResolvedValue(undefined),
+  unfavoriteGuide: jest.fn().mockResolvedValue(undefined),
+  getFavoriteGuideIds: jest.fn().mockResolvedValue(favoriteIds),
+  ...overrides,
+} as unknown as jest.Mocked<GuideFavoriteClient>)

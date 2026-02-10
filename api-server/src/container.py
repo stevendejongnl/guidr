@@ -12,6 +12,11 @@ from .application.use_cases.guide import (
     GetGuidesByType,
     UpdateGuide,
 )
+from .application.use_cases.guide_favorite import (
+    FavoriteGuide,
+    GetUserFavorites,
+    UnfavoriteGuide,
+)
 from .application.use_cases.session import (
     CancelSession,
     CompleteSession,
@@ -57,6 +62,7 @@ from .infrastructure.notifications import TelegramNotificationService
 from .infrastructure.persistence.mongodb.database import Database
 from .infrastructure.persistence.mongodb.repositories import (
     MongoAuditLogRepository,
+    MongoGuideFavoriteRepository,
     MongoGuideRepository,
     MongoSessionRepository,
     MongoStepRepository,
@@ -120,6 +126,11 @@ class Container(containers.DeclarativeContainer):
 
     step_timer_repository = providers.Singleton(
         MongoStepTimerRepository,
+        database=database.provided.db,
+    )
+
+    guide_favorite_repository = providers.Singleton(
+        MongoGuideFavoriteRepository,
         database=database.provided.db,
     )
 
@@ -264,6 +275,22 @@ class Container(containers.DeclarativeContainer):
     delete_session_use_case = providers.Factory(
         DeleteSession,
         session_repository=session_repository,
+    )
+
+    # Guide Favorite Use Cases (Factories)
+    favorite_guide_use_case = providers.Factory(
+        FavoriteGuide,
+        guide_favorite_repository=guide_favorite_repository,
+    )
+
+    unfavorite_guide_use_case = providers.Factory(
+        UnfavoriteGuide,
+        guide_favorite_repository=guide_favorite_repository,
+    )
+
+    get_user_favorites_use_case = providers.Factory(
+        GetUserFavorites,
+        guide_favorite_repository=guide_favorite_repository,
     )
 
     # Step Timer Use Cases (Factories)

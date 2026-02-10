@@ -35,6 +35,7 @@ import { GuideRepository } from '../../infrastructure/repositories/GuideReposito
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
+import { GuideFavoriteClient } from '../../infrastructure/api/GuideFavoriteClient'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
@@ -87,6 +88,7 @@ export const AppNavigator: React.FC = () => {
     session: SessionService
     step: StepService
     stepTimerClient: StepTimerClient
+    guideFavoriteClient: GuideFavoriteClient
   } | null>(null)
 
   useEffect(() => {
@@ -204,6 +206,7 @@ export const AppNavigator: React.FC = () => {
         session: new SessionService(sessionRepository, guideRepository, stepRepository),
         step: new StepService(stepRepository),
         stepTimerClient: new StepTimerClient(serverUrl),
+        guideFavoriteClient: new GuideFavoriteClient(serverUrl),
       }
     }
   }, [serverUrl])
@@ -697,6 +700,9 @@ export const AppNavigator: React.FC = () => {
         onViewGuide={handleViewGuide}
         onBack={handleGuideListBack}
         isAdmin={adminModeActive}
+        {...(servicesRef.current && {
+          guideFavoriteClient: servicesRef.current.guideFavoriteClient,
+        })}
       />
     )
   }
@@ -708,6 +714,7 @@ export const AppNavigator: React.FC = () => {
         onViewGuide={handleBrowseGuidesViewGuide}
         {...(servicesRef.current && {
           guideService: servicesRef.current.guide,
+          guideFavoriteClient: servicesRef.current.guideFavoriteClient,
         })}
       />
     )

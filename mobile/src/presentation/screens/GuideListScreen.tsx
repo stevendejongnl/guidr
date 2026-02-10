@@ -18,6 +18,7 @@ import { GuideCard } from '../components/GuideCard'
 import { SearchBar } from '../components/SearchBar'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
+import { GuideFavoriteClient } from '../../infrastructure/api/GuideFavoriteClient'
 import { createGuideViewModel } from '../viewmodels/GuideViewModel'
 import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
@@ -32,6 +33,7 @@ interface GuideListScreenProps {
   guideService?: GuideService
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
+  guideFavoriteClient?: GuideFavoriteClient
 }
 
 export const GuideListScreen: React.FC<GuideListScreenProps> = ({
@@ -41,12 +43,14 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   guideService: injectedGuideService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
+  guideFavoriteClient: injectedFavoriteClient,
 }) => {
   const [guides, setGuides] = useState<Guide[]>([])
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public'>('all')
+  const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public' | 'favorites'>('all')
+  const [favoriteGuides, setFavoriteGuides] = useState<Guide[]>([])
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
@@ -77,7 +81,11 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     return servicesRef.current
   }
 
-  const loadGuides = useCallback(async (tab: 'all' | 'mine' | 'public') => {
+  const favoriteClientRef = React.useRef<GuideFavoriteClient | null>(
+    injectedFavoriteClient || null,
+  )
+
+  const loadGuides = useCallback(async (tab: 'all' | 'mine' | 'public' | 'favorites') => {
     try {
       setError(null)
 
@@ -93,10 +101,30 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
 
       const services = getServices(serverUrl)
 
-      const loadedGuides = tab === 'mine'
-        ? await services.guideService.getMyGuides(authToken)
-        : await services.guideService.getAllGuides(authToken)
-      setGuides(loadedGuides)
+      // Initialize favorite client if not injected
+      if (!favoriteClientRef.current) {
+        favoriteClientRef.current = new GuideFavoriteClient(serverUrl)
+      }
+
+      if (tab === 'favorites') {
+        const client = favoriteClientRef.current
+        const favIds = await client.getFavoriteGuideIds(authToken)
+
+        if (favIds.length > 0) {
+          // Load all guides and filter to favorites
+          const allGuides = await services.guideService.getAllGuides(authToken)
+          const favSet = new Set(favIds)
+          setFavoriteGuides(allGuides.filter(g => favSet.has(g.id)))
+        } else {
+          setFavoriteGuides([])
+        }
+        setGuides([])
+      } else {
+        const loadedGuides = tab === 'mine'
+          ? await services.guideService.getMyGuides(authToken)
+          : await services.guideService.getAllGuides(authToken)
+        setGuides(loadedGuides)
+      }
     } catch (err) {
       ErrorReporter.capture(err, { component: 'GuideListScreen', action: 'loadGuides' })
       console.error('Failed to load guides:', err)
@@ -117,7 +145,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     await loadGuides(filterTab)
   }
 
-  const handleFilterTabChange = (tab: 'all' | 'mine' | 'public') => {
+  const handleFilterTabChange = (tab: 'all' | 'mine' | 'public' | 'favorites') => {
     setFilterTab(tab)
   }
 
@@ -126,9 +154,14 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     return guides.map(guide => createGuideViewModel(guide))
   }, [guides])
 
+  // Convert favorite guides to viewmodels
+  const favoriteViewModels = useMemo(() => {
+    return favoriteGuides.map(guide => createGuideViewModel(guide))
+  }, [favoriteGuides])
+
   // Filter guides based on search query and filter tab
   const filteredGuides = useMemo(() => {
-    let filtered = guideViewModels
+    let filtered = filterTab === 'favorites' ? favoriteViewModels : guideViewModels
 
     // Apply filter tab (only public needs client-side filtering)
     if (filterTab === 'public') {
@@ -147,7 +180,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
         guide.description?.toLowerCase().includes(query) ||
         guide.guideTypeLabel.toLowerCase().includes(query)
     )
-  }, [guideViewModels, searchQuery, filterTab])
+  }, [guideViewModels, favoriteViewModels, searchQuery, filterTab])
 
   return (
     <SafeScreen testID="guide-list-screen">
@@ -225,6 +258,21 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
               Public
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterTab,
+              filterTab === 'favorites' && styles.filterTabActive,
+            ]}
+            onPress={() => handleFilterTabChange('favorites')}
+            testID="filter-tab-favorites"
+          >
+            <Text style={[
+              styles.filterTabText,
+              filterTab === 'favorites' && styles.filterTabTextActive,
+            ]}>
+              Favorites
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {filteredGuides.length === 0 ? (
@@ -241,6 +289,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
                 <GuideCard
                   guide={guideViewModel}
                   onPress={() => onViewGuide(guideViewModel.id)}
+                  {...(filterTab === 'favorites' && { isFavorited: true })}
                   testID={`guide-card-${guideViewModel.id}`}
                 />
               </View>

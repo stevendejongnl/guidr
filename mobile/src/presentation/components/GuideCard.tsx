@@ -8,10 +8,20 @@ import { StatusBadge } from './StatusBadge'
 interface GuideCardProps {
   guide: GuideViewModel
   onPress?: () => void
+  isFavorited?: boolean
+  isOwned?: boolean
+  onToggleFavorite?: () => void
   testID?: string
 }
 
-export const GuideCard: React.FC<GuideCardProps> = ({ guide, onPress, testID }) => {
+export const GuideCard: React.FC<GuideCardProps> = ({
+  guide,
+  onPress,
+  isFavorited,
+  isOwned,
+  onToggleFavorite,
+  testID,
+}) => {
   const durationDisplay = guide.duration !== undefined && guide.duration > 0
     ? guide.duration < 60
       ? `${guide.duration} min`
@@ -25,12 +35,26 @@ export const GuideCard: React.FC<GuideCardProps> = ({ guide, onPress, testID }) 
       testID={testID}
       activeOpacity={0.8}
     >
-      {/* Status Badge - Top Right */}
-      {guide.status && (
-        <View style={styles.statusBadgeContainer}>
+      {/* Top Right Indicators */}
+      <View style={styles.statusBadgeContainer}>
+        {isOwned && (
+          <View style={styles.ownedBadge} testID={`${testID}:owned`}>
+            <Text style={styles.ownedBadgeText}>Yours</Text>
+          </View>
+        )}
+        {guide.status && (
           <StatusBadge status={guide.status} variant="solid" testID={`${testID}:status`} />
-        </View>
-      )}
+        )}
+        {onToggleFavorite && (
+          <TouchableOpacity
+            onPress={onToggleFavorite}
+            testID={`${testID}:favorite`}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.favoriteIcon}>{isFavorited ? '❤️' : '🤍'}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Header with Image/Emoji and Title */}
       <View style={styles.header}>
@@ -99,6 +123,23 @@ const styles = StyleSheet.create({
     top: spacing.md,
     right: spacing.md,
     zIndex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  ownedBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  ownedBadgeText: {
+    fontSize: typography.sizeXs,
+    fontWeight: typography.weightSemibold,
+    color: colors.textPrimary,
+  },
+  favoriteIcon: {
+    fontSize: 20,
   },
   header: {
     flexDirection: 'row',
