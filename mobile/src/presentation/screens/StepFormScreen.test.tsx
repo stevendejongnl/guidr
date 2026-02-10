@@ -125,7 +125,8 @@ describe('StepFormScreen', () => {
 
       await waitFor(() => {
         expect(getByTestId('step-title-input')).toBeTruthy()
-        expect(getByTestId('step-duration-input')).toBeTruthy()
+        expect(getByTestId('step-duration-hours-input')).toBeTruthy()
+        expect(getByTestId('step-duration-minutes-input')).toBeTruthy()
         expect(getByTestId('step-description-input')).toBeTruthy()
       })
     })
@@ -213,20 +214,31 @@ describe('StepFormScreen', () => {
         const titleInput = getByTestId('step-title-input')
         fireEvent.changeText(titleInput, 'Test Step')
 
-        const durationInput = getByTestId('step-duration-input')
-        fireEvent.changeText(durationInput, 'invalid')
+        const hoursInput = getByTestId('step-duration-hours-input')
+        fireEvent.changeText(hoursInput, 'abc')
 
         const saveButton = getByTestId('step-save-button')
         fireEvent.press(saveButton)
       })
 
       await waitFor(() => {
-        expect(getByText('Step duration is required')).toBeTruthy()
+        expect(getByText('Duration must contain valid numbers')).toBeTruthy()
       })
     })
 
-    it('shows error when duration is below minimum', async () => {
-      const { getByTestId, getByText } = render(
+    it('allows saving with zero duration (no timer)', async () => {
+      mockStepService.createStep.mockResolvedValue({
+        id: 'step-new',
+        guideId,
+        order: 0,
+        title: 'No Timer Step',
+        description: undefined,
+        duration: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as Step)
+
+      const { getByTestId } = render(
         <StepFormScreen
           mode="create"
           guideId={guideId}
@@ -238,17 +250,21 @@ describe('StepFormScreen', () => {
 
       await waitFor(() => {
         const titleInput = getByTestId('step-title-input')
-        fireEvent.changeText(titleInput, 'Test Step')
-
-        const durationInput = getByTestId('step-duration-input')
-        fireEvent.changeText(durationInput, '0')
+        fireEvent.changeText(titleInput, 'No Timer Step')
 
         const saveButton = getByTestId('step-save-button')
         fireEvent.press(saveButton)
       })
 
       await waitFor(() => {
-        expect(getByText(/Duration must be between 1 and 1440 minutes/)).toBeTruthy()
+        expect(mockStepService.createStep).toHaveBeenCalledWith(
+          guideId,
+          0,
+          'No Timer Step',
+          0,
+          undefined,
+          'test-token'
+        )
       })
     })
 
@@ -267,15 +283,139 @@ describe('StepFormScreen', () => {
         const titleInput = getByTestId('step-title-input')
         fireEvent.changeText(titleInput, 'Test Step')
 
-        const durationInput = getByTestId('step-duration-input')
-        fireEvent.changeText(durationInput, '1441')
+        const hoursInput = getByTestId('step-duration-hours-input')
+        fireEvent.changeText(hoursInput, '24')
+
+        const minutesInput = getByTestId('step-duration-minutes-input')
+        fireEvent.changeText(minutesInput, '1')
 
         const saveButton = getByTestId('step-save-button')
         fireEvent.press(saveButton)
       })
 
       await waitFor(() => {
-        expect(getByText(/Duration must be between 1 and 1440 minutes/)).toBeTruthy()
+        expect(getByText(/When hours is 24, minutes must be 0/)).toBeTruthy()
+      })
+    })
+
+    it('shows error when minutes exceed 59', async () => {
+      const { getByTestId, getByText } = render(
+        <StepFormScreen
+          mode="create"
+          guideId={guideId}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+          stepService={mockStepService}
+        />
+      )
+
+      await waitFor(() => {
+        const titleInput = getByTestId('step-title-input')
+        fireEvent.changeText(titleInput, 'Test Step')
+
+        const minutesInput = getByTestId('step-duration-minutes-input')
+        fireEvent.changeText(minutesInput, '60')
+
+        const saveButton = getByTestId('step-save-button')
+        fireEvent.press(saveButton)
+      })
+
+      await waitFor(() => {
+        expect(getByText(/Hours must be 0-24, minutes must be 0-59/)).toBeTruthy()
+      })
+    })
+  })
+
+  describe('edit mode decomposition', () => {
+    it('decomposes 90 minutes into 1 hour and 30 minutes', async () => {
+      mockStepService.getStepById.mockResolvedValue({
+        id: 'step-1',
+        guideId,
+        order: 0,
+        title: 'Test Step',
+        description: 'A test step',
+        duration: 90,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as Step)
+
+      const { getByTestId } = render(
+        <StepFormScreen
+          mode="edit"
+          guideId={guideId}
+          stepId="step-1"
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+          stepService={mockStepService}
+        />
+      )
+
+      await waitFor(() => {
+        const hoursInput = getByTestId('step-duration-hours-input')
+        const minutesInput = getByTestId('step-duration-minutes-input')
+        expect(hoursInput.props['value']).toBe('1')
+        expect(minutesInput.props['value']).toBe('30')
+      })
+    })
+
+    it('decomposes 45 minutes into empty hours and 45 minutes', async () => {
+      mockStepService.getStepById.mockResolvedValue({
+        id: 'step-1',
+        guideId,
+        order: 0,
+        title: 'Test Step',
+        description: 'A test step',
+        duration: 45,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as Step)
+
+      const { getByTestId } = render(
+        <StepFormScreen
+          mode="edit"
+          guideId={guideId}
+          stepId="step-1"
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+          stepService={mockStepService}
+        />
+      )
+
+      await waitFor(() => {
+        const hoursInput = getByTestId('step-duration-hours-input')
+        const minutesInput = getByTestId('step-duration-minutes-input')
+        expect(hoursInput.props['value']).toBe('')
+        expect(minutesInput.props['value']).toBe('45')
+      })
+    })
+    it('decomposes 0 minutes into empty fields (no timer)', async () => {
+      mockStepService.getStepById.mockResolvedValue({
+        id: 'step-1',
+        guideId,
+        order: 0,
+        title: 'No Timer Step',
+        description: '',
+        duration: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as Step)
+
+      const { getByTestId } = render(
+        <StepFormScreen
+          mode="edit"
+          guideId={guideId}
+          stepId="step-1"
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+          stepService={mockStepService}
+        />
+      )
+
+      await waitFor(() => {
+        const hoursInput = getByTestId('step-duration-hours-input')
+        const minutesInput = getByTestId('step-duration-minutes-input')
+        expect(hoursInput.props['value']).toBe('')
+        expect(minutesInput.props['value']).toBe('')
       })
     })
   })
@@ -307,8 +447,11 @@ describe('StepFormScreen', () => {
         const titleInput = getByTestId('step-title-input')
         fireEvent.changeText(titleInput, 'New Step')
 
-        const durationInput = getByTestId('step-duration-input')
-        fireEvent.changeText(durationInput, '60')
+        const hoursInput = getByTestId('step-duration-hours-input')
+        fireEvent.changeText(hoursInput, '1')
+
+        const minutesInput = getByTestId('step-duration-minutes-input')
+        fireEvent.changeText(minutesInput, '0')
 
         const descriptionInput = getByTestId('step-description-input')
         fireEvent.changeText(descriptionInput, 'A new step')
@@ -357,8 +500,11 @@ describe('StepFormScreen', () => {
         const titleInput = getByTestId('step-title-input')
         fireEvent.changeText(titleInput, 'Updated Title')
 
-        const durationInput = getByTestId('step-duration-input')
-        fireEvent.changeText(durationInput, '45')
+        const hoursInput = getByTestId('step-duration-hours-input')
+        fireEvent.changeText(hoursInput, '0')
+
+        const minutesInput = getByTestId('step-duration-minutes-input')
+        fireEvent.changeText(minutesInput, '45')
 
         const saveButton = getByTestId('step-save-button')
         fireEvent.press(saveButton)

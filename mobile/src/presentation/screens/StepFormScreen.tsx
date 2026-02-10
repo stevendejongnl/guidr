@@ -33,8 +33,22 @@ interface StepFormScreenProps {
   stepService?: StepService
 }
 
-const MIN_DURATION = 1
+const MIN_DURATION = 0
 const MAX_DURATION = 1440
+const MAX_HOURS = 24
+const MAX_MINUTES = 59
+
+const decomposeDuration = (totalMinutes: number): { hours: number; minutes: number } => {
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return { hours, minutes }
+}
+
+const computeTotalMinutes = (hoursStr: string, minutesStr: string): number => {
+  const hours = parseInt(hoursStr || '0', 10) || 0
+  const minutes = parseInt(minutesStr || '0', 10) || 0
+  return hours * 60 + minutes
+}
 
 export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   mode,
@@ -50,7 +64,8 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 }) => {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [durationStr, setDurationStr] = useState('')
+  const [hoursStr, setHoursStr] = useState('')
+  const [minutesStr, setMinutesStr] = useState('')
   const [loading, setLoading] = useState(mode === 'edit')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -112,7 +127,9 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 
       setTitle(step.title)
       setDescription(step.description || '')
-      setDurationStr(step.duration.toString())
+      const { hours, minutes } = decomposeDuration(step.duration)
+      setHoursStr(hours > 0 ? hours.toString() : '')
+      setMinutesStr(minutes > 0 ? minutes.toString() : '')
     } catch (err) {
       ErrorReporter.capture(err, { component: 'StepFormScreen', action: 'loadStep' })
       console.error('Failed to load step:', err)
@@ -128,12 +145,24 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
       return false
     }
 
-    const duration = parseInt(durationStr, 10)
-    if (!durationStr || isNaN(duration)) {
-      setValidationError('Step duration is required')
+    const hours = parseInt(hoursStr || '0', 10)
+    const minutes = parseInt(minutesStr || '0', 10)
+    if (isNaN(hours) || isNaN(minutes)) {
+      setValidationError('Duration must contain valid numbers')
       return false
     }
 
+    if (hours < 0 || hours > MAX_HOURS || minutes < 0 || minutes > MAX_MINUTES) {
+      setValidationError(`Hours must be 0-${MAX_HOURS}, minutes must be 0-${MAX_MINUTES}`)
+      return false
+    }
+
+    if (hours === MAX_HOURS && minutes > 0) {
+      setValidationError(`When hours is ${MAX_HOURS}, minutes must be 0`)
+      return false
+    }
+
+    const duration = computeTotalMinutes(hoursStr, minutesStr)
     if (duration < MIN_DURATION || duration > MAX_DURATION) {
       setValidationError(`Duration must be between ${MIN_DURATION} and ${MAX_DURATION} minutes`)
       return false
@@ -164,7 +193,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
       if (!serverUrl) throw new Error('No server URL configured')
 
       const service = getService(serverUrl)
-      const duration = parseInt(durationStr, 10)
+      const duration = computeTotalMinutes(hoursStr, minutesStr)
 
       if (mode === 'create') {
         const newStep = await service.createStep(
@@ -298,19 +327,39 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 
           {/* Duration Input */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Duration (minutes)</Text>
-            <TextInput
-              style={[commonStyles.input, validationError && commonStyles.inputError]}
-              placeholder={`Enter duration (${MIN_DURATION}-${MAX_DURATION} minutes)`}
-              placeholderTextColor={colors.textMuted}
-              value={durationStr}
-              onChangeText={setDurationStr}
-              keyboardType="number-pad"
-              editable={!saving}
-              testID="step-duration-input"
-            />
+            <Text style={styles.label}>Duration</Text>
+            <View style={styles.durationRow}>
+              <View style={styles.durationField}>
+                <TextInput
+                  style={[commonStyles.input, validationError && commonStyles.inputError]}
+                  placeholder="0"
+                  placeholderTextColor={colors.textMuted}
+                  value={hoursStr}
+                  onChangeText={setHoursStr}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  editable={!saving}
+                  testID="step-duration-hours-input"
+                />
+                <Text style={styles.durationUnit}>hours</Text>
+              </View>
+              <View style={styles.durationField}>
+                <TextInput
+                  style={[commonStyles.input, validationError && commonStyles.inputError]}
+                  placeholder="0"
+                  placeholderTextColor={colors.textMuted}
+                  value={minutesStr}
+                  onChangeText={setMinutesStr}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  editable={!saving}
+                  testID="step-duration-minutes-input"
+                />
+                <Text style={styles.durationUnit}>minutes</Text>
+              </View>
+            </View>
             <Text style={styles.helperText}>
-              Valid range: {MIN_DURATION} - {MAX_DURATION} minutes
+              Leave empty for no timer. Maximum {MAX_DURATION} minutes (24 hours)
             </Text>
           </View>
 
@@ -389,6 +438,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   helperText: {
+    fontSize: typography.sizeSm,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+    marginLeft: spacing.sm,
+  },
+  durationRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  durationField: {
+    flex: 1,
+  },
+  durationUnit: {
     fontSize: typography.sizeSm,
     color: colors.textMuted,
     marginTop: spacing.xs,

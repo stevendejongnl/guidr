@@ -433,13 +433,15 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
         )}
 
         {/* Timer */}
-        <CountdownTimer
-          durationSeconds={currentStep.duration}
-          isRunning={isTimerRunning}
-          onComplete={onTimerComplete}
-          onSecondsChange={handleSessionSecondsChange}
-          testID="session-timer"
-        />
+        {currentStep.duration > 0 && (
+          <CountdownTimer
+            durationSeconds={currentStep.duration}
+            isRunning={isTimerRunning}
+            onComplete={onTimerComplete}
+            onSecondsChange={handleSessionSecondsChange}
+            testID="session-timer"
+          />
+        )}
 
         {/* Session Control Buttons */}
         <View style={styles.controlsSection}>

@@ -47,7 +47,9 @@ export const StepListItem: React.FC<StepListItemProps> = ({
       {/* Step Content */}
       <View style={styles.content}>
         <Text style={styles.title}>{step.title}</Text>
-        <Text style={styles.duration}>{formatDuration(step.duration)}</Text>
+        {step.duration > 0 && (
+          <Text style={styles.duration}>{formatDuration(step.duration)}</Text>
+        )}
         {step.description && (
           <Text style={styles.description} numberOfLines={1}>
             {step.description}

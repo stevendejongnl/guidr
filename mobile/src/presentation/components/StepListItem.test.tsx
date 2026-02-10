@@ -84,6 +84,24 @@ describe('StepListItem', () => {
       expect(getByText('1h 30m')).toBeTruthy()
     })
 
+    it('hides duration when step has no timer', () => {
+      const noTimerStep = new Step('step-1', 'guide-1', 0, 'No Timer', 0, 'Test')
+      const { queryByText } = render(
+        <StepListItem
+          step={noTimerStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+        />
+      )
+
+      expect(queryByText('0 min')).toBeNull()
+    })
+
     it('renders step description when present', () => {
       const { getByText } = render(
         <StepListItem
