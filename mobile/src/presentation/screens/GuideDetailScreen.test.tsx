@@ -1,8 +1,9 @@
 import React from 'react'
-import { render, waitFor } from '@testing-library/react-native'
+import { render, waitFor, fireEvent } from '@testing-library/react-native'
 import { GuideDetailScreen } from './GuideDetailScreen'
 import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
+import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import {
   createMockAuthStorage,
   createMockServerConfigStorage,
@@ -369,6 +370,122 @@ describe('GuideDetailScreen', () => {
       expect(getByText('Notes')).toBeTruthy()
       expect(getByText('difficulty: beginner')).toBeTruthy()
       expect(getByText('duration: 30min')).toBeTruthy()
+    })
+  })
+
+  describe('Step Timer Integration', () => {
+    const createMockStepTimerClient = (): jest.Mocked<StepTimerClient> =>
+      ({
+        getTimersByGuide: jest.fn().mockResolvedValue([]),
+        startTimer: jest.fn(),
+        pauseTimer: jest.fn(),
+        resetTimer: jest.fn(),
+      }) as unknown as jest.Mocked<StepTimerClient>
+
+    it('timer controls render for each step when steps are loaded', async () => {
+      const guide = new Guide(
+        'guide-1',
+        'cooking',
+        'Test Guide',
+        'A test guide',
+        'user-123',
+        true,
+        false
+      )
+
+      mockGuideService.getGuideById.mockResolvedValue(guide)
+
+      const mockSteps = [
+        new Step('step-1', 'guide-1', 0, 'Step One', 10, 'First step'),
+        new Step('step-2', 'guide-1', 1, 'Step Two', 15, 'Second step'),
+      ]
+      const mockStepService = createMockStepService(mockSteps)
+      const mockStepTimerClient = createMockStepTimerClient()
+
+      const { getByTestId } = render(
+        <GuideDetailScreen
+          guideId="guide-1"
+          onBack={mockOnBack}
+          testID="detail"
+          guideService={mockGuideService}
+          stepService={mockStepService}
+          stepTimerClient={mockStepTimerClient}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockStepTimerClient.getTimersByGuide).toHaveBeenCalledWith('guide-1', 'test-token')
+      })
+
+      // Timer sections should be present for steps
+      expect(getByTestId('detail:step-0:timer')).toBeTruthy()
+      expect(getByTestId('detail:step-1:timer')).toBeTruthy()
+    })
+
+    it('start button triggers stepTimerClient API call', async () => {
+      const guide = new Guide(
+        'guide-1',
+        'cooking',
+        'Test Guide',
+        'A test guide',
+        'user-123',
+        true,
+        false
+      )
+
+      mockGuideService.getGuideById.mockResolvedValue(guide)
+
+      const mockSteps = [
+        new Step('step-1', 'guide-1', 0, 'Step One', 10, 'First step'),
+      ]
+      const mockStepService = createMockStepService(mockSteps)
+      const mockStepTimerClient = createMockStepTimerClient()
+
+      const timerDto = {
+        id: 'timer-1',
+        stepId: 'step-1',
+        guideId: 'guide-1',
+        userId: 'user-123',
+        status: 'running' as const,
+        startedAt: new Date().toISOString(),
+        accumulatedSeconds: 0,
+        durationSeconds: 600,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      mockStepTimerClient.startTimer.mockResolvedValue(timerDto)
+
+      const { getByTestId } = render(
+        <GuideDetailScreen
+          guideId="guide-1"
+          onBack={mockOnBack}
+          testID="detail"
+          guideService={mockGuideService}
+          stepService={mockStepService}
+          stepTimerClient={mockStepTimerClient}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockStepTimerClient.getTimersByGuide).toHaveBeenCalled()
+      })
+
+      const startButton = getByTestId('detail:step-0:timer-start')
+      fireEvent.press(startButton)
+
+      await waitFor(() => {
+        // 10 minutes = 600 seconds
+        expect(mockStepTimerClient.startTimer).toHaveBeenCalledWith(
+          'step-1',
+          'guide-1',
+          600,
+          'test-token'
+        )
+      })
     })
   })
 })

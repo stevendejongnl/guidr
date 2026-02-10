@@ -8,6 +8,7 @@ from .session_dtos import (
     SessionUpdateDTO,
 )
 from .step_dtos import StepCreateDTO, StepResponseDTO, StepUpdateDTO
+from .step_timer_dtos import StepTimerCreateDTO, StepTimerResponseDTO
 from .user_dtos import (
     ChangeEmailDTO,
     ChangePasswordDTO,
@@ -34,6 +35,9 @@ __all__ = [
     "SessionCreateDTO",
     "SessionUpdateDTO",
     "SessionResponseDTO",
+    # Step Timer
+    "StepTimerCreateDTO",
+    "StepTimerResponseDTO",
     # User
     "ChangeEmailDTO",
     "ChangePasswordDTO",

@@ -34,6 +34,12 @@ from .application.use_cases.step import (
     GetStepsByGuide,
     UpdateStep,
 )
+from .application.use_cases.step_timer import (
+    GetStepTimersByGuide,
+    PauseStepTimer,
+    ResetStepTimer,
+    StartStepTimer,
+)
 from .application.use_cases.user import (
     ChangeEmail,
     ChangePassword,
@@ -53,6 +59,7 @@ from .infrastructure.persistence.mongodb.repositories import (
     MongoGuideRepository,
     MongoSessionRepository,
     MongoStepRepository,
+    MongoStepTimerRepository,
     MongoUserRepository,
 )
 
@@ -107,6 +114,11 @@ class Container(containers.DeclarativeContainer):
 
     user_repository = providers.Singleton(
         MongoUserRepository,
+        database=database.provided.db,
+    )
+
+    step_timer_repository = providers.Singleton(
+        MongoStepTimerRepository,
         database=database.provided.db,
     )
 
@@ -251,6 +263,27 @@ class Container(containers.DeclarativeContainer):
     delete_session_use_case = providers.Factory(
         DeleteSession,
         session_repository=session_repository,
+    )
+
+    # Step Timer Use Cases (Factories)
+    start_step_timer_use_case = providers.Factory(
+        StartStepTimer,
+        step_timer_repository=step_timer_repository,
+    )
+
+    pause_step_timer_use_case = providers.Factory(
+        PauseStepTimer,
+        step_timer_repository=step_timer_repository,
+    )
+
+    reset_step_timer_use_case = providers.Factory(
+        ResetStepTimer,
+        step_timer_repository=step_timer_repository,
+    )
+
+    get_step_timers_by_guide_use_case = providers.Factory(
+        GetStepTimersByGuide,
+        step_timer_repository=step_timer_repository,
     )
 
     # User Use Cases (Factories)

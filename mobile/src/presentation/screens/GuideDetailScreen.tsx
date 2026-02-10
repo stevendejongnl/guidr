@@ -12,6 +12,7 @@ import { GuideService } from '../../domain/services/GuideService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { StepService } from '../../domain/services/StepService'
+import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { GUIDE_TYPES, GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { Guide } from '../../domain/entities/Guide'
@@ -22,6 +23,7 @@ import { SafeScreen } from '../components/SafeScreen'
 import { StepListItem } from '../components/StepListItem'
 import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
+import { useStepTimers } from '../hooks/useStepTimers'
 
 interface GuideDetailScreenProps {
   guideId: string
@@ -30,6 +32,7 @@ interface GuideDetailScreenProps {
   isAdmin?: boolean
   stepService?: StepService
   guideService?: GuideService
+  stepTimerClient?: StepTimerClient
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
   testID?: string
@@ -42,6 +45,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   isAdmin = false,
   stepService: injectedStepService,
   guideService: injectedGuideService,
+  stepTimerClient: injectedStepTimerClient,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
   testID,
@@ -53,9 +57,21 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const [loadingSteps, setLoadingSteps] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isViewingOthersGuide, setIsViewingOthersGuide] = useState(false)
+  const [authToken, setAuthToken] = useState<string | null>(null)
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
+
+  // Step timer client ref
+  const timerClientRef = React.useRef<StepTimerClient | null>(
+    injectedStepTimerClient || null,
+  )
+  const [timerClient, setTimerClient] = useState<StepTimerClient | null>(
+    injectedStepTimerClient || null,
+  )
+
+  // Step timers hook
+  const stepTimers = useStepTimers(guideId, authToken, timerClient)
 
   // Initialize service refs (use injected or create new)
   const servicesRef = React.useRef<{
@@ -101,11 +117,19 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       setError(null)
       setLoading(true)
 
-      const authToken = await authStorage.getAuthToken()
-      if (!authToken) throw new Error('No auth token found')
+      const token = await authStorage.getAuthToken()
+      if (!token) throw new Error('No auth token found')
+      setAuthToken(token)
 
       const serverUrl = await serverConfigStorage.getServerUrl()
       if (!serverUrl) throw new Error('No server URL configured')
+
+      // Initialize timer client if not injected
+      if (!timerClientRef.current) {
+        const newClient = new StepTimerClient(serverUrl)
+        timerClientRef.current = newClient
+        setTimerClient(newClient)
+      }
 
       // Load current user ID
       const userId = await authStorage.getUserId()
@@ -114,7 +138,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       const services = getServices(serverUrl)
 
       // Load guide
-      const loadedGuide = await services.guideService.getGuideById(guideId, authToken)
+      const loadedGuide = await services.guideService.getGuideById(guideId, token)
 
       if (!loadedGuide) {
         throw new Error('Guide not found')
@@ -131,7 +155,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
 
       // Load steps if service is available
       if (injectedStepService || servicesRef.current) {
-        await loadSteps(authToken, serverUrl)
+        await loadSteps(token, serverUrl)
       }
     } catch (err) {
       ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'loadGuideDetail' })
@@ -330,21 +354,36 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                 <View>
                   {steps
                     .sort((a, b) => a.order - b.order)
-                    .map((step, index) => (
-                      <StepListItem
-                        key={step.id}
-                        step={step}
-                        stepNumber={index + 1}
-                        isFirst={index === 0}
-                        isLast={index === steps.length - 1}
-                        onMoveUp={() => {}}
-                        onMoveDown={() => {}}
-                        onEdit={() => {}}
-                        onDelete={() => {}}
-                        canEdit={false}
-                        testID={`${testID}:step-${index}`}
-                      />
-                    ))}
+                    .map((step, index) => {
+                      const timerDisplay = stepTimers.timers[step.id]
+                      const mode = step.duration > 0 ? 'countdown' : 'stopwatch'
+                      const initialSeconds = step.duration > 0 ? step.duration * 60 : 0
+                      return (
+                        <StepListItem
+                          key={step.id}
+                          step={step}
+                          stepNumber={index + 1}
+                          isFirst={index === 0}
+                          isLast={index === steps.length - 1}
+                          onMoveUp={() => {}}
+                          onMoveDown={() => {}}
+                          onEdit={() => {}}
+                          onDelete={() => {}}
+                          canEdit={false}
+                          timer={{
+                            displaySeconds: timerDisplay?.displaySeconds ?? initialSeconds,
+                            isRunning: timerDisplay?.isRunning ?? false,
+                            isPaused: timerDisplay?.isPaused ?? false,
+                            isComplete: timerDisplay?.isComplete ?? false,
+                            mode,
+                            onStart: () => stepTimers.startTimer(step.id, step.duration),
+                            onPause: () => stepTimers.pauseTimer(step.id),
+                            onReset: () => stepTimers.resetTimer(step.id),
+                          }}
+                          testID={`${testID}:step-${index}`}
+                        />
+                      )
+                    })}
                 </View>
               ) : (
                 <Text style={styles.emptyStateText}>No steps yet.</Text>

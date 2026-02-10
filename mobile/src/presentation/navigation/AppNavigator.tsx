@@ -34,6 +34,7 @@ import { StepService } from '../../domain/services/StepService'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
 import { SessionRepository } from '../../infrastructure/repositories/SessionRepository'
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
+import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
@@ -85,6 +86,7 @@ export const AppNavigator: React.FC = () => {
     guide: GuideService
     session: SessionService
     step: StepService
+    stepTimerClient: StepTimerClient
   } | null>(null)
 
   useEffect(() => {
@@ -201,6 +203,7 @@ export const AppNavigator: React.FC = () => {
         guide: new GuideService(guideRepository, stepRepository),
         session: new SessionService(sessionRepository, guideRepository, stepRepository),
         step: new StepService(stepRepository),
+        stepTimerClient: new StepTimerClient(serverUrl),
       }
     }
   }, [serverUrl])
@@ -677,6 +680,7 @@ export const AppNavigator: React.FC = () => {
         isAdmin={adminModeActive}
         {...(servicesRef.current && {
           stepService: servicesRef.current.step,
+          stepTimerClient: servicesRef.current.stepTimerClient,
         })}
       />
     )

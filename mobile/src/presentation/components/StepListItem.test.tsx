@@ -340,4 +340,300 @@ describe('StepListItem', () => {
       expect(mockOnDelete).toHaveBeenCalledWith('step-1')
     })
   })
+
+  describe('Step Timer Integration', () => {
+    const mockStep = new Step('step-1', 'guide-1', 0, 'Test Step', 5, 'Test description')
+    const mockOnMoveUp = jest.fn()
+    const mockOnMoveDown = jest.fn()
+    const mockOnEdit = jest.fn()
+    const mockOnDelete = jest.fn()
+    const mockOnStart = jest.fn()
+    const mockOnPause = jest.fn()
+    const mockOnReset = jest.fn()
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('does not render timer section without timer prop', () => {
+      const { queryByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          testID="test-step"
+        />
+      )
+
+      expect(queryByTestId('test-step:timer')).toBeNull()
+      expect(queryByTestId('test-step:timer-start')).toBeNull()
+    })
+
+    it('renders timer display in MM:SS format when timer prop is provided', () => {
+      const timer = {
+        displaySeconds: 125,
+        isRunning: false,
+        isPaused: false,
+        isComplete: false,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByText, getByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      expect(getByTestId('test-step:timer')).toBeTruthy()
+      // 125 seconds = 2 minutes 5 seconds = "02:05"
+      expect(getByText('02:05')).toBeTruthy()
+    })
+
+    it('shows Start button when timer is idle', () => {
+      const timer = {
+        displaySeconds: 300,
+        isRunning: false,
+        isPaused: false,
+        isComplete: false,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByTestId, queryByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      expect(getByTestId('test-step:timer-start')).toBeTruthy()
+      expect(queryByTestId('test-step:timer-pause')).toBeNull()
+      expect(queryByTestId('test-step:timer-resume')).toBeNull()
+    })
+
+    it('shows Resume button when timer is paused', () => {
+      const timer = {
+        displaySeconds: 180,
+        isRunning: false,
+        isPaused: true,
+        isComplete: false,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByTestId, getByText, queryByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      // When paused, the start button shows "Resume" text (same testID as start)
+      expect(getByTestId('test-step:timer-start')).toBeTruthy()
+      expect(getByText('Resume')).toBeTruthy()
+      expect(queryByTestId('test-step:timer-pause')).toBeNull()
+    })
+
+    it('shows Pause button when timer is running', () => {
+      const timer = {
+        displaySeconds: 240,
+        isRunning: true,
+        isPaused: false,
+        isComplete: false,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByTestId, queryByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      expect(getByTestId('test-step:timer-pause')).toBeTruthy()
+      expect(queryByTestId('test-step:timer-start')).toBeNull()
+      expect(queryByTestId('test-step:timer-resume')).toBeNull()
+    })
+
+    it('shows Complete message and only reset button when timer is complete', () => {
+      const timer = {
+        displaySeconds: 0,
+        isRunning: false,
+        isPaused: false,
+        isComplete: true,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByText, getByTestId, queryByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      expect(getByText('Complete!')).toBeTruthy()
+      expect(getByTestId('test-step:timer-reset')).toBeTruthy()
+      expect(queryByTestId('test-step:timer-start')).toBeNull()
+      expect(queryByTestId('test-step:timer-pause')).toBeNull()
+      expect(queryByTestId('test-step:timer-resume')).toBeNull()
+    })
+
+    it('calls onStart when start button is pressed', () => {
+      const timer = {
+        displaySeconds: 300,
+        isRunning: false,
+        isPaused: false,
+        isComplete: false,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      const startButton = getByTestId('test-step:timer-start')
+      fireEvent.press(startButton)
+
+      expect(mockOnStart).toHaveBeenCalledTimes(1)
+    })
+
+    it('calls onPause when pause button is pressed', () => {
+      const timer = {
+        displaySeconds: 240,
+        isRunning: true,
+        isPaused: false,
+        isComplete: false,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      const pauseButton = getByTestId('test-step:timer-pause')
+      fireEvent.press(pauseButton)
+
+      expect(mockOnPause).toHaveBeenCalledTimes(1)
+    })
+
+    it('calls onReset when reset button is pressed', () => {
+      const timer = {
+        displaySeconds: 180,
+        isRunning: false,
+        isPaused: true,
+        isComplete: false,
+        mode: 'countdown' as const,
+        onStart: mockOnStart,
+        onPause: mockOnPause,
+        onReset: mockOnReset,
+      }
+
+      const { getByTestId } = render(
+        <StepListItem
+          step={mockStep}
+          stepNumber={1}
+          isFirst={true}
+          isLast={false}
+          onMoveUp={mockOnMoveUp}
+          onMoveDown={mockOnMoveDown}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+          timer={timer}
+          testID="test-step"
+        />
+      )
+
+      const resetButton = getByTestId('test-step:timer-reset')
+      fireEvent.press(resetButton)
+
+      expect(mockOnReset).toHaveBeenCalledTimes(1)
+    })
+  })
 })

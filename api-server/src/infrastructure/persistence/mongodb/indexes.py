@@ -32,3 +32,16 @@ async def create_indexes(database: AsyncIOMotorDatabase) -> None:
 
     # Index for role queries (future admin listing)
     await users.create_index("role")
+
+    # Step timers collection indexes
+    step_timers = database["step_timers"]
+
+    # Compound index for guide+user queries (primary access pattern)
+    await step_timers.create_index(
+        [("guideId", 1), ("userId", 1)]
+    )
+
+    # Compound index for step+user lookups
+    await step_timers.create_index(
+        [("stepId", 1), ("userId", 1)], unique=True
+    )

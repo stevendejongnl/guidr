@@ -3,6 +3,17 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Step } from '../../domain/entities/Step'
 import { colors, spacing, typography } from '@guidr/shared/tokens'
 
+export interface StepTimerProps {
+  displaySeconds: number
+  isRunning: boolean
+  isPaused: boolean
+  isComplete: boolean
+  mode: 'countdown' | 'stopwatch'
+  onStart: () => void
+  onPause: () => void
+  onReset: () => void
+}
+
 interface StepListItemProps {
   step: Step
   stepNumber: number
@@ -13,7 +24,30 @@ interface StepListItemProps {
   onEdit: (stepId: string) => void
   onDelete: (stepId: string) => void
   canEdit?: boolean
+  timer?: StepTimerProps
   testID?: string
+}
+
+function formatTimerSeconds(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
+
+function getTimerColor(
+  mode: 'countdown' | 'stopwatch',
+  displaySeconds: number,
+  durationMinutes: number,
+): string {
+  if (mode === 'stopwatch') {
+    return colors.textPrimary
+  }
+  const totalSeconds = durationMinutes * 60
+  if (totalSeconds === 0) return colors.textPrimary
+  const ratio = displaySeconds / totalSeconds
+  if (ratio > 0.5) return colors.success
+  if (ratio > 0.25) return colors.warning
+  return colors.danger
 }
 
 export const StepListItem: React.FC<StepListItemProps> = ({
@@ -26,6 +60,7 @@ export const StepListItem: React.FC<StepListItemProps> = ({
   onEdit,
   onDelete,
   canEdit = true,
+  timer,
   testID,
 }) => {
   const formatDuration = (minutes: number): string => {
@@ -54,6 +89,73 @@ export const StepListItem: React.FC<StepListItemProps> = ({
           <Text style={styles.description} numberOfLines={1}>
             {step.description}
           </Text>
+        )}
+
+        {/* Timer Controls */}
+        {timer && (
+          <View style={styles.timerContainer} testID={`${testID}:timer`}>
+            {timer.isComplete ? (
+              <>
+                <Text
+                  style={styles.timerComplete}
+                  testID={`${testID}:timer-complete`}
+                >
+                  Complete!
+                </Text>
+                <TouchableOpacity
+                  style={styles.timerButton}
+                  onPress={timer.onReset}
+                  testID={`${testID}:timer-reset`}
+                >
+                  <Text style={styles.timerButtonText}>Reset</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text
+                  style={[
+                    styles.timerDisplay,
+                    {
+                      color: getTimerColor(
+                        timer.mode,
+                        timer.displaySeconds,
+                        step.duration,
+                      ),
+                    },
+                  ]}
+                  testID={`${testID}:timer-display`}
+                >
+                  {formatTimerSeconds(timer.displaySeconds)}
+                </Text>
+                {timer.isRunning ? (
+                  <TouchableOpacity
+                    style={styles.timerButton}
+                    onPress={timer.onPause}
+                    testID={`${testID}:timer-pause`}
+                  >
+                    <Text style={styles.timerButtonText}>Pause</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.timerButton}
+                    onPress={timer.onStart}
+                    testID={`${testID}:timer-start`}
+                  >
+                    <Text style={styles.timerButtonText}>
+                      {timer.isPaused ? 'Resume' : 'Start'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.timerButton}
+                  onPress={timer.onReset}
+                  testID={`${testID}:timer-reset`}
+                >
+                  <Text style={styles.timerButtonText}>Reset</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
         )}
       </View>
 
@@ -148,6 +250,37 @@ const styles = StyleSheet.create({
   description: {
     fontSize: typography.sizeSm,
     color: colors.textTertiary,
+  },
+  timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: 6,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  timerDisplay: {
+    fontSize: typography.sizeLg,
+    fontWeight: typography.weightBold,
+    minWidth: 56,
+  },
+  timerComplete: {
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightBold,
+    color: colors.success,
+  },
+  timerButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+  },
+  timerButtonText: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.background,
   },
   reorderControls: {
     flexDirection: 'row',

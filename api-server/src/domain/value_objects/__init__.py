@@ -8,6 +8,7 @@ from .password import Password
 from .role import Role, RoleType
 from .session_status import SessionStatus
 from .step_duration import StepDuration
+from .step_timer_status import StepTimerStatus
 
 __all__ = [
     "EntityId",
@@ -17,6 +18,7 @@ __all__ = [
     "GuideType",
     "StepDuration",
     "SessionStatus",
+    "StepTimerStatus",
     "Role",
     "RoleType",
 ]

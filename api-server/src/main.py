@@ -23,6 +23,9 @@ from .presentation.api.routers import (
     sessions as sessions_router,
 )
 from .presentation.api.routers import (
+    step_timers as step_timers_router,
+)
+from .presentation.api.routers import (
     steps as steps_router,
 )
 from .presentation.api.routers import (
@@ -117,6 +120,7 @@ def create_application() -> FastAPI:
     guides_router.set_container(container)
     steps_router.set_container(container)
     sessions_router.set_container(container)
+    step_timers_router.set_container(container)
     system_router.set_container(container)
     users_router.set_container(container)
     auth_dependencies.set_container(container)

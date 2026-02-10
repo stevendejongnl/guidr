@@ -6,6 +6,7 @@ from .error_models import ErrorDetail, ErrorResponse
 from .guide_models import GuideCreate, GuideResponse, GuideUpdate
 from .session_models import MoveToStepRequest, PauseSessionRequest, SessionCreate, SessionResponse
 from .step_models import StepCreate, StepResponse, StepUpdate
+from .step_timer_models import StepTimerResponse, StepTimerStart
 from .user_models import (
     ChangeEmailRequest,
     ChangePasswordRequest,
@@ -38,6 +39,9 @@ __all__ = [
     "SessionResponse",
     "MoveToStepRequest",
     "PauseSessionRequest",
+    # Step Timer
+    "StepTimerStart",
+    "StepTimerResponse",
     # User
     "ChangeEmailRequest",
     "ChangePasswordRequest",

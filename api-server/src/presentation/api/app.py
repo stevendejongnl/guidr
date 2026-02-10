@@ -16,6 +16,7 @@ from .routers import (
     config_router,
     guides_router,
     sessions_router,
+    step_timers_router,
     steps_router,
     system_router,
     users_router,
@@ -132,6 +133,7 @@ def create_app() -> FastAPI:
     app.include_router(guides_router, prefix="/api/v1")
     app.include_router(steps_router, prefix="/api/v1")
     app.include_router(sessions_router, prefix="/api/v1")
+    app.include_router(step_timers_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
     app.include_router(audit_logs_router, prefix="/api/v1")
 
