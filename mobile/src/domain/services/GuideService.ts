@@ -41,6 +41,10 @@ export class GuideService {
     return await this.guideRepository.findAll(authToken)
   }
 
+  async getMyGuides(authToken: string): Promise<Guide[]> {
+    return await this.guideRepository.findMyGuides(authToken)
+  }
+
   async getGuidesByType(guideType: string, authToken: string): Promise<Guide[]> {
     return await this.guideRepository.findByType(guideType, authToken)
   }

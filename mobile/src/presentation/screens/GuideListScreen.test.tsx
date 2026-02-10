@@ -1,6 +1,7 @@
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react-native'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { GuideListScreen } from './GuideListScreen'
+import { Guide } from '../../domain/entities/Guide'
 import {
   createMockAuthStorage,
   createMockServerConfigStorage,
@@ -160,5 +161,85 @@ describe('GuideListScreen', () => {
         expect.objectContaining({ backgroundColor: expect.any(String) }),
       ])
     )
+  })
+
+  it('calls getAllGuides on initial load (All tab)', async () => {
+    render(
+      <GuideListScreen
+        onCreateGuide={mockOnCreateGuide}
+        onEditGuide={mockOnEditGuide}
+        onViewGuide={mockOnViewGuide}
+        onBack={mockOnBack}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(mockGuideService.getAllGuides).toHaveBeenCalledWith('test-token')
+    })
+    expect(mockGuideService.getMyGuides).not.toHaveBeenCalled()
+  })
+
+  it('calls getMyGuides when Mine tab is selected', async () => {
+    const myGuides: Guide[] = [
+      {
+        id: 'g1',
+        title: 'My Guide',
+        description: 'A personal guide',
+        guideType: 'general',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as Guide,
+    ]
+
+    mockGuideService = createMockGuideService(myGuides)
+
+    const { getByTestId } = render(
+      <GuideListScreen
+        onCreateGuide={mockOnCreateGuide}
+        onEditGuide={mockOnEditGuide}
+        onViewGuide={mockOnViewGuide}
+        onBack={mockOnBack}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    fireEvent.press(getByTestId('filter-tab-mine'))
+
+    await waitFor(() => {
+      expect(mockGuideService.getMyGuides).toHaveBeenCalledWith('test-token')
+    })
+  })
+
+  it('calls getAllGuides when switching back to All tab', async () => {
+    const { getByTestId } = render(
+      <GuideListScreen
+        onCreateGuide={mockOnCreateGuide}
+        onEditGuide={mockOnEditGuide}
+        onViewGuide={mockOnViewGuide}
+        onBack={mockOnBack}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    // Switch to Mine
+    fireEvent.press(getByTestId('filter-tab-mine'))
+    await waitFor(() => {
+      expect(mockGuideService.getMyGuides).toHaveBeenCalled()
+    })
+
+    mockGuideService.getAllGuides.mockClear()
+
+    // Switch back to All
+    fireEvent.press(getByTestId('filter-tab-all'))
+    await waitFor(() => {
+      expect(mockGuideService.getAllGuides).toHaveBeenCalledWith('test-token')
+    })
   })
 })

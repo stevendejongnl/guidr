@@ -380,11 +380,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             label="Browse Guides"
             onPress={handleBrowseGuides}
           />
-          <QuickActionButton
-            icon="📝"
-            label="My Guides"
-            onPress={handleManageGuides}
-          />
+          {!adminModeActive && (
+            <QuickActionButton
+              icon="📝"
+              label="My Guides"
+              onPress={handleManageGuides}
+            />
+          )}
         </View>
 
         {/* Featured Guides (hidden in admin mode) */}

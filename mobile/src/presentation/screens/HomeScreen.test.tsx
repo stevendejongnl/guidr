@@ -96,13 +96,55 @@ describe('HomeScreen', () => {
       expect(getByText('Browse Guides')).toBeTruthy()
     })
 
-    it('should render My Guides button for all users', () => {
+    it('should render My Guides button when not in admin mode', () => {
       const { getByText } = render(
         <HomeScreen
           onLogout={mockOnLogout}
           onOpenSettings={mockOnOpenSettings}
           onOpenProfile={mockOnOpenProfile}
           isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(getByText('My Guides')).toBeTruthy()
+    })
+
+    it('should hide My Guides button when adminModeActive is true', () => {
+      const { getByText, queryByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={true}
+          adminModeActive={true}
+          onToggleAdminMode={jest.fn()}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      expect(getByText('Browse Guides')).toBeTruthy()
+      expect(queryByText('My Guides')).toBeNull()
+    })
+
+    it('should show My Guides button when adminModeActive is false', () => {
+      const { getByText } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={true}
+          adminModeActive={false}
+          onToggleAdminMode={jest.fn()}
           guideService={mockGuideService}
           sessionService={mockSessionService}
           authStorage={mockAuthStorage}

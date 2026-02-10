@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -47,7 +47,6 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public'>('all')
-  const [userId, setUserId] = useState<string | null>(null)
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
@@ -78,7 +77,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     return servicesRef.current
   }
 
-  const loadGuides = async () => {
+  const loadGuides = useCallback(async (tab: 'all' | 'mine' | 'public') => {
     try {
       setError(null)
 
@@ -94,8 +93,9 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
 
       const services = getServices(serverUrl)
 
-      // Load guides
-      const loadedGuides = await services.guideService.getAllGuides(authToken)
+      const loadedGuides = tab === 'mine'
+        ? await services.guideService.getMyGuides(authToken)
+        : await services.guideService.getAllGuides(authToken)
       setGuides(loadedGuides)
     } catch (err) {
       ErrorReporter.capture(err, { component: 'GuideListScreen', action: 'loadGuides' })
@@ -104,21 +104,21 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     } finally {
       setRefreshing(false)
     }
-  }
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      const id = await authStorage.getUserId()
-      setUserId(id)
-    }
-    loadUserData()
-    loadGuides()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [injectedGuideService])
 
+  useEffect(() => {
+    loadGuides(filterTab)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterTab, loadGuides])
+
   const handleRefresh = async () => {
     setRefreshing(true)
-    await loadGuides()
+    await loadGuides(filterTab)
+  }
+
+  const handleFilterTabChange = (tab: 'all' | 'mine' | 'public') => {
+    setFilterTab(tab)
   }
 
   // Convert guides to viewmodels
@@ -130,10 +130,8 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   const filteredGuides = useMemo(() => {
     let filtered = guideViewModels
 
-    // Apply filter tab
-    if (filterTab === 'mine' && userId) {
-      filtered = filtered.filter(guide => guide.createdByUserId === userId)
-    } else if (filterTab === 'public') {
+    // Apply filter tab (only public needs client-side filtering)
+    if (filterTab === 'public') {
       filtered = filtered.filter(guide => guide.isPublic)
     }
 
@@ -149,7 +147,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
         guide.description?.toLowerCase().includes(query) ||
         guide.guideTypeLabel.toLowerCase().includes(query)
     )
-  }, [guideViewModels, searchQuery, filterTab, userId])
+  }, [guideViewModels, searchQuery, filterTab])
 
   return (
     <SafeScreen testID="guide-list-screen">
@@ -187,7 +185,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
               styles.filterTab,
               filterTab === 'all' && styles.filterTabActive,
             ]}
-            onPress={() => setFilterTab('all')}
+            onPress={() => handleFilterTabChange('all')}
             testID="filter-tab-all"
           >
             <Text style={[
@@ -202,7 +200,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
               styles.filterTab,
               filterTab === 'mine' && styles.filterTabActive,
             ]}
-            onPress={() => setFilterTab('mine')}
+            onPress={() => handleFilterTabChange('mine')}
             testID="filter-tab-mine"
           >
             <Text style={[
@@ -217,7 +215,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
               styles.filterTab,
               filterTab === 'public' && styles.filterTabActive,
             ]}
-            onPress={() => setFilterTab('public')}
+            onPress={() => handleFilterTabChange('public')}
             testID="filter-tab-public"
           >
             <Text style={[

@@ -134,6 +134,7 @@ export const createMockGuideService = (
   overrides: Partial<jest.Mocked<GuideService>> = {},
 ): jest.Mocked<GuideService> => ({
   getAllGuides: jest.fn().mockResolvedValue(guides),
+  getMyGuides: jest.fn().mockResolvedValue(guides),
   getGuideById: jest.fn(),
   getGuidesByType: jest.fn(),
   ...overrides,
