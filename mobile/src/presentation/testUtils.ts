@@ -3,8 +3,10 @@ import { ServerConfigStorage } from '../infrastructure/storage/ServerConfigStora
 import { AuthClient } from '../infrastructure/api/AuthClient'
 import { GuideService } from '../domain/services/GuideService'
 import { SessionService } from '../domain/services/SessionService'
+import { StepService } from '../domain/services/StepService'
 import { Guide } from '../domain/entities/Guide'
 import { Session } from '../domain/entities/Session'
+import { Step } from '../domain/entities/Step'
 
 /**
  * Create a mock AuthStorage instance for testing
@@ -158,3 +160,23 @@ export const createMockSessionService = (
   moveToStep: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 } as unknown as jest.Mocked<SessionService>)
+
+/**
+ * Create a mock StepService instance for testing
+ * @param steps Optional list of steps to return
+ * @param overrides Optional method overrides
+ */
+export const createMockStepService = (
+  steps: Step[] = [],
+  overrides: Partial<jest.Mocked<StepService>> = {},
+): jest.Mocked<StepService> => ({
+  getStepsByGuideId: jest.fn().mockResolvedValue(steps),
+  getStepById: jest.fn(),
+  createStep: jest.fn(),
+  updateStepTitle: jest.fn(),
+  updateStepDescription: jest.fn(),
+  updateStepDuration: jest.fn(),
+  updateStepOrder: jest.fn(),
+  deleteStep: jest.fn(),
+  ...overrides,
+} as unknown as jest.Mocked<StepService>)

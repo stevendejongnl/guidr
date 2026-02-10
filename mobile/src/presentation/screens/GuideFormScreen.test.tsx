@@ -2,10 +2,12 @@ import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { GuideFormScreen } from './GuideFormScreen'
 import { Guide } from '../../domain/entities/Guide'
+import { Step } from '../../domain/entities/Step'
 import {
   createMockAuthStorage,
   createMockServerConfigStorage,
   createMockGuideService,
+  createMockStepService,
 } from '../testUtils'
 
 // Mock only ErrorReporter (static utility)
@@ -235,6 +237,239 @@ describe('GuideFormScreen', () => {
 
     await waitFor(() => {
       expect(getByText('difficulty: beginner')).toBeTruthy()
+    })
+  })
+
+  it('does not show steps section in create mode', async () => {
+    const { getByTestId, queryByTestId } = render(
+      <GuideFormScreen
+        mode="create"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('guide-form-screen')).toBeTruthy()
+    })
+
+    expect(queryByTestId('steps-section')).toBeNull()
+  })
+
+  it('shows steps section with loaded steps in edit mode', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Test Guide',
+      'A test',
+      'user-123',
+      false,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockSteps = [
+      new Step('step-1', 'guide-1', 0, 'Step One', 10),
+      new Step('step-2', 'guide-1', 1, 'Step Two', 15),
+    ]
+    const mockStepService = createMockStepService(mockSteps)
+
+    const { getByText, getByTestId } = render(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('steps-section')).toBeTruthy()
+      expect(getByText('Step One')).toBeTruthy()
+      expect(getByText('Step Two')).toBeTruthy()
+    })
+  })
+
+  it('shows add step button when onAddStep is provided in edit mode', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Test Guide',
+      'A test',
+      'user-123',
+      false,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = createMockStepService()
+
+    const { getByTestId } = render(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        onAddStep={jest.fn()}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('add-step-button')).toBeTruthy()
+    })
+  })
+
+  it('calls onAddStep when add step button is pressed', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Test Guide',
+      'A test',
+      'user-123',
+      false,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = createMockStepService()
+    const mockOnAddStep = jest.fn()
+
+    const { getByTestId } = render(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        onAddStep={mockOnAddStep}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('add-step-button')).toBeTruthy()
+    })
+
+    fireEvent.press(getByTestId('add-step-button'))
+
+    expect(mockOnAddStep).toHaveBeenCalledWith('guide-1', 0)
+  })
+
+  it('calls onEditStep when step edit is triggered', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Test Guide',
+      'A test',
+      'user-123',
+      false,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockSteps = [
+      new Step('step-1', 'guide-1', 0, 'Step One', 10),
+    ]
+    const mockStepService = createMockStepService(mockSteps)
+    const mockOnEditStep = jest.fn()
+
+    const { getByTestId } = render(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        onEditStep={mockOnEditStep}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('step-0:edit')).toBeTruthy()
+    })
+
+    fireEvent.press(getByTestId('step-0:edit'))
+
+    expect(mockOnEditStep).toHaveBeenCalledWith('step-1')
+  })
+
+  it('reloads steps when stepsRefreshKey changes', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Test Guide',
+      'A test',
+      'user-123',
+      false,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockStepService = createMockStepService([])
+
+    const { rerender } = render(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        stepsRefreshKey={0}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(mockStepService.getStepsByGuideId).toHaveBeenCalledTimes(1)
+    })
+
+    // Increment stepsRefreshKey to trigger reload
+    rerender(
+      <GuideFormScreen
+        mode="edit"
+        guideId="guide-1"
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+        isAdmin={false}
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        stepsRefreshKey={1}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+      />
+    )
+
+    await waitFor(() => {
+      expect(mockStepService.getStepsByGuideId).toHaveBeenCalledTimes(2)
     })
   })
 })

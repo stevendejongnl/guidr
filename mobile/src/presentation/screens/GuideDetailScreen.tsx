@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { GuideService } from '../../domain/services/GuideService'
@@ -28,8 +27,6 @@ interface GuideDetailScreenProps {
   guideId: string
   onBack: () => void
   onEdit?: (guideId: string) => void
-  onAddStep?: (guideId: string, stepCount: number) => void
-  onEditStep?: (stepId: string) => void
   isAdmin?: boolean
   stepService?: StepService
   guideService?: GuideService
@@ -42,8 +39,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   guideId,
   onBack,
   onEdit,
-  onAddStep,
-  onEditStep,
   isAdmin = false,
   stepService: injectedStepService,
   guideService: injectedGuideService,
@@ -57,7 +52,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const [loading, setLoading] = useState(true)
   const [loadingSteps, setLoadingSteps] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [canEditSteps, setCanEditSteps] = useState(false)
   const [isViewingOthersGuide, setIsViewingOthersGuide] = useState(false)
 
   const authStorage = injectedAuthStorage || new AuthStorage()
@@ -128,10 +122,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
 
       setGuide(loadedGuide)
 
-      // Calculate edit permission: admin OR owner
-      const canEdit = Boolean(isAdmin || (userId && loadedGuide.isOwnedBy(userId)))
-      setCanEditSteps(canEdit)
-
       // Detect when admin is viewing another user's guide
       setIsViewingOthersGuide(isAdmin && !!userId && !loadedGuide.isOwnedBy(userId))
 
@@ -163,135 +153,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
       console.error('Failed to load steps:', err)
     } finally {
       setLoadingSteps(false)
-    }
-  }
-
-  const handleAddStep = () => {
-    const nextOrder = steps.length
-    if (onAddStep) {
-      onAddStep(guideId, nextOrder)
-    }
-  }
-
-  const handleEditStep = (stepId: string) => {
-    if (onEditStep) {
-      onEditStep(stepId)
-    }
-  }
-
-  const handleDeleteStep = (stepId: string) => {
-    if (!canEditSteps) {
-      Alert.alert('Unauthorized', 'Only the guide owner or admins can edit steps')
-      return
-    }
-
-    Alert.alert(
-      'Delete Step',
-      'Are you sure you want to delete this step?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const authToken = await authStorage.getAuthToken()
-              if (!authToken) throw new Error('No auth token found')
-
-              const serverUrl = await serverConfigStorage.getServerUrl()
-              if (!serverUrl) throw new Error('No server URL configured')
-
-              const stepService = getStepService(serverUrl)
-              await stepService.deleteStep(stepId, authToken)
-
-              // Reload steps after deletion
-              await loadSteps(authToken, serverUrl)
-            } catch (err) {
-              ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'handleDeleteStep' })
-              console.error('Failed to delete step:', err)
-              Alert.alert('Error', 'Failed to delete step')
-            }
-          },
-        },
-      ]
-    )
-  }
-
-  const handleMoveStepUp = async (stepId: string) => {
-    if (!canEditSteps) {
-      Alert.alert('Unauthorized', 'Only the guide owner or admins can edit steps')
-      return
-    }
-
-    try {
-      const authToken = await authStorage.getAuthToken()
-      if (!authToken) throw new Error('No auth token found')
-
-      const serverUrl = await serverConfigStorage.getServerUrl()
-      if (!serverUrl) throw new Error('No server URL configured')
-
-      const stepService = getStepService(serverUrl)
-
-      // Find the step and its predecessor
-      const sortedSteps = [...steps].sort((a, b) => a.order - b.order)
-      const currentIndex = sortedSteps.findIndex((s) => s.id === stepId)
-
-      if (currentIndex > 0) {
-        const currentStep = sortedSteps[currentIndex]
-        const previousStep = sortedSteps[currentIndex - 1]
-
-        if (currentStep && previousStep) {
-          // Swap orders
-          await stepService.updateStepOrder(currentStep.id, previousStep.order, authToken)
-          await stepService.updateStepOrder(previousStep.id, currentStep.order, authToken)
-
-          // Reload steps
-          await loadSteps(authToken, serverUrl)
-        }
-      }
-    } catch (err) {
-      ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'handleMoveStepUp' })
-      console.error('Failed to move step up:', err)
-      Alert.alert('Error', 'Failed to reorder steps')
-    }
-  }
-
-  const handleMoveStepDown = async (stepId: string) => {
-    if (!canEditSteps) {
-      Alert.alert('Unauthorized', 'Only the guide owner or admins can edit steps')
-      return
-    }
-
-    try {
-      const authToken = await authStorage.getAuthToken()
-      if (!authToken) throw new Error('No auth token found')
-
-      const serverUrl = await serverConfigStorage.getServerUrl()
-      if (!serverUrl) throw new Error('No server URL configured')
-
-      const stepService = getStepService(serverUrl)
-
-      // Find the step and its successor
-      const sortedSteps = [...steps].sort((a, b) => a.order - b.order)
-      const currentIndex = sortedSteps.findIndex((s) => s.id === stepId)
-
-      if (currentIndex < sortedSteps.length - 1) {
-        const currentStep = sortedSteps[currentIndex]
-        const nextStep = sortedSteps[currentIndex + 1]
-
-        if (currentStep && nextStep) {
-          // Swap orders
-          await stepService.updateStepOrder(currentStep.id, nextStep.order, authToken)
-          await stepService.updateStepOrder(nextStep.id, currentStep.order, authToken)
-
-          // Reload steps
-          await loadSteps(authToken, serverUrl)
-        }
-      }
-    } catch (err) {
-      ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'handleMoveStepDown' })
-      console.error('Failed to move step down:', err)
-      Alert.alert('Error', 'Failed to reorder steps')
     }
   }
 
@@ -459,18 +320,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
           {/* Steps Section */}
           {(injectedStepService || servicesRef.current) && (
             <View style={styles.section}>
-              <View style={styles.stepsHeader}>
-                <Text style={styles.sectionTitle}>Steps</Text>
-                {onAddStep && canEditSteps && (
-                  <TouchableOpacity
-                    style={styles.addStepButton}
-                    onPress={handleAddStep}
-                    testID={`${testID}:add-step`}
-                  >
-                    <Text style={styles.addStepButtonText}>+ Add</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+              <Text style={styles.sectionTitle}>Steps</Text>
 
               {loadingSteps ? (
                 <View style={commonStyles.loadingContainer}>
@@ -487,17 +337,17 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                         stepNumber={index + 1}
                         isFirst={index === 0}
                         isLast={index === steps.length - 1}
-                        onMoveUp={handleMoveStepUp}
-                        onMoveDown={handleMoveStepDown}
-                        onEdit={handleEditStep}
-                        onDelete={handleDeleteStep}
-                        canEdit={canEditSteps}
+                        onMoveUp={() => {}}
+                        onMoveDown={() => {}}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                        canEdit={false}
                         testID={`${testID}:step-${index}`}
                       />
                     ))}
                 </View>
               ) : (
-                <Text style={styles.emptyStateText}>No steps yet. Add your first step!</Text>
+                <Text style={styles.emptyStateText}>No steps yet.</Text>
               )}
             </View>
           )}
@@ -594,23 +444,6 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeMd,
     color: colors.danger,
     marginTop: spacing.lg,
-  },
-  stepsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  addStepButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 6,
-  },
-  addStepButtonText: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightSemibold,
-    color: colors.background,
   },
   emptyStateText: {
     fontSize: typography.sizeMd,

@@ -74,6 +74,7 @@ export const AppNavigator: React.FC = () => {
   const [canEditCurrentGuide, setCanEditCurrentGuide] = useState(false)
   const [editingGuideOwnerId, setEditingGuideOwnerId] = useState<string | null>(null)
   const [editingStepGuideOwnerId, setEditingStepGuideOwnerId] = useState<string | null>(null)
+  const [stepsRefreshKey, setStepsRefreshKey] = useState(0)
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -406,13 +407,16 @@ export const AppNavigator: React.FC = () => {
     setShowStepForm(true)
   }
 
-  const handleEditStep = async (stepId: string) => {
+  const handleEditStep = async (stepId: string, guideId?: string) => {
+    const targetGuideId = guideId || editingStepGuideId
+    if (targetGuideId) {
+      setEditingStepGuideId(targetGuideId)
+    }
     try {
-      // Load step to get guide ID, then load guide to get ownership
-      if (servicesRef.current && editingStepGuideId) {
+      if (servicesRef.current && targetGuideId) {
         const token = await authStorage.getAuthToken()
         if (token) {
-          const guide = await servicesRef.current.guide.getGuideById(editingStepGuideId, token)
+          const guide = await servicesRef.current.guide.getGuideById(targetGuideId, token)
           if (guide) {
             setEditingStepGuideOwnerId(guide.createdByUserId || null)
           }
@@ -427,14 +431,13 @@ export const AppNavigator: React.FC = () => {
   }
 
   const handleStepFormSave = async () => {
-    // After saving, refresh the guide detail by triggering a re-render
     setShowStepForm(false)
     setStepFormMode(null)
     setEditingStepId(null)
     setEditingStepGuideOwnerId(null)
 
-    // Reload guide detail by keeping it visible
-    // The GuideDetailScreen will reload its steps on re-mount
+    // Increment refresh key so GuideFormScreen reloads its steps
+    setStepsRefreshKey(prev => prev + 1)
   }
 
   const handleStepFormCancel = () => {
@@ -614,26 +617,6 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
-  if (guideFormMode && serverUrl) {
-    const isEditingOthersGuide =
-      guideFormMode === 'edit' &&
-      adminModeActive &&
-      userId !== null &&
-      editingGuideOwnerId !== null &&
-      editingGuideOwnerId !== userId
-
-    return (
-      <GuideFormScreen
-        mode={guideFormMode}
-        {...(editingGuideId && { guideId: editingGuideId })}
-        onSave={handleGuideFormSave}
-        onCancel={handleGuideFormCancel}
-        isAdmin={adminModeActive}
-        isEditingOthersContent={isEditingOthersGuide}
-      />
-    )
-  }
-
   if (showStepForm && stepFormMode && editingStepGuideId) {
     const isEditingOthersStep =
       stepFormMode === 'edit' &&
@@ -657,6 +640,30 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (guideFormMode && serverUrl) {
+    const isEditingOthersGuide =
+      guideFormMode === 'edit' &&
+      adminModeActive &&
+      userId !== null &&
+      editingGuideOwnerId !== null &&
+      editingGuideOwnerId !== userId
+
+    return (
+      <GuideFormScreen
+        mode={guideFormMode}
+        {...(editingGuideId && { guideId: editingGuideId })}
+        onSave={handleGuideFormSave}
+        onCancel={handleGuideFormCancel}
+        isAdmin={adminModeActive}
+        isEditingOthersContent={isEditingOthersGuide}
+        onAddStep={handleAddStep}
+        onEditStep={(stepId) => handleEditStep(stepId, editingGuideId || undefined)}
+        {...(servicesRef.current && { stepService: servicesRef.current.step })}
+        stepsRefreshKey={stepsRefreshKey}
+      />
+    )
+  }
+
   if (showGuideDetail && selectedGuideId) {
     return (
       <GuideDetailScreen
@@ -667,8 +674,6 @@ export const AppNavigator: React.FC = () => {
           setSelectedGuideId(null)
         }}
         onEdit={handleGuideDetailEdit}
-        onAddStep={handleAddStep}
-        onEditStep={handleEditStep}
         isAdmin={adminModeActive}
         {...(servicesRef.current && {
           stepService: servicesRef.current.step,

@@ -8,8 +8,11 @@ import {
   ActivityIndicator,
   Switch,
   Alert,
+  StyleSheet,
 } from 'react-native'
 import { GuideService } from '../../domain/services/GuideService'
+import { StepService } from '../../domain/services/StepService'
+import { Step } from '../../domain/entities/Step'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { GuideRepository } from '../../infrastructure/repositories/GuideRepository'
@@ -24,7 +27,8 @@ import type { TargetMuscle, Equipment } from '../components/WorkoutEditor'
 import { NotesEditor } from '../components/NotesEditor'
 import type { Note } from '../components/NotesEditor'
 import { InfoBanner } from '../components/InfoBanner'
-import { colors } from '@guidr/shared/tokens'
+import { StepListItem } from '../components/StepListItem'
+import { colors, spacing, typography } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { formStyles } from '@guidr/shared/styles/react-native'
 import { GUIDE_TYPES, GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
@@ -37,6 +41,10 @@ interface GuideFormScreenProps {
   isAdmin: boolean
   isEditingOthersContent?: boolean
   guideService?: GuideService
+  stepService?: StepService
+  onAddStep?: (guideId: string, stepCount: number) => void
+  onEditStep?: (stepId: string) => void
+  stepsRefreshKey?: number
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
 }
@@ -49,6 +57,10 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   isAdmin,
   isEditingOthersContent = false,
   guideService: _guideService,
+  stepService: _stepService,
+  onAddStep,
+  onEditStep,
+  stepsRefreshKey = 0,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
 }) => {
@@ -69,9 +81,14 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
 
+  // Step states
+  const [steps, setSteps] = useState<Step[]>([])
+  const [loadingSteps, setLoadingSteps] = useState(false)
+
   // Services
   const [authToken, setAuthToken] = useState<string | null>(null)
   const [guideService, setGuideService] = useState<GuideService | null>(_guideService || null)
+  const [stepService, setStepService] = useState<StepService | null>(_stepService || null)
 
   // Initialize services
   useEffect(() => {
@@ -93,10 +110,15 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
         setAuthToken(token)
 
         // Only initialize services if not provided via DI
-        if (!_guideService) {
+        if (!_guideService || !_stepService) {
           const guideRepo = new GuideRepository(url)
           const stepRepo = new StepRepository(url)
-          setGuideService(new GuideService(guideRepo, stepRepo))
+          if (!_guideService) {
+            setGuideService(new GuideService(guideRepo, stepRepo))
+          }
+          if (!_stepService) {
+            setStepService(new StepService(stepRepo))
+          }
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error initializing services'
@@ -151,6 +173,121 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 
     loadGuide()
   }, [mode, guideId, guideService, authToken])
+
+  // Load steps in edit mode
+  useEffect(() => {
+    const loadSteps = async () => {
+      if (mode !== 'edit' || !guideId || !stepService || !authToken) {
+        return
+      }
+
+      try {
+        setLoadingSteps(true)
+        const loadedSteps = await stepService.getStepsByGuideId(guideId, authToken)
+        setSteps(loadedSteps)
+      } catch (err) {
+        ErrorReporter.capture(err, { component: 'GuideFormScreen', action: 'loadSteps' })
+        console.error('Failed to load steps:', err)
+      } finally {
+        setLoadingSteps(false)
+      }
+    }
+
+    loadSteps()
+  }, [mode, guideId, stepService, authToken, stepsRefreshKey])
+
+  const handleAddStep = () => {
+    if (onAddStep && guideId) {
+      onAddStep(guideId, steps.length)
+    }
+  }
+
+  const handleEditStep = (stepId: string) => {
+    if (onEditStep) {
+      onEditStep(stepId)
+    }
+  }
+
+  const handleDeleteStep = (stepId: string) => {
+    Alert.alert(
+      'Delete Step',
+      'Are you sure you want to delete this step?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (!stepService || !authToken) return
+              await stepService.deleteStep(stepId, authToken)
+              if (!guideId) return
+              const reloaded = await stepService.getStepsByGuideId(guideId, authToken)
+              setSteps(reloaded)
+            } catch (err) {
+              ErrorReporter.capture(err, { component: 'GuideFormScreen', action: 'handleDeleteStep' })
+              console.error('Failed to delete step:', err)
+              Alert.alert('Error', 'Failed to delete step')
+            }
+          },
+        },
+      ]
+    )
+  }
+
+  const handleMoveStepUp = async (stepId: string) => {
+    try {
+      if (!stepService || !authToken) return
+
+      const sortedSteps = [...steps].sort((a, b) => a.order - b.order)
+      const currentIndex = sortedSteps.findIndex((s) => s.id === stepId)
+
+      if (currentIndex > 0) {
+        const currentStep = sortedSteps[currentIndex]
+        const previousStep = sortedSteps[currentIndex - 1]
+
+        if (currentStep && previousStep) {
+          await stepService.updateStepOrder(currentStep.id, previousStep.order, authToken)
+          await stepService.updateStepOrder(previousStep.id, currentStep.order, authToken)
+          if (guideId) {
+            const reloaded = await stepService.getStepsByGuideId(guideId, authToken)
+            setSteps(reloaded)
+          }
+        }
+      }
+    } catch (err) {
+      ErrorReporter.capture(err, { component: 'GuideFormScreen', action: 'handleMoveStepUp' })
+      console.error('Failed to move step up:', err)
+      Alert.alert('Error', 'Failed to reorder steps')
+    }
+  }
+
+  const handleMoveStepDown = async (stepId: string) => {
+    try {
+      if (!stepService || !authToken) return
+
+      const sortedSteps = [...steps].sort((a, b) => a.order - b.order)
+      const currentIndex = sortedSteps.findIndex((s) => s.id === stepId)
+
+      if (currentIndex < sortedSteps.length - 1) {
+        const currentStep = sortedSteps[currentIndex]
+        const nextStep = sortedSteps[currentIndex + 1]
+
+        if (currentStep && nextStep) {
+          await stepService.updateStepOrder(currentStep.id, nextStep.order, authToken)
+          await stepService.updateStepOrder(nextStep.id, currentStep.order, authToken)
+          if (guideId) {
+            const reloaded = await stepService.getStepsByGuideId(guideId, authToken)
+            setSteps(reloaded)
+          }
+        }
+      }
+    } catch (err) {
+      ErrorReporter.capture(err, { component: 'GuideFormScreen', action: 'handleMoveStepDown' })
+      console.error('Failed to move step down:', err)
+      Alert.alert('Error', 'Failed to reorder steps')
+    }
+  }
 
   const buildMetadata = (guideType: GuideType | null): Record<string, unknown> | undefined => {
     if (guideType === GUIDE_TYPES.COOKING && ingredients.length > 0) {
@@ -388,6 +525,51 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
             />
           )}
 
+          {mode === 'edit' && guideId && (
+            <View style={formStyles.formGroup} testID="steps-section">
+              <View style={styles.stepsHeader}>
+                <Text style={formStyles.label}>Steps</Text>
+                {onAddStep && (
+                  <TouchableOpacity
+                    style={styles.addStepButton}
+                    onPress={handleAddStep}
+                    testID="add-step-button"
+                  >
+                    <Text style={styles.addStepButtonText}>+ Add Step</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {loadingSteps ? (
+                <View style={commonStyles.loadingContainer}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              ) : steps.length > 0 ? (
+                <View>
+                  {[...steps]
+                    .sort((a, b) => a.order - b.order)
+                    .map((step, index) => (
+                      <StepListItem
+                        key={step.id}
+                        step={step}
+                        stepNumber={index + 1}
+                        isFirst={index === 0}
+                        isLast={index === steps.length - 1}
+                        onMoveUp={handleMoveStepUp}
+                        onMoveDown={handleMoveStepDown}
+                        onEdit={handleEditStep}
+                        onDelete={handleDeleteStep}
+                        canEdit={true}
+                        testID={`step-${index}`}
+                      />
+                    ))}
+                </View>
+              ) : (
+                <Text style={styles.emptyStepsText}>No steps yet.</Text>
+              )}
+            </View>
+          )}
+
           <View style={formStyles.toggleGroup}>
             <View style={formStyles.toggleContainer}>
               <Text style={formStyles.toggleLabel}>Public Guide</Text>
@@ -451,3 +633,29 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
     </SafeScreen>
   )
 }
+
+const styles = StyleSheet.create({
+  stepsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  addStepButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 6,
+  },
+  addStepButtonText: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightSemibold,
+    color: colors.background,
+  },
+  emptyStepsText: {
+    fontSize: typography.sizeMd,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingVertical: spacing.xl,
+  },
+})

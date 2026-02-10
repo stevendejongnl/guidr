@@ -2,11 +2,12 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react-native'
 import { GuideDetailScreen } from './GuideDetailScreen'
 import { Guide } from '../../domain/entities/Guide'
-import { StepService } from '../../domain/services/StepService'
+import { Step } from '../../domain/entities/Step'
 import {
   createMockAuthStorage,
   createMockServerConfigStorage,
   createMockGuideService,
+  createMockStepService,
 } from '../testUtils'
 
 // Mock only ErrorReporter (static utility)
@@ -90,11 +91,7 @@ describe('GuideDetailScreen', () => {
   })
 
   it('accepts stepService via props', () => {
-    const mockStepService = {
-      getStepsByGuideId: jest.fn(),
-      updateStepOrder: jest.fn(),
-      deleteStep: jest.fn(),
-    } as unknown as StepService
+    const mockStepService = createMockStepService()
 
     const { getByTestId } = render(
       <GuideDetailScreen
@@ -109,36 +106,48 @@ describe('GuideDetailScreen', () => {
     expect(getByTestId('test')).toBeTruthy()
   })
 
-  it('accepts onAddStep callback', () => {
-    const mockOnAddStep = jest.fn()
+  it('renders steps as read-only without edit controls', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Test Guide',
+      'A test guide',
+      'user-123',
+      true,
+      false
+    )
 
-    const { getByTestId } = render(
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockSteps = [
+      new Step('step-1', 'guide-1', 0, 'Step One', 10, 'First step'),
+      new Step('step-2', 'guide-1', 1, 'Step Two', 15, 'Second step'),
+    ]
+    const mockStepService = createMockStepService(mockSteps)
+
+    const { getByText, queryByTestId } = render(
       <GuideDetailScreen
         guideId="guide-1"
         onBack={mockOnBack}
-        onAddStep={mockOnAddStep}
-        testID="test"
+        testID="detail"
         guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
-    expect(getByTestId('test')).toBeTruthy()
-  })
+    await waitFor(() => {
+      expect(getByText('Step One')).toBeTruthy()
+      expect(getByText('Step Two')).toBeTruthy()
+    })
 
-  it('accepts onEditStep callback', () => {
-    const mockOnEditStep = jest.fn()
-
-    const { getByTestId } = render(
-      <GuideDetailScreen
-        guideId="guide-1"
-        onBack={mockOnBack}
-        onEditStep={mockOnEditStep}
-        testID="test"
-        guideService={mockGuideService}
-      />
-    )
-
-    expect(getByTestId('test')).toBeTruthy()
+    // No add, edit, or delete controls should be present
+    expect(queryByTestId('detail:add-step')).toBeNull()
+    expect(queryByTestId('detail:step-0:edit')).toBeNull()
+    expect(queryByTestId('detail:step-0:delete')).toBeNull()
+    expect(queryByTestId('detail:step-0:move-up')).toBeNull()
+    expect(queryByTestId('detail:step-0:move-down')).toBeNull()
   })
 
   it('displays ingredients for cooking guides', async () => {
@@ -158,11 +167,7 @@ describe('GuideDetailScreen', () => {
 
     mockGuideService.getGuideById.mockResolvedValue(guide)
 
-    const mockStepService = {
-      getStepsByGuideId: jest.fn().mockResolvedValue([]),
-      updateStepOrder: jest.fn(),
-      deleteStep: jest.fn(),
-    } as unknown as StepService
+    const mockStepService = createMockStepService()
 
     const { getByText } = render(
       <GuideDetailScreen
@@ -205,11 +210,7 @@ describe('GuideDetailScreen', () => {
 
     mockGuideService.getGuideById.mockResolvedValue(guide)
 
-    const mockStepService = {
-      getStepsByGuideId: jest.fn().mockResolvedValue([]),
-      updateStepOrder: jest.fn(),
-      deleteStep: jest.fn(),
-    } as unknown as StepService
+    const mockStepService = createMockStepService()
 
     const { getByText } = render(
       <GuideDetailScreen
@@ -245,11 +246,7 @@ describe('GuideDetailScreen', () => {
 
     mockGuideService.getGuideById.mockResolvedValue(guide)
 
-    const mockStepService = {
-      getStepsByGuideId: jest.fn().mockResolvedValue([]),
-      updateStepOrder: jest.fn(),
-      deleteStep: jest.fn(),
-    } as unknown as StepService
+    const mockStepService = createMockStepService()
 
     const { getByText } = render(
       <GuideDetailScreen
@@ -282,11 +279,7 @@ describe('GuideDetailScreen', () => {
 
     mockGuideService.getGuideById.mockResolvedValue(guide)
 
-    const mockStepService = {
-      getStepsByGuideId: jest.fn().mockResolvedValue([]),
-      updateStepOrder: jest.fn(),
-      deleteStep: jest.fn(),
-    } as unknown as StepService
+    const mockStepService = createMockStepService()
 
     const { queryByText } = render(
       <GuideDetailScreen
@@ -319,11 +312,7 @@ describe('GuideDetailScreen', () => {
 
     mockGuideService.getGuideById.mockResolvedValue(guide)
 
-    const mockStepService = {
-      getStepsByGuideId: jest.fn().mockResolvedValue([]),
-      updateStepOrder: jest.fn(),
-      deleteStep: jest.fn(),
-    } as unknown as StepService
+    const mockStepService = createMockStepService()
 
     const { queryByText } = render(
       <GuideDetailScreen
@@ -362,11 +351,7 @@ describe('GuideDetailScreen', () => {
 
     mockGuideService.getGuideById.mockResolvedValue(guide)
 
-    const mockStepService = {
-      getStepsByGuideId: jest.fn().mockResolvedValue([]),
-      updateStepOrder: jest.fn(),
-      deleteStep: jest.fn(),
-    } as unknown as StepService
+    const mockStepService = createMockStepService()
 
     const { getByText } = render(
       <GuideDetailScreen
