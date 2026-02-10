@@ -410,8 +410,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           )}
         </View>
 
-        {/* Active Timers */}
-        {!isLoading && activeTimers.length > 0 && (
+        {/* Active Timers (hidden in admin mode) */}
+        {!isLoading && !adminModeActive && activeTimers.length > 0 && (
           <View style={commonStyles.section}>
             <Text style={commonStyles.sectionTitle}>Active Timers</Text>
             {activeTimers.map(timer => (

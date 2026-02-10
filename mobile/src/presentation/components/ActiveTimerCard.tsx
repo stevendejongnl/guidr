@@ -21,7 +21,11 @@ const formatTime = (seconds: number): string => {
 }
 
 export const ActiveTimerCard: React.FC<ActiveTimerCardProps> = ({ timer, onPress }) => {
-  const badgeStatus = timer.display.isRunning ? 'in-progress' : 'paused'
+  const badgeStatus = timer.display.isComplete
+    ? 'completed'
+    : timer.display.isRunning
+      ? 'in-progress'
+      : 'paused'
 
   return (
     <TouchableOpacity

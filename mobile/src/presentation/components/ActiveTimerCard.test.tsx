@@ -75,6 +75,23 @@ describe('ActiveTimerCard', () => {
     expect(getByText('In Progress')).toBeTruthy()
   })
 
+  it('should render completed status badge for complete timer', () => {
+    const timer = makeTimer({
+      display: {
+        timerId: 'timer-1',
+        mode: 'countdown',
+        displaySeconds: 0,
+        isRunning: false,
+        isPaused: false,
+        isComplete: true,
+      },
+    })
+    const { getByText } = render(
+      <ActiveTimerCard timer={timer} onPress={jest.fn()} />,
+    )
+    expect(getByText('Completed')).toBeTruthy()
+  })
+
   it('should render paused status badge for paused timer', () => {
     const timer = makeTimer({
       display: {

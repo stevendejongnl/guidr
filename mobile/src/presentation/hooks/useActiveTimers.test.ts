@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react-native'
+import { renderHook, waitFor, act } from '@testing-library/react-native'
 import { useActiveTimers } from './useActiveTimers'
 import { createMockStepTimerClient } from '../testUtils'
 import { ActiveStepTimerDto } from '../../infrastructure/api/dtos/ActiveStepTimerDto'
@@ -90,6 +90,88 @@ describe('useActiveTimers', () => {
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
       expect(result.current.activeTimers).toEqual([])
+    })
+  })
+
+  describe('auto-reset completed timers', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    // Use status 'paused' to avoid the 1-second tick interval.
+    // Timer is still complete because accumulatedSeconds > durationSeconds.
+    const completedDto: ActiveStepTimerDto = {
+      id: 'timer-1',
+      stepId: 'step-1',
+      guideId: 'guide-1',
+      userId: 'user-1',
+      status: 'paused',
+      startedAt: null,
+      accumulatedSeconds: 300,
+      durationSeconds: 120,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+      guideTitle: 'My Guide',
+      stepTitle: 'Step 1',
+    }
+
+    it('should call resetTimer after 2 minutes for completed timer', async () => {
+      mockClient.getActiveTimers.mockResolvedValue([completedDto])
+      mockClient.resetTimer.mockResolvedValue({} as never)
+
+      const { result } = renderHook(() => useActiveTimers('test-token', mockClient))
+
+      // Wait for the full effect chain: fetch → setDtos → recalculate → setActiveTimers → auto-reset effect
+      await waitFor(() => {
+        expect(result.current.activeTimers).toHaveLength(1)
+        expect(result.current.activeTimers[0]!.display.isComplete).toBe(true)
+      })
+
+      expect(mockClient.resetTimer).not.toHaveBeenCalled()
+
+      await act(async () => {
+        jest.advanceTimersByTime(2 * 60 * 1000)
+      })
+
+      expect(mockClient.resetTimer).toHaveBeenCalledWith('timer-1', 'test-token')
+    })
+
+    it('should not reset timer before 2 minutes', async () => {
+      mockClient.getActiveTimers.mockResolvedValue([completedDto])
+
+      const { result } = renderHook(() => useActiveTimers('test-token', mockClient))
+
+      await waitFor(() => {
+        expect(result.current.activeTimers).toHaveLength(1)
+      })
+
+      await act(async () => {
+        jest.advanceTimersByTime(60 * 1000) // Only 1 minute
+      })
+
+      expect(mockClient.resetTimer).not.toHaveBeenCalled()
+    })
+
+    it('should handle reset errors gracefully', async () => {
+      mockClient.getActiveTimers.mockResolvedValue([completedDto])
+      mockClient.resetTimer.mockRejectedValue(new Error('Network error'))
+
+      const { result } = renderHook(() => useActiveTimers('test-token', mockClient))
+
+      await waitFor(() => {
+        expect(result.current.activeTimers).toHaveLength(1)
+      })
+
+      await act(async () => {
+        jest.advanceTimersByTime(2 * 60 * 1000)
+      })
+
+      expect(mockClient.resetTimer).toHaveBeenCalled()
+      // Should not throw — error handled silently
     })
   })
 })
