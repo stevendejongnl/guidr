@@ -2,46 +2,55 @@ import { useRef, useCallback, useEffect } from 'react'
 import { LiveActivityService, LiveActivityData } from '../../infrastructure/native/LiveActivityService'
 
 interface UseLiveActivityReturn {
-  startLiveActivity: (data: LiveActivityData) => Promise<void>
-  updateLiveActivity: (remainingSeconds: number, isPaused: boolean, isComplete: boolean) => Promise<void>
-  endLiveActivity: () => Promise<void>
+  addTimer: (data: LiveActivityData) => Promise<void>
+  updateTimer: (stepId: string, remainingSeconds: number, isPaused: boolean, isComplete: boolean) => Promise<void>
+  removeTimer: (stepId: string) => Promise<void>
+  endAllTimers: () => Promise<void>
 }
 
 export function useLiveActivity(
   liveActivityService?: LiveActivityService,
 ): UseLiveActivityReturn {
   const serviceRef = useRef(liveActivityService ?? new LiveActivityService())
-  const activeRef = useRef(false)
+  const activeTimerIdsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const service = serviceRef.current
     return () => {
-      if (activeRef.current) {
+      if (activeTimerIdsRef.current.size > 0) {
         service.endLiveActivity()
-        activeRef.current = false
+        activeTimerIdsRef.current.clear()
       }
     }
   }, [])
 
-  const startLiveActivity = useCallback(async (data: LiveActivityData) => {
+  const addTimer = useCallback(async (data: LiveActivityData) => {
     if (data.totalDurationSeconds <= 0) return
     const result = await serviceRef.current.startLiveActivity(data)
-    activeRef.current = result !== null
+    if (result !== null) {
+      activeTimerIdsRef.current.add(data.stepId)
+    }
   }, [])
 
-  const updateLiveActivity = useCallback(
-    async (remainingSeconds: number, isPaused: boolean, isComplete: boolean) => {
-      if (!activeRef.current) return
-      await serviceRef.current.updateLiveActivity(remainingSeconds, isPaused, isComplete)
+  const updateTimer = useCallback(
+    async (stepId: string, remainingSeconds: number, isPaused: boolean, isComplete: boolean) => {
+      if (!activeTimerIdsRef.current.has(stepId)) return
+      await serviceRef.current.updateLiveActivity(stepId, remainingSeconds, isPaused, isComplete)
     },
     [],
   )
 
-  const endLiveActivity = useCallback(async () => {
-    if (!activeRef.current) return
-    await serviceRef.current.endLiveActivity()
-    activeRef.current = false
+  const removeTimer = useCallback(async (stepId: string) => {
+    if (!activeTimerIdsRef.current.has(stepId)) return
+    await serviceRef.current.removeLiveActivityTimer(stepId)
+    activeTimerIdsRef.current.delete(stepId)
   }, [])
 
-  return { startLiveActivity, updateLiveActivity, endLiveActivity }
+  const endAllTimers = useCallback(async () => {
+    if (activeTimerIdsRef.current.size === 0) return
+    await serviceRef.current.endLiveActivity()
+    activeTimerIdsRef.current.clear()
+  }, [])
+
+  return { addTimer, updateTimer, removeTimer, endAllTimers }
 }

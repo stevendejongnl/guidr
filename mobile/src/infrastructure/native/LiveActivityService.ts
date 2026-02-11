@@ -3,6 +3,7 @@ import { NativeModules, Platform } from 'react-native'
 const { LiveActivityModule } = NativeModules
 
 export interface LiveActivityData {
+  stepId: string
   guideTitle: string
   stepTitle: string
   totalDurationSeconds: number
@@ -23,6 +24,7 @@ export class LiveActivityService {
     if (Platform.OS !== 'ios') return null
     try {
       return await LiveActivityModule.startActivity(
+        data.stepId,
         data.guideTitle,
         data.stepTitle,
         data.totalDurationSeconds,
@@ -34,13 +36,23 @@ export class LiveActivityService {
   }
 
   async updateLiveActivity(
+    stepId: string,
     remainingSeconds: number,
     isPaused: boolean,
     isComplete: boolean,
   ): Promise<void> {
     if (Platform.OS !== 'ios') return
     try {
-      await LiveActivityModule.updateActivity(remainingSeconds, isPaused, isComplete)
+      await LiveActivityModule.updateActivity(stepId, remainingSeconds, isPaused, isComplete)
+    } catch {
+      // Live Activities are non-critical — silently fail
+    }
+  }
+
+  async removeLiveActivityTimer(stepId: string): Promise<void> {
+    if (Platform.OS !== 'ios') return
+    try {
+      await LiveActivityModule.removeTimer(stepId)
     } catch {
       // Live Activities are non-critical — silently fail
     }

@@ -86,7 +86,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     const prevCompleted = prevCompletedRef.current
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
       if (display.isComplete && !prevCompleted.has(stepId)) {
-        liveActivity.updateLiveActivity(0, false, true)
+        liveActivity.updateTimer(stepId, 0, false, true)
       }
     }
     prevCompletedRef.current = new Set(
@@ -401,7 +401,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             mode,
                             onStart: async () => {
                               await stepTimers.startTimer(step.id, step.duration)
-                              liveActivity.startLiveActivity({
+                              liveActivity.addTimer({
+                                stepId: step.id,
                                 guideTitle: guide.title,
                                 stepTitle: step.title,
                                 totalDurationSeconds: initialSeconds,
@@ -411,7 +412,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             onPause: async () => {
                               await stepTimers.pauseTimer(step.id)
                               const display = stepTimers.timers[step.id]
-                              liveActivity.updateLiveActivity(
+                              liveActivity.updateTimer(
+                                step.id,
                                 display?.displaySeconds ?? 0,
                                 true,
                                 false,
@@ -419,7 +421,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             },
                             onReset: async () => {
                               await stepTimers.resetTimer(step.id)
-                              liveActivity.endLiveActivity()
+                              liveActivity.removeTimer(step.id)
                             },
                           }}
                           testID={`${testID}:step-${index}`}

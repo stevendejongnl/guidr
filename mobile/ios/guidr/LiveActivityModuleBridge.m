@@ -7,7 +7,8 @@ RCT_EXTERN_METHOD(isAvailable:
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(startActivity:
-                  (NSString *)guideTitle
+                  (NSString *)stepId
+                  guideTitle:(NSString *)guideTitle
                   stepTitle:(NSString *)stepTitle
                   totalDurationSeconds:(int)totalDurationSeconds
                   remainingSeconds:(int)remainingSeconds
@@ -15,9 +16,15 @@ RCT_EXTERN_METHOD(startActivity:
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(updateActivity:
-                  (int)remainingSeconds
+                  (NSString *)stepId
+                  remainingSeconds:(int)remainingSeconds
                   isPaused:(BOOL)isPaused
                   isComplete:(BOOL)isComplete
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(removeTimer:
+                  (NSString *)stepId
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

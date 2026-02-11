@@ -13,29 +13,25 @@ struct GuidrTimerWidgetLiveActivity: Widget {
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          Label(context.attributes.stepTitle, systemImage: "timer")
+          Label(context.state.stepTitle, systemImage: "timer")
             .font(.caption)
             .foregroundColor(.white)
         }
         DynamicIslandExpandedRegion(.trailing) {
-          TimerText(state: context.state, totalDuration: context.attributes.totalDurationSeconds)
+          TimerText(state: context.state)
         }
         DynamicIslandExpandedRegion(.bottom) {
-          ProgressView(
-            value: progress(state: context.state, totalDuration: context.attributes.totalDurationSeconds),
-            total: 1.0
-          )
-          .tint(progressColor(state: context.state, totalDuration: context.attributes.totalDurationSeconds))
+          TimerProgressView(state: context.state)
         }
       } compactLeading: {
         Image(systemName: "timer")
-          .foregroundColor(compactColor(state: context.state, totalDuration: context.attributes.totalDurationSeconds))
+          .foregroundColor(compactColor(state: context.state))
       } compactTrailing: {
-        TimerText(state: context.state, totalDuration: context.attributes.totalDurationSeconds)
+        TimerText(state: context.state)
           .font(.caption)
       } minimal: {
         Image(systemName: "timer")
-          .foregroundColor(compactColor(state: context.state, totalDuration: context.attributes.totalDurationSeconds))
+          .foregroundColor(compactColor(state: context.state))
       }
     }
   }
@@ -53,21 +49,23 @@ private struct LockScreenView: View {
           .foregroundColor(.white)
           .lineLimit(1)
         Spacer()
-        TimerText(state: context.state, totalDuration: context.attributes.totalDurationSeconds)
+        TimerText(state: context.state)
           .font(.title2.monospacedDigit())
           .foregroundColor(timerTextColor)
       }
 
-      Text(context.attributes.stepTitle)
+      Text(context.state.stepTitle)
         .font(.subheadline)
         .foregroundColor(.white.opacity(0.7))
         .lineLimit(1)
 
-      ProgressView(
-        value: progress(state: context.state, totalDuration: context.attributes.totalDurationSeconds),
-        total: 1.0
-      )
-      .tint(progressColor(state: context.state, totalDuration: context.attributes.totalDurationSeconds))
+      if context.state.activeTimerCount > 1 {
+        Text("+\(context.state.activeTimerCount - 1) more timer\(context.state.activeTimerCount > 2 ? "s" : "")")
+          .font(.caption2)
+          .foregroundColor(.white.opacity(0.5))
+      }
+
+      TimerProgressView(state: context.state)
     }
   }
 
@@ -78,14 +76,13 @@ private struct LockScreenView: View {
     if context.state.isPaused {
       return .orange
     }
-    return progressColor(state: context.state, totalDuration: context.attributes.totalDurationSeconds)
+    return progressColor(state: context.state)
   }
 }
 
 @available(iOS 16.1, *)
 private struct TimerText: View {
   let state: GuidrTimerAttributes.ContentState
-  let totalDuration: Int
 
   var body: some View {
     if state.isComplete {
@@ -95,13 +92,45 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
+    } else if let endDate = state.timerEndDate, Date() >= endDate {
+      Text("Done")
+        .foregroundColor(.green)
+        .fontWeight(.semibold)
     } else if let endDate = state.timerEndDate {
       Text(timerInterval: Date.now...endDate, countsDown: true)
-        .foregroundColor(progressColor(state: state, totalDuration: totalDuration))
+        .foregroundColor(progressColor(state: state))
         .monospacedDigit()
     } else {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.white)
+    }
+  }
+}
+
+@available(iOS 16.1, *)
+private struct TimerProgressView: View {
+  let state: GuidrTimerAttributes.ContentState
+
+  var body: some View {
+    if state.isComplete {
+      ProgressView(value: 1.0, total: 1.0)
+        .tint(.green)
+    } else if state.isPaused {
+      ProgressView(
+        value: staticProgress(state: state),
+        total: 1.0
+      )
+      .tint(progressColor(state: state))
+    } else if let endDate = state.timerEndDate, Date() >= endDate {
+      ProgressView(value: 1.0, total: 1.0)
+        .tint(.green)
+    } else if let endDate = state.timerEndDate {
+      let startDate = endDate.addingTimeInterval(-Double(state.totalDurationSeconds))
+      ProgressView(timerInterval: startDate...endDate, countsDown: false)
+        .tint(.green)
+    } else {
+      ProgressView(value: 0, total: 1.0)
+        .tint(.green)
     }
   }
 }
@@ -112,15 +141,15 @@ private func formatTime(_ seconds: Int) -> String {
   return String(format: "%02d:%02d", mins, secs)
 }
 
-private func progress(state: GuidrTimerAttributes.ContentState, totalDuration: Int) -> Double {
-  guard totalDuration > 0 else { return 0 }
+private func staticProgress(state: GuidrTimerAttributes.ContentState) -> Double {
+  guard state.totalDurationSeconds > 0 else { return 0 }
   let remaining = Double(max(0, state.remainingSeconds))
-  return 1.0 - (remaining / Double(totalDuration))
+  return 1.0 - (remaining / Double(state.totalDurationSeconds))
 }
 
-private func progressColor(state: GuidrTimerAttributes.ContentState, totalDuration: Int) -> Color {
-  guard totalDuration > 0 else { return .green }
-  let ratio = Double(state.remainingSeconds) / Double(totalDuration)
+private func progressColor(state: GuidrTimerAttributes.ContentState) -> Color {
+  guard state.totalDurationSeconds > 0 else { return .green }
+  let ratio = Double(state.remainingSeconds) / Double(state.totalDurationSeconds)
   if ratio > 0.5 {
     return .green
   } else if ratio > 0.25 {
@@ -130,8 +159,8 @@ private func progressColor(state: GuidrTimerAttributes.ContentState, totalDurati
   }
 }
 
-private func compactColor(state: GuidrTimerAttributes.ContentState, totalDuration: Int) -> Color {
+private func compactColor(state: GuidrTimerAttributes.ContentState) -> Color {
   if state.isComplete { return .green }
   if state.isPaused { return .orange }
-  return progressColor(state: state, totalDuration: totalDuration)
+  return progressColor(state: state)
 }

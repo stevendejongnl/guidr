@@ -41,13 +41,14 @@ describe('LiveActivityService', () => {
 
   describe('startLiveActivity', () => {
     const data = {
+      stepId: 'step-1',
       guideTitle: 'My Guide',
       stepTitle: 'Step 1',
       totalDurationSeconds: 300,
       remainingSeconds: 300,
     }
 
-    it('should call native module with correct parameters', async () => {
+    it('should call native module with stepId as first parameter', async () => {
       const mock = NativeModules['LiveActivityModule'].startActivity as jest.Mock
       mock.mockResolvedValue('activity-123')
 
@@ -55,6 +56,7 @@ describe('LiveActivityService', () => {
 
       expect(result).toBe('activity-123')
       expect(NativeModules['LiveActivityModule'].startActivity).toHaveBeenCalledWith(
+        'step-1',
         'My Guide',
         'Step 1',
         300,
@@ -82,13 +84,14 @@ describe('LiveActivityService', () => {
   })
 
   describe('updateLiveActivity', () => {
-    it('should call native module with correct parameters', async () => {
+    it('should call native module with stepId as first parameter', async () => {
       const mock = NativeModules['LiveActivityModule'].updateActivity as jest.Mock
       mock.mockResolvedValue(undefined)
 
-      await service.updateLiveActivity(120, true, false)
+      await service.updateLiveActivity('step-1', 120, true, false)
 
       expect(NativeModules['LiveActivityModule'].updateActivity).toHaveBeenCalledWith(
+        'step-1',
         120,
         true,
         false,
@@ -98,7 +101,7 @@ describe('LiveActivityService', () => {
     it('should not call native module on Android', async () => {
       Platform.OS = 'android'
 
-      await service.updateLiveActivity(120, true, false)
+      await service.updateLiveActivity('step-1', 120, true, false)
 
       expect(NativeModules['LiveActivityModule'].updateActivity).not.toHaveBeenCalled()
     })
@@ -107,7 +110,33 @@ describe('LiveActivityService', () => {
       const mock = NativeModules['LiveActivityModule'].updateActivity as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 
-      await expect(service.updateLiveActivity(120, true, false)).resolves.toBeUndefined()
+      await expect(service.updateLiveActivity('step-1', 120, true, false)).resolves.toBeUndefined()
+    })
+  })
+
+  describe('removeLiveActivityTimer', () => {
+    it('should call native removeTimer with stepId', async () => {
+      const mock = NativeModules['LiveActivityModule'].removeTimer as jest.Mock
+      mock.mockResolvedValue(undefined)
+
+      await service.removeLiveActivityTimer('step-1')
+
+      expect(NativeModules['LiveActivityModule'].removeTimer).toHaveBeenCalledWith('step-1')
+    })
+
+    it('should not call native module on Android', async () => {
+      Platform.OS = 'android'
+
+      await service.removeLiveActivityTimer('step-1')
+
+      expect(NativeModules['LiveActivityModule'].removeTimer).not.toHaveBeenCalled()
+    })
+
+    it('should silently catch errors', async () => {
+      const mock = NativeModules['LiveActivityModule'].removeTimer as jest.Mock
+      mock.mockRejectedValue(new Error('Failed'))
+
+      await expect(service.removeLiveActivityTimer('step-1')).resolves.toBeUndefined()
     })
   })
 

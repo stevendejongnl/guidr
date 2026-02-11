@@ -34,6 +34,7 @@ module.exports = {
       isAvailable: jest.fn(() => Promise.resolve(false)),
       startActivity: jest.fn(() => Promise.resolve(null)),
       updateActivity: jest.fn(() => Promise.resolve()),
+      removeTimer: jest.fn(() => Promise.resolve()),
       endActivity: jest.fn(() => Promise.resolve()),
     },
   },

@@ -5,9 +5,23 @@ import React
 @objc(LiveActivityModule)
 class LiveActivityModule: NSObject {
 
+  private struct TimerEntry {
+    let stepId: String
+    var stepTitle: String
+    var guideTitle: String
+    var totalDurationSeconds: Int
+    var endDate: Date?
+    var remainingSeconds: Int
+    var isPaused: Bool
+    var isComplete: Bool
+  }
+
+  private var timerEntries: [TimerEntry] = []
+  private var completionWorkItem: DispatchWorkItem?
+
   @objc
   static func requiresMainQueueSetup() -> Bool {
-    return false
+    return true
   }
 
   @objc
@@ -24,7 +38,8 @@ class LiveActivityModule: NSObject {
 
   @objc
   func startActivity(
-    _ guideTitle: String,
+    _ stepId: String,
+    guideTitle: String,
     stepTitle: String,
     totalDurationSeconds: Int,
     remainingSeconds: Int,
@@ -32,37 +47,56 @@ class LiveActivityModule: NSObject {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     if #available(iOS 16.2, *) {
-      let attributes = GuidrTimerAttributes(
-        guideTitle: guideTitle,
-        stepTitle: stepTitle,
-        totalDurationSeconds: totalDurationSeconds
-      )
-
       let endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
-      let state = GuidrTimerAttributes.ContentState(
-        timerEndDate: endDate,
-        remainingSeconds: remainingSeconds,
-        isPaused: false,
-        isComplete: false
-      )
 
-      do {
-        // End any existing activity first
-        for activity in Activity<GuidrTimerAttributes>.activities {
-          Task {
-            await activity.end(nil, dismissalPolicy: .immediate)
-          }
-        }
-
-        let activity = try Activity.request(
-          attributes: attributes,
-          content: .init(state: state, staleDate: endDate),
-          pushType: nil
-        )
-        resolve(activity.id)
-      } catch {
-        reject("START_FAILED", "Failed to start Live Activity: \(error.localizedDescription)", error)
+      // Update existing entry or append new one
+      if let index = timerEntries.firstIndex(where: { $0.stepId == stepId }) {
+        timerEntries[index].stepTitle = stepTitle
+        timerEntries[index].guideTitle = guideTitle
+        timerEntries[index].totalDurationSeconds = totalDurationSeconds
+        timerEntries[index].endDate = endDate
+        timerEntries[index].remainingSeconds = remainingSeconds
+        timerEntries[index].isPaused = false
+        timerEntries[index].isComplete = false
+      } else {
+        timerEntries.append(TimerEntry(
+          stepId: stepId,
+          stepTitle: stepTitle,
+          guideTitle: guideTitle,
+          totalDurationSeconds: totalDurationSeconds,
+          endDate: endDate,
+          remainingSeconds: remainingSeconds,
+          isPaused: false,
+          isComplete: false
+        ))
       }
+
+      let state = buildContentState()
+      let soonestEndDate = soonestRunningEndDate()
+
+      // Check if a Live Activity already exists
+      let existingActivity = Activity<GuidrTimerAttributes>.activities.first
+      if let activity = existingActivity {
+        Task {
+          await activity.update(.init(state: state, staleDate: soonestEndDate))
+          resolve(activity.id)
+        }
+      } else {
+        do {
+          let attributes = GuidrTimerAttributes(guideTitle: guideTitle)
+          let activity = try Activity.request(
+            attributes: attributes,
+            content: .init(state: state, staleDate: soonestEndDate),
+            pushType: nil
+          )
+          resolve(activity.id)
+        } catch {
+          reject("START_FAILED", "Failed to start Live Activity: \(error.localizedDescription)", error)
+          return
+        }
+      }
+
+      scheduleCompletionForSoonest()
     } else {
       resolve(nil)
     }
@@ -70,29 +104,73 @@ class LiveActivityModule: NSObject {
 
   @objc
   func updateActivity(
-    _ remainingSeconds: Int,
+    _ stepId: String,
+    remainingSeconds: Int,
     isPaused: Bool,
     isComplete: Bool,
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     if #available(iOS 16.2, *) {
-      let timerEndDate: Date? = (!isPaused && !isComplete)
-        ? Date().addingTimeInterval(TimeInterval(remainingSeconds))
-        : nil
+      guard let index = timerEntries.firstIndex(where: { $0.stepId == stepId }) else {
+        resolve(nil)
+        return
+      }
 
-      let state = GuidrTimerAttributes.ContentState(
-        timerEndDate: timerEndDate,
-        remainingSeconds: remainingSeconds,
-        isPaused: isPaused,
-        isComplete: isComplete
-      )
+      timerEntries[index].remainingSeconds = remainingSeconds
+      timerEntries[index].isPaused = isPaused
+      timerEntries[index].isComplete = isComplete
+
+      if isPaused || isComplete {
+        timerEntries[index].endDate = nil
+      } else {
+        timerEntries[index].endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
+      }
+
+      let state = buildContentState()
+      let soonestEndDate = soonestRunningEndDate()
 
       Task {
         for activity in Activity<GuidrTimerAttributes>.activities {
-          await activity.update(.init(state: state, staleDate: nil))
+          await activity.update(.init(state: state, staleDate: soonestEndDate))
         }
         resolve(nil)
+      }
+
+      scheduleCompletionForSoonest()
+    } else {
+      resolve(nil)
+    }
+  }
+
+  @objc
+  func removeTimer(
+    _ stepId: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    if #available(iOS 16.2, *) {
+      timerEntries.removeAll { $0.stepId == stepId }
+
+      if timerEntries.isEmpty {
+        completionWorkItem?.cancel()
+        completionWorkItem = nil
+        Task {
+          for activity in Activity<GuidrTimerAttributes>.activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
+          }
+          resolve(nil)
+        }
+      } else {
+        let state = buildContentState()
+        let soonestEndDate = soonestRunningEndDate()
+        Task {
+          for activity in Activity<GuidrTimerAttributes>.activities {
+            await activity.update(.init(state: state, staleDate: soonestEndDate))
+          }
+          resolve(nil)
+        }
+        scheduleCompletionForSoonest()
       }
     } else {
       resolve(nil)
@@ -105,6 +183,10 @@ class LiveActivityModule: NSObject {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     if #available(iOS 16.2, *) {
+      completionWorkItem?.cancel()
+      completionWorkItem = nil
+      timerEntries.removeAll()
+
       Task {
         for activity in Activity<GuidrTimerAttributes>.activities {
           await activity.end(nil, dismissalPolicy: .immediate)
@@ -113,6 +195,93 @@ class LiveActivityModule: NSObject {
       }
     } else {
       resolve(nil)
+    }
+  }
+
+  // MARK: - Private helpers
+
+  @available(iOS 16.2, *)
+  private func buildContentState() -> GuidrTimerAttributes.ContentState {
+    let active = timerEntries.filter { !$0.isComplete }
+    let running = active.filter { !$0.isPaused && $0.endDate != nil }
+
+    // Pick soonest running timer, or first paused, or first complete
+    let primary = running.min(by: { ($0.endDate ?? .distantFuture) < ($1.endDate ?? .distantFuture) })
+      ?? active.first
+      ?? timerEntries.first
+
+    let allDone = active.isEmpty && !timerEntries.isEmpty
+
+    return GuidrTimerAttributes.ContentState(
+      stepTitle: allDone ? "All done!" : (primary?.stepTitle ?? ""),
+      totalDurationSeconds: primary?.totalDurationSeconds ?? 0,
+      timerEndDate: primary?.endDate,
+      remainingSeconds: primary?.remainingSeconds ?? 0,
+      isPaused: primary?.isPaused ?? false,
+      isComplete: allDone,
+      activeTimerCount: active.count
+    )
+  }
+
+  private func soonestRunningEndDate() -> Date? {
+    return timerEntries
+      .filter { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
+      .compactMap { $0.endDate }
+      .min()
+  }
+
+  @available(iOS 16.2, *)
+  private func scheduleCompletionForSoonest() {
+    completionWorkItem?.cancel()
+
+    guard let soonestDate = soonestRunningEndDate() else { return }
+
+    let delay = max(0.5, soonestDate.timeIntervalSinceNow + 0.5)
+    let workItem = DispatchWorkItem { [weak self] in
+      guard let self = self else { return }
+      self.handleTimerCompletion()
+    }
+    completionWorkItem = workItem
+    DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+  }
+
+  @available(iOS 16.2, *)
+  private func handleTimerCompletion() {
+    let now = Date()
+
+    // Mark expired timers as complete
+    for i in 0..<timerEntries.count {
+      if let endDate = timerEntries[i].endDate, endDate <= now, !timerEntries[i].isPaused {
+        timerEntries[i].isComplete = true
+        timerEntries[i].endDate = nil
+        timerEntries[i].remainingSeconds = 0
+      }
+    }
+
+    let state = buildContentState()
+    let soonestEndDate = soonestRunningEndDate()
+    let allDone = timerEntries.filter({ !$0.isComplete }).isEmpty && !timerEntries.isEmpty
+
+    Task {
+      for activity in Activity<GuidrTimerAttributes>.activities {
+        await activity.update(.init(state: state, staleDate: soonestEndDate))
+      }
+
+      if allDone {
+        // Dismiss after 3 seconds
+        try? await Task.sleep(nanoseconds: 3_000_000_000)
+        for activity in Activity<GuidrTimerAttributes>.activities {
+          await activity.end(nil, dismissalPolicy: .immediate)
+        }
+        await MainActor.run {
+          self.timerEntries.removeAll()
+        }
+      }
+    }
+
+    // Schedule next completion if more running timers remain
+    if !allDone {
+      scheduleCompletionForSoonest()
     }
   }
 }
