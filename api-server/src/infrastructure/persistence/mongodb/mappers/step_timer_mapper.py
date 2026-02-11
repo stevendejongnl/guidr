@@ -1,9 +1,19 @@
 """MongoDB mapper for StepTimer entity."""
 
+from datetime import UTC, datetime
 from typing import Any
 
 from src.domain.entities import StepTimer
 from src.domain.value_objects import EntityId, StepTimerStatus
+
+
+def _ensure_utc(dt: datetime | None) -> datetime | None:
+    """Attach UTC timezone to naive datetimes from MongoDB."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt
 
 
 class StepTimerMapper:
@@ -48,7 +58,7 @@ class StepTimerMapper:
             guide_id=EntityId(str(document["guideId"])),
             user_id=EntityId(str(document["userId"])),
             status=StepTimerStatus(document["status"]),
-            started_at=document.get("startedAt"),
+            started_at=_ensure_utc(document.get("startedAt")),
             accumulated_seconds=document.get(
                 "accumulatedSeconds", 0
             ),

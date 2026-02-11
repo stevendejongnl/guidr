@@ -1,9 +1,19 @@
 """MongoDB mapper for Session entity."""
 
+from datetime import UTC, datetime
 from typing import Any
 
 from src.domain.entities import Session
 from src.domain.value_objects import EntityId, SessionStatus
+
+
+def _ensure_utc(dt: datetime | None) -> datetime | None:
+    """Attach UTC timezone to naive datetimes from MongoDB."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt
 
 
 class SessionMapper:
@@ -45,8 +55,8 @@ class SessionMapper:
             id=EntityId(str(document["_id"])),
             guide_id=EntityId(str(document["guideId"])),
             status=SessionStatus(document["status"]),
-            started_at=document.get("startedAt"),
-            completed_at=document.get("completedAt"),
+            started_at=_ensure_utc(document.get("startedAt")),
+            completed_at=_ensure_utc(document.get("completedAt")),
             current_step_id=(
                 EntityId(str(document["currentStepId"])) if document.get("currentStepId") else None
             ),
