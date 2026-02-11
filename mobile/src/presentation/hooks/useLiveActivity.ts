@@ -16,10 +16,11 @@ export function useLiveActivity(
 
   useEffect(() => {
     const service = serviceRef.current
+    const activeTimerIds = activeTimerIdsRef.current
     return () => {
-      if (activeTimerIdsRef.current.size > 0) {
+      if (activeTimerIds.size > 0) {
         service.endLiveActivity()
-        activeTimerIdsRef.current.clear()
+        activeTimerIds.clear()
       }
     }
   }, [])
