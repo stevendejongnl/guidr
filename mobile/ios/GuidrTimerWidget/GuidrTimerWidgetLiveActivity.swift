@@ -38,20 +38,49 @@ struct GuidrTimerWidgetLiveActivity: Widget {
 }
 
 @available(iOS 16.1, *)
+private struct GuidrDotsView: View {
+  var body: some View {
+    HStack(spacing: 1.5) {
+      Circle()
+        .fill(Color.green.opacity(0.4))
+        .frame(width: 3, height: 3)
+        .offset(y: 2)
+      Circle()
+        .fill(Color.green.opacity(0.65))
+        .frame(width: 4, height: 4)
+      Circle()
+        .fill(Color.green.opacity(0.9))
+        .frame(width: 5, height: 5)
+        .offset(y: -2)
+    }
+    .frame(height: 9)
+  }
+}
+
+@available(iOS 16.1, *)
 private struct LockScreenView: View {
   let context: ActivityViewContext<GuidrTimerAttributes>
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
+      HStack(spacing: 4) {
+        GuidrDotsView()
+        Text("Guidr")
+          .font(.caption2)
+          .foregroundColor(.white.opacity(0.5))
+          .textCase(.uppercase)
+      }
+
       HStack {
         Text(context.attributes.guideTitle)
           .font(.headline)
           .foregroundColor(.white)
           .lineLimit(1)
-        Spacer()
+        Spacer(minLength: 8)
         TimerText(state: context.state)
           .font(.title2.monospacedDigit())
           .foregroundColor(timerTextColor)
+          .fixedSize(horizontal: true, vertical: false)
       }
 
       Text(context.state.stepTitle)
