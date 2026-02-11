@@ -12,6 +12,8 @@ import { SafeScreen } from '../components/SafeScreen'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
+import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
+import { NotificationService } from '../../infrastructure/native/NotificationService'
 
 interface SettingsScreenProps {
   onBack: () => void
@@ -22,6 +24,8 @@ interface SettingsScreenProps {
   onToggleAdminMode: (value: boolean) => void
   serverUrl: string | null
   healthCheckService: IHealthCheckService
+  notificationPreferencesStorage?: NotificationPreferencesStorage
+  notificationService?: NotificationService
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -33,8 +37,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onToggleAdminMode,
   serverUrl,
   healthCheckService,
+  notificationPreferencesStorage: injectedPrefsStorage,
+  notificationService: injectedNotifService,
 }) => {
   const [serverVersion, setServerVersion] = useState<string | null>(null)
+  const [timerNotificationsEnabled, setTimerNotificationsEnabled] = useState(true)
+  const [criticalNotificationsEnabled, setCriticalNotificationsEnabled] = useState(false)
+
+  const prefsStorage = injectedPrefsStorage || new NotificationPreferencesStorage()
+  const notifService = injectedNotifService || new NotificationService()
 
   useEffect(() => {
     const fetchServerVersion = async () => {
@@ -53,6 +64,34 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     }
     fetchServerVersion()
   }, [serverUrl, healthCheckService])
+
+  useEffect(() => {
+    const loadPreferences = async () => {
+      const timerEnabled = await prefsStorage.getTimerNotificationsEnabled()
+      const criticalEnabled = await prefsStorage.getCriticalNotificationsEnabled()
+      setTimerNotificationsEnabled(timerEnabled)
+      setCriticalNotificationsEnabled(criticalEnabled)
+    }
+    loadPreferences()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleTimerNotificationsToggle = async (value: boolean) => {
+    setTimerNotificationsEnabled(value)
+    await prefsStorage.setTimerNotificationsEnabled(value)
+    if (value) {
+      await notifService.requestPermission()
+    }
+    if (!value) {
+      setCriticalNotificationsEnabled(false)
+      await prefsStorage.setCriticalNotificationsEnabled(false)
+    }
+  }
+
+  const handleCriticalNotificationsToggle = async (value: boolean) => {
+    setCriticalNotificationsEnabled(value)
+    await prefsStorage.setCriticalNotificationsEnabled(value)
+  }
 
   return (
     <SafeScreen>
@@ -93,6 +132,37 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             >
               <Text style={commonStyles.buttonText}>Change Server</Text>
             </TouchableOpacity>
+          </View>
+
+          {/* Notifications Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Notifications</Text>
+            <View style={styles.settingRow}>
+              <Text style={styles.settingLabel}>Timer Notifications</Text>
+              <Switch
+                value={timerNotificationsEnabled}
+                onValueChange={handleTimerNotificationsToggle}
+                testID="timer-notifications-toggle"
+              />
+            </View>
+            <Text style={styles.settingHint}>
+              Get notified when step timers complete
+            </Text>
+            {timerNotificationsEnabled && (
+              <>
+                <View style={styles.settingRow}>
+                  <Text style={styles.settingLabel}>Critical Notifications</Text>
+                  <Switch
+                    value={criticalNotificationsEnabled}
+                    onValueChange={handleCriticalNotificationsToggle}
+                    testID="critical-notifications-toggle"
+                  />
+                </View>
+                <Text style={styles.settingHint}>
+                  Break through Focus and Do Not Disturb modes
+                </Text>
+              </>
+            )}
           </View>
 
           {/* Admin Section - Shown when user has admin privileges */}
@@ -180,6 +250,11 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     color: colors.textPrimary,
     maxWidth: 180,
+  },
+  settingHint: {
+    fontSize: typography.sizeSm,
+    color: colors.textTertiary,
+    marginBottom: spacing.xs,
   },
   sectionButton: {
     marginTop: spacing.md,

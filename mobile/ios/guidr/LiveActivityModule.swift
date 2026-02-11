@@ -97,6 +97,15 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
+
+      // Schedule notification for timer completion
+      NotificationHelper.shared.scheduleTimerNotification(
+        stepId: stepId,
+        stepTitle: stepTitle,
+        guideTitle: guideTitle,
+        remainingSeconds: remainingSeconds,
+        critical: NotificationHelper.shared.criticalNotificationsEnabled
+      )
     } else {
       resolve(nil)
     }
@@ -123,8 +132,19 @@ class LiveActivityModule: NSObject {
 
       if isPaused || isComplete {
         timerEntries[index].endDate = nil
+        // Cancel notification when paused or complete
+        NotificationHelper.shared.cancelTimerNotification(stepId: stepId)
       } else {
         timerEntries[index].endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
+        // Reschedule notification on resume
+        let entry = timerEntries[index]
+        NotificationHelper.shared.scheduleTimerNotification(
+          stepId: stepId,
+          stepTitle: entry.stepTitle,
+          guideTitle: entry.guideTitle,
+          remainingSeconds: remainingSeconds,
+          critical: NotificationHelper.shared.criticalNotificationsEnabled
+        )
       }
 
       let state = buildContentState()
@@ -151,6 +171,7 @@ class LiveActivityModule: NSObject {
   ) {
     if #available(iOS 16.2, *) {
       timerEntries.removeAll { $0.stepId == stepId }
+      NotificationHelper.shared.cancelTimerNotification(stepId: stepId)
 
       if timerEntries.isEmpty {
         completionWorkItem?.cancel()
@@ -186,6 +207,7 @@ class LiveActivityModule: NSObject {
       completionWorkItem?.cancel()
       completionWorkItem = nil
       timerEntries.removeAll()
+      NotificationHelper.shared.cancelAllTimerNotifications()
 
       Task {
         for activity in Activity<GuidrTimerAttributes>.activities {

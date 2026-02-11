@@ -37,5 +37,25 @@ module.exports = {
       removeTimer: jest.fn(() => Promise.resolve()),
       endActivity: jest.fn(() => Promise.resolve()),
     },
+    NotificationModule: {
+      scheduleNotification: jest.fn(() => Promise.resolve()),
+      cancelNotification: jest.fn(() => Promise.resolve()),
+      cancelAllNotifications: jest.fn(() => Promise.resolve()),
+      showNotification: jest.fn(() => Promise.resolve()),
+      requestPermission: jest.fn(() => Promise.resolve(true)),
+      syncPreferences: jest.fn(() => Promise.resolve()),
+    },
+  },
+  PermissionsAndroid: {
+    request: jest.fn(() => Promise.resolve('granted')),
+    check: jest.fn(() => Promise.resolve(true)),
+    PERMISSIONS: {
+      POST_NOTIFICATIONS: 'android.permission.POST_NOTIFICATIONS',
+    },
+    RESULTS: {
+      GRANTED: 'granted',
+      DENIED: 'denied',
+      NEVER_ASK_AGAIN: 'never_ask_again',
+    },
   },
 }

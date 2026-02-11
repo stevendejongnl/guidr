@@ -2,6 +2,8 @@ import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { SettingsScreen } from './SettingsScreen'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
+import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
+import { NotificationService } from '../../infrastructure/native/NotificationService'
 
 // Mock react-native-device-info
 jest.mock('react-native-device-info', () => ({
@@ -14,6 +16,21 @@ describe('SettingsScreen', () => {
     validateServer: jest.fn(),
   }
 
+  const mockPrefsStorage: jest.Mocked<NotificationPreferencesStorage> = {
+    getTimerNotificationsEnabled: jest.fn(),
+    setTimerNotificationsEnabled: jest.fn(),
+    getCriticalNotificationsEnabled: jest.fn(),
+    setCriticalNotificationsEnabled: jest.fn(),
+  } as unknown as jest.Mocked<NotificationPreferencesStorage>
+
+  const mockNotifService: jest.Mocked<NotificationService> = {
+    requestPermission: jest.fn(),
+    scheduleTimerNotification: jest.fn(),
+    cancelTimerNotification: jest.fn(),
+    cancelAllTimerNotifications: jest.fn(),
+    showImmediateNotification: jest.fn(),
+  } as unknown as jest.Mocked<NotificationService>
+
   const defaultProps = {
     onBack: jest.fn(),
     onChangeServer: jest.fn(),
@@ -23,10 +40,17 @@ describe('SettingsScreen', () => {
     onToggleAdminMode: jest.fn(),
     serverUrl: 'https://api.example.com',
     healthCheckService: mockHealthCheckService,
+    notificationPreferencesStorage: mockPrefsStorage,
+    notificationService: mockNotifService,
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
+    mockPrefsStorage.getCriticalNotificationsEnabled.mockResolvedValue(false)
+    mockPrefsStorage.setTimerNotificationsEnabled.mockResolvedValue(undefined)
+    mockPrefsStorage.setCriticalNotificationsEnabled.mockResolvedValue(undefined)
+    mockNotifService.requestPermission.mockResolvedValue(true)
   })
 
   it('renders settings screen with header', () => {
@@ -185,5 +209,134 @@ describe('SettingsScreen', () => {
     fireEvent(getByTestId('admin-mode-toggle'), 'onValueChange', true)
     expect(mockToggle).toHaveBeenCalledWith(true)
   })
-})
 
+  // Notification tests
+  describe('Notifications section', () => {
+    beforeEach(() => {
+      mockHealthCheckService.validateServer.mockResolvedValue({
+        healthy: true,
+        responseTime: 100,
+      })
+    })
+
+    it('renders notifications section with timer toggle', () => {
+      const { getByText, getByTestId } = render(
+        <SettingsScreen {...defaultProps} />
+      )
+      expect(getByText('Notifications')).toBeTruthy()
+      expect(getByText('Timer Notifications')).toBeTruthy()
+      expect(getByTestId('timer-notifications-toggle')).toBeTruthy()
+    })
+
+    it('renders hint text for timer notifications', () => {
+      const { getByText } = render(<SettingsScreen {...defaultProps} />)
+      expect(getByText('Get notified when step timers complete')).toBeTruthy()
+    })
+
+    it('loads notification preferences on mount', async () => {
+      render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockPrefsStorage.getTimerNotificationsEnabled).toHaveBeenCalled()
+        expect(mockPrefsStorage.getCriticalNotificationsEnabled).toHaveBeenCalled()
+      })
+    })
+
+    it('shows critical toggle when timer notifications enabled', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
+
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByTestId('critical-notifications-toggle')).toBeTruthy()
+      })
+    })
+
+    it('hides critical toggle when timer notifications disabled', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(false)
+
+      const { queryByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      // Wait for async prefs load to complete, then verify toggle is hidden
+      await waitFor(
+        () => {
+          expect(queryByTestId('critical-notifications-toggle')).toBeNull()
+        },
+        { timeout: 3000 },
+      )
+    })
+
+    it('saves preference when timer toggle is changed', async () => {
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByTestId('timer-notifications-toggle')).toBeTruthy()
+      })
+
+      fireEvent(getByTestId('timer-notifications-toggle'), 'onValueChange', false)
+
+      await waitFor(() => {
+        expect(mockPrefsStorage.setTimerNotificationsEnabled).toHaveBeenCalledWith(false)
+      })
+    })
+
+    it('requests permission when enabling timer notifications', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(false)
+
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByTestId('timer-notifications-toggle')).toBeTruthy()
+      })
+
+      fireEvent(getByTestId('timer-notifications-toggle'), 'onValueChange', true)
+
+      await waitFor(() => {
+        expect(mockNotifService.requestPermission).toHaveBeenCalled()
+      })
+    })
+
+    it('disables critical when timer notifications are turned off', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
+      mockPrefsStorage.getCriticalNotificationsEnabled.mockResolvedValue(true)
+
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByTestId('timer-notifications-toggle')).toBeTruthy()
+      })
+
+      fireEvent(getByTestId('timer-notifications-toggle'), 'onValueChange', false)
+
+      await waitFor(() => {
+        expect(mockPrefsStorage.setCriticalNotificationsEnabled).toHaveBeenCalledWith(false)
+      })
+    })
+
+    it('saves preference when critical toggle is changed', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
+
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByTestId('critical-notifications-toggle')).toBeTruthy()
+      })
+
+      fireEvent(getByTestId('critical-notifications-toggle'), 'onValueChange', true)
+
+      await waitFor(() => {
+        expect(mockPrefsStorage.setCriticalNotificationsEnabled).toHaveBeenCalledWith(true)
+      })
+    })
+
+    it('shows critical notification hint text', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
+
+      const { getByText } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByText('Break through Focus and Do Not Disturb modes')).toBeTruthy()
+      })
+    })
+  })
+})

@@ -26,6 +26,8 @@ import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { useStepTimers } from '../hooks/useStepTimers'
 import { useLiveActivity } from '../hooks/useLiveActivity'
 import { LiveActivityService } from '../../infrastructure/native/LiveActivityService'
+import { NotificationService } from '../../infrastructure/native/NotificationService'
+import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
 
 interface GuideDetailScreenProps {
   guideId: string
@@ -36,6 +38,8 @@ interface GuideDetailScreenProps {
   guideService?: GuideService
   stepTimerClient?: StepTimerClient
   liveActivityService?: LiveActivityService
+  notificationService?: NotificationService
+  notificationPreferencesStorage?: NotificationPreferencesStorage
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
   testID?: string
@@ -50,6 +54,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   guideService: injectedGuideService,
   stepTimerClient: injectedStepTimerClient,
   liveActivityService: injectedLiveActivityService,
+  notificationService: injectedNotificationService,
+  notificationPreferencesStorage: injectedNotifPrefsStorage,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
   testID,
@@ -65,6 +71,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
+  const notificationService = injectedNotificationService || new NotificationService()
+  const notifPrefsStorage = injectedNotifPrefsStorage || new NotificationPreferencesStorage()
 
   // Step timer client ref
   const timerClientRef = React.useRef<StepTimerClient | null>(
@@ -81,12 +89,27 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const liveActivity = useLiveActivity(injectedLiveActivityService)
   const prevCompletedRef = useRef<Set<string>>(new Set())
 
-  // Detect timer completion and update Live Activity
+  // Detect timer completion: update Live Activity + fire Android notification
   useEffect(() => {
     const prevCompleted = prevCompletedRef.current
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
       if (display.isComplete && !prevCompleted.has(stepId)) {
         liveActivity.updateTimer(stepId, 0, false, true)
+        // Fire Android notification on completion (iOS handled natively)
+        const step = steps.find(s => s.id === stepId)
+        if (step && guide) {
+          notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
+            if (!enabled) return
+            notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
+              notificationService.showImmediateNotification(
+                stepId,
+                step.title,
+                guide.title,
+                critical,
+              )
+            })
+          })
+        }
       }
     }
     prevCompletedRef.current = new Set(
@@ -94,6 +117,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
         .filter(([, d]) => d.isComplete)
         .map(([id]) => id),
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepTimers.timers, liveActivity])
 
   // Initialize service refs (use injected or create new)
@@ -422,6 +446,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             onReset: async () => {
                               await stepTimers.resetTimer(step.id)
                               liveActivity.removeTimer(step.id)
+                              notificationService.cancelTimerNotification(step.id)
                             },
                           }}
                           testID={`${testID}:step-${index}`}
