@@ -66,6 +66,7 @@
 		F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GuidrTimerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* guidr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = guidr.entitlements; path = guidr/guidr.entitlements; sourceTree = "<group>"; };
 		FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrTimerAttributes.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +121,7 @@
 				314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */,
 				04424E6BE0C37B437AEEA925 /* GuidrTimerWidgetBundle.swift */,
 				11F9B7D85588CC58815D1D3F /* GuidrTimerWidget.entitlements */,
+				A1B2C3D4E5F60718293A4B5C /* Info.plist */,
 			);
 			name = GuidrTimerWidget;
 			path = GuidrTimerWidget;
@@ -469,6 +471,7 @@
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GuidrTimerWidget/Info.plist;
 				INFOPLIST_GENERATION_MODE = GeneratedByXcode;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -646,6 +649,7 @@
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GuidrTimerWidget/Info.plist;
 				INFOPLIST_GENERATION_MODE = GeneratedByXcode;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
