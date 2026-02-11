@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -24,6 +24,8 @@ import { StepListItem } from '../components/StepListItem'
 import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { useStepTimers } from '../hooks/useStepTimers'
+import { useLiveActivity } from '../hooks/useLiveActivity'
+import { LiveActivityService } from '../../infrastructure/native/LiveActivityService'
 
 interface GuideDetailScreenProps {
   guideId: string
@@ -33,6 +35,7 @@ interface GuideDetailScreenProps {
   stepService?: StepService
   guideService?: GuideService
   stepTimerClient?: StepTimerClient
+  liveActivityService?: LiveActivityService
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
   testID?: string
@@ -46,6 +49,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   stepService: injectedStepService,
   guideService: injectedGuideService,
   stepTimerClient: injectedStepTimerClient,
+  liveActivityService: injectedLiveActivityService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
   testID,
@@ -72,6 +76,25 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
 
   // Step timers hook
   const stepTimers = useStepTimers(guideId, authToken, timerClient)
+
+  // Live Activity hook
+  const liveActivity = useLiveActivity(injectedLiveActivityService)
+  const prevCompletedRef = useRef<Set<string>>(new Set())
+
+  // Detect timer completion and update Live Activity
+  useEffect(() => {
+    const prevCompleted = prevCompletedRef.current
+    for (const [stepId, display] of Object.entries(stepTimers.timers)) {
+      if (display.isComplete && !prevCompleted.has(stepId)) {
+        liveActivity.updateLiveActivity(0, false, true)
+      }
+    }
+    prevCompletedRef.current = new Set(
+      Object.entries(stepTimers.timers)
+        .filter(([, d]) => d.isComplete)
+        .map(([id]) => id),
+    )
+  }, [stepTimers.timers, liveActivity])
 
   // Initialize service refs (use injected or create new)
   const servicesRef = React.useRef<{
@@ -376,9 +399,28 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             isPaused: timerDisplay?.isPaused ?? false,
                             isComplete: timerDisplay?.isComplete ?? false,
                             mode,
-                            onStart: () => stepTimers.startTimer(step.id, step.duration),
-                            onPause: () => stepTimers.pauseTimer(step.id),
-                            onReset: () => stepTimers.resetTimer(step.id),
+                            onStart: async () => {
+                              await stepTimers.startTimer(step.id, step.duration)
+                              liveActivity.startLiveActivity({
+                                guideTitle: guide.title,
+                                stepTitle: step.title,
+                                totalDurationSeconds: initialSeconds,
+                                remainingSeconds: initialSeconds,
+                              })
+                            },
+                            onPause: async () => {
+                              await stepTimers.pauseTimer(step.id)
+                              const display = stepTimers.timers[step.id]
+                              liveActivity.updateLiveActivity(
+                                display?.displaySeconds ?? 0,
+                                true,
+                                false,
+                              )
+                            },
+                            onReset: async () => {
+                              await stepTimers.resetTimer(step.id)
+                              liveActivity.endLiveActivity()
+                            },
                           }}
                           testID={`${testID}:step-${index}`}
                         />

@@ -30,5 +30,11 @@ module.exports = {
     ApkInstallerModule: {
       installApk: jest.fn(() => Promise.resolve()),
     },
+    LiveActivityModule: {
+      isAvailable: jest.fn(() => Promise.resolve(false)),
+      startActivity: jest.fn(() => Promise.resolve(null)),
+      updateActivity: jest.fn(() => Promise.resolve()),
+      endActivity: jest.fn(() => Promise.resolve()),
+    },
   },
 }

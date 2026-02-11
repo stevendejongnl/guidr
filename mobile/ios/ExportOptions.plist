@@ -10,6 +10,8 @@
 	<dict>
 		<key>com.guidr</key>
 		<string>match AppStore com.guidr</string>
+		<key>com.guidr.timer-widget</key>
+		<string>match AppStore com.guidr.timer-widget</string>
 	</dict>
 	<key>stripSwiftSymbols</key>
 	<true/>
