@@ -15,7 +15,7 @@ class LiveActivityModule: NSObject {
     _ resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    if #available(iOS 16.1, *) {
+    if #available(iOS 16.2, *) {
       resolve(ActivityAuthorizationInfo().areActivitiesEnabled)
     } else {
       resolve(false)
@@ -31,7 +31,7 @@ class LiveActivityModule: NSObject {
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    if #available(iOS 16.1, *) {
+    if #available(iOS 16.2, *) {
       let attributes = GuidrTimerAttributes(
         guideTitle: guideTitle,
         stepTitle: stepTitle,
@@ -76,7 +76,7 @@ class LiveActivityModule: NSObject {
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    if #available(iOS 16.1, *) {
+    if #available(iOS 16.2, *) {
       let timerEndDate: Date? = (!isPaused && !isComplete)
         ? Date().addingTimeInterval(TimeInterval(remainingSeconds))
         : nil
@@ -104,7 +104,7 @@ class LiveActivityModule: NSObject {
     _ resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    if #available(iOS 16.1, *) {
+    if #available(iOS 16.2, *) {
       Task {
         for activity in Activity<GuidrTimerAttributes>.activities {
           await activity.end(nil, dismissalPolicy: .immediate)
