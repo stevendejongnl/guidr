@@ -18,6 +18,7 @@
 		817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		AB279DD88B018B578BC6FC9C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
+		C7D3E8A91F4B2560D8E07A3C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
 		FC508176FC966C05B5DEDF3A /* GuidrTimerWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -367,6 +368,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				C7D3E8A91F4B2560D8E07A3C /* GuidrTimerAttributes.swift in Sources */,
 				5F619710012131604894698E /* LiveActivityModule.swift in Sources */,
 				3F8EA7B94545BA1816BFF45B /* LiveActivityModuleBridge.m in Sources */,
 			);
