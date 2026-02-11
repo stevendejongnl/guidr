@@ -1,7 +1,9 @@
 """Pytest configuration and fixtures for integration tests."""
 
 import os
+import socket
 from collections.abc import AsyncGenerator
+from urllib.parse import urlparse
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -10,11 +12,26 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from src.main import create_application
 
 
+def _mongodb_is_reachable(uri: str, timeout: float = 2.0) -> bool:
+    """Check if MongoDB is reachable with a quick TCP connection check."""
+    parsed = urlparse(uri)
+    host = parsed.hostname or "localhost"
+    port = parsed.port or 27017
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
 @pytest.fixture
 async def app():
     """Create a test FastAPI application."""
     # Use test database
-    os.environ["MONGO_URI"] = os.getenv("MONGO_TEST_URI", "mongodb://localhost:27017/guidr_test")
+    mongo_uri = os.getenv("MONGO_TEST_URI", "mongodb://localhost:27017/guidr_test")
+    if not _mongodb_is_reachable(mongo_uri):
+        pytest.skip("MongoDB is not reachable — skipping integration test")
+    os.environ["MONGO_URI"] = mongo_uri
 
     application = create_application()
 
