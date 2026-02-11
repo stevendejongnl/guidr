@@ -413,7 +413,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.58.4;
+				MARKETING_VERSION = 1.58.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -444,7 +444,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.58.4;
+				MARKETING_VERSION = 1.58.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -476,7 +476,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.58.4;
+				MARKETING_VERSION = 1.58.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.timer-widget";
 				PRODUCT_NAME = GuidrTimerWidgetExtension;
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr.timer-widget";
@@ -653,7 +653,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.58.4;
+				MARKETING_VERSION = 1.58.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.timer-widget";
 				PRODUCT_NAME = GuidrTimerWidgetExtension;
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr.timer-widget";
