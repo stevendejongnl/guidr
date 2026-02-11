@@ -44,7 +44,8 @@ platform :ios do
         method: "app-store",
         signingStyle: "manual",
         provisioningProfiles: {
-          "com.guidr" => "match AppStore com.guidr"
+          "com.guidr" => "match AppStore com.guidr",
+          "com.guidr.timer-widget" => "match AppStore com.guidr.timer-widget"
         }
       }
     )
