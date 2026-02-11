@@ -7,25 +7,64 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08FF4D43162E24EABD45A19F /* GuidrTimerWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04424E6BE0C37B437AEEA925 /* GuidrTimerWidgetBundle.swift */; };
 		0C80B921A6F3F58F76C31292 /* libPods-guidr.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-guidr.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		340507DDD54A8C92BE78752F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		3F8EA7B94545BA1816BFF45B /* LiveActivityModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = B60A78F642DD5279794993EC /* LiveActivityModuleBridge.m */; };
+		413C444F05526F31CFD26814 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DC02BC820536990C5FC94F0 /* Foundation.framework */; };
+		5F619710012131604894698E /* LiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDDE1947E31B3C23D3B3D3 /* LiveActivityModule.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		AB279DD88B018B578BC6FC9C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
+		FC508176FC966C05B5DEDF3A /* GuidrTimerWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		DE1128FE524DA4D23B0DD16C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 634A27779FA66ECE5268AE44;
+			remoteInfo = GuidrTimerWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7164C7A5341D985C0CFA07FD /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FC508176FC966C05B5DEDF3A /* GuidrTimerWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		04424E6BE0C37B437AEEA925 /* GuidrTimerWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrTimerWidgetBundle.swift; sourceTree = "<group>"; };
+		11F9B7D85588CC58815D1D3F /* GuidrTimerWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = GuidrTimerWidget.entitlements; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* guidr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = guidr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = guidr/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = guidr/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = guidr/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrTimerWidgetLiveActivity.swift; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-guidr.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-guidr.debug.xcconfig"; path = "Target Support Files/Pods-guidr/Pods-guidr.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-guidr.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-guidr.release.xcconfig"; path = "Target Support Files/Pods-guidr/Pods-guidr.release.xcconfig"; sourceTree = "<group>"; };
+		5DC02BC820536990C5FC94F0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-guidr.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-guidr.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6DEDDE1947E31B3C23D3B3D3 /* LiveActivityModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LiveActivityModule.swift; path = guidr/LiveActivityModule.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = guidr/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = guidr/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B60A78F642DD5279794993EC /* LiveActivityModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = LiveActivityModuleBridge.m; path = guidr/LiveActivityModuleBridge.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GuidrTimerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* guidr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = guidr.entitlements; path = guidr/guidr.entitlements; sourceTree = "<group>"; };
+		FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrTimerAttributes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,6 +73,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C80B921A6F3F58F76C31292 /* libPods-guidr.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		52B9301C99C33D3FA8893606 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				413C444F05526F31CFD26814 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,6 +96,8 @@
 				F1A2B3C4D5E6F7A8B9C0D1E2 /* guidr.entitlements */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				6DEDDE1947E31B3C23D3B3D3 /* LiveActivityModule.swift */,
+				B60A78F642DD5279794993EC /* LiveActivityModuleBridge.m */,
 			);
 			name = guidr;
 			sourceTree = "<group>";
@@ -58,8 +107,21 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				5DCACB8F33CDC322A6C60F78 /* libPods-guidr.a */,
+				9D435354B1BD10E2F22A183E /* iOS */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3AFA926B89F785D74EF00EF7 /* GuidrTimerWidget */ = {
+			isa = PBXGroup;
+			children = (
+				FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */,
+				314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */,
+				04424E6BE0C37B437AEEA925 /* GuidrTimerWidgetBundle.swift */,
+				11F9B7D85588CC58815D1D3F /* GuidrTimerWidget.entitlements */,
+			);
+			name = GuidrTimerWidget;
+			path = GuidrTimerWidget;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -77,6 +139,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				3AFA926B89F785D74EF00EF7 /* GuidrTimerWidget */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -87,8 +150,18 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* guidr.app */,
+				F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */,
+				F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9D435354B1BD10E2F22A183E /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				5DC02BC820536990C5FC94F0 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -116,15 +189,34 @@
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
 				EF490379CCF54C75AC7E6EB4 /* Upload Debug Symbols to Sentry */,
+				7164C7A5341D985C0CFA07FD /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				57322EEEACB494925A6DC8CE /* PBXTargetDependency */,
 			);
 			name = guidr;
 			productName = guidr;
 			productReference = 13B07F961A680F5B00A75B9A /* guidr.app */;
 			productType = "com.apple.product-type.application";
+		};
+		634A27779FA66ECE5268AE44 /* GuidrTimerWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3C83244A6FC720FA97284D3B /* Build configuration list for PBXNativeTarget "GuidrTimerWidgetExtension" */;
+			buildPhases = (
+				24C2A026FECB6F879FDAC602 /* Sources */,
+				52B9301C99C33D3FA8893606 /* Frameworks */,
+				5F412B3421DD1198D47E09DE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GuidrTimerWidgetExtension;
+			productName = GuidrTimerWidgetExtension;
+			productReference = F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -136,6 +228,9 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1120;
+					};
+					634A27779FA66ECE5268AE44 = {
+						CreatedOnToolsVersion = 15.0;
 					};
 				};
 			};
@@ -153,6 +248,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* guidr */,
+				634A27779FA66ECE5268AE44 /* GuidrTimerWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -168,25 +264,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* Copy Configuration File */ = {
-			isa = PBXShellScriptBuildPhase;
+		5F412B3421DD1198D47E09DE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"$(SRCROOT)/guidr/default-configuration.toml",
-			);
-			name = "Copy Configuration File";
-			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/default-configuration.toml",
-			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\n\nCONFIG_SOURCE=\"${SRCROOT}/guidr/default-configuration.toml\"\nCONFIG_DEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/default-configuration.toml\"\n\nif [ -f \"$CONFIG_SOURCE\" ]; then\n    echo \"Copying configuration file to app bundle...\"\n    cp \"$CONFIG_SOURCE\" \"$CONFIG_DEST\"\n    echo \"Configuration file copied successfully.\"\nelse\n    echo \"error: Configuration file not found at $CONFIG_SOURCE\"\n    exit 1\nfi\n";
 		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -213,6 +300,22 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Copy Configuration File */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/guidr/default-configuration.toml",
+			);
+			name = "Copy Configuration File";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/default-configuration.toml",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nCONFIG_SOURCE=\"${SRCROOT}/guidr/default-configuration.toml\"\nCONFIG_DEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/default-configuration.toml\"\n\nif [ -f \"$CONFIG_SOURCE\" ]; then\n    echo \"Copying configuration file to app bundle...\"\n    cp \"$CONFIG_SOURCE\" \"$CONFIG_DEST\"\n    echo \"Configuration file copied successfully.\"\nelse\n    echo \"error: Configuration file not found at $CONFIG_SOURCE\"\n    exit 1\nfi\n";
 		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -265,10 +368,31 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				5F619710012131604894698E /* LiveActivityModule.swift in Sources */,
+				3F8EA7B94545BA1816BFF45B /* LiveActivityModuleBridge.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		24C2A026FECB6F879FDAC602 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AB279DD88B018B578BC6FC9C /* GuidrTimerAttributes.swift in Sources */,
+				817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */,
+				08FF4D43162E24EABD45A19F /* GuidrTimerWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		57322EEEACB494925A6DC8CE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GuidrTimerWidgetExtension;
+			target = 634A27779FA66ECE5268AE44 /* GuidrTimerWidgetExtension */;
+			targetProxy = DE1128FE524DA4D23B0DD16C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
@@ -278,10 +402,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = guidr/guidr.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = guidr/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -294,12 +420,10 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.guidr;
 				PRODUCT_NAME = guidr;
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				CODE_SIGN_STYLE = Manual;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 			};
 			name = Debug;
 		};
@@ -310,9 +434,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = guidr/guidr.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = guidr/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -325,13 +451,41 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.guidr;
 				PRODUCT_NAME = guidr;
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				CODE_SIGN_STYLE = Manual;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr";
 			};
 			name = Release;
+		};
+		571CB7111DAF553E92A6330C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = GuidrTimerWidget/GuidrTimerWidget.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_GENERATION_MODE = GeneratedByXcode;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.timer-widget";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr.timer-widget";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -382,7 +536,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -452,7 +606,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -479,6 +633,35 @@
 			};
 			name = Release;
 		};
+		9D7A98DF1A9CCF612B768CDB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = GuidrTimerWidget/GuidrTimerWidget.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_GENERATION_MODE = GeneratedByXcode;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.timer-widget";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr.timer-widget";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -487,6 +670,15 @@
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
 				13B07F951A680F5B00A75B9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3C83244A6FC720FA97284D3B /* Build configuration list for PBXNativeTarget "GuidrTimerWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D7A98DF1A9CCF612B768CDB /* Release */,
+				571CB7111DAF553E92A6330C /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
