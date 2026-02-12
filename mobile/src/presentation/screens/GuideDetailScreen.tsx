@@ -425,13 +425,16 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             mode,
                             onStart: async () => {
                               notificationService.requestPermission()
+                              const remaining = timerDisplay?.isPaused
+                                ? timerDisplay.displaySeconds
+                                : initialSeconds
                               await stepTimers.startTimer(step.id, step.duration)
                               await liveActivity.addTimer({
                                 stepId: step.id,
                                 guideTitle: guide.title,
                                 stepTitle: step.title,
                                 totalDurationSeconds: initialSeconds,
-                                remainingSeconds: initialSeconds,
+                                remainingSeconds: remaining,
                               })
                             },
                             onPause: async () => {
