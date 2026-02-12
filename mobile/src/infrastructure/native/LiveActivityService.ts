@@ -24,13 +24,32 @@ export class LiveActivityService {
   async startLiveActivity(data: LiveActivityData): Promise<string | null> {
     if (Platform.OS !== 'ios') return null
     try {
-      return await LiveActivityModule.startActivity(
+      const available = await this.isAvailable()
+      ErrorReporter.captureMessage('LiveActivity.start', 'info', {
+        component: 'LiveActivityService',
+        action: 'startLiveActivity',
+        available: available,
+        stepId: data.stepId,
+        totalDurationSeconds: data.totalDurationSeconds,
+        remainingSeconds: data.remainingSeconds,
+      })
+      const activityId = await LiveActivityModule.startActivity(
         data.stepId,
         data.guideTitle,
         data.stepTitle,
         data.totalDurationSeconds,
         data.remainingSeconds,
       )
+      ErrorReporter.captureMessage(
+        `LiveActivity.started: ${activityId ? 'ok' : 'null'}`,
+        activityId ? 'info' : 'warning',
+        {
+          component: 'LiveActivityService',
+          action: 'startLiveActivity.result',
+          activityId: activityId ?? 'null',
+        },
+      )
+      return activityId
     } catch (error) {
       ErrorReporter.capture(error, { component: 'LiveActivityService', action: 'startLiveActivity' })
       return null

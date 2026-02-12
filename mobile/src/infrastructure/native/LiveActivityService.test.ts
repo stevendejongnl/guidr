@@ -51,6 +51,8 @@ describe('LiveActivityService', () => {
     }
 
     it('should call native module with stepId as first parameter', async () => {
+      const isAvailableMock = NativeModules['LiveActivityModule'].isAvailable as jest.Mock
+      isAvailableMock.mockResolvedValue(true)
       const mock = NativeModules['LiveActivityModule'].startActivity as jest.Mock
       mock.mockResolvedValue('activity-123')
 
@@ -76,6 +78,8 @@ describe('LiveActivityService', () => {
     })
 
     it('should return null when native module throws', async () => {
+      const isAvailableMock = NativeModules['LiveActivityModule'].isAvailable as jest.Mock
+      isAvailableMock.mockResolvedValue(true)
       const mock = NativeModules['LiveActivityModule'].startActivity as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 
