@@ -88,7 +88,7 @@ class LiveActivityModule: NSObject {
       let allActivities = Activity<GuidrTimerAttributes>.activities
       NSLog("[LiveActivity] existing activities: %d", allActivities.count)
       for act in allActivities {
-        NSLog("[LiveActivity]   id=%@ state=%d", act.id, act.activityState.rawValue)
+        NSLog("[LiveActivity]   id=%@ state=%@", act.id, String(describing: act.activityState))
         if act.activityState != .active {
           Task { await act.end(nil, dismissalPolicy: .immediate) }
         }
