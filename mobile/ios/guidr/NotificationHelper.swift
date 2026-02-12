@@ -32,7 +32,11 @@ class NotificationHelper {
 
   func requestPermission(completion: @escaping (Bool) -> Void) {
     let center = UNUserNotificationCenter.current()
-    center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+    var options: UNAuthorizationOptions = [.alert, .sound, .badge]
+    if #available(iOS 15.0, *) {
+      options.insert(.timeSensitive)
+    }
+    center.requestAuthorization(options: options) { granted, _ in
       completion(granted)
     }
   }
@@ -54,10 +58,8 @@ class NotificationHelper {
     content.body = "\(stepTitle) — \(guideTitle)"
     content.sound = .default
 
-    if #available(iOS 15.0, *) {
-      if critical && criticalNotificationsEnabled {
-        content.interruptionLevel = .timeSensitive
-      }
+    if #available(iOS 15.0, *), critical {
+      content.interruptionLevel = .timeSensitive
     }
 
     let trigger = UNTimeIntervalNotificationTrigger(

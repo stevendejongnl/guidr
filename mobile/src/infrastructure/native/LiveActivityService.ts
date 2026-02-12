@@ -1,4 +1,5 @@
 import { NativeModules, Platform } from 'react-native'
+import { ErrorReporter } from '../monitoring/ErrorReporter'
 
 const { LiveActivityModule } = NativeModules
 
@@ -31,7 +32,7 @@ export class LiveActivityService {
         data.remainingSeconds,
       )
     } catch (error) {
-      console.warn('[LiveActivityService] Failed to start:', error)
+      ErrorReporter.capture(error, { component: 'LiveActivityService', action: 'startLiveActivity' })
       return null
     }
   }

@@ -426,7 +426,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             onStart: async () => {
                               notificationService.requestPermission()
                               await stepTimers.startTimer(step.id, step.duration)
-                              liveActivity.addTimer({
+                              await liveActivity.addTimer({
                                 stepId: step.id,
                                 guideTitle: guide.title,
                                 stepTitle: step.title,

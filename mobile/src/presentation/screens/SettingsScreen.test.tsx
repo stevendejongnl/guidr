@@ -242,7 +242,7 @@ describe('SettingsScreen', () => {
       })
     })
 
-    it('shows critical toggle when timer notifications enabled', async () => {
+    it('shows time-sensitive toggle when timer notifications enabled', async () => {
       mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
 
       const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
@@ -252,7 +252,7 @@ describe('SettingsScreen', () => {
       })
     })
 
-    it('hides critical toggle when timer notifications disabled', async () => {
+    it('hides time-sensitive toggle when timer notifications disabled', async () => {
       mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(false)
 
       const { queryByTestId } = render(<SettingsScreen {...defaultProps} />)
@@ -296,7 +296,7 @@ describe('SettingsScreen', () => {
       })
     })
 
-    it('disables critical when timer notifications are turned off', async () => {
+    it('disables time-sensitive when timer notifications are turned off', async () => {
       mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
       mockPrefsStorage.getCriticalNotificationsEnabled.mockResolvedValue(true)
 
@@ -313,7 +313,7 @@ describe('SettingsScreen', () => {
       })
     })
 
-    it('saves preference when critical toggle is changed', async () => {
+    it('saves preference when time-sensitive toggle is changed', async () => {
       mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
 
       const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
@@ -329,7 +329,7 @@ describe('SettingsScreen', () => {
       })
     })
 
-    it('shows critical notification hint text', async () => {
+    it('shows time-sensitive notification hint text', async () => {
       mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
 
       const { getByText } = render(<SettingsScreen {...defaultProps} />)

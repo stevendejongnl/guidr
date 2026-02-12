@@ -151,7 +151,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             {timerNotificationsEnabled && (
               <>
                 <View style={styles.settingRow}>
-                  <Text style={styles.settingLabel}>Critical Notifications</Text>
+                  <Text style={styles.settingLabel}>Time-Sensitive</Text>
                   <Switch
                     value={criticalNotificationsEnabled}
                     onValueChange={handleCriticalNotificationsToggle}

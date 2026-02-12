@@ -1,6 +1,8 @@
 import { Platform, NativeModules } from 'react-native'
 import { LiveActivityService } from './LiveActivityService'
 
+jest.mock('../monitoring/ErrorReporter')
+
 describe('LiveActivityService', () => {
   let service: LiveActivityService
 
