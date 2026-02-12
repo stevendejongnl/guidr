@@ -131,6 +131,7 @@ private struct MediumTimerView: View {
         } else if let timer = primary {
           TimerCountdownText(timer: timer)
             .font(.title2.monospacedDigit())
+            .fixedSize(horizontal: true, vertical: false)
         }
       }
 

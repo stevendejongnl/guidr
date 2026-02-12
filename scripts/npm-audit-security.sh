@@ -16,6 +16,7 @@
 # - GHSA-p5wg-g6qr-c7cg: eslint Stack Overflow with circular references (MODERATE)
 # - GHSA-37qj-frw5-hhjh: fast-xml-parser RangeError DoS (HIGH)
 # - GHSA-67mh-4wv8-2f99: esbuild CORS bypass in dev server (MODERATE)
+# - GHSA-w7fw-mjwx-w883: qs arrayLimit bypass DoS (in Metro dev server body-parser)
 
 set -e
 
@@ -34,6 +35,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-p5wg-g6qr-c7cg"
   "GHSA-37qj-frw5-hhjh"
   "GHSA-67mh-4wv8-2f99"
+  "GHSA-w7fw-mjwx-w883"
 )
 
 # Run npm audit and capture output
