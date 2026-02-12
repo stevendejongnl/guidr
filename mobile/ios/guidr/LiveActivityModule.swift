@@ -137,10 +137,12 @@ class LiveActivityModule: NSObject {
       timerEntries[index].isPaused = isPaused
       timerEntries[index].isComplete = isComplete
 
-      if isPaused || isComplete {
+      if isPaused {
         timerEntries[index].endDate = nil
-        // Cancel notification when paused or complete
         NotificationHelper.shared.cancelTimerNotification(stepId: stepId)
+      } else if isComplete {
+        timerEntries[index].endDate = nil
+        // Don't cancel — notification fires at scheduled completion time
       } else {
         timerEntries[index].endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
         // Reschedule notification on resume
