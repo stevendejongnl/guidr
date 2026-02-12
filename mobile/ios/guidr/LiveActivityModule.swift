@@ -1,6 +1,7 @@
 import ActivityKit
 import Foundation
 import React
+import WidgetKit
 
 @objc(LiveActivityModule)
 class LiveActivityModule: NSObject {
@@ -102,6 +103,7 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
+      syncWidgetState()
 
       // Schedule notification for timer completion
       NotificationHelper.shared.scheduleTimerNotification(
@@ -163,6 +165,7 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
+      syncWidgetState()
     } else {
       resolve(nil)
     }
@@ -181,6 +184,8 @@ class LiveActivityModule: NSObject {
       if timerEntries.isEmpty {
         completionWorkItem?.cancel()
         completionWorkItem = nil
+        SharedTimerStorage.shared.clear()
+        WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
         Task {
           for activity in Activity<GuidrTimerAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
@@ -197,6 +202,7 @@ class LiveActivityModule: NSObject {
           resolve(nil)
         }
         scheduleCompletionForSoonest()
+        syncWidgetState()
       }
     } else {
       resolve(nil)
@@ -213,6 +219,8 @@ class LiveActivityModule: NSObject {
       completionWorkItem = nil
       timerEntries.removeAll()
       NotificationHelper.shared.cancelAllTimerNotifications()
+      SharedTimerStorage.shared.clear()
+      WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
 
       Task {
         for activity in Activity<GuidrTimerAttributes>.activities {
@@ -289,6 +297,8 @@ class LiveActivityModule: NSObject {
     let soonestEndDate = soonestRunningEndDate()
     let allDone = timerEntries.filter({ !$0.isComplete }).isEmpty && !timerEntries.isEmpty
 
+    syncWidgetState()
+
     Task {
       for activity in Activity<GuidrTimerAttributes>.activities {
         await activity.update(.init(state: state, staleDate: soonestEndDate))
@@ -302,6 +312,8 @@ class LiveActivityModule: NSObject {
         }
         await MainActor.run {
           self.timerEntries.removeAll()
+          SharedTimerStorage.shared.clear()
+          WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
         }
       }
     }
@@ -310,5 +322,22 @@ class LiveActivityModule: NSObject {
     if !allDone {
       scheduleCompletionForSoonest()
     }
+  }
+
+  private func syncWidgetState() {
+    let shared = timerEntries.map { entry in
+      SharedTimerEntry(
+        stepId: entry.stepId,
+        stepTitle: entry.stepTitle,
+        guideTitle: entry.guideTitle,
+        totalDurationSeconds: entry.totalDurationSeconds,
+        endDate: entry.endDate,
+        remainingSeconds: entry.remainingSeconds,
+        isPaused: entry.isPaused,
+        isComplete: entry.isComplete
+      )
+    }
+    SharedTimerStorage.shared.save(shared)
+    WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
   }
 }
