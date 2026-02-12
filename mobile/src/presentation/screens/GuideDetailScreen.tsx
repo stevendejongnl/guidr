@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  AppState,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { GuideService } from '../../domain/services/GuideService'
@@ -28,6 +29,8 @@ import { useLiveActivity } from '../hooks/useLiveActivity'
 import { LiveActivityService } from '../../infrastructure/native/LiveActivityService'
 import { NotificationService } from '../../infrastructure/native/NotificationService'
 import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
+
+const TIMER_RESET_DELAY_MS = 2 * 60 * 1000
 
 interface GuideDetailScreenProps {
   guideId: string
@@ -71,7 +74,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
 
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
-  const notificationService = injectedNotificationService || new NotificationService()
+  const notificationServiceRef = useRef(injectedNotificationService || new NotificationService())
+  const notificationService = notificationServiceRef.current
   const notifPrefsStorage = injectedNotifPrefsStorage || new NotificationPreferencesStorage()
 
   // Step timer client ref
@@ -88,6 +92,16 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   // Live Activity hook
   const liveActivity = useLiveActivity(injectedLiveActivityService)
   const prevCompletedRef = useRef<Set<string>>(new Set())
+  const completedAtRef = useRef<Record<string, number>>({})
+  const resetTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+
+  const resetCompletedTimer = useCallback((stepId: string) => {
+    stepTimers.resetTimer(stepId)
+    liveActivity.removeTimer(stepId)
+    notificationService.cancelTimerNotification(stepId)
+    delete completedAtRef.current[stepId]
+    delete resetTimeoutsRef.current[stepId]
+  }, [stepTimers, liveActivity, notificationService])
 
   // Detect timer completion: update Live Activity + fire Android notification
   useEffect(() => {
@@ -95,6 +109,12 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
       if (display.isComplete && !prevCompleted.has(stepId)) {
         liveActivity.updateTimer(stepId, 0, false, true)
+        // Track completion time and schedule auto-reset
+        completedAtRef.current[stepId] = Date.now()
+        resetTimeoutsRef.current[stepId] = setTimeout(
+          () => resetCompletedTimer(stepId),
+          TIMER_RESET_DELAY_MS,
+        )
         // Fire Android notification on completion (iOS handled natively)
         const step = steps.find(s => s.id === stepId)
         if (step && guide) {
@@ -111,6 +131,12 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
           })
         }
       }
+      // Clear tracking when timer is manually reset
+      if (!display.isComplete && completedAtRef.current[stepId]) {
+        clearTimeout(resetTimeoutsRef.current[stepId])
+        delete completedAtRef.current[stepId]
+        delete resetTimeoutsRef.current[stepId]
+      }
     }
     prevCompletedRef.current = new Set(
       Object.entries(stepTimers.timers)
@@ -118,7 +144,27 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
         .map(([id]) => id),
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepTimers.timers, liveActivity])
+  }, [stepTimers.timers, liveActivity, resetCompletedTimer])
+
+  // Reset stale completed timers on app foreground
+  useEffect(() => {
+    const timeouts = resetTimeoutsRef.current
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return
+      const now = Date.now()
+      for (const [stepId, completedAt] of Object.entries(completedAtRef.current)) {
+        if (now - completedAt >= TIMER_RESET_DELAY_MS) {
+          resetCompletedTimer(stepId)
+        }
+      }
+    })
+    return () => {
+      subscription.remove()
+      for (const timeout of Object.values(timeouts)) {
+        clearTimeout(timeout)
+      }
+    }
+  }, [resetCompletedTimer])
 
   // Initialize service refs (use injected or create new)
   const servicesRef = React.useRef<{

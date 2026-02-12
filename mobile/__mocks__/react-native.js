@@ -14,6 +14,10 @@ module.exports = {
   Alert: {
     alert: jest.fn(),
   },
+  AppState: {
+    currentState: 'active',
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  },
   Platform: {
     OS: 'ios',
     select: (obj) => obj.ios,
