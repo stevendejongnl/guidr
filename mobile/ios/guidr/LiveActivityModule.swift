@@ -80,8 +80,8 @@ class LiveActivityModule: NSObject {
       let state = buildContentState()
       let soonestEndDate = soonestRunningEndDate()
 
-      // Check if a Live Activity already exists
-      let existingActivity = Activity<GuidrTimerAttributes>.activities.first
+      // Check if an active Live Activity already exists (ended ones linger up to 15 min)
+      let existingActivity = Activity<GuidrTimerAttributes>.activities.first { $0.activityState == .active }
       if let activity = existingActivity {
         Task {
           await activity.update(.init(state: state, staleDate: soonestEndDate))
