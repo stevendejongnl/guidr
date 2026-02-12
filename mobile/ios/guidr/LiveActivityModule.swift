@@ -49,6 +49,9 @@ class LiveActivityModule: NSObject {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     if #available(iOS 16.2, *) {
+      NSLog("[LiveActivity] startActivity called - stepId: %@, remaining: %d", stepId, remainingSeconds)
+      NSLog("[LiveActivity] areActivitiesEnabled: %@", ActivityAuthorizationInfo().areActivitiesEnabled ? "true" : "false")
+
       guard ActivityAuthorizationInfo().areActivitiesEnabled else {
         reject("ACTIVITIES_DISABLED", "Live Activities are disabled. Enable in Settings > Guidr.", nil)
         return
@@ -81,11 +84,22 @@ class LiveActivityModule: NSObject {
       let state = buildContentState()
       let soonestEndDate = soonestRunningEndDate()
 
-      // Check if an active Live Activity already exists (ended ones linger up to 15 min)
-      let existingActivity = Activity<GuidrTimerAttributes>.activities.first { $0.activityState == .active }
+      // Clean up lingering ended/dismissed activities to free iOS per-app slots
+      let allActivities = Activity<GuidrTimerAttributes>.activities
+      NSLog("[LiveActivity] existing activities: %d", allActivities.count)
+      for act in allActivities {
+        NSLog("[LiveActivity]   id=%@ state=%d", act.id, act.activityState.rawValue)
+        if act.activityState != .active {
+          Task { await act.end(nil, dismissalPolicy: .immediate) }
+        }
+      }
+
+      // Check if an active Live Activity already exists
+      let existingActivity = allActivities.first { $0.activityState == .active }
       if let activity = existingActivity {
         Task {
           await activity.update(.init(state: state, staleDate: soonestEndDate))
+          NSLog("[LiveActivity] updated existing activity: %@", activity.id)
           resolve(activity.id)
         }
       } else {
@@ -96,8 +110,10 @@ class LiveActivityModule: NSObject {
             content: .init(state: state, staleDate: soonestEndDate),
             pushType: nil
           )
+          NSLog("[LiveActivity] created new activity: %@", activity.id)
           resolve(activity.id)
         } catch {
+          NSLog("[LiveActivity] failed to create activity: %@", error.localizedDescription)
           reject("START_FAILED", "Failed to start Live Activity: \(error.localizedDescription)", error)
           return
         }
