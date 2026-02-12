@@ -83,6 +83,14 @@ class NotificationHelper {
   }
 
   func cancelAllTimerNotifications() {
-    UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+    let center = UNUserNotificationCenter.current()
+    center.getPendingNotificationRequests { requests in
+      let timerIds = requests
+        .map { $0.identifier }
+        .filter { $0.hasPrefix("guidr-timer-") }
+      if !timerIds.isEmpty {
+        center.removePendingNotificationRequests(withIdentifiers: timerIds)
+      }
+    }
   }
 }

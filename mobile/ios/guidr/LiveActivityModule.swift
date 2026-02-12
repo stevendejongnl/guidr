@@ -47,6 +47,11 @@ class LiveActivityModule: NSObject {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     if #available(iOS 16.2, *) {
+      guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+        reject("ACTIVITIES_DISABLED", "Live Activities are disabled. Enable in Settings > Guidr.", nil)
+        return
+      }
+
       let endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
 
       // Update existing entry or append new one

@@ -30,7 +30,8 @@ export class LiveActivityService {
         data.totalDurationSeconds,
         data.remainingSeconds,
       )
-    } catch {
+    } catch (error) {
+      console.warn('[LiveActivityService] Failed to start:', error)
       return null
     }
   }
@@ -44,8 +45,8 @@ export class LiveActivityService {
     if (Platform.OS !== 'ios') return
     try {
       await LiveActivityModule.updateActivity(stepId, remainingSeconds, isPaused, isComplete)
-    } catch {
-      // Live Activities are non-critical — silently fail
+    } catch (error) {
+      console.warn('[LiveActivityService] Failed to update:', error)
     }
   }
 
@@ -53,8 +54,8 @@ export class LiveActivityService {
     if (Platform.OS !== 'ios') return
     try {
       await LiveActivityModule.removeTimer(stepId)
-    } catch {
-      // Live Activities are non-critical — silently fail
+    } catch (error) {
+      console.warn('[LiveActivityService] Failed to remove timer:', error)
     }
   }
 
@@ -62,8 +63,8 @@ export class LiveActivityService {
     if (Platform.OS !== 'ios') return
     try {
       await LiveActivityModule.endActivity()
-    } catch {
-      // Live Activities are non-critical — silently fail
+    } catch (error) {
+      console.warn('[LiveActivityService] Failed to end:', error)
     }
   }
 }
