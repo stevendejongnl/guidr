@@ -64,11 +64,14 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
 
     let now = Date()
 
-    // Staleness detection: if all endDates have passed and updatedAt is old,
-    // the app was likely killed — treat as no active timers
+    // Staleness detection: if all endDates have passed and the latest one expired
+    // more than 30 seconds ago, the app was likely killed — treat as no active timers.
+    // Uses expiry-based grace period (not updatedAt) to avoid racing with handleTimerCompletion.
     let running = state.entries.filter { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
     let allExpired = running.allSatisfy { ($0.endDate ?? .distantPast) < now }
-    let stale = allExpired && !running.isEmpty && now.timeIntervalSince(state.updatedAt) > 10
+    let latestExpiry = running.compactMap(\.endDate).max()
+    let secondsSinceExpiry = latestExpiry.map { now.timeIntervalSince($0) } ?? 0
+    let stale = allExpired && !running.isEmpty && secondsSinceExpiry > 30
 
     if stale {
       return HomeWidgetEntry(date: now, entries: [], updatedAt: state.updatedAt)

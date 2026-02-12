@@ -19,6 +19,7 @@ class LiveActivityModule: NSObject {
 
   private var timerEntries: [TimerEntry] = []
   private var completionWorkItem: DispatchWorkItem?
+  private var reloadWorkItem: DispatchWorkItem?
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -103,7 +104,8 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
-      syncWidgetState()
+      saveWidgetState()
+      reloadWidget()
 
       // Schedule notification for timer completion
       NotificationHelper.shared.scheduleTimerNotification(
@@ -167,7 +169,8 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
-      syncWidgetState()
+      saveWidgetState()
+      reloadWidget()
     } else {
       resolve(nil)
     }
@@ -204,7 +207,8 @@ class LiveActivityModule: NSObject {
           resolve(nil)
         }
         scheduleCompletionForSoonest()
-        syncWidgetState()
+        saveWidgetState()
+        reloadWidget()
       }
     } else {
       resolve(nil)
@@ -299,7 +303,8 @@ class LiveActivityModule: NSObject {
     let soonestEndDate = soonestRunningEndDate()
     let allDone = timerEntries.filter({ !$0.isComplete }).isEmpty && !timerEntries.isEmpty
 
-    syncWidgetState()
+    saveWidgetState()
+    reloadWidget()
 
     Task {
       for activity in Activity<GuidrTimerAttributes>.activities {
@@ -326,7 +331,7 @@ class LiveActivityModule: NSObject {
     }
   }
 
-  private func syncWidgetState() {
+  private func saveWidgetState() {
     let shared = timerEntries.map { entry in
       SharedTimerEntry(
         stepId: entry.stepId,
@@ -340,6 +345,14 @@ class LiveActivityModule: NSObject {
       )
     }
     SharedTimerStorage.shared.save(shared)
-    WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
+  }
+
+  private func reloadWidget() {
+    reloadWorkItem?.cancel()
+    let workItem = DispatchWorkItem {
+      WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
+    }
+    reloadWorkItem = workItem
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
   }
 }
