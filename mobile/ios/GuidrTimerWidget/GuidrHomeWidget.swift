@@ -203,25 +203,21 @@ private struct TimerCountdownText: View {
   let timer: SharedTimerEntry
 
   var body: some View {
-    if timer.isComplete {
-      Text("Done")
-        .foregroundColor(.green)
-        .fontWeight(.semibold)
-    } else if timer.isPaused {
-      Text(homeFormatTime(timer.remainingSeconds))
-        .foregroundColor(.orange)
-    } else if let endDate = timer.endDate, let safe = homeSafeEndDate(endDate) {
-      Text(timerInterval: Date.now...safe, countsDown: true)
-        .foregroundColor(homeProgressColor(timer: timer))
-        .monospacedDigit()
-    } else if timer.endDate != nil {
-      Text("Done")
-        .foregroundColor(.green)
-        .fontWeight(.semibold)
-    } else {
-      Text(homeFormatTime(timer.remainingSeconds))
-        .widgetPrimaryText()
+    Group {
+      if timer.isComplete {
+        Text("Done")
+          .foregroundColor(.green)
+          .fontWeight(.semibold)
+      } else if timer.isPaused {
+        Text(homeFormatTime(timer.remainingSeconds))
+          .foregroundColor(.orange)
+      } else {
+        Text(homeFormatTime(timer.remainingSeconds))
+          .foregroundColor(homeProgressColor(timer: timer))
+          .monospacedDigit()
+      }
     }
+    .contentTransitionIdentity()
   }
 }
 
@@ -230,33 +226,20 @@ private struct HomeProgressView: View {
   let allComplete: Bool
 
   var body: some View {
-    if allComplete || timer.isComplete {
-      ProgressView(value: 1.0, total: 1.0)
-        .tint(.green)
-    } else if timer.isPaused {
-      ProgressView(value: homeStaticProgress(timer: timer), total: 1.0)
-        .tint(homeProgressColor(timer: timer))
-    } else if let endDate = timer.endDate, let safe = homeSafeEndDate(endDate) {
-      let startDate = safe.addingTimeInterval(-Double(timer.totalDurationSeconds))
-      ProgressView(timerInterval: startDate...safe, countsDown: false)
-        .tint(.green)
-    } else if timer.endDate != nil {
-      ProgressView(value: 1.0, total: 1.0)
-        .tint(.green)
-    } else {
-      ProgressView(value: 0, total: 1.0)
-        .tint(.green)
+    Group {
+      if allComplete || timer.isComplete {
+        ProgressView(value: 1.0, total: 1.0)
+          .tint(.green)
+      } else {
+        ProgressView(value: homeStaticProgress(timer: timer), total: 1.0)
+          .tint(homeProgressColor(timer: timer))
+      }
     }
+    .contentTransitionIdentity()
   }
 }
 
 // MARK: - Helpers
-
-/// Returns endDate only if it's still in the future, eliminating the TOCTOU race
-/// between checking `Date() >= endDate` and constructing `Date.now...endDate`.
-private func homeSafeEndDate(_ endDate: Date) -> Date? {
-  endDate > Date() ? endDate : nil
-}
 
 private func homeFormatTime(_ seconds: Int) -> String {
   let mins = seconds / 60
@@ -282,7 +265,7 @@ private func homeProgressColor(timer: SharedTimerEntry) -> Color {
   }
 }
 
-// MARK: - Background Modifier
+// MARK: - View Modifiers
 
 private extension View {
   @ViewBuilder
@@ -293,6 +276,16 @@ private extension View {
       }
     } else {
       self.background(Color.black)
+    }
+  }
+
+  /// Suppress crossfade transitions between timeline entries (prevents flicker).
+  @ViewBuilder
+  func contentTransitionIdentity() -> some View {
+    if #available(iOSApplicationExtension 17.0, *) {
+      self.contentTransition(.identity)
+    } else {
+      self
     }
   }
 }

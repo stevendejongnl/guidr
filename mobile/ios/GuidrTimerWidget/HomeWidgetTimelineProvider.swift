@@ -43,25 +43,26 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<HomeWidgetEntry>) -> Void) {
     NSLog("[GuidrWidget] getTimeline called")
-    let entry = buildEntry()
+    let baseEntry = buildEntry()
 
-    // Determine refresh policy
-    let refreshDate: Date?
-    if entry.hasTimers {
-      let running = entry.entries.filter { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
-      let soonest = running.compactMap(\.endDate).min()
-      refreshDate = soonest.map { $0.addingTimeInterval(1) }
-    } else {
-      refreshDate = nil
+    let running = baseEntry.entries.filter { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
+
+    if running.isEmpty {
+      // Static timeline — no running timers, single entry is sufficient
+      let fallbackRefresh = Date().addingTimeInterval(15 * 60)
+      NSLog("[GuidrWidget] getTimeline: static (no running timers), refresh after %@",
+            String(describing: fallbackRefresh))
+      completion(Timeline(entries: [baseEntry], policy: .after(fallbackRefresh)))
+      return
     }
 
-    let fallbackRefresh = Date().addingTimeInterval(15 * 60)
-    let policy: TimelineReloadPolicy = .after(refreshDate ?? fallbackRefresh)
-    NSLog("[GuidrWidget] getTimeline: hasTimers=%d, refreshDate=%@, policy=after(%@)",
-          entry.hasTimers ? 1 : 0,
-          refreshDate.map { String(describing: $0) } ?? "nil(fallback 15m)",
-          String(describing: refreshDate ?? fallbackRefresh))
-    completion(Timeline(entries: [entry], policy: policy))
+    // Multi-entry timeline for running timers
+    let entries = generateTimelineEntries(base: baseEntry)
+    let soonestEnd = running.compactMap(\.endDate).min()!
+    let refreshDate = soonestEnd.addingTimeInterval(1)
+    NSLog("[GuidrWidget] getTimeline: multi-entry (%d entries), refresh after %@",
+          entries.count, String(describing: refreshDate))
+    completion(Timeline(entries: entries, policy: .after(refreshDate)))
   }
 
   private func buildEntry() -> HomeWidgetEntry {
@@ -91,5 +92,60 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
     NSLog("[GuidrWidget] buildEntry: returning %d entries (running=%d, stale=%d)",
           state.entries.count, running.count, stale ? 1 : 0)
     return HomeWidgetEntry(date: now, entries: state.entries, updatedAt: state.updatedAt)
+  }
+
+  /// Generate timeline entries at adaptive intervals for smooth countdown display.
+  /// Cadence: >10 min → 60s, 1–10 min → 15s, <1 min → 1s.
+  private func generateTimelineEntries(base: HomeWidgetEntry) -> [HomeWidgetEntry] {
+    let now = base.date
+    let running = base.entries.filter { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
+    guard let soonestEnd = running.compactMap(\.endDate).min(),
+          soonestEnd.timeIntervalSince(now) > 0 else {
+      return [base]
+    }
+
+    // Build adaptive entry dates
+    var entryDates: [Date] = []
+    var t = now
+    while t < soonestEnd {
+      entryDates.append(t)
+      let remaining = soonestEnd.timeIntervalSince(t)
+      if remaining > 600 {
+        t = t.addingTimeInterval(60)
+      } else if remaining > 60 {
+        t = t.addingTimeInterval(15)
+      } else {
+        t = t.addingTimeInterval(1)
+      }
+    }
+    // Final entry at endDate marks timer as complete
+    entryDates.append(soonestEnd)
+
+    // Safety cap: keep at most 280 entries (WidgetKit limit is 300).
+    // Preserve the tail (finer granularity near completion).
+    if entryDates.count > 280 {
+      entryDates = Array(entryDates.suffix(280))
+    }
+
+    return entryDates.map { entryDate in
+      let adjustedEntries = base.entries.map { timer -> SharedTimerEntry in
+        // Only adjust running timers — paused/complete stay as-is
+        guard !timer.isPaused && !timer.isComplete, let endDate = timer.endDate else {
+          return timer
+        }
+        let remaining = max(0, Int(endDate.timeIntervalSince(entryDate)))
+        return SharedTimerEntry(
+          stepId: timer.stepId,
+          stepTitle: timer.stepTitle,
+          guideTitle: timer.guideTitle,
+          totalDurationSeconds: timer.totalDurationSeconds,
+          endDate: timer.endDate,
+          remainingSeconds: remaining,
+          isPaused: timer.isPaused,
+          isComplete: remaining <= 0
+        )
+      }
+      return HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: base.updatedAt)
+    }
   }
 }

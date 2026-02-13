@@ -151,6 +151,15 @@ class LiveActivityModule: NSObject {
         return
       }
 
+      // Skip if nothing changed (prevents double-reload on completion)
+      let existing = timerEntries[index]
+      if existing.remainingSeconds == remainingSeconds
+        && existing.isPaused == isPaused
+        && existing.isComplete == isComplete {
+        resolve(nil)
+        return
+      }
+
       timerEntries[index].remainingSeconds = remainingSeconds
       timerEntries[index].isPaused = isPaused
       timerEntries[index].isComplete = isComplete
