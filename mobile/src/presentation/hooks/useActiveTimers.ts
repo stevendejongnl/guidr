@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { SyncEventEmitter } from '../../common/SyncEventEmitter'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { ActiveStepTimerDto } from '../../infrastructure/api/dtos/ActiveStepTimerDto'
 import { calculateDisplay, StepTimerDisplay } from './useStepTimers'
@@ -125,6 +126,23 @@ export function useActiveTimers(
       }
     }
   }, [activeTimers, authToken, client, fetchTimers])
+
+  // Refresh when cross-device sync events arrive
+  useEffect(() => {
+    const handleTimerEvent = () => {
+      fetchTimers()
+    }
+
+    const unsub1 = SyncEventEmitter.on('timer.started', handleTimerEvent)
+    const unsub2 = SyncEventEmitter.on('timer.paused', handleTimerEvent)
+    const unsub3 = SyncEventEmitter.on('timer.reset', handleTimerEvent)
+
+    return () => {
+      unsub1()
+      unsub2()
+      unsub3()
+    }
+  }, [fetchTimers])
 
   // Cleanup all timeouts on unmount
   useEffect(() => {

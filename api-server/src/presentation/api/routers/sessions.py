@@ -1,5 +1,8 @@
 """Session API router."""
 
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -19,8 +22,19 @@ from src.application.use_cases.session import (
     StartSession,
 )
 from src.container import Container
+from src.domain.entities import User
+from src.domain.events.session_events import (
+    SessionCancelled,
+    SessionCompleted,
+    SessionPaused,
+    SessionResumed,
+    SessionStarted,
+    SessionStepChanged,
+)
 from src.domain.exceptions import EntityNotFoundException, ValidationException
+from src.domain.services.event_bus import IEventBus
 
+from ..dependencies.auth import get_current_user
 from ..models import (
     ErrorResponse,
     MoveToStepRequest,
@@ -101,6 +115,11 @@ def get_move_session_to_step_use_case() -> MoveSessionToStep:
 def get_delete_session_use_case() -> DeleteSession:
     assert _container is not None, "Container not initialized"
     return _container.delete_session_use_case()
+
+
+def get_event_bus() -> IEventBus:
+    assert _container is not None, "Container not initialized"
+    return _container.event_bus()
 
 
 @router.post(
@@ -198,15 +217,28 @@ async def list_sessions(
 @router.post(
     "/{session_id}/start",
     response_model=SessionResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def start_session(
     session_id: str,
+    current_user: User = Depends(get_current_user),
     use_case: StartSession = Depends(get_start_session_use_case),
+    event_bus: IEventBus = Depends(get_event_bus),
 ) -> SessionResponse:
     """Start a session."""
     try:
         result = await use_case.execute(session_id)
+        await event_bus.publish(
+            SessionStarted(
+                session_id=result.id,
+                guide_id=result.guide_id,
+                started_at=result.started_at or "",
+                user_id=current_user.id.value,
+            )
+        )
         return SessionResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -219,24 +251,43 @@ async def start_session(
             updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
     except ValidationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.post(
     "/{session_id}/pause",
     response_model=SessionResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def pause_session(
     session_id: str,
     request: PauseSessionRequest,
+    current_user: User = Depends(get_current_user),
     use_case: PauseSession = Depends(get_pause_session_use_case),
+    event_bus: IEventBus = Depends(get_event_bus),
 ) -> SessionResponse:
     """Pause a session."""
     try:
-        result = await use_case.execute(session_id, request.step_elapsed_seconds)
+        result = await use_case.execute(
+            session_id, request.step_elapsed_seconds
+        )
+        await event_bus.publish(
+            SessionPaused(
+                session_id=result.id,
+                user_id=current_user.id.value,
+            )
+        )
         return SessionResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -249,23 +300,40 @@ async def pause_session(
             updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
     except ValidationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.post(
     "/{session_id}/resume",
     response_model=SessionResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def resume_session(
     session_id: str,
+    current_user: User = Depends(get_current_user),
     use_case: ResumeSession = Depends(get_resume_session_use_case),
+    event_bus: IEventBus = Depends(get_event_bus),
 ) -> SessionResponse:
     """Resume a session."""
     try:
         result = await use_case.execute(session_id)
+        await event_bus.publish(
+            SessionResumed(
+                session_id=result.id,
+                user_id=current_user.id.value,
+            )
+        )
         return SessionResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -278,23 +346,41 @@ async def resume_session(
             updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
     except ValidationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.post(
     "/{session_id}/complete",
     response_model=SessionResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def complete_session(
     session_id: str,
+    current_user: User = Depends(get_current_user),
     use_case: CompleteSession = Depends(get_complete_session_use_case),
+    event_bus: IEventBus = Depends(get_event_bus),
 ) -> SessionResponse:
     """Complete a session."""
     try:
         result = await use_case.execute(session_id)
+        await event_bus.publish(
+            SessionCompleted(
+                session_id=result.id,
+                completed_at=result.completed_at or "",
+                user_id=current_user.id.value,
+            )
+        )
         return SessionResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -307,23 +393,44 @@ async def complete_session(
             updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
     except ValidationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.post(
     "/{session_id}/cancel",
     response_model=SessionResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def cancel_session(
     session_id: str,
+    current_user: User = Depends(get_current_user),
     use_case: CancelSession = Depends(get_cancel_session_use_case),
+    event_bus: IEventBus = Depends(get_event_bus),
 ) -> SessionResponse:
     """Cancel a session."""
     try:
         result = await use_case.execute(session_id)
+        await event_bus.publish(
+            SessionCancelled(
+                session_id=result.id,
+                cancelled_at=(
+                    result.completed_at
+                    or datetime.now(UTC).isoformat()
+                ),
+                user_id=current_user.id.value,
+            )
+        )
         return SessionResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -336,24 +443,49 @@ async def cancel_session(
             updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
     except ValidationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.post(
     "/{session_id}/move-to-step",
     response_model=SessionResponse,
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
 )
 async def move_to_step(
     session_id: str,
     request: MoveToStepRequest,
-    use_case: MoveSessionToStep = Depends(get_move_session_to_step_use_case),
+    current_user: User = Depends(get_current_user),
+    use_case: MoveSessionToStep = Depends(
+        get_move_session_to_step_use_case
+    ),
+    event_bus: IEventBus = Depends(get_event_bus),
 ) -> SessionResponse:
     """Move session to a specific step."""
     try:
-        result = await use_case.execute(session_id, request.step_id)
+        # Get current step before move for event
+        prev_step_id = None
+        result = await use_case.execute(
+            session_id, request.step_id
+        )
+        await event_bus.publish(
+            SessionStepChanged(
+                session_id=result.id,
+                previous_step_id=prev_step_id,
+                current_step_id=request.step_id,
+                user_id=current_user.id.value,
+            )
+        )
         return SessionResponse(
             id=result.id,
             guideId=result.guide_id,
@@ -366,15 +498,25 @@ async def move_to_step(
             updatedAt=result.updated_at,
         )
     except EntityNotFoundException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
     except ValidationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
-@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{session_id}", status_code=status.HTTP_204_NO_CONTENT
+)
 async def delete_session(
     session_id: str,
-    use_case: DeleteSession = Depends(get_delete_session_use_case),
+    use_case: DeleteSession = Depends(
+        get_delete_session_use_case
+    ),
 ) -> None:
     """Delete a session."""
     await use_case.execute(session_id)

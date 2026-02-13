@@ -20,6 +20,7 @@ class SessionStarted(BaseDomainEvent):
     session_id: str
     guide_id: str
     started_at: str  # ISO format datetime
+    user_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,7 @@ class SessionPaused(BaseDomainEvent):
     """Event raised when a session is paused."""
 
     session_id: str
+    user_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -34,6 +36,7 @@ class SessionResumed(BaseDomainEvent):
     """Event raised when a session is resumed."""
 
     session_id: str
+    user_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -42,6 +45,7 @@ class SessionCompleted(BaseDomainEvent):
 
     session_id: str
     completed_at: str  # ISO format datetime
+    user_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -50,6 +54,7 @@ class SessionCancelled(BaseDomainEvent):
 
     session_id: str
     cancelled_at: str  # ISO format datetime
+    user_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -59,3 +64,4 @@ class SessionStepChanged(BaseDomainEvent):
     session_id: str
     previous_step_id: str | None
     current_step_id: str
+    user_id: str = ""

@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 
 import uvicorn
 from fastapi import FastAPI
+from starlette.websockets import WebSocket
 
 from .container import Container
 from .infrastructure.migrations import MIGRATIONS, MigrationRunner
@@ -37,6 +38,7 @@ from .presentation.api.routers import (
 from .presentation.api.routers import (
     users as users_router,
 )
+from .presentation.api.websocket.sync_handler import sync_endpoint
 
 # Initialize Sentry (only if SENTRY_DSN is set in environment)
 init_sentry()
@@ -117,6 +119,26 @@ def create_application() -> FastAPI:
 
     # Replace lifespan
     app.router.lifespan_context = lifespan
+
+    # Wire WebSocket sync endpoint
+    jwt_service = container.jwt_service()
+    connection_manager = container.connection_manager()
+    event_bus = container.event_bus()
+    event_serializer = container.event_serializer()
+
+    @app.websocket("/api/v1/ws/sync")
+    async def ws_sync(websocket: WebSocket) -> None:
+        await sync_endpoint(websocket, jwt_service, connection_manager)
+
+    # Wire event bus → WebSocket broadcasting
+    async def broadcast_event(event):
+        user_id = getattr(event, "user_id", "")
+        if not user_id:
+            return
+        message = event_serializer.serialize(event)
+        await connection_manager.broadcast_to_user(user_id, message)
+
+    event_bus.subscribe(None, broadcast_event)
 
     # Inject container into routers and dependencies
     audit_logs_router.set_container(container)

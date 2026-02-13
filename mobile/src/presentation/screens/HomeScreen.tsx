@@ -26,6 +26,7 @@ import { commonStyles } from '@guidr/shared/styles/react-native'
 import { UserDto } from '../../infrastructure/api/dtos/UserDto'
 import { ActiveTimerCard } from '../components/ActiveTimerCard'
 import { useActiveTimers } from '../hooks/useActiveTimers'
+import { useSyncConnection } from '../hooks/useSyncConnection'
 import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewModel'
 import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
@@ -127,6 +128,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [authToken, setAuthToken] = useState<string | null>(null)
+  const [serverUrl, setServerUrl] = useState<string | null>(null)
   const [stepTimerClient, setStepTimerClient] = useState<StepTimerClient | null>(
     injectedStepTimerClient || null,
   )
@@ -169,6 +171,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     refresh: refreshActiveTimers,
   } = useActiveTimers(authToken, stepTimerClient)
 
+  // WebSocket sync for cross-device timer/session updates
+  useSyncConnection({
+    serverUrl,
+    authToken,
+    onReconnect: refreshActiveTimers,
+  })
+
   const loadData = async () => {
     try {
       setError(null)
@@ -186,22 +195,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       setAuthToken(token)
 
       // Fetch user profile
-      const serverUrl = await serverConfigStorage.getServerUrl()
-      if (!serverUrl) {
+      const loadedServerUrl = await serverConfigStorage.getServerUrl()
+      if (!loadedServerUrl) {
         throw new Error('No server URL configured')
       }
+      setServerUrl(loadedServerUrl)
 
       // Initialize StepTimerClient if not injected
       if (!injectedStepTimerClient) {
-        setStepTimerClient(new StepTimerClient(serverUrl))
+        setStepTimerClient(new StepTimerClient(loadedServerUrl))
       }
 
-      const authClient = injectedAuthClient || new AuthClient(serverUrl)
+      const authClient = injectedAuthClient || new AuthClient(loadedServerUrl)
       const profile = await authClient.getProfile(token)
       setUserProfile(profile)
 
       // Get services (either injected or create new)
-      const services = getServices(serverUrl)
+      const services = getServices(loadedServerUrl)
 
       // Load all guides and sessions in parallel
       const [allGuides, allSessions] = await Promise.all([

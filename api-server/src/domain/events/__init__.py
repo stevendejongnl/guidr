@@ -18,6 +18,7 @@ from .session_events import (
     SessionStepChanged,
 )
 from .step_events import StepCreated, StepDeleted, StepUpdated
+from .timer_events import StepTimerPaused, StepTimerReset, StepTimerStarted
 from .user_events import (
     UserLoggedIn,
     UserPasswordChanged,
@@ -44,6 +45,10 @@ __all__ = [
     "StepCreated",
     "StepUpdated",
     "StepDeleted",
+    # Timer events
+    "StepTimerStarted",
+    "StepTimerPaused",
+    "StepTimerReset",
     # Session events
     "SessionCreated",
     "SessionStarted",

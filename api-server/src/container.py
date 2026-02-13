@@ -58,6 +58,7 @@ from .domain.services import EventPersistenceService
 from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
 from .infrastructure.coordination import MongoStartupCoordinator
+from .infrastructure.event_bus import InMemoryEventBus
 from .infrastructure.notifications import TelegramNotificationService
 from .infrastructure.persistence.mongodb.database import Database
 from .infrastructure.persistence.mongodb.repositories import (
@@ -69,6 +70,7 @@ from .infrastructure.persistence.mongodb.repositories import (
     MongoStepTimerRepository,
     MongoUserRepository,
 )
+from .infrastructure.websocket import ConnectionManager, EventSerializer
 
 
 class Container(containers.DeclarativeContainer):
@@ -138,6 +140,11 @@ class Container(containers.DeclarativeContainer):
         MongoAuditLogRepository,
         database=database.provided.db,
     )
+
+    # Infrastructure - Event Bus & WebSocket
+    event_bus = providers.Singleton(InMemoryEventBus)
+    connection_manager = providers.Singleton(ConnectionManager)
+    event_serializer = providers.Singleton(EventSerializer)
 
     # Domain Services
     event_persistence_service = providers.Singleton(
@@ -297,16 +304,19 @@ class Container(containers.DeclarativeContainer):
     start_step_timer_use_case = providers.Factory(
         StartStepTimer,
         step_timer_repository=step_timer_repository,
+        event_bus=event_bus,
     )
 
     pause_step_timer_use_case = providers.Factory(
         PauseStepTimer,
         step_timer_repository=step_timer_repository,
+        event_bus=event_bus,
     )
 
     reset_step_timer_use_case = providers.Factory(
         ResetStepTimer,
         step_timer_repository=step_timer_repository,
+        event_bus=event_bus,
     )
 
     get_step_timers_by_guide_use_case = providers.Factory(

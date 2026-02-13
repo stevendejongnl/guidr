@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { SyncEventEmitter } from '../../common/SyncEventEmitter'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { StepTimerDto } from '../../infrastructure/api/dtos/StepTimerDto'
 
@@ -125,6 +126,72 @@ export function useStepTimers(
   const updateDto = (dto: StepTimerDto) => {
     setTimerDtos((prev) => ({ ...prev, [dto.stepId]: dto }))
   }
+
+  // Subscribe to cross-device sync events
+  useEffect(() => {
+    const handleStarted = (payload: Record<string, unknown>) => {
+      if (payload['guideId'] !== guideId) return
+      const dto: StepTimerDto = {
+        id: payload['timerId'] as string,
+        stepId: payload['stepId'] as string,
+        guideId: payload['guideId'] as string,
+        userId: '',
+        status: 'running',
+        startedAt: payload['startedAt'] as string,
+        accumulatedSeconds: payload['accumulatedSeconds'] as number,
+        durationSeconds: payload['durationSeconds'] as number,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      updateDto(dto)
+    }
+
+    const handlePaused = (payload: Record<string, unknown>) => {
+      if (payload['guideId'] !== guideId) return
+      const stepId = payload['stepId'] as string
+      setTimerDtos((prev) => {
+        const existing = prev[stepId]
+        if (!existing) return prev
+        return {
+          ...prev,
+          [stepId]: {
+            ...existing,
+            status: 'paused' as const,
+            startedAt: null,
+            accumulatedSeconds: payload['accumulatedSeconds'] as number,
+          },
+        }
+      })
+    }
+
+    const handleReset = (payload: Record<string, unknown>) => {
+      if (payload['guideId'] !== guideId) return
+      const stepId = payload['stepId'] as string
+      setTimerDtos((prev) => {
+        const existing = prev[stepId]
+        if (!existing) return prev
+        return {
+          ...prev,
+          [stepId]: {
+            ...existing,
+            status: 'idle' as const,
+            startedAt: null,
+            accumulatedSeconds: 0,
+          },
+        }
+      })
+    }
+
+    const unsub1 = SyncEventEmitter.on('timer.started', handleStarted)
+    const unsub2 = SyncEventEmitter.on('timer.paused', handlePaused)
+    const unsub3 = SyncEventEmitter.on('timer.reset', handleReset)
+
+    return () => {
+      unsub1()
+      unsub2()
+      unsub3()
+    }
+  }, [guideId])
 
   const startTimer = useCallback(
     async (stepId: string, durationMinutes: number) => {
