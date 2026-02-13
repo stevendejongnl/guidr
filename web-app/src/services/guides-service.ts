@@ -15,7 +15,7 @@ export class GuidesService {
   }
 
   async update(id: string, data: UpdateGuideRequest): Promise<Guide> {
-    return apiClient.put<Guide>(`/guides/${id}`, data)
+    return apiClient.patch<Guide>(`/guides/${id}`, data)
   }
 
   async delete(id: string): Promise<void> {

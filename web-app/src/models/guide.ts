@@ -24,4 +24,6 @@ export interface UpdateGuideRequest {
   description?: string
   isPublic?: boolean
   isHighlighted?: boolean
+  guideType?: string
+  createdByUserId?: string
 }

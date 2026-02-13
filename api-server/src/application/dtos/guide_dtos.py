@@ -24,6 +24,8 @@ class GuideUpdateDTO:
     metadata: dict[str, Any] | None = None
     is_public: bool | None = None
     is_highlighted: bool | None = None
+    guide_type: str | None = None
+    created_by_user_id: str | None = None
 
 
 @dataclass

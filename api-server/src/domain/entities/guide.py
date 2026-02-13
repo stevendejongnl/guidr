@@ -141,6 +141,34 @@ class Guide:
         self._metadata = new_metadata
         self._updated_at = datetime.now(UTC)
 
+    def update_guide_type(
+        self,
+        new_type: GuideType,
+        new_metadata: dict[str, Any] | None = None,
+    ) -> None:
+        """Update guide type and reset metadata.
+
+        Args:
+            new_type: New guide type
+            new_metadata: Optional metadata for the new type
+
+        Raises:
+            ValueError: If new_metadata is invalid for the new type
+        """
+        validate_metadata(new_type, new_metadata)
+        self._guide_type = new_type
+        self._metadata = new_metadata
+        self._updated_at = datetime.now(UTC)
+
+    def reassign_user(self, new_user_id: EntityId) -> None:
+        """Reassign guide to a different user.
+
+        Args:
+            new_user_id: ID of the new owner
+        """
+        self._created_by_user_id = new_user_id
+        self._updated_at = datetime.now(UTC)
+
     def add_step(self, step_id: EntityId) -> None:
         """Add a step to this guide."""
         if step_id not in self._step_ids:

@@ -9,7 +9,7 @@ from src.domain.events import GuideUpdated
 from src.domain.exceptions import EntityNotFoundException
 from src.domain.repositories import IGuideRepository
 from src.domain.services import EventPersistenceService
-from src.domain.value_objects import EntityId, GuideTitle
+from src.domain.value_objects import EntityId, GuideTitle, GuideType
 
 
 class UpdateGuide:
@@ -53,11 +53,15 @@ class UpdateGuide:
             raise EntityNotFoundException(f"Guide not found: {guide_id}")
 
         # Check authorization upfront
-        # If highlighting is requested, require admin immediately
-        if dto.is_highlighted is not None:
+        # Admin-only fields: guide_type, created_by_user_id, is_highlighted
+        admin_fields_set = (
+            dto.is_highlighted is not None
+            or dto.guide_type is not None
+            or dto.created_by_user_id is not None
+        )
+        if admin_fields_set:
             require_admin(current_user)
         else:
-            # For other updates (title, description, is_public), require owner or admin
             require_owner_or_admin(current_user, guide.created_by_user_id)
 
         # Update basic fields if provided (owner or admin)
@@ -82,6 +86,15 @@ class UpdateGuide:
                 guide.highlight()
             else:
                 guide.unhighlight()
+
+        # Handle guide type change (admin only - already checked above)
+        if dto.guide_type is not None:
+            new_type = GuideType(dto.guide_type)
+            guide.update_guide_type(new_type)
+
+        # Handle user reassignment (admin only - already checked above)
+        if dto.created_by_user_id is not None:
+            guide.reassign_user(EntityId(dto.created_by_user_id))
 
         # Save guide
         await self._repository.save(guide)

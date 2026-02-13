@@ -142,6 +142,10 @@ export class AdminGuidesPage extends LitElement {
       background-color: var(--color-surface);
     }
 
+    tbody tr {
+      cursor: pointer;
+    }
+
     .id-cell {
       font-family: monospace;
       font-size: 12px;
@@ -204,6 +208,22 @@ export class AdminGuidesPage extends LitElement {
       white-space: nowrap;
       color: var(--color-text-secondary);
       font-size: 13px;
+    }
+
+    .edit-btn {
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: var(--color-surface);
+      color: var(--color-primary);
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    .edit-btn:hover {
+      background-color: rgba(99, 102, 241, 0.1);
     }
   `
 
@@ -381,6 +401,17 @@ export class AdminGuidesPage extends LitElement {
     `
   }
 
+  private navigateToGuide(id: string): void {
+    window.history.pushState({}, '', `/admin/guides/${id}`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+
+  private navigateToEdit(id: string, e: Event): void {
+    e.stopPropagation()
+    window.history.pushState({}, '', `/admin/guides/${id}?edit=true`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+
   private renderTable(guides: GuideWithUser[]) {
     return html`
       <div class="table-wrapper">
@@ -406,11 +437,12 @@ export class AdminGuidesPage extends LitElement {
               <th @click=${() => this.toggleSort('createdAt')}>
                 Created ${this.sortIndicator('createdAt')}
               </th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             ${guides.map(guide => html`
-              <tr>
+              <tr @click=${() => this.navigateToGuide(guide.id)}>
                 <td class="id-cell" title=${guide.id}>${guide.id.slice(0, 8)}</td>
                 <td>${guide.title}</td>
                 <td><span class="badge badge-type">${guide.guideType}</span></td>
@@ -425,6 +457,9 @@ export class AdminGuidesPage extends LitElement {
                     : nothing}
                 </td>
                 <td class="date-cell">${this.formatDate(guide.createdAt)}</td>
+                <td>
+                  <button class="edit-btn" @click=${(e: Event) => this.navigateToEdit(guide.id, e)}>Edit</button>
+                </td>
               </tr>
             `)}
           </tbody>

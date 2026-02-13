@@ -235,6 +235,8 @@ async def update_guide(
             metadata=guide.metadata,
             is_public=guide.is_public,
             is_highlighted=guide.is_highlighted,
+            guide_type=guide.guide_type,
+            created_by_user_id=guide.created_by_user_id,
         )
         result = await use_case.execute(guide_id, dto, current_user)
         if result is None:

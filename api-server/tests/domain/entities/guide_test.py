@@ -3,6 +3,8 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+
 from src.domain.entities import Guide
 from src.domain.value_objects import EntityId, GuideTitle, GuideType
 
@@ -146,3 +148,97 @@ class TestGuide:
         original_updated_at = guide.updated_at
         guide.highlight()
         assert guide.updated_at > original_updated_at
+
+    def test_update_guide_type(self) -> None:
+        """Test changing guide type resets metadata."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.COOKING,
+            title=GuideTitle("My Recipe"),
+            metadata={
+                "ingredients": [
+                    {"name": "flour", "quantity": "200", "unit": "g"},
+                ]
+            },
+        )
+
+        guide.update_guide_type(GuideType.WORKOUT)
+
+        assert guide.guide_type == GuideType.WORKOUT
+        assert guide.metadata is None
+
+    def test_update_guide_type_with_new_metadata(self) -> None:
+        """Test changing guide type with valid new metadata."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.COOKING,
+            title=GuideTitle("My Recipe"),
+        )
+
+        new_metadata = {
+            "target_muscles": [
+                {"name": "biceps", "focus": "primary"},
+            ],
+            "equipment": [
+                {"name": "dumbbell", "weight": "10kg"},
+            ],
+        }
+        guide.update_guide_type(GuideType.WORKOUT, new_metadata)
+
+        assert guide.guide_type == GuideType.WORKOUT
+        assert guide.metadata == new_metadata
+
+    def test_update_guide_type_invalid_metadata_raises(self) -> None:
+        """Test changing guide type with invalid metadata raises."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("My Guide"),
+        )
+
+        with pytest.raises(ValueError):
+            guide.update_guide_type(
+                GuideType.COOKING,
+                {"invalid_key": "data"},
+            )
+
+    def test_update_guide_type_updates_timestamp(self) -> None:
+        """Test that type change updates timestamp."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("My Guide"),
+        )
+
+        original = guide.updated_at
+        guide.update_guide_type(GuideType.COOKING)
+        assert guide.updated_at > original
+
+    def test_reassign_user(self) -> None:
+        """Test reassigning guide to a different user."""
+        original_user = EntityId(str(uuid4()))
+        new_user = EntityId(str(uuid4()))
+
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("My Guide"),
+            created_by_user_id=original_user,
+        )
+
+        guide.reassign_user(new_user)
+
+        assert guide.created_by_user_id == new_user
+
+    def test_reassign_user_updates_timestamp(self) -> None:
+        """Test that reassignment updates timestamp."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("My Guide"),
+            created_by_user_id=EntityId(str(uuid4())),
+        )
+
+        original = guide.updated_at
+        guide.reassign_user(EntityId(str(uuid4())))
+        assert guide.updated_at > original

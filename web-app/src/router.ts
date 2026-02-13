@@ -15,6 +15,7 @@ export const routes: Route[] = [
   { path: '/guides', component: 'guides-page', title: 'Guides - Guidr', requiresAuth: true },
   { path: '/guides/:id', component: 'guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true },
   { path: '/admin/guides', component: 'admin-guides-page', title: 'Admin Guides - Guidr', requiresAuth: true, requiresAdmin: true },
+  { path: '/admin/guides/:id', component: 'admin-guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '/admin/styleguide', component: 'admin-styleguide-page', title: 'Styleguide - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '*', component: 'not-found-page', title: 'Not Found - Guidr' }
 ]

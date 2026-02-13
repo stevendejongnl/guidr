@@ -29,6 +29,12 @@ class GuideUpdate(BaseModel):
     is_highlighted: bool | None = Field(
         default=None, alias="isHighlighted"
     )
+    guide_type: str | None = Field(
+        default=None, alias="guideType"
+    )
+    created_by_user_id: str | None = Field(
+        default=None, alias="createdByUserId"
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 
