@@ -296,7 +296,7 @@ describe('HomeScreen', () => {
   })
 
   describe('dashboard sections', () => {
-    it('should display quick stats section with data from services', async () => {
+    it('should display quick actions section', async () => {
       const mockGuides: Guide[] = [
         {
           id: 'g1',
@@ -311,22 +311,7 @@ describe('HomeScreen', () => {
         } as unknown as Guide,
       ]
 
-      const mockSessions: Session[] = [
-        {
-          id: 's1',
-          guideId: 'g1',
-          status: SessionStatus.InProgress,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as unknown as Session,
-        {
-          id: 's2',
-          guideId: 'g1',
-          status: SessionStatus.Completed,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as unknown as Session,
-      ]
+      const mockSessions: Session[] = []
 
       mockGuideService = createMockGuideService(mockGuides)
       mockSessionService = createMockSessionService(mockSessions)
@@ -346,9 +331,8 @@ describe('HomeScreen', () => {
       )
 
       await waitFor(() => {
-        expect(getByText('Active')).toBeTruthy()
-        expect(getByText('Done')).toBeTruthy()
-        expect(getByText('Guides')).toBeTruthy()
+        expect(getByText('Discover')).toBeTruthy()
+        expect(getByText('My Guides')).toBeTruthy()
       })
     })
 

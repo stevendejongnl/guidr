@@ -360,7 +360,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
           <View style={styles.metadata}>
             <View style={styles.metadataItem}>
               <Text style={styles.metadataLabel}>Steps</Text>
-              <Text style={styles.metadataValue}>{guide.stepCount}</Text>
+              <Text style={styles.metadataValue}>{steps.length}</Text>
             </View>
             <View style={styles.metadataItem}>
               <Text style={styles.metadataLabel}>Created</Text>

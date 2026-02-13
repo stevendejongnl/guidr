@@ -14,7 +14,7 @@ import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { Menu, MenuItem, MenuToggleItem } from '../components/Menu'
-import { StatCard } from '../components/StatCard'
+
 import { QuickActionButton } from '../components/QuickActionButton'
 import { ActivityItem } from '../components/ActivityItem'
 import { GuideCard } from '../components/GuideCard'
@@ -111,8 +111,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
-  const [activeSessions, setActiveSessions] = useState(0)
-  const [completedSessions, setCompletedSessions] = useState(0)
   const [recommendedGuides, setRecommendedGuides] = useState<GuideViewModel[]>([])
   const [featuredGuides, setFeaturedGuides] = useState<GuideViewModel[]>([])
   const [recentSessions, setRecentSessions] = useState<Array<{
@@ -218,15 +216,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         services.guideService.getAllGuides(token),
         services.sessionService.getAllSessions(token),
       ])
-
-      // Calculate stats
-      const activeCount = allSessions.filter(
-        s => s.status === DomainSessionStatus.InProgress || s.status === DomainSessionStatus.Paused,
-      ).length
-      const completedCount = allSessions.filter(s => s.status === DomainSessionStatus.Completed).length
-
-      setActiveSessions(activeCount)
-      setCompletedSessions(completedCount)
 
       // Get recommended guides filtered by user interests
       const userInterests = profile.interests || []
@@ -393,17 +382,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {error && <Text style={commonStyles.errorText}>{error}</Text>}
 
-        {!isLoading && (
-          <>
-            {/* Quick Stats */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsSection}>
-              <StatCard icon="🏃" label="Active" value={activeSessions} />
-              <StatCard icon="✅" label="Done" value={completedSessions} />
-              <StatCard icon="📚" label="Guides" value={recommendedGuides.length} />
-            </ScrollView>
-          </>
-        )}
-
         {/* Quick Actions */}
         <View style={styles.actionsSection}>
           <QuickActionButton
@@ -499,11 +477,6 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     flex: 1,
-  },
-  statsSection: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.lg,
-    marginBottom: spacing.lg,
   },
   actionsSection: {
     flexDirection: 'row',
