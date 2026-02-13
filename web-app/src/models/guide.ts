@@ -1,19 +1,27 @@
 export interface Guide {
   id: string
-  name: string
-  description: string
-  category_id: string
-  step_ids: string[]
+  guideType: string
+  title: string
+  description: string | null
+  metadata: Record<string, unknown> | null
+  stepIds: string[]
+  createdByUserId: string | null
+  isPublic: boolean
+  isHighlighted: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreateGuideRequest {
-  name: string
-  description: string
-  category_id: string
+  guideType: string
+  title: string
+  description?: string
+  isPublic?: boolean
 }
 
 export interface UpdateGuideRequest {
-  name?: string
+  title?: string
   description?: string
-  category_id?: string
+  isPublic?: boolean
+  isHighlighted?: boolean
 }

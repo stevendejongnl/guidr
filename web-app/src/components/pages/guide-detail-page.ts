@@ -1,13 +1,7 @@
 import { html, LitElement, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-
-interface Guide {
-  id: string
-  name: string
-  description: string
-  category_id: string
-  step_ids: string[]
-}
+import { apiClient } from '../../services/api-client.js'
+import type { Guide } from '@models/guide.js'
 
 @customElement('guide-detail-page')
 export class GuideDetailPage extends LitElement {
@@ -104,16 +98,7 @@ export class GuideDetailPage extends LitElement {
     try {
       this.loading = true
       this.error = null
-
-      const response = await fetch(`/api/v1/guides/${id}`)
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Guide not found')
-        }
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      this.guide = await response.json()
+      this.guide = await apiClient.get<Guide>(`/guides/${id}`)
     } catch (err) {
       this.error = err instanceof Error ? err.message : 'Failed to fetch guide'
     } finally {
@@ -147,11 +132,11 @@ export class GuideDetailPage extends LitElement {
 
     return html`
       <a href="/guides" class="back-link" @click=${this.navigateBack}>← Back to Guides</a>
-      <h1>${this.guide.name}</h1>
+      <h1>${this.guide.title}</h1>
       <p class="description">${this.guide.description}</p>
 
       <div class="steps-section">
-        <h2>Steps (${this.guide.step_ids.length})</h2>
+        <h2>Steps (${this.guide.stepIds.length})</h2>
         <div class="steps-placeholder">
           <p>Step details will be displayed here.</p>
           <p>Full step implementation coming soon!</p>

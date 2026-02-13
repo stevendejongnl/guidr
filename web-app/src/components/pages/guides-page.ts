@@ -1,13 +1,7 @@
 import { html, LitElement, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-
-interface Guide {
-  id: string
-  name: string
-  description: string
-  category_id: string
-  step_ids: string[]
-}
+import { apiClient } from '../../services/api-client.js'
+import type { Guide } from '@models/guide.js'
 
 @customElement('guides-page')
 export class GuidesPage extends LitElement {
@@ -98,13 +92,7 @@ export class GuidesPage extends LitElement {
     try {
       this.loading = true
       this.error = null
-
-      const response = await fetch('/api/v1/guides')
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      this.guides = await response.json()
+      this.guides = await apiClient.get<Guide[]>('/guides')
     } catch (err) {
       this.error = err instanceof Error ? err.message : 'Failed to fetch guides'
     } finally {
@@ -144,10 +132,10 @@ export class GuidesPage extends LitElement {
       <div class="guides-grid">
         ${this.guides.map(guide => html`
           <div class="guide-card" @click=${() => this.navigateToGuide(guide.id)}>
-            <h3>${guide.name}</h3>
+            <h3>${guide.title}</h3>
             <p>${guide.description}</p>
             <div class="guide-meta">
-              ${guide.step_ids.length} steps
+              ${guide.stepIds.length} steps
             </div>
           </div>
         `)}

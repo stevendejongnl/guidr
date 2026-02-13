@@ -22,8 +22,8 @@ export class GuidesService {
     return apiClient.delete<void>(`/guides/${id}`)
   }
 
-  async getByCategory(categoryId: string): Promise<Guide[]> {
-    return apiClient.get<Guide[]>(`/guides?category_id=${categoryId}`)
+  async getByType(guideType: string): Promise<Guide[]> {
+    return apiClient.get<Guide[]>(`/guides?guideType=${guideType}`)
   }
 }
 

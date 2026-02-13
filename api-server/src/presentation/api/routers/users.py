@@ -25,7 +25,7 @@ from src.domain.exceptions import ValidationException
 from src.domain.value_objects import EntityId
 from src.infrastructure.auth.token_hasher import hash_token, verify_token_hash
 
-from ..dependencies.auth import get_current_user
+from ..dependencies.auth import get_current_admin_user, get_current_user
 from ..models import (
     ChangeEmailRequest,
     ChangePasswordRequest,
@@ -515,3 +515,32 @@ async def delete_account(
         return {"message": "Account deleted successfully"}
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get(
+    "/users",
+    response_model=list[UserResponse],
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+    },
+)
+async def list_users(
+    current_user: User = Depends(get_current_admin_user),
+    user_repository=Depends(get_user_repository),
+) -> list[UserResponse]:
+    """List all users (admin only)."""
+    users = await user_repository.find_all()
+    return [
+        UserResponse(
+            id=u.id.value,
+            email=u.email.value,
+            createdAt=u.created_at.isoformat(),
+            updatedAt=u.updated_at.isoformat(),
+            name=u.name,
+            interests=u.interests,
+            isAdmin=u.is_admin,
+        )
+        for u in users
+    ]
