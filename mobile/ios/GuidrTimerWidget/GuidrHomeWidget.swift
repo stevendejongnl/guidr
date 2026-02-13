@@ -189,14 +189,14 @@ private struct TimerCountdownText: View {
     } else if timer.isPaused {
       Text(homeFormatTime(timer.remainingSeconds))
         .foregroundColor(.orange)
-    } else if let endDate = timer.endDate, Date() >= endDate {
+    } else if let endDate = timer.endDate, let safe = homeSafeEndDate(endDate) {
+      Text(timerInterval: Date.now...safe, countsDown: true)
+        .foregroundColor(homeProgressColor(timer: timer))
+        .monospacedDigit()
+    } else if timer.endDate != nil {
       Text("Done")
         .foregroundColor(.green)
         .fontWeight(.semibold)
-    } else if let endDate = timer.endDate {
-      Text(timerInterval: Date.now...endDate, countsDown: true)
-        .foregroundColor(homeProgressColor(timer: timer))
-        .monospacedDigit()
     } else {
       Text(homeFormatTime(timer.remainingSeconds))
         .foregroundColor(.white)
@@ -215,12 +215,12 @@ private struct HomeProgressView: View {
     } else if timer.isPaused {
       ProgressView(value: homeStaticProgress(timer: timer), total: 1.0)
         .tint(homeProgressColor(timer: timer))
-    } else if let endDate = timer.endDate, Date() >= endDate {
-      ProgressView(value: 1.0, total: 1.0)
+    } else if let endDate = timer.endDate, let safe = homeSafeEndDate(endDate) {
+      let startDate = safe.addingTimeInterval(-Double(timer.totalDurationSeconds))
+      ProgressView(timerInterval: startDate...safe, countsDown: false)
         .tint(.green)
-    } else if let endDate = timer.endDate {
-      let startDate = endDate.addingTimeInterval(-Double(timer.totalDurationSeconds))
-      ProgressView(timerInterval: startDate...endDate, countsDown: false)
+    } else if timer.endDate != nil {
+      ProgressView(value: 1.0, total: 1.0)
         .tint(.green)
     } else {
       ProgressView(value: 0, total: 1.0)
@@ -230,6 +230,12 @@ private struct HomeProgressView: View {
 }
 
 // MARK: - Helpers
+
+/// Returns endDate only if it's still in the future, eliminating the TOCTOU race
+/// between checking `Date() >= endDate` and constructing `Date.now...endDate`.
+private func homeSafeEndDate(_ endDate: Date) -> Date? {
+  endDate > Date() ? endDate : nil
+}
 
 private func homeFormatTime(_ seconds: Int) -> String {
   let mins = seconds / 60

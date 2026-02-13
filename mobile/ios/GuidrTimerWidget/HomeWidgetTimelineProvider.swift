@@ -37,10 +37,12 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
   }
 
   func getSnapshot(in context: Context, completion: @escaping (HomeWidgetEntry) -> Void) {
+    NSLog("[GuidrWidget] getSnapshot called (isPreview=%d)", context.isPreview ? 1 : 0)
     completion(buildEntry())
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<HomeWidgetEntry>) -> Void) {
+    NSLog("[GuidrWidget] getTimeline called")
     let entry = buildEntry()
 
     // Determine refresh policy
@@ -54,13 +56,20 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
     }
 
     let policy: TimelineReloadPolicy = refreshDate.map { .after($0) } ?? .never
+    NSLog("[GuidrWidget] getTimeline: hasTimers=%d, refreshDate=%@, policy=%@",
+          entry.hasTimers ? 1 : 0,
+          refreshDate.map { String(describing: $0) } ?? "nil",
+          refreshDate != nil ? "after" : "never")
     completion(Timeline(entries: [entry], policy: policy))
   }
 
   private func buildEntry() -> HomeWidgetEntry {
     guard let state = SharedTimerStorage.shared.load() else {
+      NSLog("[GuidrWidget] buildEntry: no stored state — returning empty entry")
       return HomeWidgetEntry(date: Date(), entries: [], updatedAt: nil)
     }
+    NSLog("[GuidrWidget] buildEntry: loaded %d entries, updatedAt=%@",
+          state.entries.count, String(describing: state.updatedAt))
 
     let now = Date()
 
@@ -74,9 +83,12 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
     let stale = allExpired && !running.isEmpty && secondsSinceExpiry > 30
 
     if stale {
+      NSLog("[GuidrWidget] buildEntry: stale (%.1fs since expiry) — returning empty", secondsSinceExpiry)
       return HomeWidgetEntry(date: now, entries: [], updatedAt: state.updatedAt)
     }
 
+    NSLog("[GuidrWidget] buildEntry: returning %d entries (running=%d, stale=%d)",
+          state.entries.count, running.count, stale ? 1 : 0)
     return HomeWidgetEntry(date: now, entries: state.entries, updatedAt: state.updatedAt)
   }
 }

@@ -121,14 +121,14 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if let endDate = state.timerEndDate, Date() >= endDate {
+    } else if let endDate = state.timerEndDate, let safe = safeEndDate(endDate) {
+      Text(timerInterval: Date.now...safe, countsDown: true)
+        .foregroundColor(progressColor(state: state))
+        .monospacedDigit()
+    } else if state.timerEndDate != nil {
       Text("Done")
         .foregroundColor(.green)
         .fontWeight(.semibold)
-    } else if let endDate = state.timerEndDate {
-      Text(timerInterval: Date.now...endDate, countsDown: true)
-        .foregroundColor(progressColor(state: state))
-        .monospacedDigit()
     } else {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.white)
@@ -150,18 +150,24 @@ private struct TimerProgressView: View {
         total: 1.0
       )
       .tint(progressColor(state: state))
-    } else if let endDate = state.timerEndDate, Date() >= endDate {
-      ProgressView(value: 1.0, total: 1.0)
+    } else if let endDate = state.timerEndDate, let safe = safeEndDate(endDate) {
+      let startDate = safe.addingTimeInterval(-Double(state.totalDurationSeconds))
+      ProgressView(timerInterval: startDate...safe, countsDown: false)
         .tint(.green)
-    } else if let endDate = state.timerEndDate {
-      let startDate = endDate.addingTimeInterval(-Double(state.totalDurationSeconds))
-      ProgressView(timerInterval: startDate...endDate, countsDown: false)
+    } else if state.timerEndDate != nil {
+      ProgressView(value: 1.0, total: 1.0)
         .tint(.green)
     } else {
       ProgressView(value: 0, total: 1.0)
         .tint(.green)
     }
   }
+}
+
+/// Returns endDate only if it's still in the future, eliminating the TOCTOU race
+/// between checking `Date() >= endDate` and constructing `Date.now...endDate`.
+private func safeEndDate(_ endDate: Date) -> Date? {
+  endDate > Date() ? endDate : nil
 }
 
 private func formatTime(_ seconds: Int) -> String {
