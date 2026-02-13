@@ -347,6 +347,8 @@ export const AppNavigator: React.FC = () => {
           const guide = await servicesRef.current.guide.getGuideById(guideId, token)
           if (guide) {
             setEditingGuideOwnerId(guide.createdByUserId || null)
+            const canEdit = Boolean(adminModeActive || (userId && guide.isOwnedBy(userId)))
+            setCanEditCurrentGuide(canEdit)
           }
         }
       }
