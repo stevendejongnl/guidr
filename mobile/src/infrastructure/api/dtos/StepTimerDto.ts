@@ -9,4 +9,6 @@ export interface StepTimerDto {
   durationSeconds: number
   createdAt: string
   updatedAt: string
+  serverTime?: string | null // ISO datetime from API
+  receivedAt?: number // Date.now() when response received
 }

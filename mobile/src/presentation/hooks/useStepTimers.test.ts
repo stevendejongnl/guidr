@@ -1,5 +1,5 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native'
-import { useStepTimers } from './useStepTimers'
+import { useStepTimers, calculateDisplay } from './useStepTimers'
 import { StepTimerDto } from '../../infrastructure/api/dtos/StepTimerDto'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 
@@ -308,5 +308,107 @@ describe('useStepTimers', () => {
     const display = result.current.timers['step-1']!
     expect(display.isComplete).toBe(true)
     expect(display.displaySeconds).toBe(0)
+  })
+})
+
+describe('calculateDisplay', () => {
+  it('uses drift-resistant calculation when serverTime and receivedAt present', () => {
+    const now = Date.now()
+    // Server says timer started 30s ago (server clock)
+    const serverNow = new Date(now).toISOString()
+    const startedAt = new Date(now - 30_000).toISOString()
+
+    const dto: StepTimerDto = {
+      id: 'timer-1',
+      stepId: 'step-1',
+      guideId: 'guide-1',
+      userId: 'user-1',
+      status: 'running',
+      startedAt,
+      accumulatedSeconds: 0,
+      durationSeconds: 300,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      serverTime: serverNow,
+      receivedAt: now, // received just now
+    }
+
+    const display = calculateDisplay(dto)
+    // serverElapsed = 30s, localElapsed ≈ 0s → remaining ≈ 270
+    expect(display.displaySeconds).toBeGreaterThanOrEqual(269)
+    expect(display.displaySeconds).toBeLessThanOrEqual(271)
+    expect(display.isRunning).toBe(true)
+  })
+
+  it('eliminates clock drift when client clock is behind server', () => {
+    const now = Date.now()
+    // Server started 10s ago, server says "now" is 10s after start
+    const serverStart = new Date(now - 10_000).toISOString()
+    const serverNow = new Date(now).toISOString()
+
+    const dto: StepTimerDto = {
+      id: 'timer-1',
+      stepId: 'step-1',
+      guideId: 'guide-1',
+      userId: 'user-1',
+      status: 'running',
+      startedAt: serverStart,
+      accumulatedSeconds: 0,
+      durationSeconds: 60,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      serverTime: serverNow,
+      // Client received 2 seconds ago (simulates network delay)
+      receivedAt: now - 2000,
+    }
+
+    const display = calculateDisplay(dto)
+    // serverElapsed=10, localElapsed≈2 → total≈12 → remaining≈48
+    expect(display.displaySeconds).toBeGreaterThanOrEqual(47)
+    expect(display.displaySeconds).toBeLessThanOrEqual(49)
+  })
+
+  it('falls back to Date.now() - startedAt when serverTime is missing', () => {
+    const tenSecondsAgo = new Date(Date.now() - 10_000).toISOString()
+
+    const dto: StepTimerDto = {
+      id: 'timer-1',
+      stepId: 'step-1',
+      guideId: 'guide-1',
+      userId: 'user-1',
+      status: 'running',
+      startedAt: tenSecondsAgo,
+      accumulatedSeconds: 0,
+      durationSeconds: 300,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      // No serverTime or receivedAt — backwards compat
+    }
+
+    const display = calculateDisplay(dto)
+    expect(display.displaySeconds).toBeGreaterThan(280)
+    expect(display.displaySeconds).toBeLessThanOrEqual(300)
+    expect(display.isRunning).toBe(true)
+  })
+
+  it('does not add running elapsed for paused timers', () => {
+    const dto: StepTimerDto = {
+      id: 'timer-1',
+      stepId: 'step-1',
+      guideId: 'guide-1',
+      userId: 'user-1',
+      status: 'paused',
+      startedAt: null,
+      accumulatedSeconds: 100,
+      durationSeconds: 300,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      serverTime: new Date().toISOString(),
+      receivedAt: Date.now(),
+    }
+
+    const display = calculateDisplay(dto)
+    expect(display.displaySeconds).toBe(200) // 300 - 100
+    expect(display.isPaused).toBe(true)
   })
 })

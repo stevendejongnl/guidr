@@ -76,6 +76,7 @@ def _to_response(dto) -> StepTimerResponse:
         durationSeconds=dto.duration_seconds,
         createdAt=dto.created_at,
         updatedAt=dto.updated_at,
+        serverTime=dto.server_time,
     )
 
 
@@ -134,6 +135,7 @@ async def get_active_timers(
             durationSeconds=dto.duration_seconds,
             createdAt=dto.created_at,
             updatedAt=dto.updated_at,
+            serverTime=dto.server_time,
             guideTitle=dto.guide_title,
             stepTitle=dto.step_title,
         )

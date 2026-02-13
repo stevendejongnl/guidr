@@ -25,9 +25,21 @@ export function calculateDisplay(dto: StepTimerDto): StepTimerDisplay {
   let elapsed = dto.accumulatedSeconds
 
   if (dto.status === 'running' && dto.startedAt) {
-    const startedMs = Date.parse(dto.startedAt)
-    if (!isNaN(startedMs)) {
-      elapsed += Math.floor((Date.now() - startedMs) / 1000)
+    if (dto.serverTime && dto.receivedAt) {
+      // Clock-drift-resistant: server-to-server + client-to-client
+      const serverElapsed = Math.floor(
+        (Date.parse(dto.serverTime) - Date.parse(dto.startedAt)) / 1000,
+      )
+      const localElapsed = Math.floor(
+        (Date.now() - dto.receivedAt) / 1000,
+      )
+      elapsed += Math.max(0, serverElapsed + localElapsed)
+    } else {
+      // Backwards compat: old API without serverTime
+      const startedMs = Date.parse(dto.startedAt)
+      if (!isNaN(startedMs)) {
+        elapsed += Math.floor((Date.now() - startedMs) / 1000)
+      }
     }
   }
 
@@ -142,6 +154,8 @@ export function useStepTimers(
         durationSeconds: payload['durationSeconds'] as number,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        serverTime: (payload['serverTime'] as string) ?? null,
+        receivedAt: Date.now(),
       }
       updateDto(dto)
     }

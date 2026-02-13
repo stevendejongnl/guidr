@@ -26,6 +26,7 @@ class StepTimerResponseDTO:
     duration_seconds: int
     created_at: str  # ISO format
     updated_at: str  # ISO format
+    server_time: str | None = None  # ISO format, current server time
 
 
 @dataclass

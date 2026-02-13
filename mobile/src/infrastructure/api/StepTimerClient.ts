@@ -17,6 +17,10 @@ export class StepTimerClient {
     }
   }
 
+  private stampReceived<T extends StepTimerDto>(dto: T): T {
+    return { ...dto, receivedAt: Date.now() }
+  }
+
   async startTimer(
     stepId: string,
     guideId: string,
@@ -37,7 +41,8 @@ export class StepTimerClient {
       throw new Error(extractErrorMessage(errorData, 'Failed to start timer'))
     }
 
-    return response.json()
+    const dto: StepTimerDto = await response.json()
+    return this.stampReceived(dto)
   }
 
   async pauseTimer(timerId: string, authToken: string): Promise<StepTimerDto> {
@@ -57,7 +62,8 @@ export class StepTimerClient {
       throw new Error(extractErrorMessage(errorData, 'Failed to pause timer'))
     }
 
-    return response.json()
+    const dto: StepTimerDto = await response.json()
+    return this.stampReceived(dto)
   }
 
   async resetTimer(timerId: string, authToken: string): Promise<StepTimerDto> {
@@ -77,7 +83,8 @@ export class StepTimerClient {
       throw new Error(extractErrorMessage(errorData, 'Failed to reset timer'))
     }
 
-    return response.json()
+    const dto: StepTimerDto = await response.json()
+    return this.stampReceived(dto)
   }
 
   async getActiveTimers(authToken: string): Promise<ActiveStepTimerDto[]> {
@@ -94,7 +101,8 @@ export class StepTimerClient {
       throw new Error(extractErrorMessage(errorData, 'Failed to load active timers'))
     }
 
-    return response.json()
+    const dtos: ActiveStepTimerDto[] = await response.json()
+    return dtos.map((dto) => this.stampReceived(dto))
   }
 
   async getTimersByGuide(
@@ -117,6 +125,7 @@ export class StepTimerClient {
       throw new Error(extractErrorMessage(errorData, 'Failed to load timers'))
     }
 
-    return response.json()
+    const dtos: StepTimerDto[] = await response.json()
+    return dtos.map((dto) => this.stampReceived(dto))
   }
 }
