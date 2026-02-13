@@ -22,11 +22,14 @@ class SharedTimerStorage {
   private let suiteName = "group.com.guidr"
   private let storageKey = "timerState"
 
-  private var defaults: UserDefaults? {
-    UserDefaults(suiteName: suiteName)
-  }
+  private let defaults: UserDefaults?
 
-  private init() {}
+  private init() {
+    defaults = UserDefaults(suiteName: suiteName)
+    if defaults == nil {
+      NSLog("[GuidrStorage] CRITICAL: UserDefaults(suiteName: %@) returned nil — App Group misconfigured", suiteName)
+    }
+  }
 
   func save(_ entries: [SharedTimerEntry]) {
     let state = SharedTimerState(entries: entries, updatedAt: Date())
@@ -35,7 +38,15 @@ class SharedTimerStorage {
       return
     }
     defaults?.set(data, forKey: storageKey)
+    defaults?.synchronize()
     NSLog("[GuidrStorage] save: wrote %d entries (%d bytes)", entries.count, data.count)
+
+    // Read-back verification
+    if let readBack = defaults?.data(forKey: storageKey) {
+      NSLog("[GuidrStorage] save: read-back OK (%d bytes)", readBack.count)
+    } else {
+      NSLog("[GuidrStorage] save: read-back FAILED — data not persisted")
+    }
   }
 
   func load() -> SharedTimerState? {
@@ -52,6 +63,7 @@ class SharedTimerStorage {
 
   func clear() {
     defaults?.removeObject(forKey: storageKey)
+    defaults?.synchronize()
     NSLog("[GuidrStorage] clear: removed stored state")
   }
 }

@@ -121,7 +121,7 @@ class LiveActivityModule: NSObject {
 
       scheduleCompletionForSoonest()
       saveWidgetState()
-      reloadWidget()
+      reloadWidgetImmediate()
 
       // Schedule notification for timer completion
       NotificationHelper.shared.scheduleTimerNotification(
@@ -186,7 +186,7 @@ class LiveActivityModule: NSObject {
 
       scheduleCompletionForSoonest()
       saveWidgetState()
-      reloadWidget()
+      reloadWidgetDebounced()
     } else {
       resolve(nil)
     }
@@ -224,7 +224,7 @@ class LiveActivityModule: NSObject {
         }
         scheduleCompletionForSoonest()
         saveWidgetState()
-        reloadWidget()
+        reloadWidgetDebounced()
       }
     } else {
       resolve(nil)
@@ -320,7 +320,7 @@ class LiveActivityModule: NSObject {
     let allDone = timerEntries.filter({ !$0.isComplete }).isEmpty && !timerEntries.isEmpty
 
     saveWidgetState()
-    reloadWidget()
+    reloadWidgetImmediate()
 
     Task {
       for activity in Activity<GuidrTimerAttributes>.activities {
@@ -363,9 +363,17 @@ class LiveActivityModule: NSObject {
     SharedTimerStorage.shared.save(shared)
   }
 
-  private func reloadWidget() {
+  private func reloadWidgetImmediate() {
+    reloadWorkItem?.cancel()
+    reloadWorkItem = nil
+    NSLog("[LiveActivity] reloadWidgetImmediate: reloading GuidrHomeWidget now")
+    WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
+  }
+
+  private func reloadWidgetDebounced() {
     reloadWorkItem?.cancel()
     let workItem = DispatchWorkItem {
+      NSLog("[LiveActivity] reloadWidgetDebounced: reloading GuidrHomeWidget")
       WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
     }
     reloadWorkItem = workItem

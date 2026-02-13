@@ -26,6 +26,7 @@
 		B5C6D7E8F9A0B1C2D3E4F5A6 /* SharedTimerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */; };
 		C6D7E8F9A0B1C2D3E4F5A6B7 /* HomeWidgetTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */; };
 		D7E8F9A0B1C2D3E4F5A6B7C8 /* GuidrHomeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */; };
+		F9A0B1C2D3E4F5A6B7C8D9EA /* WidgetRenderingHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */; };
 		FC508176FC966C05B5DEDF3A /* GuidrTimerWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -58,6 +59,7 @@
 		D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedTimerStorage.swift; sourceTree = "<group>"; };
 		E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeWidgetTimelineProvider.swift; sourceTree = "<group>"; };
 		F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrHomeWidget.swift; sourceTree = "<group>"; };
+		E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetRenderingHelpers.swift; sourceTree = "<group>"; };
 		11F9B7D85588CC58815D1D3F /* GuidrTimerWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = GuidrTimerWidget.entitlements; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* guidr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = guidr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = guidr/Images.xcassets; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */,
 				E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */,
 				F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */,
+				E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */,
 				04424E6BE0C37B437AEEA925 /* GuidrTimerWidgetBundle.swift */,
 				11F9B7D85588CC58815D1D3F /* GuidrTimerWidget.entitlements */,
 				A1B2C3D4E5F60718293A4B5C /* Info.plist */,
@@ -408,6 +411,7 @@
 				817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */,
 				C6D7E8F9A0B1C2D3E4F5A6B7 /* HomeWidgetTimelineProvider.swift in Sources */,
 				D7E8F9A0B1C2D3E4F5A6B7C8 /* GuidrHomeWidget.swift in Sources */,
+				F9A0B1C2D3E4F5A6B7C8D9EA /* WidgetRenderingHelpers.swift in Sources */,
 				08FF4D43162E24EABD45A19F /* GuidrTimerWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

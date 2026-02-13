@@ -22,15 +22,32 @@ private struct HomeWidgetEntryView: View {
   let entry: HomeWidgetEntry
 
   var body: some View {
-    if entry.hasTimers {
-      switch family {
-      case .systemMedium:
-        MediumTimerView(entry: entry)
-      default:
-        SmallTimerView(entry: entry)
+    ZStack {
+      if entry.hasTimers {
+        switch family {
+        case .systemMedium:
+          MediumTimerView(entry: entry)
+        default:
+          SmallTimerView(entry: entry)
+        }
+      } else {
+        IdleView()
       }
-    } else {
-      IdleView()
+
+      #if DEBUG
+      VStack {
+        Spacer()
+        HStack {
+          Spacer()
+          Text("\(entry.entries.count)e \(entry.activeCount)a")
+            .font(.system(size: 7, design: .monospaced))
+            .foregroundColor(.white.opacity(0.5))
+            .padding(2)
+            .background(Color.black.opacity(0.4))
+            .cornerRadius(2)
+        }
+      }
+      #endif
     }
   }
 }
@@ -43,10 +60,10 @@ private struct IdleView: View {
       HomeGuidrDotsView()
       Text("Guidr")
         .font(.headline)
-        .foregroundColor(.white)
+        .widgetPrimaryText()
       Text("No active timers")
         .font(.caption)
-        .foregroundColor(.white.opacity(0.5))
+        .widgetTertiaryText()
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
@@ -63,9 +80,10 @@ private struct SmallTimerView: View {
     VStack(alignment: .leading, spacing: 6) {
       HStack(spacing: 4) {
         HomeGuidrDotsView()
+          .widgetAccentable()
         Text("Guidr")
           .font(.caption2)
-          .foregroundColor(.white.opacity(0.5))
+          .widgetTertiaryText()
           .textCase(.uppercase)
       }
 
@@ -78,19 +96,20 @@ private struct SmallTimerView: View {
       } else if let timer = primary {
         TimerCountdownText(timer: timer)
           .font(.title2.monospacedDigit())
+          .widgetAccentable()
       }
 
       if let timer = primary {
         Text(timer.stepTitle)
           .font(.caption)
-          .foregroundColor(.white.opacity(0.7))
+          .widgetSecondaryText()
           .lineLimit(2)
       }
 
       if entry.activeCount > 1 {
         Text("+\(entry.activeCount - 1) more")
           .font(.caption2)
-          .foregroundColor(.white.opacity(0.4))
+          .widgetDimText()
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -109,9 +128,10 @@ private struct MediumTimerView: View {
     VStack(alignment: .leading, spacing: 6) {
       HStack(spacing: 4) {
         HomeGuidrDotsView()
+          .widgetAccentable()
         Text("Guidr")
           .font(.caption2)
-          .foregroundColor(.white.opacity(0.5))
+          .widgetTertiaryText()
           .textCase(.uppercase)
       }
 
@@ -119,7 +139,7 @@ private struct MediumTimerView: View {
         if let timer = primary {
           Text(timer.guideTitle)
             .font(.headline)
-            .foregroundColor(.white)
+            .widgetPrimaryText()
             .lineLimit(1)
         }
         Spacer(minLength: 8)
@@ -131,6 +151,7 @@ private struct MediumTimerView: View {
         } else if let timer = primary {
           TimerCountdownText(timer: timer)
             .font(.title2.monospacedDigit())
+            .widgetAccentable()
             .fixedSize(horizontal: true, vertical: false)
         }
       }
@@ -138,14 +159,14 @@ private struct MediumTimerView: View {
       if let timer = primary {
         Text(timer.stepTitle)
           .font(.subheadline)
-          .foregroundColor(.white.opacity(0.7))
+          .widgetSecondaryText()
           .lineLimit(1)
       }
 
       if entry.activeCount > 1 {
         Text("+\(entry.activeCount - 1) more timer\(entry.activeCount > 2 ? "s" : "")")
           .font(.caption2)
-          .foregroundColor(.white.opacity(0.5))
+          .widgetTertiaryText()
       }
 
       if let timer = primary {
@@ -199,7 +220,7 @@ private struct TimerCountdownText: View {
         .fontWeight(.semibold)
     } else {
       Text(homeFormatTime(timer.remainingSeconds))
-        .foregroundColor(.white)
+        .widgetPrimaryText()
     }
   }
 }

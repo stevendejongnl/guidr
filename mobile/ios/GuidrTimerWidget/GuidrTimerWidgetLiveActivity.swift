@@ -15,7 +15,7 @@ struct GuidrTimerWidgetLiveActivity: Widget {
         DynamicIslandExpandedRegion(.leading) {
           Label(context.state.stepTitle, systemImage: "timer")
             .font(.caption)
-            .foregroundColor(.white)
+            .widgetPrimaryText()
         }
         DynamicIslandExpandedRegion(.trailing) {
           TimerText(state: context.state)
@@ -54,6 +54,7 @@ private struct GuidrDotsView: View {
         .offset(y: -2)
     }
     .frame(height: 9)
+    .widgetAccentable()
   }
 }
 
@@ -67,31 +68,32 @@ private struct LockScreenView: View {
         GuidrDotsView()
         Text("Guidr")
           .font(.caption2)
-          .foregroundColor(.white.opacity(0.5))
+          .widgetTertiaryText()
           .textCase(.uppercase)
       }
 
       HStack {
         Text(context.attributes.guideTitle)
           .font(.headline)
-          .foregroundColor(.white)
+          .widgetPrimaryText()
           .lineLimit(1)
         Spacer(minLength: 8)
         TimerText(state: context.state)
           .font(.title2.monospacedDigit())
           .foregroundColor(timerTextColor)
+          .widgetAccentable()
           .fixedSize(horizontal: true, vertical: false)
       }
 
       Text(context.state.stepTitle)
         .font(.subheadline)
-        .foregroundColor(.white.opacity(0.7))
+        .widgetSecondaryText()
         .lineLimit(1)
 
       if context.state.activeTimerCount > 1 {
         Text("+\(context.state.activeTimerCount - 1) more timer\(context.state.activeTimerCount > 2 ? "s" : "")")
           .font(.caption2)
-          .foregroundColor(.white.opacity(0.5))
+          .widgetTertiaryText()
       }
 
       TimerProgressView(state: context.state)
@@ -131,7 +133,7 @@ private struct TimerText: View {
         .fontWeight(.semibold)
     } else {
       Text(formatTime(state.remainingSeconds))
-        .foregroundColor(.white)
+        .widgetPrimaryText()
     }
   }
 }

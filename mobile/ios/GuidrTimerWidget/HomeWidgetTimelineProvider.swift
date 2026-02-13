@@ -55,11 +55,12 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
       refreshDate = nil
     }
 
-    let policy: TimelineReloadPolicy = refreshDate.map { .after($0) } ?? .never
-    NSLog("[GuidrWidget] getTimeline: hasTimers=%d, refreshDate=%@, policy=%@",
+    let fallbackRefresh = Date().addingTimeInterval(15 * 60)
+    let policy: TimelineReloadPolicy = .after(refreshDate ?? fallbackRefresh)
+    NSLog("[GuidrWidget] getTimeline: hasTimers=%d, refreshDate=%@, policy=after(%@)",
           entry.hasTimers ? 1 : 0,
-          refreshDate.map { String(describing: $0) } ?? "nil",
-          refreshDate != nil ? "after" : "never")
+          refreshDate.map { String(describing: $0) } ?? "nil(fallback 15m)",
+          String(describing: refreshDate ?? fallbackRefresh))
     completion(Timeline(entries: [entry], policy: policy))
   }
 
@@ -74,13 +75,13 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
     let now = Date()
 
     // Staleness detection: if all endDates have passed and the latest one expired
-    // more than 30 seconds ago, the app was likely killed — treat as no active timers.
+    // more than 60 seconds ago, the app was likely killed — treat as no active timers.
     // Uses expiry-based grace period (not updatedAt) to avoid racing with handleTimerCompletion.
     let running = state.entries.filter { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
     let allExpired = running.allSatisfy { ($0.endDate ?? .distantPast) < now }
     let latestExpiry = running.compactMap(\.endDate).max()
     let secondsSinceExpiry = latestExpiry.map { now.timeIntervalSince($0) } ?? 0
-    let stale = allExpired && !running.isEmpty && secondsSinceExpiry > 30
+    let stale = allExpired && !running.isEmpty && secondsSinceExpiry > 60
 
     if stale {
       NSLog("[GuidrWidget] buildEntry: stale (%.1fs since expiry) — returning empty", secondsSinceExpiry)
