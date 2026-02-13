@@ -28,7 +28,6 @@ export class NotificationService {
     remainingSeconds: number,
     critical: boolean,
   ): Promise<void> {
-    if (Platform.OS !== 'ios') return
     try {
       await NotificationModule.scheduleNotification(
         stepId,

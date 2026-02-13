@@ -83,12 +83,14 @@ describe('NotificationService', () => {
       expect(mock).toHaveBeenCalledWith('step-1', 'Boil water', 'Pasta', 300, true)
     })
 
-    it('should not call native module on Android', async () => {
+    it('should call native module on Android', async () => {
       Platform.OS = 'android'
+      const mock = NativeModules['NotificationModule'].scheduleNotification as jest.Mock
+      mock.mockResolvedValue(undefined)
 
       await service.scheduleTimerNotification('step-1', 'Boil water', 'Pasta', 300, false)
 
-      expect(NativeModules['NotificationModule'].scheduleNotification).not.toHaveBeenCalled()
+      expect(mock).toHaveBeenCalledWith('step-1', 'Boil water', 'Pasta', 300, false)
     })
 
     it('should silently catch errors', async () => {

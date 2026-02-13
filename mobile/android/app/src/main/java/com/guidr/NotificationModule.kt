@@ -1,9 +1,13 @@
 package com.guidr
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -100,14 +104,68 @@ class NotificationModule(reactContext: ReactApplicationContext) :
         critical: Boolean,
         promise: Promise
     ) {
-        // Scheduling is iOS-only; on Android this is a no-op
-        promise.resolve(null)
+        try {
+            val context = reactApplicationContext
+            val alarmManager = context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
+
+            val intent = Intent(context, TimerNotificationReceiver::class.java).apply {
+                putExtra("stepTitle", stepTitle)
+                putExtra("guideTitle", guideTitle)
+                putExtra("critical", critical)
+                putExtra("notificationId", stepId.hashCode())
+            }
+
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                stepId.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val triggerAt = SystemClock.elapsedRealtime() + remainingSeconds * 1000L
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                triggerAt,
+                pendingIntent
+            )
+
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.reject(
+                "SCHEDULE_ERROR",
+                "Failed to schedule notification: ${e.message}",
+                e
+            )
+        }
     }
 
     @ReactMethod
     fun cancelNotification(stepId: String, promise: Promise) {
-        // Cancel is iOS-only for scheduled notifications
-        promise.resolve(null)
+        try {
+            val context = reactApplicationContext
+            val alarmManager = context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
+
+            val intent = Intent(context, TimerNotificationReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                stepId.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            alarmManager.cancel(pendingIntent)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.reject(
+                "CANCEL_ERROR",
+                "Failed to cancel notification: ${e.message}",
+                e
+            )
+        }
     }
 
     @ReactMethod
