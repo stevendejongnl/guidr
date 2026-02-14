@@ -21,6 +21,7 @@ from .step_timer_dtos import (
     StepTimerResponseDTO,
 )
 from .user_dtos import (
+    AdminUpdateUserDTO,
     ChangeEmailDTO,
     ChangePasswordDTO,
     DeleteAccountDTO,
@@ -60,6 +61,7 @@ __all__ = [
     "StepTimerCreateDTO",
     "StepTimerResponseDTO",
     # User
+    "AdminUpdateUserDTO",
     "ChangeEmailDTO",
     "ChangePasswordDTO",
     "DeleteAccountDTO",

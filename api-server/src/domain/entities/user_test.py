@@ -4,7 +4,7 @@ import pytest
 
 from src.domain.entities import User
 from src.domain.exceptions import ValidationException
-from src.domain.value_objects import Email, EntityId
+from src.domain.value_objects import Email, EntityId, Role, RoleType
 
 
 class TestUser:
@@ -361,3 +361,67 @@ class TestUser:
         user.update_refresh_token_hash(None)
 
         assert user.refresh_token_hash is None
+
+    def test_set_role_to_admin(self):
+        """Should set role to admin and update timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(id=id, email=email, password_hash=password_hash)
+        original_updated = user.updated_at
+
+        user.set_role(Role(RoleType.ADMIN))
+
+        assert user.is_admin is True
+        assert user.role == Role(RoleType.ADMIN)
+        assert user.updated_at > original_updated
+
+    def test_set_role_to_user(self):
+        """Should set role to user and update timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            role=Role(RoleType.ADMIN),
+        )
+        original_updated = user.updated_at
+
+        user.set_role(Role(RoleType.USER))
+
+        assert user.is_admin is False
+        assert user.role == Role(RoleType.USER)
+        assert user.updated_at > original_updated
+
+    def test_set_beta_true(self):
+        """Should enable beta and update timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(id=id, email=email, password_hash=password_hash)
+        original_updated = user.updated_at
+
+        user.set_beta(True)
+
+        assert user.is_beta is True
+        assert user.updated_at > original_updated
+
+    def test_set_beta_false(self):
+        """Should disable beta and update timestamp."""
+        id = EntityId("550e8400-e29b-41d4-a716-446655440000")
+        email = Email("test@example.com")
+        password_hash = "$argon2id$v=19$m=65536,t=3,p=4$..."
+        user = User(
+            id=id,
+            email=email,
+            password_hash=password_hash,
+            is_beta=True,
+        )
+        original_updated = user.updated_at
+
+        user.set_beta(False)
+
+        assert user.is_beta is False
+        assert user.updated_at > original_updated

@@ -69,3 +69,15 @@ class DeleteAccountDTO:
 
     user_id: str
     password: str
+
+
+@dataclass
+class AdminUpdateUserDTO:
+    """DTO for admin updating a user's properties."""
+
+    user_id: str
+    role: str | None = None
+    is_beta: bool | None = None
+    name: str | None = None
+    interests: list[str] | None = None
+    preferred_languages: list[str] | None = None

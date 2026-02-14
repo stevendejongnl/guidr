@@ -101,3 +101,17 @@ class DeleteAccountRequest(BaseModel):
     password: str
 
     model_config = ConfigDict(populate_by_name=True)
+
+
+class AdminUpdateUserRequest(BaseModel):
+    """Request model for admin updating a user."""
+
+    role: str | None = None
+    is_beta: bool | None = Field(default=None, alias="isBeta")
+    name: str | None = None
+    interests: list[str] | None = None
+    preferred_languages: list[str] | None = Field(
+        default=None, alias="preferredLanguages"
+    )
+
+    model_config = ConfigDict(populate_by_name=True)

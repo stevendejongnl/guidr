@@ -216,6 +216,7 @@ export class AppRoot extends LitElement {
                           ? html`
                             <div class="admin-menu">
                               <a href="/admin/guides" @click=${(e: Event) => this.navigateAdmin(e, '/admin/guides')}>Guides</a>
+                              <a href="/admin/users" @click=${(e: Event) => this.navigateAdmin(e, '/admin/users')}>Users</a>
                               <a href="/admin/styleguide" @click=${(e: Event) => this.navigateAdmin(e, '/admin/styleguide')}>Styleguide</a>
                             </div>
                           `

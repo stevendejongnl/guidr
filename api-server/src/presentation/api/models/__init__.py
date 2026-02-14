@@ -21,6 +21,7 @@ from .step_timer_models import (
     StepTimerStart,
 )
 from .user_models import (
+    AdminUpdateUserRequest,
     ChangeEmailRequest,
     ChangePasswordRequest,
     DeleteAccountRequest,
@@ -68,6 +69,7 @@ __all__ = [
     "StepTimerStart",
     "StepTimerResponse",
     # User
+    "AdminUpdateUserRequest",
     "ChangeEmailRequest",
     "ChangePasswordRequest",
     "DeleteAccountRequest",

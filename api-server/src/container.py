@@ -52,6 +52,7 @@ from .application.use_cases.step_timer import (
     StartStepTimer,
 )
 from .application.use_cases.user import (
+    AdminUpdateUser,
     ChangeEmail,
     ChangePassword,
     DeleteAccount,
@@ -413,6 +414,11 @@ class Container(containers.DeclarativeContainer):
         DeleteAccount,
         user_repository=user_repository,
         password_hasher=password_hasher,
+    )
+
+    admin_update_user_use_case = providers.Factory(
+        AdminUpdateUser,
+        user_repository=user_repository,
     )
 
     # Audit Log Use Cases (Factories)

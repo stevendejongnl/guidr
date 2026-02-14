@@ -8,7 +8,17 @@ export interface UserDto {
   updatedAt: string
   name: string | null
   interests: string[] | null
+  preferredLanguages: string[] | null
   isAdmin: boolean
+  isBeta: boolean
+}
+
+export interface AdminUpdateUserRequest {
+  role?: string
+  isBeta?: boolean
+  name?: string
+  interests?: string[]
+  preferredLanguages?: string[]
 }
 
 export interface GuideWithUser extends Guide {
@@ -19,6 +29,10 @@ export interface GuideWithUser extends Guide {
 export class AdminService {
   async getAllUsers(): Promise<UserDto[]> {
     return apiClient.get<UserDto[]>('/auth/users')
+  }
+
+  async updateUser(userId: string, data: AdminUpdateUserRequest): Promise<UserDto> {
+    return apiClient.patch<UserDto>(`/auth/users/${userId}`, data)
   }
 
   async getAllGuidesWithUsers(): Promise<GuideWithUser[]> {

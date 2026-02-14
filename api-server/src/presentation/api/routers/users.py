@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, status
 from fastapi.responses import JSONResponse
 
 from src.application.dtos import (
+    AdminUpdateUserDTO,
     ChangeEmailDTO,
     ChangePasswordDTO,
     DeleteAccountDTO,
@@ -12,6 +13,7 @@ from src.application.dtos import (
     UserLoginDTO,
 )
 from src.application.use_cases.user import (
+    AdminUpdateUser,
     ChangeEmail,
     ChangePassword,
     DeleteAccount,
@@ -27,6 +29,7 @@ from src.infrastructure.auth.token_hasher import hash_token, verify_token_hash
 
 from ..dependencies.auth import get_current_admin_user, get_current_user
 from ..models import (
+    AdminUpdateUserRequest,
     ChangeEmailRequest,
     ChangePasswordRequest,
     DeleteAccountRequest,
@@ -95,6 +98,12 @@ def get_delete_account_use_case() -> DeleteAccount:
     """Get DeleteAccount use case."""
     assert _container is not None, "Container not initialized"
     return _container.delete_account_use_case()
+
+
+def get_admin_update_user_use_case() -> AdminUpdateUser:
+    """Get AdminUpdateUser use case."""
+    assert _container is not None, "Container not initialized"
+    return _container.admin_update_user_use_case()
 
 
 @router.post(
@@ -558,3 +567,65 @@ async def list_users(
         )
         for u in users
     ]
+
+
+@router.patch(
+    "/users/{user_id}",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
+)
+async def admin_update_user(
+    user_id: str,
+    request: AdminUpdateUserRequest,
+    current_user: User = Depends(get_current_admin_user),
+    use_case: AdminUpdateUser = Depends(
+        get_admin_update_user_use_case
+    ),
+    user_repository=Depends(get_user_repository),
+) -> UserResponse:
+    """Update a user's properties (admin only)."""
+    try:
+        dto = AdminUpdateUserDTO(
+            user_id=user_id,
+            role=request.role,
+            is_beta=request.is_beta,
+            name=request.name,
+            interests=request.interests,
+            preferred_languages=request.preferred_languages,
+        )
+        await use_case.execute(
+            dto, admin_user_id=current_user.id.value
+        )
+
+        # Fetch updated user for response
+        updated = await user_repository.find_by_id(
+            EntityId(user_id)
+        )
+        if updated is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        return UserResponse(
+            id=updated.id.value,
+            email=updated.email.value,
+            createdAt=updated.created_at.isoformat(),
+            updatedAt=updated.updated_at.isoformat(),
+            name=updated.name,
+            interests=updated.interests,
+            preferredLanguages=updated.preferred_languages,
+            isAdmin=updated.is_admin,
+            isBeta=updated.is_beta,
+        )
+    except ValidationException as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )

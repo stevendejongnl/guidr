@@ -170,6 +170,24 @@ class User:
         self._preferred_languages = languages.copy()
         self._updated_at = datetime.now(UTC)
 
+    def set_role(self, role: Role) -> None:
+        """Set user role.
+
+        Args:
+            role: New role for the user
+        """
+        self._role = role
+        self._updated_at = datetime.now(UTC)
+
+    def set_beta(self, is_beta: bool) -> None:
+        """Set beta program status.
+
+        Args:
+            is_beta: Whether user should be in the beta program
+        """
+        self._is_beta = is_beta
+        self._updated_at = datetime.now(UTC)
+
     @property
     def refresh_token_hash(self) -> str | None:
         """Get refresh token hash."""
