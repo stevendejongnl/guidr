@@ -13,6 +13,7 @@ class GuideCreate(BaseModel):
     description: str | None = None
     metadata: dict[str, Any] | None = None
     is_public: bool = Field(default=False, alias="isPublic")
+    language: str = "en"
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -35,6 +36,7 @@ class GuideUpdate(BaseModel):
     created_by_user_id: str | None = Field(
         default=None, alias="createdByUserId"
     )
+    language: str | None = None
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -55,6 +57,7 @@ class GuideResponse(BaseModel):
     is_highlighted: bool = Field(
         ..., alias="isHighlighted"
     )
+    language: str = "en"
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 

@@ -18,6 +18,7 @@ import {
   INTEREST_CATEGORIES,
   type InterestCategory,
 } from '@domain/constants/InterestCategories'
+import { LANGUAGES } from '@domain/constants/Languages'
 
 interface ProfileScreenProps {
   onBack: () => void
@@ -35,6 +36,7 @@ export function ProfileScreen({
   // Profile state
   const [name, setName] = useState('')
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['en'])
 
   // Email change state
   const [showEmailForm, setShowEmailForm] = useState(false)
@@ -64,6 +66,7 @@ export function ProfileScreen({
         const profile = await authClient.getProfile(authToken)
         setName(profile.name || '')
         setSelectedInterests(profile.interests || [])
+        setSelectedLanguages(profile.preferredLanguages || ['en'])
       } catch (err) {
         // Silently fail - user can still manually enter their profile
         console.error('Failed to fetch profile:', err)
@@ -81,6 +84,17 @@ export function ProfileScreen({
     )
   }
 
+  const toggleLanguage = (langCode: string) => {
+    setSelectedLanguages(prev =>
+      prev.includes(langCode)
+        ? prev.filter(code => code !== langCode)
+        : [...prev, langCode],
+    )
+  }
+
+  // Common languages shown as checkboxes (subset for UX)
+  const COMMON_LANGUAGES = ['en', 'nl', 'de', 'fr', 'es', 'it', 'pt', 'ja', 'ko', 'zh']
+
   const handleUpdateProfile = async () => {
     setError('')
     setSuccess('')
@@ -97,6 +111,7 @@ export function ProfileScreen({
         name.trim() || null,
         selectedInterests,
         authToken,
+        selectedLanguages,
       )
 
       setSuccess('Profile updated successfully')
@@ -313,6 +328,31 @@ export function ProfileScreen({
                     ) : null}
                   </View>
                   <Text style={styles.interestLabel}>{category.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.label}>Preferred Languages</Text>
+            <View style={styles.interestsContainer}>
+              {COMMON_LANGUAGES.map(langCode => (
+                <TouchableOpacity
+                  key={langCode}
+                  style={styles.interestItem}
+                  onPress={() => toggleLanguage(langCode)}
+                  testID={`language-${langCode}`}>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      selectedLanguages.includes(langCode) &&
+                        styles.checkboxChecked,
+                    ]}>
+                    {selectedLanguages.includes(langCode) ? (
+                      <Text style={styles.checkmark}>✓</Text>
+                    ) : null}
+                  </View>
+                  <Text style={styles.interestLabel}>
+                    {LANGUAGES[langCode] ?? langCode} ({langCode})
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>

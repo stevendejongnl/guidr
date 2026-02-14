@@ -23,7 +23,8 @@ export class GuideMapper {
       dto.createdByUserId,
       dto.isPublic,
       dto.isHighlighted,
-      dto.metadata ?? undefined
+      dto.metadata ?? undefined,
+      dto.language ?? 'en'
     )
 
     // Reconstruct stepIds array
@@ -51,6 +52,7 @@ export class GuideMapper {
       createdByUserId: guide.createdByUserId,
       isPublic: guide.isPublic,
       isHighlighted: guide.isHighlighted,
+      language: guide.language,
     }
   }
 
@@ -62,7 +64,8 @@ export class GuideMapper {
     title: string,
     description?: string,
     isPublic: boolean = false,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
+    language: string = 'en'
   ): GuideCreateRequest {
     return {
       guideType,
@@ -70,6 +73,7 @@ export class GuideMapper {
       description: description ?? null,
       metadata: metadata ?? null,
       isPublic,
+      language,
     }
   }
 
@@ -84,6 +88,7 @@ export class GuideMapper {
       metadata: guide.metadata ?? null,
       isPublic: guide.isPublic,
       isHighlighted: guide.isHighlighted,
+      language: guide.language,
     }
   }
 }

@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from ..value_objects import EntityId, GuideTitle, GuideType
+from ..value_objects import DEFAULT_LANGUAGE, EntityId, GuideTitle, GuideType, Language
 from ..value_objects.guide_type import validate_metadata
 
 
@@ -21,6 +21,7 @@ class Guide:
         created_by_user_id: EntityId | None = None,
         is_public: bool = False,
         is_highlighted: bool = False,
+        language: Language = DEFAULT_LANGUAGE,
         created_at: datetime | None = None,
         updated_at: datetime | None = None,
     ):
@@ -36,6 +37,7 @@ class Guide:
             created_by_user_id: Optional ID of user who created the guide
             is_public: Whether the guide is publicly visible
             is_highlighted: Whether the guide is highlighted
+            language: Content language (ISO 639-1, default English)
             created_at: Optional creation timestamp
             updated_at: Optional update timestamp
 
@@ -53,6 +55,7 @@ class Guide:
         self._created_by_user_id = created_by_user_id
         self._is_public = is_public
         self._is_highlighted = is_highlighted
+        self._language = language
         self._created_at = created_at or datetime.now(UTC)
         self._updated_at = updated_at or datetime.now(UTC)
 
@@ -115,6 +118,16 @@ class Guide:
     def is_highlighted(self) -> bool:
         """Check if guide is highlighted for homepage."""
         return self._is_highlighted
+
+    @property
+    def language(self) -> Language:
+        """Get guide content language."""
+        return self._language
+
+    def update_language(self, new_language: Language) -> None:
+        """Update guide content language."""
+        self._language = new_language
+        self._updated_at = datetime.now(UTC)
 
     def update_title(self, new_title: GuideTitle) -> None:
         """Update guide title."""

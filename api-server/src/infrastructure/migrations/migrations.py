@@ -64,8 +64,38 @@ async def migrate_guides_category_to_type(
     logger.info(f"Migration complete. {migrated} guide(s) updated.")
 
 
+async def migrate_guides_add_language(
+    db: AsyncIOMotorDatabase,
+) -> None:
+    """Set language='en' on all guides that don't have it yet."""
+    guides_collection = db["guides"]
+    result = await guides_collection.update_many(
+        {"language": {"$exists": False}},
+        {"$set": {"language": "en"}},
+    )
+    logger.info(
+        f"Set language='en' on {result.modified_count} guide(s)."
+    )
+
+
+async def migrate_users_add_preferred_languages(
+    db: AsyncIOMotorDatabase,
+) -> None:
+    """Set preferredLanguages=['en'] on all users that don't have it."""
+    users_collection = db["users"]
+    result = await users_collection.update_many(
+        {"preferredLanguages": {"$exists": False}},
+        {"$set": {"preferredLanguages": ["en"]}},
+    )
+    logger.info(
+        f"Set preferredLanguages on {result.modified_count} user(s)."
+    )
+
+
 # List of all migrations in order
 # Each tuple is (migration_id, migration_function)
 MIGRATIONS: list[tuple[str, MigrationFunc]] = [
     ("001_migrate_guides_category_to_type", migrate_guides_category_to_type),
+    ("002_migrate_guides_add_language", migrate_guides_add_language),
+    ("003_migrate_users_add_preferred_languages", migrate_users_add_preferred_languages),
 ]

@@ -7,6 +7,7 @@ import pytest
 
 from src.domain.entities import Guide
 from src.domain.value_objects import EntityId, GuideTitle, GuideType
+from src.domain.value_objects.language import DEFAULT_LANGUAGE, Language
 
 
 class TestGuide:
@@ -241,4 +242,49 @@ class TestGuide:
 
         original = guide.updated_at
         guide.reassign_user(EntityId(str(uuid4())))
+        assert guide.updated_at > original
+
+    def test_default_language_is_english(self) -> None:
+        """Test that guide defaults to English language."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("My Guide"),
+        )
+
+        assert guide.language == DEFAULT_LANGUAGE
+        assert guide.language.value == "en"
+
+    def test_create_guide_with_language(self) -> None:
+        """Test creating a guide with a specific language."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("Mijn Gids"),
+            language=Language("nl"),
+        )
+
+        assert guide.language.value == "nl"
+
+    def test_update_language(self) -> None:
+        """Test updating guide language."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("My Guide"),
+        )
+
+        guide.update_language(Language("fr"))
+        assert guide.language.value == "fr"
+
+    def test_update_language_updates_timestamp(self) -> None:
+        """Test that language update updates timestamp."""
+        guide = Guide(
+            id=EntityId(str(uuid4())),
+            guide_type=GuideType.GENERAL,
+            title=GuideTitle("My Guide"),
+        )
+
+        original = guide.updated_at
+        guide.update_language(Language("de"))
         assert guide.updated_at > original

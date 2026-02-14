@@ -19,6 +19,7 @@ from src.domain.value_objects import (
     EntityId,
     GuideTitle,
     GuideType,
+    Language,
     StepDuration,
 )
 from src.domain.value_objects.guide_type import validate_metadata
@@ -69,6 +70,7 @@ class CreateGuideWithSteps:
             metadata=dto.metadata,
             created_by_user_id=created_by,
             is_public=dto.is_public,
+            language=Language(dto.language),
         )
 
         await self._guide_repository.save(guide)

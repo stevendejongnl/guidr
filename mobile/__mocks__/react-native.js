@@ -9,6 +9,7 @@ module.exports = {
   SafeAreaView: 'SafeAreaView',
   ScrollView: 'ScrollView',
   Switch: 'Switch',
+  FlatList: 'FlatList',
   Modal: 'Modal',
   Pressable: 'Pressable',
   Alert: {

@@ -43,7 +43,8 @@ Rules:
 - Generate 3-10 steps with clear, actionable titles
 - Include realistic durations in minutes where applicable
 - Metadata must conform to the schema for the chosen type
-- All metadata item fields must be strings"""
+- All metadata item fields must be strings
+- If a language is specified, generate ALL content in that language"""
 
 
 class OpenAILLMService(LLMService):
@@ -65,6 +66,7 @@ class OpenAILLMService(LLMService):
         self,
         prompt: str,
         guide_type: str | None = None,
+        language: str = "en",
     ) -> GeneratedGuideDTO:
         """Generate a guide using OpenAI."""
         if not self._api_key:
@@ -77,6 +79,10 @@ class OpenAILLMService(LLMService):
         if guide_type:
             user_message = (
                 f"[Guide type: {guide_type}] {prompt}"
+            )
+        if language != "en":
+            user_message = (
+                f"[Language: {language}] {user_message}"
             )
 
         try:

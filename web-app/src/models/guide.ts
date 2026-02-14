@@ -8,6 +8,7 @@ export interface Guide {
   createdByUserId: string | null
   isPublic: boolean
   isHighlighted: boolean
+  language?: string
   createdAt: string
   updatedAt: string
 }
@@ -17,6 +18,7 @@ export interface CreateGuideRequest {
   title: string
   description?: string
   isPublic?: boolean
+  language?: string
 }
 
 export interface UpdateGuideRequest {
@@ -26,4 +28,5 @@ export interface UpdateGuideRequest {
   isHighlighted?: boolean
   guideType?: string
   createdByUserId?: string
+  language?: string
 }

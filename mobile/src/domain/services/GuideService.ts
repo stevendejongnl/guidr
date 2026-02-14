@@ -16,7 +16,8 @@ export class GuideService {
     authToken: string,
     createdByUserId?: string,
     isPublic: boolean = false,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
+    language: string = 'en'
   ): Promise<Guide> {
     const id = uuid.v4() as string
     const guide = new Guide(
@@ -27,7 +28,8 @@ export class GuideService {
       createdByUserId,
       isPublic,
       false,
-      metadata
+      metadata,
+      language
     )
     await this.guideRepository.save(guide, authToken)
     return guide

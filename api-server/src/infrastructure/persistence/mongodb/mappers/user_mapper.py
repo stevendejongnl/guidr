@@ -27,6 +27,7 @@ class UserMapper:
             "updatedAt": user.updated_at,
             "name": user.name,
             "interests": user.interests,
+            "preferredLanguages": user.preferred_languages,
             "role": user.role.value,  # New: Store role string
             "isAdmin": user.is_admin,  # Keep: Backward compatibility
             "isBeta": user.is_beta,
@@ -60,6 +61,9 @@ class UserMapper:
             updated_at=document["updatedAt"],
             name=document.get("name"),
             interests=document.get("interests", []),
+            preferred_languages=document.get(
+                "preferredLanguages", ["en"]
+            ),
             role=role,
             is_beta=document.get("isBeta", False),
             refresh_token_hash=document.get("refreshTokenHash"),

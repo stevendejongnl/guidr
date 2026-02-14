@@ -27,13 +27,16 @@ class MockLLMService(LLMService):
             ],
         )
         self.last_prompt: str | None = None
+        self.last_language: str | None = None
 
     async def generate_guide(
         self,
         prompt: str,
         guide_type: str | None = None,
+        language: str = "en",
     ) -> GeneratedGuideDTO:
         self.last_prompt = prompt
+        self.last_language = language
         return self._result
 
 
@@ -131,3 +134,36 @@ class TestGenerateGuideFromUrl:
         )
         with pytest.raises(ValueError):
             await use_case.execute(dto)
+
+    @pytest.mark.asyncio
+    async def test_passes_language_to_llm(self):
+        mock_llm = MockLLMService()
+        mock_extractor = MockUrlExtractor()
+        use_case = GenerateGuideFromUrl(
+            llm_service=mock_llm,
+            url_content_extractor=mock_extractor,
+        )
+
+        dto = GenerateGuideFromUrlDTO(
+            url="https://example.com/recept",
+            language="nl",
+        )
+        await use_case.execute(dto)
+
+        assert mock_llm.last_language == "nl"
+
+    @pytest.mark.asyncio
+    async def test_defaults_language_to_english(self):
+        mock_llm = MockLLMService()
+        mock_extractor = MockUrlExtractor()
+        use_case = GenerateGuideFromUrl(
+            llm_service=mock_llm,
+            url_content_extractor=mock_extractor,
+        )
+
+        dto = GenerateGuideFromUrlDTO(
+            url="https://example.com/recipe",
+        )
+        await use_case.execute(dto)
+
+        assert mock_llm.last_language == "en"

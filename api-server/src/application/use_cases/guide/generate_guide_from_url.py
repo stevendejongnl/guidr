@@ -51,4 +51,5 @@ class GenerateGuideFromUrl:
         return await self._llm_service.generate_guide(
             prompt=prompt,
             guide_type=dto.guide_type,
+            language=dto.language,
         )

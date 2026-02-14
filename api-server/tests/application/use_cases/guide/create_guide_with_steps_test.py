@@ -232,3 +232,45 @@ class TestCreateGuideWithSteps:
 
         assert guide_dto.title == "Empty Guide"
         assert len(step_dtos) == 0
+
+    @pytest.mark.asyncio
+    async def test_creates_guide_with_language(
+        self,
+        guide_repo: MockGuideRepository,
+        step_repo: MockStepRepository,
+        user: User,
+    ):
+        use_case = CreateGuideWithSteps(
+            guide_repository=guide_repo,
+            step_repository=step_repo,
+        )
+
+        dto = CreateGuideWithStepsDTO(
+            guide_type="cooking",
+            title="Brood Bakken",
+            language="nl",
+        )
+
+        guide_dto, _ = await use_case.execute(dto, user)
+
+        assert guide_dto.language == "nl"
+
+    @pytest.mark.asyncio
+    async def test_defaults_language_to_english(
+        self,
+        guide_repo: MockGuideRepository,
+        step_repo: MockStepRepository,
+    ):
+        use_case = CreateGuideWithSteps(
+            guide_repository=guide_repo,
+            step_repository=step_repo,
+        )
+
+        dto = CreateGuideWithStepsDTO(
+            guide_type="general",
+            title="My Guide",
+        )
+
+        guide_dto, _ = await use_case.execute(dto)
+
+        assert guide_dto.language == "en"

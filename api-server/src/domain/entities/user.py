@@ -18,6 +18,7 @@ class User:
         updated_at: datetime | None = None,
         name: str | None = None,
         interests: list[str] | None = None,
+        preferred_languages: list[str] | None = None,
         role: Role | None = None,
         is_admin: bool = False,
         is_beta: bool = False,
@@ -33,6 +34,7 @@ class User:
             updated_at: Optional update timestamp (defaults to now)
             name: Optional display name
             interests: Optional list of interest categories (defaults to empty list)
+            preferred_languages: Optional list of preferred language codes (defaults to ["en"])
             role: User role (defaults to USER if not provided). Preferred over is_admin.
             is_admin: DEPRECATED - use role instead. Kept for backward compatibility.
             refresh_token_hash: Optional hashed refresh token for token rotation
@@ -50,6 +52,9 @@ class User:
         self._updated_at = updated_at or datetime.now(UTC)
         self._name = name
         self._interests = interests if interests is not None else []
+        self._preferred_languages = (
+            preferred_languages if preferred_languages is not None else ["en"]
+        )
 
         # Role migration logic: prefer role, fall back to is_admin
         if role is None:
@@ -142,6 +147,11 @@ class User:
         self._email = new_email
         self._updated_at = datetime.now(UTC)
 
+    @property
+    def preferred_languages(self) -> list[str]:
+        """Get preferred languages (returns copy)."""
+        return self._preferred_languages.copy()
+
     def set_interests(self, interests: list[str]) -> None:
         """Set user interests (replaces entire list).
 
@@ -149,6 +159,15 @@ class User:
             interests: List of interest category IDs
         """
         self._interests = interests.copy()
+        self._updated_at = datetime.now(UTC)
+
+    def set_preferred_languages(self, languages: list[str]) -> None:
+        """Set preferred languages (replaces entire list).
+
+        Args:
+            languages: List of ISO 639-1 language codes
+        """
+        self._preferred_languages = languages.copy()
         self._updated_at = datetime.now(UTC)
 
     @property

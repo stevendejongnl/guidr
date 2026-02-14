@@ -26,14 +26,17 @@ class MockLLMService(LLMService):
         )
         self.last_prompt: str | None = None
         self.last_guide_type: str | None = None
+        self.last_language: str | None = None
 
     async def generate_guide(
         self,
         prompt: str,
         guide_type: str | None = None,
+        language: str = "en",
     ) -> GeneratedGuideDTO:
         self.last_prompt = prompt
         self.last_guide_type = guide_type
+        self.last_language = language
         return self._result
 
 
@@ -86,3 +89,25 @@ class TestGenerateGuide:
         result = await use_case.execute(dto)
 
         assert result.title == "Test Guide"
+
+    @pytest.mark.asyncio
+    async def test_passes_language_to_llm(self):
+        mock_llm = MockLLMService()
+        use_case = GenerateGuide(llm_service=mock_llm)
+
+        dto = GenerateGuideDTO(
+            prompt="Dutch bread guide", language="nl"
+        )
+        await use_case.execute(dto)
+
+        assert mock_llm.last_language == "nl"
+
+    @pytest.mark.asyncio
+    async def test_defaults_language_to_english(self):
+        mock_llm = MockLLMService()
+        use_case = GenerateGuide(llm_service=mock_llm)
+
+        dto = GenerateGuideDTO(prompt="bread guide")
+        await use_case.execute(dto)
+
+        assert mock_llm.last_language == "en"

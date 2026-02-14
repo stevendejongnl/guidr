@@ -85,6 +85,7 @@ async def generate_guide(
         dto = GenerateGuideDTO(
             prompt=request.prompt,
             guide_type=request.guide_type,
+            language=request.language,
         )
         result = await use_case.execute(dto)
         return GeneratedGuideResponse(
@@ -141,6 +142,7 @@ async def generate_guide_from_url(
         dto = GenerateGuideFromUrlDTO(
             url=request.url,
             guide_type=request.guide_type,
+            language=request.language,
         )
         result = await use_case.execute(dto)
         return GeneratedGuideResponse(
@@ -201,6 +203,7 @@ async def create_guide_with_steps(
             description=request.description,
             metadata=request.metadata,
             is_public=request.is_public,
+            language=request.language,
             steps=[
                 StepInput(
                     order=s.order,
@@ -226,6 +229,7 @@ async def create_guide_with_steps(
                 createdByUserId=guide_dto.created_by_user_id,
                 isPublic=guide_dto.is_public,
                 isHighlighted=guide_dto.is_highlighted,
+                language=guide_dto.language,
                 createdAt=guide_dto.created_at,
                 updatedAt=guide_dto.updated_at,
             ),

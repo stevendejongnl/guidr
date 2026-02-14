@@ -35,4 +35,5 @@ class GenerateGuide:
         return await self._llm_service.generate_guide(
             prompt=dto.prompt,
             guide_type=dto.guide_type,
+            language=dto.language,
         )

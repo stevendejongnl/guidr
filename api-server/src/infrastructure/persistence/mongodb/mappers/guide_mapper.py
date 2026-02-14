@@ -3,7 +3,7 @@
 from typing import Any
 
 from src.domain.entities import Guide
-from src.domain.value_objects import EntityId, GuideTitle, GuideType
+from src.domain.value_objects import EntityId, GuideTitle, GuideType, Language
 
 
 class GuideMapper:
@@ -29,6 +29,7 @@ class GuideMapper:
             ),
             "isPublic": guide.is_public,
             "isHighlighted": guide.is_highlighted,
+            "language": guide.language.value,
             "createdAt": guide.created_at,
             "updatedAt": guide.updated_at,
         }
@@ -73,6 +74,9 @@ class GuideMapper:
             is_public=document.get("isPublic", False),
             is_highlighted=document.get(
                 "isHighlighted", False
+            ),
+            language=Language(
+                document.get("language", "en")
             ),
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],

@@ -13,6 +13,7 @@ class GuideCreateDTO:
     description: str | None = None
     metadata: dict[str, Any] | None = None
     is_public: bool = False
+    language: str = "en"
 
 
 @dataclass
@@ -26,6 +27,7 @@ class GuideUpdateDTO:
     is_highlighted: bool | None = None
     guide_type: str | None = None
     created_by_user_id: str | None = None
+    language: str | None = None
 
 
 @dataclass
@@ -43,3 +45,4 @@ class GuideResponseDTO:
     is_highlighted: bool
     created_at: str  # ISO format
     updated_at: str  # ISO format
+    language: str = "en"

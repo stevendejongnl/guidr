@@ -79,6 +79,7 @@ def _guide_response_from_dto(result) -> GuideResponse:  # type: ignore
         createdByUserId=result.created_by_user_id,
         isPublic=result.is_public,
         isHighlighted=result.is_highlighted,
+        language=result.language,
         createdAt=result.created_at,
         updatedAt=result.updated_at,
     )
@@ -103,6 +104,7 @@ async def create_guide(
             description=guide.description,
             metadata=guide.metadata,
             is_public=guide.is_public,
+            language=guide.language,
         )
         result = await use_case.execute(dto, current_user)  # type: ignore[call-arg]
         return _guide_response_from_dto(result)
@@ -237,6 +239,7 @@ async def update_guide(
             is_highlighted=guide.is_highlighted,
             guide_type=guide.guide_type,
             created_by_user_id=guide.created_by_user_id,
+            language=guide.language,
         )
         result = await use_case.execute(guide_id, dto, current_user)
         if result is None:

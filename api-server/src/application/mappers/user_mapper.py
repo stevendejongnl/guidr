@@ -24,6 +24,7 @@ class UserMapper:
             updated_at=user.updated_at.isoformat(),
             name=user.name,
             interests=user.interests if user.interests else None,
+            preferred_languages=user.preferred_languages,
             role=user.role.value,  # New: Include role
             is_admin=user.is_admin,  # Keep: Backward compatibility
             is_beta=user.is_beta,

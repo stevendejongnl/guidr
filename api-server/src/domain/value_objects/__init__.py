@@ -4,6 +4,7 @@ from .email import Email
 from .entity_id import EntityId
 from .guide_title import GuideTitle
 from .guide_type import GuideType
+from .language import DEFAULT_LANGUAGE, Language
 from .password import Password
 from .role import Role, RoleType
 from .session_status import SessionStatus
@@ -16,6 +17,8 @@ __all__ = [
     "Password",
     "GuideTitle",
     "GuideType",
+    "Language",
+    "DEFAULT_LANGUAGE",
     "StepDuration",
     "SessionStatus",
     "StepTimerStatus",

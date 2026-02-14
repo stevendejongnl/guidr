@@ -3,11 +3,13 @@ import { apiClient } from './api-client.js'
 export interface GenerateGuideRequest {
   prompt: string
   guideType?: string
+  language?: string
 }
 
 export interface GenerateGuideFromUrlRequest {
   url: string
   guideType?: string
+  language?: string
 }
 
 export interface GeneratedStep {
@@ -38,6 +40,7 @@ export interface CreateGuideWithStepsRequest {
   description?: string | null
   metadata?: Record<string, unknown> | null
   isPublic: boolean
+  language?: string
   steps: StepInput[]
 }
 

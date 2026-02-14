@@ -6,7 +6,7 @@ from src.application.dtos import GuideCreateDTO, GuideResponseDTO
 from src.application.mappers import GuideMapper
 from src.domain.entities import Guide
 from src.domain.repositories import IGuideRepository
-from src.domain.value_objects import EntityId, GuideTitle, GuideType
+from src.domain.value_objects import EntityId, GuideTitle, GuideType, Language
 
 
 class CreateGuide:
@@ -45,6 +45,7 @@ class CreateGuide:
             description=dto.description,
             metadata=dto.metadata,
             created_by_user_id=created_by_user_id,
+            language=Language(dto.language),
         )
 
         await self._guide_repository.save(guide)

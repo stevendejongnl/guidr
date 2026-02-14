@@ -16,6 +16,7 @@ export class NewGuidePage extends LitElement {
   @state() description = ''
   @state() guideType = 'general'
   @state() isPublic = false
+  @state() language = 'en'
   @state() error: string | null = null
 
   static styles = css`
@@ -219,6 +220,27 @@ export class NewGuidePage extends LitElement {
           </div>
 
           <div class="form-group">
+            <label class="form-label">Language</label>
+            <select
+              class="form-select"
+              .value=${this.language}
+              @change=${(e: Event) => { this.language = (e.target as HTMLSelectElement).value }}
+              ?disabled=${saving}
+            >
+              <option value="en" ?selected=${this.language === 'en'}>English</option>
+              <option value="nl" ?selected=${this.language === 'nl'}>Nederlands</option>
+              <option value="de" ?selected=${this.language === 'de'}>Deutsch</option>
+              <option value="fr" ?selected=${this.language === 'fr'}>Français</option>
+              <option value="es" ?selected=${this.language === 'es'}>Español</option>
+              <option value="it" ?selected=${this.language === 'it'}>Italiano</option>
+              <option value="pt" ?selected=${this.language === 'pt'}>Português</option>
+              <option value="ja" ?selected=${this.language === 'ja'}>日本語</option>
+              <option value="ko" ?selected=${this.language === 'ko'}>한국어</option>
+              <option value="zh" ?selected=${this.language === 'zh'}>中文</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label class="checkbox-label">
               <input
                 type="checkbox"
@@ -255,6 +277,7 @@ export class NewGuidePage extends LitElement {
         title: this.title.trim(),
         description: this.description.trim() || undefined,
         isPublic: this.isPublic,
+        language: this.language,
       })
 
       window.history.pushState({}, '', `/guides/${guide.id}`)

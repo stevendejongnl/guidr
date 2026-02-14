@@ -10,6 +10,7 @@ export class Guide {
   private _stepIds: string[]
   private _isPublic: boolean
   private _isHighlighted: boolean
+  private _language: string
   readonly createdAt: Date
   private _updatedAt: Date
 
@@ -21,7 +22,8 @@ export class Guide {
     createdByUserId?: string,
     isPublic: boolean = false,
     isHighlighted: boolean = false,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
+    language: string = 'en'
   ) {
     if (!id || id.trim() === '') {
       throw new Error('Guide id cannot be empty')
@@ -42,6 +44,7 @@ export class Guide {
     this._stepIds = []
     this._isPublic = isPublic
     this._isHighlighted = isHighlighted
+    this._language = language
     this.createdAt = new Date()
     this._updatedAt = new Date()
   }
@@ -76,6 +79,15 @@ export class Guide {
 
   get isHighlighted(): boolean {
     return this._isHighlighted
+  }
+
+  get language(): string {
+    return this._language
+  }
+
+  updateLanguage(newLanguage: string): void {
+    this._language = newLanguage
+    this._updatedAt = new Date()
   }
 
   isOwnedBy(userId: string): boolean {

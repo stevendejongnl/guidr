@@ -209,6 +209,7 @@ describe('ProfileScreen', () => {
           'John Doe',
           ['baking'],
           'mock-token',
+          ['en'],
         )
       })
 

@@ -362,6 +362,7 @@ export class AuthClient {
         updatedAt: data.updatedAt,
         name: data.name,
         interests: data.interests,
+        preferredLanguages: data.preferredLanguages,
         isAdmin: typeof data.isAdmin === 'boolean' ? data.isAdmin : false,
       }
     } catch (error) {
@@ -376,6 +377,7 @@ export class AuthClient {
     name: string | null,
     interests: string[] | null,
     authToken: string,
+    preferredLanguages?: string[] | null,
   ): Promise<UserDto> {
     if (!authToken || authToken.trim() === '') {
       throw new Error('Auth token cannot be empty')
@@ -391,6 +393,7 @@ export class AuthClient {
         body: JSON.stringify({
           name,
           interests,
+          preferredLanguages: preferredLanguages ?? undefined,
         }),
       })
 
@@ -422,6 +425,7 @@ export class AuthClient {
         updatedAt: data.updatedAt,
         name: data.name,
         interests: data.interests,
+        preferredLanguages: data.preferredLanguages,
       }
     } catch (error) {
       if (error instanceof Error) {

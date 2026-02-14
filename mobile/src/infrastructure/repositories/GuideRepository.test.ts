@@ -499,6 +499,7 @@ describe('GuideRepository', () => {
           description: null,
           metadata: null,
           isPublic: false,
+          language: 'en',
         }),
       })
     })
@@ -544,6 +545,7 @@ describe('GuideRepository', () => {
             metadata: null,
             isPublic: false,
             isHighlighted: false,
+            language: 'en',
           }),
         }
       )

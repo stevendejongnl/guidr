@@ -190,7 +190,8 @@ export class GuideRepository implements IGuideRepository {
           guide.title,
           guide.description,
           guide.isPublic,
-          guide.metadata
+          guide.metadata,
+          guide.language
         )
 
         const response = await fetch(`${this.apiBaseUrl}/guides`, {

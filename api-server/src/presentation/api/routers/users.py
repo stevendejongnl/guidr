@@ -135,6 +135,7 @@ async def register(
             updatedAt=result.updated_at,
             name=result.name,
             interests=result.interests,
+            preferredLanguages=result.preferred_languages,
             isAdmin=result.is_admin,
             isBeta=result.is_beta,
         )
@@ -202,6 +203,7 @@ async def login(
             updatedAt=result.updated_at,
             name=result.name,
             interests=result.interests,
+            preferredLanguages=result.preferred_languages,
             isAdmin=result.is_admin,
             isBeta=result.is_beta,
         )
@@ -284,6 +286,7 @@ async def refresh(
         updatedAt=user.updated_at.isoformat(),
         name=user.name,
         interests=user.interests,
+        preferredLanguages=user.preferred_languages,
         isAdmin=user.is_admin,
         isBeta=user.is_beta,
     )
@@ -391,6 +394,7 @@ async def change_email(
             updatedAt=current_user.updated_at.isoformat(),
             name=current_user.name,
             interests=current_user.interests,
+            preferredLanguages=current_user.preferred_languages,
             isAdmin=current_user.is_admin,
             isBeta=current_user.is_beta,
         )
@@ -469,6 +473,7 @@ async def update_profile(
             user_id=current_user.id.value,
             name=request.name,
             interests=request.interests,
+            preferred_languages=request.preferred_languages,
         )
         await use_case.execute(dto)
 
@@ -480,6 +485,7 @@ async def update_profile(
             updatedAt=current_user.updated_at.isoformat(),
             name=current_user.name,
             interests=current_user.interests,
+            preferredLanguages=current_user.preferred_languages,
             isAdmin=current_user.is_admin,
             isBeta=current_user.is_beta,
         )
@@ -546,6 +552,7 @@ async def list_users(
             updatedAt=u.updated_at.isoformat(),
             name=u.name,
             interests=u.interests,
+            preferredLanguages=u.preferred_languages,
             isAdmin=u.is_admin,
             isBeta=u.is_beta,
         )

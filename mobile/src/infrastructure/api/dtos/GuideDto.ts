@@ -14,6 +14,7 @@ export interface GuideDto {
   createdByUserId: string | undefined // Optional for backward compatibility
   isPublic: boolean
   isHighlighted: boolean
+  language?: string
 }
 
 /**
@@ -25,6 +26,7 @@ export interface GuideCreateRequest {
   description?: string | null
   metadata?: Record<string, unknown> | null
   isPublic?: boolean // Default: false
+  language?: string
 }
 
 /**
@@ -37,4 +39,5 @@ export interface GuideUpdateRequest {
   metadata?: Record<string, unknown> | null
   isPublic?: boolean
   isHighlighted?: boolean
+  language?: string
 }

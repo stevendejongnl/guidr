@@ -27,6 +27,7 @@ class GuideMapper:
             ),
             is_public=guide.is_public,
             is_highlighted=guide.is_highlighted,
+            language=guide.language.value,
             created_at=guide.created_at.isoformat(),
             updated_at=guide.updated_at.isoformat(),
         )

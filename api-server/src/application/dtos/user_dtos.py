@@ -29,6 +29,7 @@ class UserResponseDTO:
     updated_at: str  # ISO format
     name: str | None = None
     interests: list[str] | None = None
+    preferred_languages: list[str] | None = None
     role: str | None = None  # "user" or "admin"
     is_admin: bool = False  # Backward compatibility
     is_beta: bool = False
@@ -59,6 +60,7 @@ class UpdateProfileDTO:
     user_id: str
     name: str | None = None
     interests: list[str] | None = None
+    preferred_languages: list[str] | None = None
 
 
 @dataclass

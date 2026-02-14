@@ -32,6 +32,8 @@ import { colors, spacing, typography } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { formStyles } from '@guidr/shared/styles/react-native'
 import { GUIDE_TYPES, GUIDE_TYPE_LABELS, type GuideType } from '../../domain/constants/GuideTypes'
+import { DEFAULT_LANGUAGE } from '../../domain/constants/Languages'
+import { LanguageSelector } from '../components/LanguageSelector'
 
 interface GuideFormScreenProps {
   mode: 'create' | 'edit'
@@ -74,6 +76,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   const [targetMuscles, setTargetMuscles] = useState<TargetMuscle[]>([])
   const [equipment, setEquipment] = useState<Equipment[]>([])
   const [notes, setNotes] = useState<Note[]>([])
+  const [selectedLanguage, setSelectedLanguage] = useState(DEFAULT_LANGUAGE)
 
   // UI states
   const [loading, setLoading] = useState(false)
@@ -149,6 +152,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           setSelectedGuideType(guide.guideType as GuideType)
           setIsPublic(guide.isPublic)
           setIsHighlighted(guide.isHighlighted)
+          setSelectedLanguage(guide.language || DEFAULT_LANGUAGE)
           if (guide.metadata?.ingredients && Array.isArray(guide.metadata.ingredients)) {
             setIngredients(guide.metadata.ingredients as Ingredient[])
           }
@@ -345,7 +349,8 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           authToken,
           undefined,
           isPublic,
-          metadata
+          metadata,
+          selectedLanguage
         )
         onSave(guide.id)
       } else if (guideId) {
@@ -494,6 +499,16 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
                 </Text>
               </View>
             )}
+          </View>
+
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Language</Text>
+            <LanguageSelector
+              selectedLanguage={selectedLanguage}
+              onSelectLanguage={setSelectedLanguage}
+              disabled={saving}
+              testID="language-selector"
+            />
           </View>
 
           {selectedGuideType === GUIDE_TYPES.COOKING && (

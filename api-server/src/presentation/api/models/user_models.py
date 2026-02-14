@@ -30,6 +30,9 @@ class UserResponse(BaseModel):
     updated_at: str = Field(..., alias="updatedAt")
     name: str | None = None
     interests: list[str] | None = None
+    preferred_languages: list[str] | None = Field(
+        default=None, alias="preferredLanguages"
+    )
     is_admin: bool = Field(default=False, alias="isAdmin")
     is_beta: bool = Field(default=False, alias="isBeta")
 
@@ -85,6 +88,9 @@ class UpdateProfileRequest(BaseModel):
 
     name: str | None = None
     interests: list[str] | None = None
+    preferred_languages: list[str] | None = Field(
+        default=None, alias="preferredLanguages"
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 

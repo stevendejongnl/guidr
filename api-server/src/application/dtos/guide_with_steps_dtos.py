@@ -23,4 +23,5 @@ class CreateGuideWithStepsDTO:
     description: str | None = None
     metadata: dict[str, Any] | None = None
     is_public: bool = False
+    language: str = "en"
     steps: list[StepInput] = field(default_factory=list)

@@ -43,5 +43,9 @@ class UpdateProfile:
         if dto.interests is not None:
             user.set_interests(dto.interests)
 
+        # Update preferred languages if provided
+        if dto.preferred_languages is not None:
+            user.set_preferred_languages(dto.preferred_languages)
+
         # Persist changes (emits UserProfileUpdated event)
         await self._user_repository.save(user)

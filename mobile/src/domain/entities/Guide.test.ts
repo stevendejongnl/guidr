@@ -236,6 +236,45 @@ describe('Guide', () => {
     })
   })
 
+  describe('language', () => {
+    it('should default to English', () => {
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
+      expect(guide.language).toBe('en')
+    })
+
+    it('should accept a custom language', () => {
+      const guide = new Guide(
+        'guide-1',
+        'cooking',
+        'Koekjes',
+        undefined,
+        undefined,
+        false,
+        false,
+        undefined,
+        'nl'
+      )
+      expect(guide.language).toBe('nl')
+    })
+
+    it('should update language', () => {
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
+      guide.updateLanguage('fr')
+
+      expect(guide.language).toBe('fr')
+    })
+
+    it('should update timestamp when changing language', () => {
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
+      const oldUpdatedAt = guide.updatedAt
+
+      setTimeout(() => {
+        guide.updateLanguage('de')
+        expect(guide.updatedAt.getTime()).toBeGreaterThan(oldUpdatedAt.getTime())
+      }, 10)
+    })
+  })
+
   describe('ownership', () => {
     it('should be created without owner by default', () => {
       const guide = new Guide('guide-1', 'cooking', 'Cookies')

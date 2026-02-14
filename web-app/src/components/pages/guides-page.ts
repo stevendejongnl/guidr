@@ -249,6 +249,9 @@ export class GuidesPage extends LitElement {
             class="type-badge"
             style="background:${typeColor.bg}; color:${typeColor.text};"
           >${guide.guideType}</span>
+          ${guide.language && guide.language !== 'en'
+            ? html`<span class="type-badge" style="background:rgba(156,39,176,0.15); color:#ba68c8;">${guide.language}</span>`
+            : nothing}
         </div>
         <h3>${guide.title}</h3>
         ${guide.description

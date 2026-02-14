@@ -21,6 +21,7 @@ export class GenerateGuidePage extends LitElement {
   @state() prompt = ''
   @state() url = ''
   @state() guideTypeHint = ''
+  @state() language = 'en'
   @state() error: string | null = null
 
   // Review state
@@ -384,6 +385,26 @@ export class GenerateGuidePage extends LitElement {
           </select>
         </div>
 
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <select
+            class="form-select"
+            .value=${this.language}
+            @change=${(e: Event) => { this.language = (e.target as HTMLSelectElement).value }}
+          >
+            <option value="en" ?selected=${this.language === 'en'}>English</option>
+            <option value="nl" ?selected=${this.language === 'nl'}>Nederlands</option>
+            <option value="de" ?selected=${this.language === 'de'}>Deutsch</option>
+            <option value="fr" ?selected=${this.language === 'fr'}>Français</option>
+            <option value="es" ?selected=${this.language === 'es'}>Español</option>
+            <option value="it" ?selected=${this.language === 'it'}>Italiano</option>
+            <option value="pt" ?selected=${this.language === 'pt'}>Português</option>
+            <option value="ja" ?selected=${this.language === 'ja'}>日本語</option>
+            <option value="ko" ?selected=${this.language === 'ko'}>한국어</option>
+            <option value="zh" ?selected=${this.language === 'zh'}>中文</option>
+          </select>
+        </div>
+
         <div class="btn-group">
           <button
             class="btn btn-primary"
@@ -567,11 +588,13 @@ export class GenerateGuidePage extends LitElement {
         result = await generationService.generateFromPrompt({
           prompt: this.prompt,
           guideType: this.guideTypeHint || undefined,
+          language: this.language,
         })
       } else {
         result = await generationService.generateFromUrl({
           url: this.url,
           guideType: this.guideTypeHint || undefined,
+          language: this.language,
         })
       }
 
@@ -598,6 +621,7 @@ export class GenerateGuidePage extends LitElement {
         description: this.description || undefined,
         metadata: this.metadata || undefined,
         isPublic: this.isPublic,
+        language: this.language,
         steps: this.steps.map((s, i) => ({
           order: i + 1,
           title: s.title,
@@ -640,6 +664,7 @@ export class GenerateGuidePage extends LitElement {
     this.prompt = ''
     this.url = ''
     this.guideTypeHint = ''
+    this.language = 'en'
     this.guideTitle = ''
     this.description = ''
     this.guideType = 'general'

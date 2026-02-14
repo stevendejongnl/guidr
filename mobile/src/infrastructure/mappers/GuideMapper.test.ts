@@ -15,6 +15,7 @@ describe('GuideMapper', () => {
     createdByUserId: 'user-123',
     isPublic: true,
     isHighlighted: false,
+    language: 'en',
   }
 
   const mockGuideDtoWithoutOwner: GuideDto = {
@@ -91,6 +92,22 @@ describe('GuideMapper', () => {
 
       expect(guide.stepIds).toEqual([])
       expect(guide.stepCount).toBe(0)
+    })
+
+    it('should map language from DTO', () => {
+      const dtoWithLanguage = { ...mockGuideDto, language: 'nl' }
+
+      const guide = GuideMapper.toDomain(dtoWithLanguage)
+
+      expect(guide.language).toBe('nl')
+    })
+
+    it('should default language to en when missing', () => {
+      const { language: _, ...dtoWithoutLanguage } = mockGuideDto
+
+      const guide = GuideMapper.toDomain(dtoWithoutLanguage as typeof mockGuideDto)
+
+      expect(guide.language).toBe('en')
     })
 
     it('should reset timestamps to current time', () => {
@@ -190,6 +207,32 @@ describe('GuideMapper', () => {
 
       expect(dto.stepIds).toEqual(['step-1', 'step-2'])
     })
+
+    it('should include language in DTO', () => {
+      const guide = new Guide(
+        'guide-1',
+        'cooking',
+        'Title',
+        undefined,
+        undefined,
+        false,
+        false,
+        undefined,
+        'nl'
+      )
+
+      const dto = GuideMapper.toDto(guide)
+
+      expect(dto.language).toBe('nl')
+    })
+
+    it('should default language to en in DTO', () => {
+      const guide = new Guide('guide-1', 'cooking', 'Title')
+
+      const dto = GuideMapper.toDto(guide)
+
+      expect(dto.language).toBe('en')
+    })
   })
 
   describe('toCreateRequest', () => {
@@ -245,6 +288,25 @@ describe('GuideMapper', () => {
 
       expect(request.isPublic).toBe(true)
     })
+
+    it('should include language in create request', () => {
+      const request = GuideMapper.toCreateRequest(
+        'cooking',
+        'New Recipe',
+        undefined,
+        false,
+        undefined,
+        'nl'
+      )
+
+      expect(request.language).toBe('nl')
+    })
+
+    it('should default language to en in create request', () => {
+      const request = GuideMapper.toCreateRequest('cooking', 'New Recipe')
+
+      expect(request.language).toBe('en')
+    })
   })
 
   describe('toUpdateRequest', () => {
@@ -297,6 +359,25 @@ describe('GuideMapper', () => {
       expect(request).toHaveProperty('metadata')
       expect(request).toHaveProperty('isPublic')
       expect(request).toHaveProperty('isHighlighted')
+      expect(request).toHaveProperty('language')
+    })
+
+    it('should include language in update request', () => {
+      const guide = new Guide(
+        'guide-1',
+        'cooking',
+        'Title',
+        undefined,
+        undefined,
+        false,
+        false,
+        undefined,
+        'fr'
+      )
+
+      const request = GuideMapper.toUpdateRequest(guide)
+
+      expect(request.language).toBe('fr')
     })
   })
 })

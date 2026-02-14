@@ -12,6 +12,7 @@ class GenerateGuideRequest(BaseModel):
     guide_type: str | None = Field(
         default=None, alias="guideType"
     )
+    language: str = "en"
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -23,6 +24,7 @@ class GenerateGuideFromUrlRequest(BaseModel):
     guide_type: str | None = Field(
         default=None, alias="guideType"
     )
+    language: str = "en"
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -69,6 +71,7 @@ class CreateGuideWithStepsRequest(BaseModel):
     description: str | None = None
     metadata: dict[str, Any] | None = None
     is_public: bool = Field(default=False, alias="isPublic")
+    language: str = "en"
     steps: list[StepInputModel] = []
 
     model_config = ConfigDict(populate_by_name=True)
@@ -101,6 +104,7 @@ class GuideResponseRef(BaseModel):
     is_highlighted: bool = Field(
         ..., alias="isHighlighted"
     )
+    language: str = "en"
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 

@@ -13,12 +13,14 @@ class LLMService(ABC):
         self,
         prompt: str,
         guide_type: str | None = None,
+        language: str = "en",
     ) -> GeneratedGuideDTO:
         """Generate a guide from a text prompt.
 
         Args:
             prompt: User prompt describing the guide
             guide_type: Optional guide type hint
+            language: ISO 639-1 language code for content generation
 
         Returns:
             Generated guide with steps

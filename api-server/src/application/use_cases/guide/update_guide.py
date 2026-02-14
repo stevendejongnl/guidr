@@ -9,7 +9,7 @@ from src.domain.events import GuideUpdated
 from src.domain.exceptions import EntityNotFoundException
 from src.domain.repositories import IGuideRepository
 from src.domain.services import EventPersistenceService
-from src.domain.value_objects import EntityId, GuideTitle, GuideType
+from src.domain.value_objects import EntityId, GuideTitle, GuideType, Language
 
 
 class UpdateGuide:
@@ -91,6 +91,10 @@ class UpdateGuide:
         if dto.guide_type is not None:
             new_type = GuideType(dto.guide_type)
             guide.update_guide_type(new_type)
+
+        # Handle language change (owner or admin can change)
+        if dto.language is not None:
+            guide.update_language(Language(dto.language))
 
         # Handle user reassignment (admin only - already checked above)
         if dto.created_by_user_id is not None:

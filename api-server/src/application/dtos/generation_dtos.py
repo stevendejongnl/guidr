@@ -10,6 +10,7 @@ class GenerateGuideDTO:
 
     prompt: str
     guide_type: str | None = None
+    language: str = "en"
 
 
 @dataclass
@@ -18,6 +19,7 @@ class GenerateGuideFromUrlDTO:
 
     url: str
     guide_type: str | None = None
+    language: str = "en"
 
 
 @dataclass
