@@ -29,4 +29,5 @@ export interface UpdateGuideRequest {
   guideType?: string
   createdByUserId?: string
   language?: string
+  metadata?: Record<string, unknown> | null
 }

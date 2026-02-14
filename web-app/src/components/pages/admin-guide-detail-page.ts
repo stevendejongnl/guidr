@@ -4,8 +4,26 @@ import { consume } from '@lit/context'
 import { colors } from '@guidr/shared/tokens'
 import { authContext, AuthContextValue } from '../../contexts/auth-context'
 import { guidesService } from '../../services/guides-service.js'
+import { stepsService } from '../../services/steps-service.js'
 import { adminService, UserDto } from '../../services/admin-service.js'
+import { formatDuration } from '../../utils/format-duration.js'
 import type { Guide, UpdateGuideRequest } from '@models/guide.js'
+import type { Step } from '@models/step.js'
+
+interface EditStep {
+  id?: string
+  order: number
+  title: string
+  description: string
+  duration: string // stored as string for input binding
+  _isNew?: boolean
+  _isModified?: boolean
+  _isDeleted?: boolean
+}
+
+interface MetadataItem {
+  [key: string]: string
+}
 
 @customElement('admin-guide-detail-page')
 export class AdminGuideDetailPage extends LitElement {
@@ -14,6 +32,7 @@ export class AdminGuideDetailPage extends LitElement {
   private auth?: AuthContextValue
 
   @state() private guide: Guide | null = null
+  @state() private steps: Step[] = []
   @state() private users: UserDto[] = []
   @state() private loading = true
   @state() private saving = false
@@ -27,6 +46,8 @@ export class AdminGuideDetailPage extends LitElement {
   @state() private editUserId = ''
   @state() private editIsPublic = false
   @state() private editIsHighlighted = false
+  @state() private editSteps: EditStep[] = []
+  @state() private editMetadata: Record<string, MetadataItem[]> | null = null
 
   // User search
   @state() private userSearchQuery = ''
@@ -70,6 +91,13 @@ export class AdminGuideDetailPage extends LitElement {
       font-weight: 700;
       margin: 0;
       color: var(--color-primary);
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin: 0 0 16px 0;
     }
 
     .card {
@@ -165,6 +193,16 @@ export class AdminGuideDetailPage extends LitElement {
       background-color: var(--color-surface);
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
+    }
+
+    .btn-danger {
+      background-color: var(--color-danger);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
     }
 
     .btn-group {
@@ -326,6 +364,156 @@ export class AdminGuideDetailPage extends LitElement {
       font-size: 14px;
       margin-top: 8px;
     }
+
+    /* Step cards (read-only) */
+    .step-card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      background: var(--color-primary);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .step-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .step-description {
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .step-duration {
+      color: var(--color-text-tertiary);
+      font-size: 13px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .steps-empty {
+      padding: 2rem;
+      text-align: center;
+      color: var(--color-text-secondary);
+    }
+
+    /* Editable step cards */
+    .edit-step-card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .edit-step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .edit-step-header .form-input {
+      flex: 1;
+    }
+
+    .edit-step-fields {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .edit-step-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Metadata tables (read-only) */
+    .metadata-card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .metadata-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-tertiary);
+      margin: 0 0 12px 0;
+    }
+
+    .metadata-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .metadata-table th {
+      text-align: left;
+      padding: 6px 12px 6px 0;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .metadata-table td {
+      padding: 6px 12px 6px 0;
+      color: var(--color-text-primary);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .metadata-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Editable metadata rows */
+    .metadata-item-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .metadata-item-row .form-input {
+      flex: 1;
+    }
+
+    .metadata-item-row .btn-sm {
+      flex-shrink: 0;
+    }
+
+    .add-btn {
+      margin-top: 4px;
+    }
   `
 
   connectedCallback(): void {
@@ -373,12 +561,14 @@ export class AdminGuideDetailPage extends LitElement {
     try {
       this.loading = true
       this.error = null
-      const [guide, users] = await Promise.all([
+      const [guide, users, steps] = await Promise.all([
         guidesService.getById(id),
         adminService.getAllUsers(),
+        stepsService.getByGuideId(id),
       ])
       this.guide = guide
       this.users = users
+      this.steps = steps.sort((a, b) => a.order - b.order)
       this.populateEditForm(guide)
     } catch (err) {
       this.error = err instanceof Error ? err.message : 'Failed to fetch guide'
@@ -394,6 +584,39 @@ export class AdminGuideDetailPage extends LitElement {
     this.editUserId = guide.createdByUserId ?? ''
     this.editIsPublic = guide.isPublic
     this.editIsHighlighted = guide.isHighlighted
+    this.editSteps = this.steps.map(s => ({
+      id: s.id,
+      order: s.order,
+      title: s.title,
+      description: s.description ?? '',
+      duration: s.duration != null ? String(s.duration) : '',
+    }))
+    this.editMetadata = this.cloneMetadata(guide.metadata, guide.guideType)
+  }
+
+  private cloneMetadata(
+    metadata: Record<string, unknown> | null,
+    guideType: string,
+  ): Record<string, MetadataItem[]> | null {
+    if (!metadata) return null
+
+    if (guideType === 'cooking') {
+      const ingredients = metadata['ingredients'] as MetadataItem[] | undefined
+      return { ingredients: ingredients ? ingredients.map(i => ({ ...i })) : [] }
+    }
+    if (guideType === 'workout') {
+      const muscles = metadata['targetMuscles'] as MetadataItem[] | undefined
+      const equipment = metadata['equipment'] as MetadataItem[] | undefined
+      return {
+        targetMuscles: muscles ? muscles.map(m => ({ ...m })) : [],
+        equipment: equipment ? equipment.map(e => ({ ...e })) : [],
+      }
+    }
+    if (guideType === 'general') {
+      const notes = metadata['notes'] as MetadataItem[] | undefined
+      return { notes: notes ? notes.map(n => ({ ...n })) : [] }
+    }
+    return null
   }
 
   private enterEditMode(): void {
@@ -415,54 +638,201 @@ export class AdminGuideDetailPage extends LitElement {
   private async saveChanges(): Promise<void> {
     if (!this.guide) return
 
-    const changes: UpdateGuideRequest = {}
-    let hasChanges = false
-
-    if (this.editTitle !== this.guide.title) {
-      changes.title = this.editTitle
-      hasChanges = true
-    }
-    const newDesc = this.editDescription || null
-    if (newDesc !== this.guide.description) {
-      changes.description = this.editDescription
-      hasChanges = true
-    }
-    if (this.editGuideType !== this.guide.guideType) {
-      changes.guideType = this.editGuideType
-      hasChanges = true
-    }
-    const newUserId = this.editUserId || null
-    if (newUserId !== this.guide.createdByUserId) {
-      changes.createdByUserId = this.editUserId
-      hasChanges = true
-    }
-    if (this.editIsPublic !== this.guide.isPublic) {
-      changes.isPublic = this.editIsPublic
-      hasChanges = true
-    }
-    if (this.editIsHighlighted !== this.guide.isHighlighted) {
-      changes.isHighlighted = this.editIsHighlighted
-      hasChanges = true
-    }
-
-    if (!hasChanges) {
-      this.editMode = false
-      return
-    }
-
     try {
       this.saving = true
       this.error = null
-      const updated = await guidesService.update(this.guide.id, changes)
-      this.guide = updated
-      this.populateEditForm(updated)
+
+      // Build guide update payload
+      const changes: UpdateGuideRequest = {}
+      let hasGuideChanges = false
+
+      if (this.editTitle !== this.guide.title) {
+        changes.title = this.editTitle
+        hasGuideChanges = true
+      }
+      const newDesc = this.editDescription || null
+      if (newDesc !== this.guide.description) {
+        changes.description = this.editDescription
+        hasGuideChanges = true
+      }
+      if (this.editGuideType !== this.guide.guideType) {
+        changes.guideType = this.editGuideType
+        hasGuideChanges = true
+      }
+      const newUserId = this.editUserId || null
+      if (newUserId !== this.guide.createdByUserId) {
+        changes.createdByUserId = this.editUserId
+        hasGuideChanges = true
+      }
+      if (this.editIsPublic !== this.guide.isPublic) {
+        changes.isPublic = this.editIsPublic
+        hasGuideChanges = true
+      }
+      if (this.editIsHighlighted !== this.guide.isHighlighted) {
+        changes.isHighlighted = this.editIsHighlighted
+        hasGuideChanges = true
+      }
+
+      // Check metadata changes
+      const newMetadata = this.buildMetadataPayload()
+      if (JSON.stringify(newMetadata) !== JSON.stringify(this.guide.metadata)) {
+        changes.metadata = newMetadata
+        hasGuideChanges = true
+      }
+
+      // Save guide changes
+      if (hasGuideChanges) {
+        const updated = await guidesService.update(this.guide.id, changes)
+        this.guide = updated
+      }
+
+      // Save step changes
+      await this.saveStepChanges()
+
+      // Refresh steps from server
+      const freshSteps = await stepsService.getByGuideId(this.guide.id)
+      this.steps = freshSteps.sort((a, b) => a.order - b.order)
+
+      this.populateEditForm(this.guide)
       this.editMode = false
-      // Reset URL
       window.history.replaceState({}, '', window.location.pathname)
     } catch (err) {
       this.error = err instanceof Error ? err.message : 'Failed to save changes'
     } finally {
       this.saving = false
+    }
+  }
+
+  private buildMetadataPayload(): Record<string, unknown> | null {
+    if (!this.editMetadata) return null
+    // Filter out empty items
+    const result: Record<string, unknown> = {}
+    let hasContent = false
+    for (const [key, items] of Object.entries(this.editMetadata)) {
+      const filtered = items.filter(item =>
+        Object.values(item).some(v => v.trim() !== '')
+      )
+      if (filtered.length > 0) {
+        result[key] = filtered
+        hasContent = true
+      }
+    }
+    return hasContent ? result : null
+  }
+
+  private async saveStepChanges(): Promise<void> {
+    if (!this.guide) return
+
+    // Delete removed steps
+    for (const step of this.editSteps) {
+      if (step._isDeleted && step.id) {
+        await stepsService.delete(step.id)
+      }
+    }
+
+    // Create new steps
+    for (const step of this.editSteps) {
+      if (step._isNew && !step._isDeleted && step.title.trim()) {
+        await stepsService.create({
+          guideId: this.guide.id,
+          order: step.order,
+          title: step.title,
+          description: step.description || null,
+          duration: step.duration ? Number(step.duration) : null,
+        })
+      }
+    }
+
+    // Update modified steps
+    for (const step of this.editSteps) {
+      if (step._isModified && !step._isNew && !step._isDeleted && step.id) {
+        const original = this.steps.find(s => s.id === step.id)
+        if (!original) continue
+        const updates: Record<string, unknown> = {}
+        if (step.title !== original.title) updates['title'] = step.title
+        if (step.order !== original.order) updates['order'] = step.order
+        const newDesc = step.description || null
+        if (newDesc !== original.description) updates['description'] = newDesc
+        const newDur = step.duration ? Number(step.duration) : null
+        if (newDur !== original.duration) updates['duration'] = newDur
+        if (Object.keys(updates).length > 0) {
+          await stepsService.update(step.id, updates)
+        }
+      }
+    }
+  }
+
+  private updateEditStep(index: number, field: keyof EditStep, value: string): void {
+    const updated = [...this.editSteps]
+    updated[index] = { ...updated[index], [field]: value, _isModified: true }
+    this.editSteps = updated
+  }
+
+  private markStepDeleted(index: number): void {
+    const step = this.editSteps[index]
+    if (step._isNew) {
+      // Just remove from array if it was never saved
+      this.editSteps = this.editSteps.filter((_, i) => i !== index)
+    } else {
+      const updated = [...this.editSteps]
+      updated[index] = { ...updated[index], _isDeleted: true }
+      this.editSteps = updated
+    }
+    this.reorderEditSteps()
+  }
+
+  private addNewEditStep(): void {
+    const visibleSteps = this.editSteps.filter(s => !s._isDeleted)
+    this.editSteps = [
+      ...this.editSteps,
+      {
+        order: visibleSteps.length + 1,
+        title: '',
+        description: '',
+        duration: '',
+        _isNew: true,
+      },
+    ]
+  }
+
+  private reorderEditSteps(): void {
+    let order = 1
+    this.editSteps = this.editSteps.map(s => {
+      if (s._isDeleted) return s
+      return { ...s, order: order++, _isModified: s._isModified || s.order !== order - 1 }
+    })
+  }
+
+  private updateMetadataItem(key: string, index: number, field: string, value: string): void {
+    if (!this.editMetadata) return
+    const items = [...(this.editMetadata[key] ?? [])]
+    items[index] = { ...items[index], [field]: value }
+    this.editMetadata = { ...this.editMetadata, [key]: items }
+  }
+
+  private removeMetadataItem(key: string, index: number): void {
+    if (!this.editMetadata) return
+    const items = (this.editMetadata[key] ?? []).filter((_, i) => i !== index)
+    this.editMetadata = { ...this.editMetadata, [key]: items }
+  }
+
+  private addMetadataItem(key: string, template: MetadataItem): void {
+    if (!this.editMetadata) return
+    const items = [...(this.editMetadata[key] ?? []), { ...template }]
+    this.editMetadata = { ...this.editMetadata, [key]: items }
+  }
+
+  private handleEditGuideTypeChange(newType: string): void {
+    this.editGuideType = newType
+    // Reset metadata when type changes
+    if (newType === 'cooking') {
+      this.editMetadata = { ingredients: [] }
+    } else if (newType === 'workout') {
+      this.editMetadata = { targetMuscles: [], equipment: [] }
+    } else if (newType === 'general') {
+      this.editMetadata = { notes: [] }
+    } else {
+      this.editMetadata = null
     }
   }
 
@@ -555,7 +925,7 @@ export class AdminGuideDetailPage extends LitElement {
 
           <div class="field">
             <div class="field-label">Steps</div>
-            <div class="field-value">${guide.stepIds.length}</div>
+            <div class="field-value">${this.steps.length}</div>
           </div>
         </div>
 
@@ -583,11 +953,123 @@ export class AdminGuideDetailPage extends LitElement {
         </div>
       </div>
 
+      ${this.renderViewSteps()}
+      ${this.renderViewMetadata()}
+
       <div class="field">
         <div class="field-label">Guide ID</div>
         <div class="field-value" style="font-family: monospace; font-size: 13px; color: var(--color-text-tertiary);">${guide.id}</div>
       </div>
     `
+  }
+
+  private renderViewSteps() {
+    return html`
+      <div class="card">
+        <h2>Steps (${this.steps.length})</h2>
+        ${this.steps.length > 0
+          ? this.steps.map((step, i) => html`
+            <div class="step-card">
+              <span class="step-number">${i + 1}</span>
+              <div class="step-content">
+                <div class="step-title">${step.title}</div>
+                ${step.description
+                  ? html`<div class="step-description">${step.description}</div>`
+                  : nothing}
+              </div>
+              ${step.duration
+                ? html`<span class="step-duration">${formatDuration(step.duration)}</span>`
+                : nothing}
+            </div>
+          `)
+          : html`<div class="steps-empty">No steps yet.</div>`}
+      </div>
+    `
+  }
+
+  private renderViewMetadata() {
+    if (!this.guide?.metadata) return nothing
+    const metadata = this.guide.metadata
+    const guideType = this.guide.guideType
+
+    if (guideType === 'cooking') {
+      const ingredients = metadata['ingredients'] as MetadataItem[] | undefined
+      if (!ingredients?.length) return nothing
+      return html`
+        <div class="card">
+          <h2>Ingredients</h2>
+          <table class="metadata-table">
+            <thead><tr><th>Name</th><th>Quantity</th><th>Unit</th></tr></thead>
+            <tbody>
+              ${ingredients.map(ing => html`
+                <tr>
+                  <td>${ing['name'] ?? ''}</td>
+                  <td>${ing['quantity'] ?? ''}</td>
+                  <td>${ing['unit'] ?? ''}</td>
+                </tr>
+              `)}
+            </tbody>
+          </table>
+        </div>
+      `
+    }
+
+    if (guideType === 'workout') {
+      const muscles = metadata['targetMuscles'] as MetadataItem[] | undefined
+      const equipment = metadata['equipment'] as MetadataItem[] | undefined
+      if (!muscles?.length && !equipment?.length) return nothing
+      return html`
+        <div class="card">
+          <h2>Workout Details</h2>
+          ${muscles?.length ? html`
+            <div class="metadata-card">
+              <h3>Target Muscles</h3>
+              <table class="metadata-table">
+                <thead><tr><th>Name</th><th>Focus</th></tr></thead>
+                <tbody>
+                  ${muscles.map(m => html`
+                    <tr><td>${m['name'] ?? ''}</td><td>${m['focus'] ?? ''}</td></tr>
+                  `)}
+                </tbody>
+              </table>
+            </div>
+          ` : nothing}
+          ${equipment?.length ? html`
+            <div class="metadata-card">
+              <h3>Equipment</h3>
+              <table class="metadata-table">
+                <thead><tr><th>Name</th><th>Weight</th></tr></thead>
+                <tbody>
+                  ${equipment.map(e => html`
+                    <tr><td>${e['name'] ?? ''}</td><td>${e['weight'] ?? ''}</td></tr>
+                  `)}
+                </tbody>
+              </table>
+            </div>
+          ` : nothing}
+        </div>
+      `
+    }
+
+    if (guideType === 'general') {
+      const notes = metadata['notes'] as MetadataItem[] | undefined
+      if (!notes?.length) return nothing
+      return html`
+        <div class="card">
+          <h2>Notes</h2>
+          <table class="metadata-table">
+            <thead><tr><th>Key</th><th>Value</th></tr></thead>
+            <tbody>
+              ${notes.map(n => html`
+                <tr><td>${n['key'] ?? ''}</td><td>${n['value'] ?? ''}</td></tr>
+              `)}
+            </tbody>
+          </table>
+        </div>
+      `
+    }
+
+    return nothing
   }
 
   private renderEditMode() {
@@ -622,7 +1104,7 @@ export class AdminGuideDetailPage extends LitElement {
           <select
             class="form-select"
             .value=${this.editGuideType}
-            @change=${(e: Event) => { this.editGuideType = (e.target as HTMLSelectElement).value }}
+            @change=${(e: Event) => { this.handleEditGuideTypeChange((e.target as HTMLSelectElement).value) }}
           >
             <option value="cooking" ?selected=${this.editGuideType === 'cooking'}>Cooking</option>
             <option value="workout" ?selected=${this.editGuideType === 'workout'}>Workout</option>
@@ -656,25 +1138,270 @@ export class AdminGuideDetailPage extends LitElement {
             </label>
           </div>
         </div>
+      </div>
 
-        ${this.error ? html`<div class="save-error">${this.error}</div>` : nothing}
+      ${this.renderEditSteps()}
+      ${this.renderEditMetadata()}
 
-        <div class="btn-group">
-          <button
-            class="btn btn-primary"
-            @click=${this.saveChanges}
-            ?disabled=${this.saving || !this.editTitle.trim()}
-          >
-            ${this.saving ? 'Saving...' : 'Save Changes'}
-          </button>
-          <button
-            class="btn btn-secondary"
-            @click=${this.cancelEdit}
-            ?disabled=${this.saving}
-          >
-            Cancel
-          </button>
-        </div>
+      ${this.error ? html`<div class="save-error">${this.error}</div>` : nothing}
+
+      <div class="btn-group">
+        <button
+          class="btn btn-primary"
+          @click=${this.saveChanges}
+          ?disabled=${this.saving || !this.editTitle.trim()}
+        >
+          ${this.saving ? 'Saving...' : 'Save Changes'}
+        </button>
+        <button
+          class="btn btn-secondary"
+          @click=${this.cancelEdit}
+          ?disabled=${this.saving}
+        >
+          Cancel
+        </button>
+      </div>
+    `
+  }
+
+  private renderEditSteps() {
+    const visibleSteps = this.editSteps.filter(s => !s._isDeleted)
+
+    return html`
+      <div class="card">
+        <h2>Steps (${visibleSteps.length})</h2>
+        ${visibleSteps.map((step, displayIndex) => {
+          const realIndex = this.editSteps.indexOf(step)
+          return html`
+            <div class="edit-step-card">
+              <div class="edit-step-header">
+                <span class="step-number">${displayIndex + 1}</span>
+                <input
+                  class="form-input"
+                  type="text"
+                  placeholder="Step title"
+                  .value=${step.title}
+                  @input=${(e: InputEvent) => {
+                    this.updateEditStep(realIndex, 'title', (e.target as HTMLInputElement).value)
+                  }}
+                  ?disabled=${this.saving}
+                />
+              </div>
+              <div class="edit-step-fields">
+                <div>
+                  <input
+                    class="form-input"
+                    type="text"
+                    placeholder="Description (optional)"
+                    .value=${step.description}
+                    @input=${(e: InputEvent) => {
+                      this.updateEditStep(realIndex, 'description', (e.target as HTMLInputElement).value)
+                    }}
+                    ?disabled=${this.saving}
+                  />
+                </div>
+                <div>
+                  <input
+                    class="form-input"
+                    type="number"
+                    placeholder="Seconds"
+                    min="0"
+                    .value=${step.duration}
+                    @input=${(e: InputEvent) => {
+                      this.updateEditStep(realIndex, 'duration', (e.target as HTMLInputElement).value)
+                    }}
+                    ?disabled=${this.saving}
+                  />
+                </div>
+              </div>
+              <div class="edit-step-actions">
+                <button
+                  class="btn btn-danger btn-sm"
+                  @click=${() => this.markStepDeleted(realIndex)}
+                  ?disabled=${this.saving}
+                >Remove</button>
+              </div>
+            </div>
+          `
+        })}
+
+        <button
+          class="btn btn-secondary btn-sm"
+          @click=${this.addNewEditStep}
+          ?disabled=${this.saving}
+        >+ Add Step</button>
+      </div>
+    `
+  }
+
+  private renderEditMetadata() {
+    const type = this.editGuideType
+
+    if (type === 'cooking') return this.renderEditCookingMetadata()
+    if (type === 'workout') return this.renderEditWorkoutMetadata()
+    if (type === 'general') return this.renderEditGeneralMetadata()
+    return nothing
+  }
+
+  private renderEditCookingMetadata() {
+    const ingredients = this.editMetadata?.['ingredients'] ?? []
+
+    return html`
+      <div class="card">
+        <h2>Ingredients</h2>
+        ${ingredients.map((ing, i) => html`
+          <div class="metadata-item-row">
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Name"
+              .value=${ing['name'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('ingredients', i, 'name', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Quantity"
+              .value=${ing['quantity'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('ingredients', i, 'quantity', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Unit"
+              .value=${ing['unit'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('ingredients', i, 'unit', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <button
+              class="btn btn-danger btn-sm"
+              @click=${() => this.removeMetadataItem('ingredients', i)}
+              ?disabled=${this.saving}
+            >x</button>
+          </div>
+        `)}
+        <button
+          class="btn btn-secondary btn-sm add-btn"
+          @click=${() => this.addMetadataItem('ingredients', { name: '', quantity: '', unit: '' })}
+          ?disabled=${this.saving}
+        >+ Add Ingredient</button>
+      </div>
+    `
+  }
+
+  private renderEditWorkoutMetadata() {
+    const muscles = this.editMetadata?.['targetMuscles'] ?? []
+    const equipment = this.editMetadata?.['equipment'] ?? []
+
+    return html`
+      <div class="card">
+        <h2>Target Muscles</h2>
+        ${muscles.map((m, i) => html`
+          <div class="metadata-item-row">
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Muscle name"
+              .value=${m['name'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('targetMuscles', i, 'name', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Focus (primary/secondary)"
+              .value=${m['focus'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('targetMuscles', i, 'focus', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <button
+              class="btn btn-danger btn-sm"
+              @click=${() => this.removeMetadataItem('targetMuscles', i)}
+              ?disabled=${this.saving}
+            >x</button>
+          </div>
+        `)}
+        <button
+          class="btn btn-secondary btn-sm add-btn"
+          @click=${() => this.addMetadataItem('targetMuscles', { name: '', focus: '' })}
+          ?disabled=${this.saving}
+        >+ Add Muscle</button>
+      </div>
+
+      <div class="card">
+        <h2>Equipment</h2>
+        ${equipment.map((eq, i) => html`
+          <div class="metadata-item-row">
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Equipment name"
+              .value=${eq['name'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('equipment', i, 'name', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Weight"
+              .value=${eq['weight'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('equipment', i, 'weight', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <button
+              class="btn btn-danger btn-sm"
+              @click=${() => this.removeMetadataItem('equipment', i)}
+              ?disabled=${this.saving}
+            >x</button>
+          </div>
+        `)}
+        <button
+          class="btn btn-secondary btn-sm add-btn"
+          @click=${() => this.addMetadataItem('equipment', { name: '', weight: '' })}
+          ?disabled=${this.saving}
+        >+ Add Equipment</button>
+      </div>
+    `
+  }
+
+  private renderEditGeneralMetadata() {
+    const notes = this.editMetadata?.['notes'] ?? []
+
+    return html`
+      <div class="card">
+        <h2>Notes</h2>
+        ${notes.map((n, i) => html`
+          <div class="metadata-item-row">
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Key"
+              .value=${n['key'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('notes', i, 'key', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <input
+              class="form-input"
+              type="text"
+              placeholder="Value"
+              .value=${n['value'] ?? ''}
+              @input=${(e: InputEvent) => this.updateMetadataItem('notes', i, 'value', (e.target as HTMLInputElement).value)}
+              ?disabled=${this.saving}
+            />
+            <button
+              class="btn btn-danger btn-sm"
+              @click=${() => this.removeMetadataItem('notes', i)}
+              ?disabled=${this.saving}
+            >x</button>
+          </div>
+        `)}
+        <button
+          class="btn btn-secondary btn-sm add-btn"
+          @click=${() => this.addMetadataItem('notes', { key: '', value: '' })}
+          ?disabled=${this.saving}
+        >+ Add Note</button>
       </div>
     `
   }
@@ -687,7 +1414,7 @@ export class AdminGuideDetailPage extends LitElement {
           <button
             class="selected-user-clear"
             @click=${() => { this.editUserId = ''; this.userDropdownOpen = true }}
-          >×</button>
+          >x</button>
         </div>
       `
     }

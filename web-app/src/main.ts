@@ -1,4 +1,8 @@
 import './components/app-root.js'
+import './components/pages/home-page.js'
+import './components/pages/guides-page.js'
+import './components/pages/guide-detail-page.js'
+import './components/pages/not-found-page.js'
 import './components/pages/login-page.js'
 import './components/pages/register-page.js'
 import './components/pages/generate-guide-page.js'
