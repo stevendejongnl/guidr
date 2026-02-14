@@ -118,6 +118,18 @@ export class AuthService {
   getAuthToken(): string | null {
     return this.storage.getAuthToken()
   }
+
+  /**
+   * Refresh profile flags from API and update storage.
+   * Keeps localStorage in sync when new flags are added server-side.
+   */
+  async refreshProfile(): Promise<void> {
+    const token = this.storage.getAuthToken()
+    if (!token) return
+    const profile = await this.authClient.getProfile(token)
+    this.storage.setUserIsAdmin(profile.isAdmin)
+    this.storage.setUserIsBeta(profile.isBeta)
+  }
 }
 
 // Export singleton instances

@@ -1,10 +1,4 @@
 import { Guide } from '../entities/Guide'
-import { Step } from '../entities/Step'
-
-export interface GuideWithStepsResult {
-  guide: Guide
-  steps: Step[]
-}
 
 export interface IGuideRepository {
   findById(id: string, authToken: string): Promise<Guide | null>
@@ -15,6 +9,4 @@ export interface IGuideRepository {
   findHighlightedGuides(authToken: string): Promise<Guide[]>
   save(guide: Guide, authToken: string): Promise<void>
   delete(id: string, authToken: string): Promise<void>
-  copyToLanguage(guideId: string, targetLanguage: string, authToken: string): Promise<GuideWithStepsResult>
-  translateToLanguage(guideId: string, targetLanguage: string, authToken: string): Promise<GuideWithStepsResult>
 }

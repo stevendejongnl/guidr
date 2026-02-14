@@ -140,8 +140,6 @@ export const createMockGuideService = (
   getGuideById: jest.fn(),
   getGuidesByType: jest.fn(),
   updateGuideLanguage: jest.fn(),
-  copyToLanguage: jest.fn(),
-  translateToLanguage: jest.fn(),
   ...overrides,
 } as unknown as jest.Mocked<GuideService>)
 

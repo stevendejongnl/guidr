@@ -23,7 +23,6 @@ import { commonStyles } from '@guidr/shared/styles/react-native'
 import { SafeScreen } from '../components/SafeScreen'
 import { StepListItem } from '../components/StepListItem'
 import { InfoBanner } from '../components/InfoBanner'
-import { CopyToLanguageModal } from '../components/CopyToLanguageModal'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { useStepTimers } from '../hooks/useStepTimers'
 import { useLiveActivity } from '../hooks/useLiveActivity'
@@ -37,9 +36,7 @@ interface GuideDetailScreenProps {
   guideId: string
   onBack: () => void
   onEdit?: (guideId: string) => void
-  onViewGuide?: (guideId: string) => void
   isAdmin?: boolean
-  isBeta?: boolean
   stepService?: StepService
   guideService?: GuideService
   stepTimerClient?: StepTimerClient
@@ -55,9 +52,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   guideId,
   onBack,
   onEdit,
-  onViewGuide,
   isAdmin = false,
-  isBeta = false,
   stepService: injectedStepService,
   guideService: injectedGuideService,
   stepTimerClient: injectedStepTimerClient,
@@ -76,9 +71,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [isViewingOthersGuide, setIsViewingOthersGuide] = useState(false)
   const [authToken, setAuthToken] = useState<string | null>(null)
-  const [showCopyModal, setShowCopyModal] = useState(false)
-  const [copyLoading, setCopyLoading] = useState(false)
-
   const authStorage = injectedAuthStorage || new AuthStorage()
   const serverConfigStorage = injectedServerConfigStorage || new ServerConfigStorage()
   const notificationServiceRef = useRef(injectedNotificationService || new NotificationService())
@@ -280,48 +272,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     }
   }
 
-  const handleCopyToLanguage = async (targetLanguage: string) => {
-    if (!authToken || !guide) return
-    try {
-      setCopyLoading(true)
-      const serverUrl = await serverConfigStorage.getServerUrl()
-      if (!serverUrl) throw new Error('No server URL configured')
-      const services = getServices(serverUrl)
-      const result = await services.guideService.copyToLanguage(guideId, targetLanguage, authToken)
-      setShowCopyModal(false)
-      if (onViewGuide) {
-        onViewGuide(result.guide.id)
-      }
-    } catch (err) {
-      ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'copyToLanguage' })
-      setError(err instanceof Error ? err.message : 'Failed to copy guide')
-      setShowCopyModal(false)
-    } finally {
-      setCopyLoading(false)
-    }
-  }
-
-  const handleTranslateToLanguage = async (targetLanguage: string) => {
-    if (!authToken || !guide) return
-    try {
-      setCopyLoading(true)
-      const serverUrl = await serverConfigStorage.getServerUrl()
-      if (!serverUrl) throw new Error('No server URL configured')
-      const services = getServices(serverUrl)
-      const result = await services.guideService.translateToLanguage(guideId, targetLanguage, authToken)
-      setShowCopyModal(false)
-      if (onViewGuide) {
-        onViewGuide(result.guide.id)
-      }
-    } catch (err) {
-      ErrorReporter.capture(err, { component: 'GuideDetailScreen', action: 'translateToLanguage' })
-      setError(err instanceof Error ? err.message : 'Failed to translate guide')
-      setShowCopyModal(false)
-    } finally {
-      setCopyLoading(false)
-    }
-  }
-
   if (loading) {
     return (
       <SafeScreen {...(testID && { testID })}>
@@ -383,14 +333,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
               <Text style={styles.backButton}>← Back</Text>
             </TouchableOpacity>
             <View style={styles.headerActions}>
-              {isBeta && (
-                <TouchableOpacity
-                  onPress={() => setShowCopyModal(true)}
-                  testID={`${testID}:copy-language`}
-                >
-                  <Text style={styles.editButton}>Copy to language</Text>
-                </TouchableOpacity>
-              )}
               {onEdit && (
                 <TouchableOpacity onPress={() => onEdit(guideId)}>
                   <Text style={styles.editButton}>Edit</Text>
@@ -571,16 +513,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
         </View>
       </ScrollView>
 
-      <CopyToLanguageModal
-        visible={showCopyModal}
-        onClose={() => setShowCopyModal(false)}
-        onCopy={handleCopyToLanguage}
-        onTranslate={handleTranslateToLanguage}
-        isBeta={isBeta}
-        currentLanguage={guide.language}
-        loading={copyLoading}
-        testID={`${testID}:copy-modal`}
-      />
     </SafeScreen>
   )
 }
