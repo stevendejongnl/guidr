@@ -29,6 +29,7 @@ export class GenerateGuidePage extends LitElement {
   @state() guideType = 'general'
   @state() isPublic = false
   @state() steps: GeneratedStep[] = []
+  @state() metadata: Record<string, unknown> | null = null
   @state() savedGuideId: string | null = null
 
   static styles = css`
@@ -578,6 +579,7 @@ export class GenerateGuidePage extends LitElement {
       this.description = result.description ?? ''
       this.guideType = result.guideType
       this.steps = result.steps
+      this.metadata = result.metadata
       this.pageState = 'review'
     } catch (err) {
       this.error = err instanceof Error ? err.message : 'Generation failed'
@@ -594,6 +596,7 @@ export class GenerateGuidePage extends LitElement {
         guideType: this.guideType,
         title: this.guideTitle,
         description: this.description || undefined,
+        metadata: this.metadata || undefined,
         isPublic: this.isPublic,
         steps: this.steps.map((s, i) => ({
           order: i + 1,
@@ -642,6 +645,7 @@ export class GenerateGuidePage extends LitElement {
     this.guideType = 'general'
     this.isPublic = false
     this.steps = []
+    this.metadata = null
     this.savedGuideId = null
     this.error = null
     this.pageState = 'input'

@@ -86,7 +86,7 @@ export const StepListItem: React.FC<StepListItemProps> = ({
           <Text style={styles.duration}>{formatDuration(step.duration)}</Text>
         )}
         {step.description && (
-          <Text style={styles.description} numberOfLines={1}>
+          <Text style={styles.description}>
             {step.description}
           </Text>
         )}
