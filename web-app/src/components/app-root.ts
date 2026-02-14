@@ -205,6 +205,7 @@ export class AppRoot extends LitElement {
               ? html`
                   <li><a href="/" @click=${this.navigate}>Home</a></li>
                   <li><a href="/guides" @click=${this.navigate}>Guides</a></li>
+                  <li><a href="/guides/new" @click=${this.navigate}>New Guide</a></li>
                   ${this.authState.isAdmin
                     ? html`
                       <li class="admin-dropdown">

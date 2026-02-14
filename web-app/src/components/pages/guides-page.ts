@@ -1,9 +1,26 @@
 import { html, LitElement, css, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import { consume } from '@lit/context'
 import { apiClient } from '../../services/api-client.js'
-import { authContext, AuthContextValue } from '../../contexts/auth-context.js'
 import type { Guide } from '@models/guide.js'
+
+const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
+  cooking: { bg: 'rgba(76, 175, 80, 0.15)', text: '#66bb6a' },
+  workout: { bg: 'rgba(255, 152, 0, 0.15)', text: '#ffa726' },
+  general: { bg: 'rgba(66, 165, 245, 0.15)', text: '#42a5f5' },
+}
+
+function relativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d ago`
+  const months = Math.floor(days / 30)
+  return `${months}mo ago`
+}
 
 @customElement('guides-page')
 export class GuidesPage extends LitElement {
@@ -26,19 +43,20 @@ export class GuidesPage extends LitElement {
       margin: 0;
     }
 
-    .btn-generate {
+    .btn-new {
       padding: 8px 16px;
       background-color: var(--color-primary);
-      color: white;
+      color: #1a1a2e;
       border: none;
       border-radius: 6px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: opacity 0.2s;
+      text-decoration: none;
     }
 
-    .btn-generate:hover {
+    .btn-new:hover {
       opacity: 0.85;
     }
 
@@ -66,30 +84,71 @@ export class GuidesPage extends LitElement {
       background: var(--color-card);
       border: 1px solid var(--color-border);
       border-radius: 8px;
-      padding: 1.5rem;
-      transition: box-shadow 0.2s;
+      padding: 1.25rem;
+      transition: box-shadow 0.2s, border-color 0.2s;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
     }
 
     .guide-card:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-color: var(--color-primary);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: capitalize;
+      letter-spacing: 0.3px;
     }
 
     .guide-card h3 {
       margin: 0 0 0.5rem 0;
+      color: var(--color-text-primary);
+      font-size: 1.05rem;
+      line-height: 1.3;
+      transition: color 0.2s;
+    }
+
+    .guide-card:hover h3 {
       color: var(--color-primary);
     }
 
-    .guide-card p {
+    .guide-description {
       color: var(--color-text-secondary);
-      line-height: 1.6;
-      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      margin: 0 0 auto 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
-    .guide-meta {
+    .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-top: 1rem;
-      font-size: 0.875rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--color-border);
+      font-size: 0.8rem;
       color: var(--color-text-tertiary);
+    }
+
+    .card-footer .separator {
+      opacity: 0.5;
     }
 
     .empty {
@@ -97,11 +156,16 @@ export class GuidesPage extends LitElement {
       padding: 3rem;
       color: var(--color-text-secondary);
     }
-  `
 
-  @consume({ context: authContext, subscribe: true })
-  @state()
-  private auth?: AuthContextValue
+    .empty p {
+      margin: 0.5rem 0;
+    }
+
+    .empty .hint {
+      font-size: 0.875rem;
+      color: var(--color-text-tertiary);
+    }
+  `
 
   @state()
   private guides: Guide[] = []
@@ -134,7 +198,7 @@ export class GuidesPage extends LitElement {
       return html`
         <div class="page-header">
           <h1>Guides</h1>
-          ${this.auth?.isBeta ? html`<button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>` : nothing}
+          <a class="btn-new" href="/guides/new" @click=${this.navigateToNew}>+ New Guide</a>
         </div>
         <div class="loading">Loading guides...</div>
       `
@@ -144,7 +208,7 @@ export class GuidesPage extends LitElement {
       return html`
         <div class="page-header">
           <h1>Guides</h1>
-          ${this.auth?.isBeta ? html`<button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>` : nothing}
+          <a class="btn-new" href="/guides/new" @click=${this.navigateToNew}>+ New Guide</a>
         </div>
         <div class="error">
           <strong>Error:</strong> ${this.error}
@@ -156,11 +220,11 @@ export class GuidesPage extends LitElement {
       return html`
         <div class="page-header">
           <h1>Guides</h1>
-          ${this.auth?.isBeta ? html`<button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>` : nothing}
+          <a class="btn-new" href="/guides/new" @click=${this.navigateToNew}>+ New Guide</a>
         </div>
         <div class="empty">
-          <p>No guides available yet.</p>
-          <p>Create your first guide to get started!</p>
+          <p>No guides yet</p>
+          <p class="hint">Click <strong>+ New Guide</strong> above to create your first guide.</p>
         </div>
       `
     }
@@ -168,18 +232,33 @@ export class GuidesPage extends LitElement {
     return html`
       <div class="page-header">
         <h1>Guides</h1>
-        <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+        <a class="btn-new" href="/guides/new" @click=${this.navigateToNew}>+ New Guide</a>
       </div>
       <div class="guides-grid">
-        ${this.guides.map(guide => html`
-          <div class="guide-card" @click=${() => this.navigateToGuide(guide.id)}>
-            <h3>${guide.title}</h3>
-            <p>${guide.description}</p>
-            <div class="guide-meta">
-              ${guide.stepIds.length} steps
-            </div>
-          </div>
-        `)}
+        ${this.guides.map(guide => this.renderCard(guide))}
+      </div>
+    `
+  }
+
+  private renderCard(guide: Guide) {
+    const typeColor = TYPE_COLORS[guide.guideType] ?? TYPE_COLORS['general']
+    return html`
+      <div class="guide-card" @click=${() => this.navigateToGuide(guide.id)}>
+        <div class="card-header">
+          <span
+            class="type-badge"
+            style="background:${typeColor.bg}; color:${typeColor.text};"
+          >${guide.guideType}</span>
+        </div>
+        <h3>${guide.title}</h3>
+        ${guide.description
+          ? html`<p class="guide-description">${guide.description}</p>`
+          : nothing}
+        <div class="card-footer">
+          <span>${guide.stepIds.length} step${guide.stepIds.length !== 1 ? 's' : ''}</span>
+          <span class="separator">&middot;</span>
+          <span>${relativeTime(guide.createdAt)}</span>
+        </div>
       </div>
     `
   }
@@ -189,8 +268,9 @@ export class GuidesPage extends LitElement {
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
-  private navigateToGenerate(): void {
-    window.history.pushState({}, '', '/guides/generate')
+  private navigateToNew(e: Event): void {
+    e.preventDefault()
+    window.history.pushState({}, '', '/guides/new')
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 }
