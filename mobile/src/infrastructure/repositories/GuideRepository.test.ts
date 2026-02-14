@@ -638,6 +638,150 @@ describe('GuideRepository', () => {
     })
   })
 
+  describe('copyToLanguage', () => {
+    const mockCopyResponse = {
+      guide: {
+        id: 'guide-copy-1',
+        guideType: 'cooking',
+        title: 'Chocolate Chip Cookies',
+        description: 'Classic recipe',
+        metadata: null,
+        stepIds: ['step-copy-1'],
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        createdByUserId: 'user-1',
+        isPublic: false,
+        isHighlighted: false,
+        language: 'nl',
+      },
+      steps: [
+        {
+          id: 'step-copy-1',
+          guideId: 'guide-copy-1',
+          order: 1,
+          title: 'Mix ingredients',
+          description: 'Combine flour and sugar',
+          duration: 600,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      ],
+    }
+
+    it('should call copy endpoint with target language', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockCopyResponse,
+      })
+
+      const result = await repository.copyToLanguage('guide-1', 'nl', authToken)
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/guides/guide-1/copy',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mock-auth-token',
+          }),
+          body: JSON.stringify({ targetLanguage: 'nl' }),
+        })
+      )
+      expect(result.guide.id).toBe('guide-copy-1')
+      expect(result.steps).toHaveLength(1)
+    })
+
+    it('should invalidate list caches after copy', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockCopyResponse,
+      })
+
+      await repository.copyToLanguage('guide-1', 'nl', authToken)
+
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_Cache_Guide_List_all')
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('Guidr_Cache_Guide_List_myGuides')
+    })
+
+    it('should throw error on copy failure', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: async () => ({ detail: 'Invalid language' }),
+      })
+
+      await expect(repository.copyToLanguage('guide-1', 'invalid', authToken))
+        .rejects.toThrow('Invalid language')
+    })
+  })
+
+  describe('translateToLanguage', () => {
+    const mockTranslateResponse = {
+      guide: {
+        id: 'guide-translated-1',
+        guideType: 'cooking',
+        title: 'Chocolade Koekjes',
+        description: 'Klassiek recept',
+        metadata: null,
+        stepIds: ['step-translated-1'],
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        createdByUserId: 'user-1',
+        isPublic: false,
+        isHighlighted: false,
+        language: 'nl',
+      },
+      steps: [
+        {
+          id: 'step-translated-1',
+          guideId: 'guide-translated-1',
+          order: 1,
+          title: 'Meng ingredienten',
+          description: 'Meng bloem en suiker',
+          duration: 600,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      ],
+    }
+
+    it('should call translate endpoint with target language', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockTranslateResponse,
+      })
+
+      const result = await repository.translateToLanguage('guide-1', 'nl', authToken)
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:8000/api/v1/guides/guide-1/translate',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mock-auth-token',
+          }),
+          body: JSON.stringify({ targetLanguage: 'nl' }),
+        })
+      )
+      expect(result.guide.id).toBe('guide-translated-1')
+      expect(result.steps).toHaveLength(1)
+      expect(result.steps[0]!.title).toBe('Meng ingredienten')
+    })
+
+    it('should throw error on translate failure', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ detail: 'AI service unavailable' }),
+      })
+
+      await expect(repository.translateToLanguage('guide-1', 'nl', authToken))
+        .rejects.toThrow('AI service unavailable')
+    })
+  })
+
   describe('error handling', () => {
     it('should handle network errors', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null)

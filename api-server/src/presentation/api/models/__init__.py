@@ -12,7 +12,7 @@ from .generation_models import (
     GuideWithStepsResponse,
 )
 from .guide_favorite_models import GuideFavoriteListResponse, GuideFavoriteResponse
-from .guide_models import GuideCreate, GuideResponse, GuideUpdate
+from .guide_models import CopyGuideRequest, GuideCreate, GuideResponse, GuideUpdate
 from .session_models import MoveToStepRequest, PauseSessionRequest, SessionCreate, SessionResponse
 from .step_models import StepCreate, StepResponse, StepUpdate
 from .step_timer_models import (
@@ -47,6 +47,7 @@ __all__ = [
     "CreateGuideWithStepsRequest",
     "GuideWithStepsResponse",
     # Guide
+    "CopyGuideRequest",
     "GuideCreate",
     "GuideUpdate",
     "GuideResponse",

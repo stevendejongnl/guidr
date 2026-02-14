@@ -5,6 +5,7 @@ from dependency_injector import containers, providers
 # Import all use cases
 from .application.use_cases.audit_log import GetAuditLogs
 from .application.use_cases.guide import (
+    CopyGuide,
     CreateGuide,
     CreateGuideWithSteps,
     DeleteGuide,
@@ -13,6 +14,7 @@ from .application.use_cases.guide import (
     GetAllGuides,
     GetGuide,
     GetGuidesByType,
+    TranslateGuide,
     UpdateGuide,
 )
 from .application.use_cases.guide_favorite import (
@@ -214,6 +216,19 @@ class Container(containers.DeclarativeContainer):
         CreateGuideWithSteps,
         guide_repository=guide_repository,
         step_repository=step_repository,
+    )
+
+    copy_guide_use_case = providers.Factory(
+        CopyGuide,
+        guide_repository=guide_repository,
+        step_repository=step_repository,
+    )
+
+    translate_guide_use_case = providers.Factory(
+        TranslateGuide,
+        guide_repository=guide_repository,
+        step_repository=step_repository,
+        llm_service=llm_service,
     )
 
     # Step Use Cases (Factories)

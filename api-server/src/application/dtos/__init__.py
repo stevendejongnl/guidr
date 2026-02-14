@@ -7,7 +7,7 @@ from .generation_dtos import (
     GenerateGuideDTO,
     GenerateGuideFromUrlDTO,
 )
-from .guide_dtos import GuideCreateDTO, GuideResponseDTO, GuideUpdateDTO
+from .guide_dtos import CopyGuideDTO, GuideCreateDTO, GuideResponseDTO, GuideUpdateDTO
 from .guide_with_steps_dtos import CreateGuideWithStepsDTO, StepInput
 from .session_dtos import (
     SessionCreateDTO,
@@ -40,6 +40,7 @@ __all__ = [
     "GeneratedGuideDTO",
     "GeneratedStepDTO",
     # Guide
+    "CopyGuideDTO",
     "GuideCreateDTO",
     "GuideUpdateDTO",
     "GuideResponseDTO",

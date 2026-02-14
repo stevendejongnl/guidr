@@ -202,3 +202,145 @@ class TestOpenAILLMServiceParsing:
         assert result.description is None
         assert len(result.steps) == 1
         assert result.steps[0].order == 1
+
+
+TRANSLATED_GUIDE_RESPONSE = {
+    "guide_type": "cooking",
+    "title": "Brood Bakken",
+    "description": "Een simpel brood recept",
+    "metadata": {
+        "ingredients": [
+            {"name": "bloem", "quantity": "500", "unit": "g"},
+        ]
+    },
+    "steps": [
+        {
+            "order": 1,
+            "title": "Meng ingredienten",
+            "description": "Meng bloem en water",
+            "duration": 10,
+        },
+    ],
+}
+
+
+class TestOpenAILLMServiceTranslate:
+    """Tests for translate_guide method."""
+
+    @pytest.mark.asyncio
+    async def test_raises_not_configured_when_no_key(self):
+        service = OpenAILLMService(
+            _make_settings(api_key=None)
+        )
+        with pytest.raises(LLMNotConfiguredError):
+            await service.translate_guide(
+                guide_title="Test",
+                guide_description=None,
+                steps=[],
+                metadata=None,
+                guide_type="general",
+                target_language="nl",
+            )
+
+    @pytest.mark.asyncio
+    async def test_parses_translated_response(self):
+        service = OpenAILLMService(_make_settings())
+        mock_resp = _mock_response(
+            TRANSLATED_GUIDE_RESPONSE
+        )
+
+        with patch(
+            "src.infrastructure.ai"
+            ".openai_llm_service.AsyncOpenAI"
+        ) as mock_cls:
+            mock_client = AsyncMock()
+            mock_client.chat.completions.create = (
+                AsyncMock(return_value=mock_resp)
+            )
+            mock_cls.return_value = mock_client
+
+            result = await service.translate_guide(
+                guide_title="Bread Baking",
+                guide_description="A simple recipe",
+                steps=[
+                    {
+                        "order": 1,
+                        "title": "Mix",
+                        "duration": 10,
+                    }
+                ],
+                metadata=None,
+                guide_type="cooking",
+                target_language="nl",
+            )
+
+        assert result.title == "Brood Bakken"
+        assert result.guide_type == "cooking"
+        assert len(result.steps) == 1
+        assert result.steps[0].title == "Meng ingredienten"
+
+    @pytest.mark.asyncio
+    async def test_includes_target_language_in_prompt(self):
+        service = OpenAILLMService(_make_settings())
+        mock_resp = _mock_response(
+            TRANSLATED_GUIDE_RESPONSE
+        )
+
+        with patch(
+            "src.infrastructure.ai"
+            ".openai_llm_service.AsyncOpenAI"
+        ) as mock_cls:
+            mock_client = AsyncMock()
+            mock_client.chat.completions.create = (
+                AsyncMock(return_value=mock_resp)
+            )
+            mock_cls.return_value = mock_client
+
+            await service.translate_guide(
+                guide_title="Bread Baking",
+                guide_description=None,
+                steps=[],
+                metadata=None,
+                guide_type="cooking",
+                target_language="nl",
+            )
+
+            call_args = (
+                mock_client.chat.completions.create
+                .call_args
+            )
+            messages = call_args.kwargs["messages"]
+            user_msg = messages[1]["content"]
+            assert "'nl'" in user_msg
+
+    @pytest.mark.asyncio
+    async def test_handles_empty_translate_response(self):
+        service = OpenAILLMService(_make_settings())
+        message = MagicMock()
+        message.content = None
+        choice = MagicMock()
+        choice.message = message
+        response = MagicMock()
+        response.choices = [choice]
+
+        with patch(
+            "src.infrastructure.ai"
+            ".openai_llm_service.AsyncOpenAI"
+        ) as mock_cls:
+            mock_client = AsyncMock()
+            mock_client.chat.completions.create = (
+                AsyncMock(return_value=response)
+            )
+            mock_cls.return_value = mock_client
+
+            with pytest.raises(
+                LLMServiceError, match="Empty"
+            ):
+                await service.translate_guide(
+                    guide_title="Test",
+                    guide_description=None,
+                    steps=[],
+                    metadata=None,
+                    guide_type="general",
+                    target_language="nl",
+                )

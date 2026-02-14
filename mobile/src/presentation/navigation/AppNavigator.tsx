@@ -685,8 +685,12 @@ export const AppNavigator: React.FC = () => {
           setSelectedGuideId(null)
         }}
         onEdit={handleGuideDetailEdit}
+        onViewGuide={(newGuideId: string) => {
+          setSelectedGuideId(newGuideId)
+        }}
         isAdmin={adminModeActive}
         {...(servicesRef.current && {
+          guideService: servicesRef.current.guide,
           stepService: servicesRef.current.step,
           stepTimerClient: servicesRef.current.stepTimerClient,
         })}

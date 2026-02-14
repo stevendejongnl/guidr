@@ -1,6 +1,6 @@
 import uuid from 'react-native-uuid'
 import { Guide } from '../entities/Guide'
-import { IGuideRepository } from '../repositories/IGuideRepository'
+import { IGuideRepository, GuideWithStepsResult } from '../repositories/IGuideRepository'
 import { IStepRepository } from '../repositories/IStepRepository'
 
 export class GuideService {
@@ -137,6 +137,22 @@ export class GuideService {
     }
 
     await this.guideRepository.save(guide, authToken)
+  }
+
+  async copyToLanguage(
+    guideId: string,
+    targetLanguage: string,
+    authToken: string
+  ): Promise<GuideWithStepsResult> {
+    return await this.guideRepository.copyToLanguage(guideId, targetLanguage, authToken)
+  }
+
+  async translateToLanguage(
+    guideId: string,
+    targetLanguage: string,
+    authToken: string
+  ): Promise<GuideWithStepsResult> {
+    return await this.guideRepository.translateToLanguage(guideId, targetLanguage, authToken)
   }
 
   async toggleHighlight(id: string, isHighlighted: boolean, authToken: string): Promise<void> {

@@ -3,13 +3,15 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.application.dtos import GuideCreateDTO, GuideUpdateDTO
+from src.application.dtos import CopyGuideDTO, GuideCreateDTO, GuideUpdateDTO
 from src.application.use_cases.guide import (
+    CopyGuide,
     CreateGuide,
     DeleteGuide,
     GetAllGuides,
     GetGuide,
     GetGuidesByType,
+    TranslateGuide,
     UpdateGuide,
 )
 from src.container import Container
@@ -19,9 +21,28 @@ from src.domain.exceptions import (
     EntityNotFoundException,
     ValidationException,
 )
+from src.infrastructure.ai.llm_service import (
+    LLMNotConfiguredError,
+    LLMServiceError,
+)
 
-from ..dependencies.auth import get_current_user, get_optional_current_user
-from ..models import ErrorResponse, GuideCreate, GuideResponse, GuideUpdate
+from ..dependencies.auth import (
+    get_current_beta_user,
+    get_current_user,
+    get_optional_current_user,
+)
+from ..models import (
+    CopyGuideRequest,
+    ErrorResponse,
+    GuideCreate,
+    GuideResponse,
+    GuideUpdate,
+)
+from ..models.generation_models import (
+    GuideResponseRef,
+    GuideWithStepsResponse,
+    StepResponseRef,
+)
 
 router = APIRouter(prefix="/guides", tags=["guides"])
 
@@ -65,6 +86,16 @@ def get_update_guide_use_case() -> UpdateGuide:
 def get_delete_guide_use_case() -> DeleteGuide:
     assert _container is not None, "Container not initialized"
     return _container.delete_guide_use_case()
+
+
+def get_copy_guide_use_case() -> CopyGuide:
+    assert _container is not None, "Container not initialized"
+    return _container.copy_guide_use_case()
+
+
+def get_translate_guide_use_case() -> TranslateGuide:
+    assert _container is not None, "Container not initialized"
+    return _container.translate_guide_use_case()
 
 
 def _guide_response_from_dto(result) -> GuideResponse:  # type: ignore
@@ -273,3 +304,131 @@ async def delete_guide(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except AuthorizationException as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+
+@router.post(
+    "/{guide_id}/copy",
+    response_model=GuideWithStepsResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
+)
+async def copy_guide(
+    guide_id: str,
+    request: CopyGuideRequest,
+    use_case: CopyGuide = Depends(get_copy_guide_use_case),
+    current_user: User = Depends(get_current_user),
+) -> GuideWithStepsResponse:
+    """Copy a guide to a new language (manual copy)."""
+    try:
+        dto = CopyGuideDTO(
+            source_guide_id=guide_id,
+            target_language=request.target_language,
+        )
+        guide_dto, step_dtos = await use_case.execute(
+            dto, current_user
+        )
+        return _guide_with_steps_response(
+            guide_dto, step_dtos
+        )
+    except EntityNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except (ValidationException, ValueError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{guide_id}/translate",
+    response_model=GuideWithStepsResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        502: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
+    },
+)
+async def translate_guide(
+    guide_id: str,
+    request: CopyGuideRequest,
+    use_case: TranslateGuide = Depends(
+        get_translate_guide_use_case
+    ),
+    current_user: User = Depends(get_current_beta_user),
+) -> GuideWithStepsResponse:
+    """Translate a guide to a new language using AI (beta)."""
+    try:
+        dto = CopyGuideDTO(
+            source_guide_id=guide_id,
+            target_language=request.target_language,
+        )
+        guide_dto, step_dtos = await use_case.execute(
+            dto, current_user
+        )
+        return _guide_with_steps_response(
+            guide_dto, step_dtos
+        )
+    except EntityNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except LLMNotConfiguredError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
+        )
+    except LLMServiceError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(e),
+        )
+    except (ValidationException, ValueError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+def _guide_with_steps_response(
+    guide_dto,  # type: ignore
+    step_dtos,  # type: ignore
+) -> GuideWithStepsResponse:
+    """Build GuideWithStepsResponse from DTOs."""
+    return GuideWithStepsResponse(
+        guide=GuideResponseRef(
+            id=guide_dto.id,
+            guideType=guide_dto.guide_type,
+            title=guide_dto.title,
+            description=guide_dto.description,
+            metadata=guide_dto.metadata,
+            stepIds=guide_dto.step_ids,
+            createdByUserId=guide_dto.created_by_user_id,
+            isPublic=guide_dto.is_public,
+            isHighlighted=guide_dto.is_highlighted,
+            language=guide_dto.language,
+            createdAt=guide_dto.created_at,
+            updatedAt=guide_dto.updated_at,
+        ),
+        steps=[
+            StepResponseRef(
+                id=s.id,
+                guideId=s.guide_id,
+                order=s.order,
+                title=s.title,
+                description=s.description,
+                duration=s.duration,
+                createdAt=s.created_at,
+                updatedAt=s.updated_at,
+            )
+            for s in step_dtos
+        ],
+    )

@@ -1,8 +1,10 @@
 import { Guide } from '@domain/entities/Guide'
-import { IGuideRepository } from '@domain/repositories/IGuideRepository'
+import { IGuideRepository, GuideWithStepsResult } from '@domain/repositories/IGuideRepository'
 import { EntityCache } from '../storage/EntityCache'
 import { GuideMapper } from '../mappers/GuideMapper'
+import { StepMapper } from '../mappers/StepMapper'
 import type { GuideDto, GuideCreateRequest, GuideUpdateRequest } from '../api/dtos/GuideDto'
+import type { StepDto } from '../api/dtos/StepDto'
 
 /**
  * HTTP-based implementation of IGuideRepository with AsyncStorage caching.
@@ -384,6 +386,80 @@ export class GuideRepository implements IGuideRepository {
         throw error
       }
       throw new Error('An unexpected error occurred while fetching highlighted guides')
+    }
+  }
+
+  async copyToLanguage(
+    guideId: string,
+    targetLanguage: string,
+    authToken: string
+  ): Promise<GuideWithStepsResult> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/guides/${guideId}/copy`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ targetLanguage }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to copy guide')
+      }
+
+      const data: { guide: GuideDto; steps: StepDto[] } = await response.json()
+
+      await this.cache.remove('List_all')
+      await this.cache.remove('List_myGuides')
+
+      return {
+        guide: GuideMapper.toDomain(data.guide),
+        steps: data.steps.map(s => StepMapper.toDomain(s)),
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred while copying guide')
+    }
+  }
+
+  async translateToLanguage(
+    guideId: string,
+    targetLanguage: string,
+    authToken: string
+  ): Promise<GuideWithStepsResult> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/guides/${guideId}/translate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ targetLanguage }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to translate guide')
+      }
+
+      const data: { guide: GuideDto; steps: StepDto[] } = await response.json()
+
+      await this.cache.remove('List_all')
+      await this.cache.remove('List_myGuides')
+
+      return {
+        guide: GuideMapper.toDomain(data.guide),
+        steps: data.steps.map(s => StepMapper.toDomain(s)),
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred while translating guide')
     }
   }
 }

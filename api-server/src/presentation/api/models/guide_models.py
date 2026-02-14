@@ -41,6 +41,16 @@ class GuideUpdate(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class CopyGuideRequest(BaseModel):
+    """Request model for copying a guide to a new language."""
+
+    target_language: str = Field(
+        ..., alias="targetLanguage"
+    )
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
 class GuideResponse(BaseModel):
     """Response model for a guide."""
 

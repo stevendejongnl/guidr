@@ -39,6 +39,17 @@ class MockLLMService(LLMService):
         self.last_language = language
         return self._result
 
+    async def translate_guide(
+        self,
+        guide_title: str,
+        guide_description: str | None,
+        steps: list[dict[str, object]],
+        metadata: dict[str, object] | None,
+        guide_type: str,
+        target_language: str,
+    ) -> GeneratedGuideDTO:
+        raise NotImplementedError
+
 
 class MockUrlExtractor(UrlContentExtractor):
     """Mock URL extractor for testing."""

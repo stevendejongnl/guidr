@@ -31,6 +31,35 @@ class LLMService(ABC):
         pass
 
 
+    @abstractmethod
+    async def translate_guide(
+        self,
+        guide_title: str,
+        guide_description: str | None,
+        steps: list[dict[str, object]],
+        metadata: dict[str, object] | None,
+        guide_type: str,
+        target_language: str,
+    ) -> GeneratedGuideDTO:
+        """Translate guide content to a target language.
+
+        Args:
+            guide_title: Original guide title
+            guide_description: Original guide description
+            steps: List of step dicts with title, description, duration
+            metadata: Guide metadata to translate
+            guide_type: Guide type (cooking/workout/general)
+            target_language: ISO 639-1 target language code
+
+        Returns:
+            Translated guide with steps
+
+        Raises:
+            LLMServiceError: If the LLM call fails
+        """
+        pass
+
+
 class LLMServiceError(Exception):
     """Raised when an LLM service call fails."""
 

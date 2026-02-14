@@ -31,6 +31,14 @@ class GuideUpdateDTO:
 
 
 @dataclass
+class CopyGuideDTO:
+    """DTO for copying a guide to a new language."""
+
+    source_guide_id: str
+    target_language: str
+
+
+@dataclass
 class GuideResponseDTO:
     """DTO for guide response."""
 

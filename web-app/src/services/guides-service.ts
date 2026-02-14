@@ -1,5 +1,6 @@
 import { apiClient } from './api-client.js'
 import type { Guide, CreateGuideRequest, UpdateGuideRequest } from '@models/guide.js'
+import type { GuideWithStepsResponse } from './generation-service.js'
 
 export class GuidesService {
   async getAll(): Promise<Guide[]> {
@@ -24,6 +25,14 @@ export class GuidesService {
 
   async getByType(guideType: string): Promise<Guide[]> {
     return apiClient.get<Guide[]>(`/guides?guideType=${guideType}`)
+  }
+
+  async copyToLanguage(guideId: string, targetLanguage: string): Promise<GuideWithStepsResponse> {
+    return apiClient.post<GuideWithStepsResponse>(`/guides/${guideId}/copy`, { targetLanguage })
+  }
+
+  async translateToLanguage(guideId: string, targetLanguage: string): Promise<GuideWithStepsResponse> {
+    return apiClient.post<GuideWithStepsResponse>(`/guides/${guideId}/translate`, { targetLanguage })
   }
 }
 

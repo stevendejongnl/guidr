@@ -47,6 +47,26 @@ Rules:
 - If a language is specified, generate ALL content in that language"""
 
 
+TRANSLATE_SYSTEM_PROMPT = """You are a guide translation assistant. \
+Translate all text content to the target language while preserving structure.
+
+You will receive a JSON object with guide content. Translate:
+- title
+- description
+- step titles and descriptions
+- metadata string values (ingredient names, muscle names, equipment names, \
+note keys and values)
+
+Do NOT translate or modify:
+- guide_type (keep as "cooking", "workout", or "general")
+- step order numbers
+- step durations (keep same numbers)
+- metadata structure (keep same keys like "ingredients", "target_muscles")
+- quantity numbers and units in metadata
+
+Respond with valid JSON matching the exact same schema as the input."""
+
+
 class OpenAILLMService(LLMService):
     """LLM service implementation using OpenAI."""
 
@@ -108,6 +128,68 @@ class OpenAILLMService(LLMService):
             self._logger.error(f"OpenAI API error: {e}")
             raise LLMServiceError(
                 f"AI generation failed: {e}"
+            ) from e
+
+    async def translate_guide(
+        self,
+        guide_title: str,
+        guide_description: str | None,
+        steps: list[dict[str, object]],
+        metadata: dict[str, object] | None,
+        guide_type: str,
+        target_language: str,
+    ) -> GeneratedGuideDTO:
+        """Translate guide content using OpenAI."""
+        if not self._api_key:
+            raise LLMNotConfiguredError(
+                "OpenAI API key not configured. "
+                "Set OPENAI_API_KEY environment variable."
+            )
+
+        content = json.dumps(
+            {
+                "guide_type": guide_type,
+                "title": guide_title,
+                "description": guide_description,
+                "metadata": metadata,
+                "steps": steps,
+            }
+        )
+
+        user_message = (
+            f"Translate the following guide content "
+            f"to language code '{target_language}':\n\n"
+            f"{content}"
+        )
+
+        try:
+            client = AsyncOpenAI(api_key=self._api_key)
+            response = await client.chat.completions.create(
+                model=self._model,
+                max_tokens=self._max_tokens,
+                response_format={"type": "json_object"},
+                messages=[
+                    {
+                        "role": "system",
+                        "content": TRANSLATE_SYSTEM_PROMPT,
+                    },
+                    {"role": "user", "content": user_message},
+                ],
+            )
+
+            result = response.choices[0].message.content
+            if not result:
+                raise LLMServiceError(
+                    "Empty response from OpenAI"
+                )
+
+            return self._parse_response(result)
+        except OpenAIError as e:
+            self._logger.error(
+                f"OpenAI API error during translation: {e}"
+            )
+            raise LLMServiceError(
+                f"AI translation failed: {e}"
             ) from e
 
     def _parse_response(
