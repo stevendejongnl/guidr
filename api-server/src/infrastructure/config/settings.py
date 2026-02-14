@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     telegram_bot_token: str | None = None
     telegram_chat_id: str | None = None
 
+    # OpenAI (optional - AI guide generation)
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-4o"
+    openai_max_tokens: int = 4096
+
     # Deployment Configuration
     deployment_id: str | None = None
     pod_name: str | None = None

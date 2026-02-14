@@ -6,7 +6,10 @@ from dependency_injector import containers, providers
 from .application.use_cases.audit_log import GetAuditLogs
 from .application.use_cases.guide import (
     CreateGuide,
+    CreateGuideWithSteps,
     DeleteGuide,
+    GenerateGuide,
+    GenerateGuideFromUrl,
     GetAllGuides,
     GetGuide,
     GetGuidesByType,
@@ -55,6 +58,7 @@ from .application.use_cases.user import (
     UpdateProfile,
 )
 from .domain.services import EventPersistenceService
+from .infrastructure.ai import OpenAILLMService, UrlContentExtractor
 from .infrastructure.auth import JWTService, PasswordHasher
 from .infrastructure.config.settings import Settings
 from .infrastructure.coordination import MongoStartupCoordinator
@@ -97,6 +101,16 @@ class Container(containers.DeclarativeContainer):
     telegram_notification_service = providers.Singleton(
         TelegramNotificationService,
         settings=config,
+    )
+
+    # Infrastructure - AI
+    llm_service = providers.Singleton(
+        OpenAILLMService,
+        settings=config,
+    )
+
+    url_content_extractor = providers.Singleton(
+        UrlContentExtractor,
     )
 
     # Infrastructure - Coordination
@@ -183,6 +197,23 @@ class Container(containers.DeclarativeContainer):
         DeleteGuide,
         guide_repository=guide_repository,
         event_persistence_service=event_persistence_service,
+    )
+
+    generate_guide_use_case = providers.Factory(
+        GenerateGuide,
+        llm_service=llm_service,
+    )
+
+    generate_guide_from_url_use_case = providers.Factory(
+        GenerateGuideFromUrl,
+        llm_service=llm_service,
+        url_content_extractor=url_content_extractor,
+    )
+
+    create_guide_with_steps_use_case = providers.Factory(
+        CreateGuideWithSteps,
+        guide_repository=guide_repository,
+        step_repository=step_repository,
     )
 
     # Step Use Cases (Factories)

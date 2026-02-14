@@ -3,6 +3,14 @@
 from .audit_log_models import AuditLogResponse
 from .config_models import ConfigResponse
 from .error_models import ErrorDetail, ErrorResponse
+from .generation_models import (
+    CreateGuideWithStepsRequest,
+    GeneratedGuideResponse,
+    GeneratedStepResponse,
+    GenerateGuideFromUrlRequest,
+    GenerateGuideRequest,
+    GuideWithStepsResponse,
+)
 from .guide_favorite_models import GuideFavoriteListResponse, GuideFavoriteResponse
 from .guide_models import GuideCreate, GuideResponse, GuideUpdate
 from .session_models import MoveToStepRequest, PauseSessionRequest, SessionCreate, SessionResponse
@@ -31,6 +39,13 @@ __all__ = [
     "ErrorResponse",
     # Audit Log
     "AuditLogResponse",
+    # Generation
+    "GenerateGuideRequest",
+    "GenerateGuideFromUrlRequest",
+    "GeneratedStepResponse",
+    "GeneratedGuideResponse",
+    "CreateGuideWithStepsRequest",
+    "GuideWithStepsResponse",
     # Guide
     "GuideCreate",
     "GuideUpdate",

@@ -1,6 +1,7 @@
 import './components/app-root.js'
 import './components/pages/login-page.js'
 import './components/pages/register-page.js'
+import './components/pages/generate-guide-page.js'
 import './components/pages/admin-styleguide-page.js'
 import './components/pages/admin-guides-page.js'
 import './components/pages/admin-guide-detail-page.js'

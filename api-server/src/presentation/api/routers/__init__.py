@@ -2,6 +2,7 @@
 
 from .audit_logs import router as audit_logs_router
 from .config import router as config_router
+from .generation import router as generation_router
 from .guide_favorites import router as guide_favorites_router
 from .guides import router as guides_router
 from .sessions import router as sessions_router
@@ -12,6 +13,7 @@ from .users import router as users_router
 
 __all__ = [
     "audit_logs_router",
+    "generation_router",
     "guide_favorites_router",
     "guides_router",
     "steps_router",

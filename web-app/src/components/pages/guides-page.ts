@@ -12,9 +12,32 @@ export class GuidesPage extends LitElement {
       color: var(--color-text-primary);
     }
 
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
     h1 {
       color: var(--color-primary);
-      margin-bottom: 2rem;
+      margin: 0;
+    }
+
+    .btn-generate {
+      padding: 8px 16px;
+      background-color: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-generate:hover {
+      opacity: 0.85;
     }
 
     .loading {
@@ -103,14 +126,20 @@ export class GuidesPage extends LitElement {
   render() {
     if (this.loading) {
       return html`
-        <h1>Guides</h1>
+        <div class="page-header">
+          <h1>Guides</h1>
+          <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+        </div>
         <div class="loading">Loading guides...</div>
       `
     }
 
     if (this.error) {
       return html`
-        <h1>Guides</h1>
+        <div class="page-header">
+          <h1>Guides</h1>
+          <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+        </div>
         <div class="error">
           <strong>Error:</strong> ${this.error}
         </div>
@@ -119,7 +148,10 @@ export class GuidesPage extends LitElement {
 
     if (this.guides.length === 0) {
       return html`
-        <h1>Guides</h1>
+        <div class="page-header">
+          <h1>Guides</h1>
+          <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+        </div>
         <div class="empty">
           <p>No guides available yet.</p>
           <p>Create your first guide to get started!</p>
@@ -128,7 +160,10 @@ export class GuidesPage extends LitElement {
     }
 
     return html`
-      <h1>Guides</h1>
+      <div class="page-header">
+        <h1>Guides</h1>
+        <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+      </div>
       <div class="guides-grid">
         ${this.guides.map(guide => html`
           <div class="guide-card" @click=${() => this.navigateToGuide(guide.id)}>
@@ -145,6 +180,11 @@ export class GuidesPage extends LitElement {
 
   private navigateToGuide(id: string): void {
     window.history.pushState({}, '', `/guides/${id}`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+
+  private navigateToGenerate(): void {
+    window.history.pushState({}, '', '/guides/generate')
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 }

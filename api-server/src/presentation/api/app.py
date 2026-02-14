@@ -14,6 +14,7 @@ from .middleware import RequestLoggingMiddleware
 from .routers import (
     audit_logs_router,
     config_router,
+    generation_router,
     guide_favorites_router,
     guides_router,
     sessions_router,
@@ -131,6 +132,7 @@ def create_app() -> FastAPI:
     # FastAPI matches routes by specificity, so these explicit routes take priority over catch-all
     app.include_router(system_router, prefix="/api/v1")
     app.include_router(config_router, prefix="/api/v1")
+    app.include_router(generation_router, prefix="/api/v1")
     app.include_router(guides_router, prefix="/api/v1")
     app.include_router(steps_router, prefix="/api/v1")
     app.include_router(sessions_router, prefix="/api/v1")
