@@ -252,51 +252,51 @@ export class GuideDetailPage extends LitElement {
         </div>
       </div>
 
-      <div class="copy-section">
-        <h2>Copy to Language</h2>
-        <div class="copy-form">
-          <div class="form-group">
-            <label class="form-label">Target Language</label>
-            <select
-              class="form-select"
-              .value=${this.copyLanguage}
-              @change=${(e: Event) => { this.copyLanguage = (e.target as HTMLSelectElement).value }}
-              ?disabled=${this.copyLoading}
-            >
-              <option value="en" ?selected=${this.copyLanguage === 'en'}>English</option>
-              <option value="nl" ?selected=${this.copyLanguage === 'nl'}>Nederlands</option>
-              <option value="de" ?selected=${this.copyLanguage === 'de'}>Deutsch</option>
-              <option value="fr" ?selected=${this.copyLanguage === 'fr'}>Français</option>
-              <option value="es" ?selected=${this.copyLanguage === 'es'}>Español</option>
-              <option value="it" ?selected=${this.copyLanguage === 'it'}>Italiano</option>
-              <option value="pt" ?selected=${this.copyLanguage === 'pt'}>Português</option>
-              <option value="ja" ?selected=${this.copyLanguage === 'ja'}>日本語</option>
-              <option value="ko" ?selected=${this.copyLanguage === 'ko'}>한국어</option>
-              <option value="zh" ?selected=${this.copyLanguage === 'zh'}>中文</option>
-            </select>
-          </div>
-          <button
-            class="btn btn-primary"
-            @click=${this.handleCopy}
-            ?disabled=${isSameLanguage || this.copyLoading}
-          >${this.copyLoading ? 'Copying...' : 'Copy'}</button>
-          ${this.auth?.isBeta
-            ? html`
+      ${this.auth?.isBeta
+        ? html`
+          <div class="copy-section">
+            <h2>Copy to Language</h2>
+            <div class="copy-form">
+              <div class="form-group">
+                <label class="form-label">Target Language</label>
+                <select
+                  class="form-select"
+                  .value=${this.copyLanguage}
+                  @change=${(e: Event) => { this.copyLanguage = (e.target as HTMLSelectElement).value }}
+                  ?disabled=${this.copyLoading}
+                >
+                  <option value="en" ?selected=${this.copyLanguage === 'en'}>English</option>
+                  <option value="nl" ?selected=${this.copyLanguage === 'nl'}>Nederlands</option>
+                  <option value="de" ?selected=${this.copyLanguage === 'de'}>Deutsch</option>
+                  <option value="fr" ?selected=${this.copyLanguage === 'fr'}>Français</option>
+                  <option value="es" ?selected=${this.copyLanguage === 'es'}>Español</option>
+                  <option value="it" ?selected=${this.copyLanguage === 'it'}>Italiano</option>
+                  <option value="pt" ?selected=${this.copyLanguage === 'pt'}>Português</option>
+                  <option value="ja" ?selected=${this.copyLanguage === 'ja'}>日本語</option>
+                  <option value="ko" ?selected=${this.copyLanguage === 'ko'}>한국어</option>
+                  <option value="zh" ?selected=${this.copyLanguage === 'zh'}>中文</option>
+                </select>
+              </div>
+              <button
+                class="btn btn-primary"
+                @click=${this.handleCopy}
+                ?disabled=${isSameLanguage || this.copyLoading}
+              >${this.copyLoading ? 'Copying...' : 'Copy'}</button>
               <button
                 class="btn btn-outline"
                 @click=${this.handleTranslate}
                 ?disabled=${isSameLanguage || this.copyLoading}
               >${this.copyLoading ? 'Translating...' : 'Translate with AI'}</button>
-            `
-            : nothing}
-        </div>
-        ${isSameLanguage
-          ? html`<div class="same-language-warning">Select a different language than the source guide.</div>`
-          : nothing}
-        ${this.copyError
-          ? html`<div class="copy-error">${this.copyError}</div>`
-          : nothing}
-      </div>
+            </div>
+            ${isSameLanguage
+              ? html`<div class="same-language-warning">Select a different language than the source guide.</div>`
+              : nothing}
+            ${this.copyError
+              ? html`<div class="copy-error">${this.copyError}</div>`
+              : nothing}
+          </div>
+        `
+        : nothing}
     `
   }
 

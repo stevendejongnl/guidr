@@ -383,12 +383,14 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
               <Text style={styles.backButton}>← Back</Text>
             </TouchableOpacity>
             <View style={styles.headerActions}>
-              <TouchableOpacity
-                onPress={() => setShowCopyModal(true)}
-                testID={`${testID}:copy-language`}
-              >
-                <Text style={styles.editButton}>Copy to language</Text>
-              </TouchableOpacity>
+              {isBeta && (
+                <TouchableOpacity
+                  onPress={() => setShowCopyModal(true)}
+                  testID={`${testID}:copy-language`}
+                >
+                  <Text style={styles.editButton}>Copy to language</Text>
+                </TouchableOpacity>
+              )}
               {onEdit && (
                 <TouchableOpacity onPress={() => onEdit(guideId)}>
                   <Text style={styles.editButton}>Edit</Text>

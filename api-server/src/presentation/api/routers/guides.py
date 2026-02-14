@@ -319,9 +319,9 @@ async def copy_guide(
     guide_id: str,
     request: CopyGuideRequest,
     use_case: CopyGuide = Depends(get_copy_guide_use_case),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_beta_user),
 ) -> GuideWithStepsResponse:
-    """Copy a guide to a new language (manual copy)."""
+    """Copy a guide to a new language (beta, manual copy)."""
     try:
         dto = CopyGuideDTO(
             source_guide_id=guide_id,

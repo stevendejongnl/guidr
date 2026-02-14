@@ -374,6 +374,9 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
           )
         }
 
+        // Update language
+        await guideService.updateGuideLanguage(guideId, selectedLanguage, authToken)
+
         // Update visibility
         await guideService.toggleVisibility(guideId, isPublic, authToken)
 

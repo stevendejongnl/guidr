@@ -97,6 +97,15 @@ export class GuideService {
     await this.guideRepository.save(guide, authToken)
   }
 
+  async updateGuideLanguage(id: string, language: string, authToken: string): Promise<void> {
+    const guide = await this.guideRepository.findById(id, authToken)
+    if (!guide) {
+      throw new Error(`Guide with id ${id} not found`)
+    }
+    guide.updateLanguage(language)
+    await this.guideRepository.save(guide, authToken)
+  }
+
   async updateGuideMetadata(
     id: string,
     metadata: Record<string, unknown>,

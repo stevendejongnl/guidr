@@ -209,6 +209,26 @@ describe('GuideService', () => {
     })
   })
 
+  describe('updateGuideLanguage', () => {
+    it('should update guide language and save', async () => {
+      const guide = new Guide('guide-1', 'cooking', 'Cookies')
+      mockGuideRepository.findById.mockResolvedValue(guide)
+
+      await guideService.updateGuideLanguage('guide-1', 'nl', authToken)
+
+      expect(guide.language).toBe('nl')
+      expect(mockGuideRepository.save).toHaveBeenCalledWith(guide, authToken)
+    })
+
+    it('should throw error if guide not found', async () => {
+      mockGuideRepository.findById.mockResolvedValue(null)
+
+      await expect(
+        guideService.updateGuideLanguage('guide-999', 'nl', authToken)
+      ).rejects.toThrow('Guide with id guide-999 not found')
+    })
+  })
+
   describe('addStepToGuide', () => {
     it('should add step to guide and save', async () => {
       const guide = new Guide('guide-1', 'cooking', 'Cookies')
