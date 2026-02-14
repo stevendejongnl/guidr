@@ -438,7 +438,7 @@ describe('GuideDetailScreen', () => {
       mockGuideService.getGuideById.mockResolvedValue(guide)
 
       const mockSteps = [
-        new Step('step-1', 'guide-1', 0, 'Step One', 10, 'First step'),
+        new Step('step-1', 'guide-1', 0, 'Step One', 600, 'First step'),
       ]
       const mockStepService = createMockStepService(mockSteps)
       const mockStepTimerClient = createMockStepTimerClient()
@@ -478,7 +478,7 @@ describe('GuideDetailScreen', () => {
       fireEvent.press(startButton)
 
       await waitFor(() => {
-        // 10 minutes = 600 seconds
+        // 600 seconds passed directly (no conversion)
         expect(mockStepTimerClient.startTimer).toHaveBeenCalledWith(
           'step-1',
           'guide-1',

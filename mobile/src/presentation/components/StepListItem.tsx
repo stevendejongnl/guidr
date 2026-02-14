@@ -37,14 +37,13 @@ function formatTimerSeconds(seconds: number): string {
 function getTimerColor(
   mode: 'countdown' | 'stopwatch',
   displaySeconds: number,
-  durationMinutes: number,
+  durationSeconds: number,
 ): string {
   if (mode === 'stopwatch') {
     return colors.textPrimary
   }
-  const totalSeconds = durationMinutes * 60
-  if (totalSeconds === 0) return colors.textPrimary
-  const ratio = displaySeconds / totalSeconds
+  if (durationSeconds === 0) return colors.textPrimary
+  const ratio = displaySeconds / durationSeconds
   if (ratio > 0.5) return colors.success
   if (ratio > 0.25) return colors.warning
   return colors.danger
@@ -63,12 +62,13 @@ export const StepListItem: React.FC<StepListItemProps> = ({
   timer,
   testID,
 }) => {
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes} min`
+  const formatDuration = (seconds: number): string => {
+    const totalMinutes = Math.floor(seconds / 60)
+    if (totalMinutes < 60) {
+      return `${totalMinutes} min`
     }
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
+    const hours = Math.floor(totalMinutes / 60)
+    const mins = totalMinutes % 60
     return `${hours}h ${mins}m`
   }
 

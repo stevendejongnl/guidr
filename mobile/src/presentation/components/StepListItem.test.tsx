@@ -4,7 +4,7 @@ import { StepListItem } from './StepListItem'
 import { Step } from '../../domain/entities/Step'
 
 describe('StepListItem', () => {
-  const mockStep = new Step('step-1', 'guide-1', 0, 'Test Step', 30, 'Test description')
+  const mockStep = new Step('step-1', 'guide-1', 0, 'Test Step', 1800, 'Test description')
   const mockOnMoveUp = jest.fn()
   const mockOnMoveDown = jest.fn()
   const mockOnEdit = jest.fn()
@@ -49,7 +49,7 @@ describe('StepListItem', () => {
       expect(getByText('1')).toBeTruthy()
     })
 
-    it('renders step duration in minutes', () => {
+    it('renders step duration in minutes from seconds', () => {
       const { getByText } = render(
         <StepListItem
           step={mockStep}
@@ -67,7 +67,7 @@ describe('StepListItem', () => {
     })
 
     it('renders duration in hours and minutes for long durations', () => {
-      const longStep = new Step('step-1', 'guide-1', 0, 'Long Step', 90, 'Test')
+      const longStep = new Step('step-1', 'guide-1', 0, 'Long Step', 5400, 'Test')
       const { getByText } = render(
         <StepListItem
           step={longStep}
@@ -342,7 +342,7 @@ describe('StepListItem', () => {
   })
 
   describe('Step Timer Integration', () => {
-    const mockStep = new Step('step-1', 'guide-1', 0, 'Test Step', 5, 'Test description')
+    const mockStep = new Step('step-1', 'guide-1', 0, 'Test Step', 300, 'Test description')
     const mockOnMoveUp = jest.fn()
     const mockOnMoveDown = jest.fn()
     const mockOnEdit = jest.fn()

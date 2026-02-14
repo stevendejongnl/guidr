@@ -14,7 +14,7 @@ export interface StepTimerDisplay {
 
 export interface UseStepTimersReturn {
   timers: Record<string, StepTimerDisplay>
-  startTimer: (stepId: string, durationMinutes: number) => Promise<void>
+  startTimer: (stepId: string, durationSeconds: number) => Promise<void>
   pauseTimer: (stepId: string) => Promise<void>
   resetTimer: (stepId: string) => Promise<void>
   loading: boolean
@@ -208,9 +208,8 @@ export function useStepTimers(
   }, [guideId])
 
   const startTimer = useCallback(
-    async (stepId: string, durationMinutes: number) => {
+    async (stepId: string, durationSeconds: number) => {
       if (!authToken || !client) return
-      const durationSeconds = durationMinutes * 60
       const dto = await client.startTimer(stepId, guideId, durationSeconds, authToken)
       updateDto(dto)
     },

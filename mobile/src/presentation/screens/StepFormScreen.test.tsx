@@ -91,7 +91,7 @@ describe('StepFormScreen', () => {
         order: 0,
         title: 'Test Step',
         description: 'A test step',
-        duration: 30,
+        duration: 1800,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as unknown as Step)
@@ -155,7 +155,7 @@ describe('StepFormScreen', () => {
         order: 0,
         title: 'Test Step',
         description: undefined,
-        duration: 30,
+        duration: 1800,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as unknown as Step)
@@ -327,14 +327,14 @@ describe('StepFormScreen', () => {
   })
 
   describe('edit mode decomposition', () => {
-    it('decomposes 90 minutes into 1 hour and 30 minutes', async () => {
+    it('decomposes 5400 seconds into 1 hour and 30 minutes', async () => {
       mockStepService.getStepById.mockResolvedValue({
         id: 'step-1',
         guideId,
         order: 0,
         title: 'Test Step',
         description: 'A test step',
-        duration: 90,
+        duration: 5400,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as unknown as Step)
@@ -358,14 +358,14 @@ describe('StepFormScreen', () => {
       })
     })
 
-    it('decomposes 45 minutes into empty hours and 45 minutes', async () => {
+    it('decomposes 2700 seconds into empty hours and 45 minutes', async () => {
       mockStepService.getStepById.mockResolvedValue({
         id: 'step-1',
         guideId,
         order: 0,
         title: 'Test Step',
         description: 'A test step',
-        duration: 45,
+        duration: 2700,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as unknown as Step)
@@ -388,7 +388,7 @@ describe('StepFormScreen', () => {
         expect(minutesInput.props['value']).toBe('45')
       })
     })
-    it('decomposes 0 minutes into empty fields (no timer)', async () => {
+    it('decomposes 0 seconds into empty fields (no timer)', async () => {
       mockStepService.getStepById.mockResolvedValue({
         id: 'step-1',
         guideId,
@@ -428,7 +428,7 @@ describe('StepFormScreen', () => {
         order: 0,
         title: 'New Step',
         description: 'A new step',
-        duration: 60,
+        duration: 3600,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as unknown as Step)
@@ -465,7 +465,7 @@ describe('StepFormScreen', () => {
           guideId,
           0,
           'New Step',
-          60,
+          3600,
           'A new step',
           'test-token'
         )
@@ -480,7 +480,7 @@ describe('StepFormScreen', () => {
         order: 0,
         title: 'Original Title',
         description: 'Original description',
-        duration: 30,
+        duration: 1800,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as unknown as Step)
@@ -518,7 +518,7 @@ describe('StepFormScreen', () => {
         )
         expect(mockStepService.updateStepDuration).toHaveBeenCalledWith(
           'step-1',
-          45,
+          2700,
           'test-token'
         )
         expect(mockOnSave).toHaveBeenCalledWith('step-1')
@@ -595,7 +595,7 @@ describe('StepFormScreen', () => {
         order: 0,
         title: 'Test Step',
         description: undefined,
-        duration: 30,
+        duration: 1800,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as unknown as Step)

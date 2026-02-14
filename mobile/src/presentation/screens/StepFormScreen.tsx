@@ -34,20 +34,21 @@ interface StepFormScreenProps {
 }
 
 const MIN_DURATION = 0
-const MAX_DURATION = 1440
+const MAX_DURATION = 86400
 const MAX_HOURS = 24
 const MAX_MINUTES = 59
 
-const decomposeDuration = (totalMinutes: number): { hours: number; minutes: number } => {
+const decomposeDuration = (totalSeconds: number): { hours: number; minutes: number } => {
+  const totalMinutes = Math.floor(totalSeconds / 60)
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
   return { hours, minutes }
 }
 
-const computeTotalMinutes = (hoursStr: string, minutesStr: string): number => {
+const computeTotalSeconds = (hoursStr: string, minutesStr: string): number => {
   const hours = parseInt(hoursStr || '0', 10) || 0
   const minutes = parseInt(minutesStr || '0', 10) || 0
-  return hours * 60 + minutes
+  return (hours * 60 + minutes) * 60
 }
 
 export const StepFormScreen: React.FC<StepFormScreenProps> = ({
@@ -162,9 +163,9 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
       return false
     }
 
-    const duration = computeTotalMinutes(hoursStr, minutesStr)
+    const duration = computeTotalSeconds(hoursStr, minutesStr)
     if (duration < MIN_DURATION || duration > MAX_DURATION) {
-      setValidationError(`Duration must be between ${MIN_DURATION} and ${MAX_DURATION} minutes`)
+      setValidationError(`Duration must be between 0 and ${MAX_DURATION / 60} minutes`)
       return false
     }
 
@@ -193,7 +194,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
       if (!serverUrl) throw new Error('No server URL configured')
 
       const service = getService(serverUrl)
-      const duration = computeTotalMinutes(hoursStr, minutesStr)
+      const duration = computeTotalSeconds(hoursStr, minutesStr)
 
       if (mode === 'create') {
         const newStep = await service.createStep(
@@ -359,7 +360,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
               </View>
             </View>
             <Text style={styles.helperText}>
-              Leave empty for no timer. Maximum {MAX_DURATION} minutes (24 hours)
+              Leave empty for no timer. Maximum {MAX_DURATION / 60} minutes (24 hours)
             </Text>
           </View>
 

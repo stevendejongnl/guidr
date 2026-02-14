@@ -93,13 +93,13 @@ describe('useStepTimers', () => {
     })
 
     await act(async () => {
-      await result.current.startTimer('step-1', 5) // 5 minutes
+      await result.current.startTimer('step-1', 300) // 300 seconds = 5 minutes
     })
 
     expect(mockClient.startTimer).toHaveBeenCalledWith(
       'step-1',
       'guide-1',
-      300, // 5 * 60
+      300,
       'test-token',
     )
     expect(result.current.timers['step-1']).toBeDefined()
