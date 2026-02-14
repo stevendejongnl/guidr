@@ -6,6 +6,7 @@ export interface Route {
   title: string
   requiresAuth?: boolean
   requiresAdmin?: boolean
+  requiresBeta?: boolean
 }
 
 export const routes: Route[] = [
@@ -13,7 +14,7 @@ export const routes: Route[] = [
   { path: '/login', component: 'login-page', title: 'Login - Guidr' },
   { path: '/register', component: 'register-page', title: 'Register - Guidr' },
   { path: '/guides', component: 'guides-page', title: 'Guides - Guidr', requiresAuth: true },
-  { path: '/guides/generate', component: 'generate-guide-page', title: 'Generate Guide - Guidr', requiresAuth: true },
+  { path: '/guides/generate', component: 'generate-guide-page', title: 'Generate Guide - Guidr', requiresAuth: true, requiresBeta: true },
   { path: '/guides/:id', component: 'guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true },
   { path: '/admin/guides', component: 'admin-guides-page', title: 'Admin Guides - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '/admin/guides/:id', component: 'admin-guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true, requiresAdmin: true },
@@ -52,6 +53,12 @@ export class Router {
       return
     }
 
+    // Check beta requirements
+    if (route.requiresBeta && !this.isBeta()) {
+      this.navigateInternal('/guides')
+      return
+    }
+
     document.title = route.title
 
     // Clear outlet and render new component
@@ -66,6 +73,10 @@ export class Router {
 
   private isAdmin(): boolean {
     return this.authStorage.getUserIsAdmin()
+  }
+
+  private isBeta(): boolean {
+    return this.authStorage.getUserIsBeta()
   }
 
   private navigateInternal(path: string): void {

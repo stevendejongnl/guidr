@@ -6,6 +6,7 @@ import { createContext } from '@lit/context'
 export interface AuthContextValue {
   isAuthenticated: boolean
   isAdmin: boolean
+  isBeta: boolean
   userEmail: string | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>

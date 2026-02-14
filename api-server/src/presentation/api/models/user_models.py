@@ -31,6 +31,7 @@ class UserResponse(BaseModel):
     name: str | None = None
     interests: list[str] | None = None
     is_admin: bool = Field(default=False, alias="isAdmin")
+    is_beta: bool = Field(default=False, alias="isBeta")
 
     model_config = ConfigDict(populate_by_name=True)
 

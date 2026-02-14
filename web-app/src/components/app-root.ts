@@ -126,6 +126,7 @@ export class AppRoot extends LitElement {
   private authState: AuthContextValue = {
     isAuthenticated: authService.isAuthenticated(),
     isAdmin: authService.isAdmin(),
+    isBeta: authService.isBeta(),
     userEmail: authService.getUserEmail(),
     login: async (email: string, password: string) => {
       await authService.login(email, password)
@@ -149,6 +150,7 @@ export class AppRoot extends LitElement {
       ...this.authState,
       isAuthenticated: authService.isAuthenticated(),
       isAdmin: authService.isAdmin(),
+      isBeta: authService.isBeta(),
       userEmail: authService.getUserEmail(),
     }
   }

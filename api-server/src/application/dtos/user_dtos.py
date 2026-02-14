@@ -31,6 +31,7 @@ class UserResponseDTO:
     interests: list[str] | None = None
     role: str | None = None  # "user" or "admin"
     is_admin: bool = False  # Backward compatibility
+    is_beta: bool = False
 
 
 @dataclass

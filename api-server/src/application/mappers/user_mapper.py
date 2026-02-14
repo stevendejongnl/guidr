@@ -26,4 +26,5 @@ class UserMapper:
             interests=user.interests if user.interests else None,
             role=user.role.value,  # New: Include role
             is_admin=user.is_admin,  # Keep: Backward compatibility
+            is_beta=user.is_beta,
         )

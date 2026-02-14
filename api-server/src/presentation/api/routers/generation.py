@@ -25,7 +25,7 @@ from src.infrastructure.ai.url_content_extractor import (
     UrlExtractionError,
 )
 
-from ..dependencies.auth import get_current_user
+from ..dependencies.auth import get_current_beta_user
 from ..models import ErrorResponse
 from ..models.generation_models import (
     CreateGuideWithStepsRequest,
@@ -78,7 +78,7 @@ async def generate_guide(
     use_case: GenerateGuide = Depends(
         get_generate_guide_use_case
     ),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_beta_user),
 ) -> GeneratedGuideResponse:
     """Generate a guide from a text prompt using AI."""
     try:
@@ -134,7 +134,7 @@ async def generate_guide_from_url(
     use_case: GenerateGuideFromUrl = Depends(
         get_generate_from_url_use_case
     ),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_beta_user),
 ) -> GeneratedGuideResponse:
     """Generate a guide from URL content using AI."""
     try:
@@ -191,7 +191,7 @@ async def create_guide_with_steps(
     use_case: CreateGuideWithSteps = Depends(
         get_create_with_steps_use_case
     ),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_beta_user),
 ) -> GuideWithStepsResponse:
     """Create a guide with steps atomically."""
     try:

@@ -136,6 +136,7 @@ async def register(
             name=result.name,
             interests=result.interests,
             isAdmin=result.is_admin,
+            isBeta=result.is_beta,
         )
 
         # Build response dict with OAuth2 format (snake_case) and client format (camelCase)
@@ -202,6 +203,7 @@ async def login(
             name=result.name,
             interests=result.interests,
             isAdmin=result.is_admin,
+            isBeta=result.is_beta,
         )
 
         # Build response dict with OAuth2 format (snake_case) and client format (camelCase)
@@ -283,6 +285,7 @@ async def refresh(
         name=user.name,
         interests=user.interests,
         isAdmin=user.is_admin,
+        isBeta=user.is_beta,
     )
 
     response_data = {
@@ -389,6 +392,7 @@ async def change_email(
             name=current_user.name,
             interests=current_user.interests,
             isAdmin=current_user.is_admin,
+            isBeta=current_user.is_beta,
         )
 
         response_data = {
@@ -431,6 +435,7 @@ async def get_profile(
         name=current_user.name,
         interests=current_user.interests,
         isAdmin=current_user.is_admin,
+        isBeta=current_user.is_beta,
     )
 
 
@@ -476,6 +481,7 @@ async def update_profile(
             name=current_user.name,
             interests=current_user.interests,
             isAdmin=current_user.is_admin,
+            isBeta=current_user.is_beta,
         )
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -541,6 +547,7 @@ async def list_users(
             name=u.name,
             interests=u.interests,
             isAdmin=u.is_admin,
+            isBeta=u.is_beta,
         )
         for u in users
     ]

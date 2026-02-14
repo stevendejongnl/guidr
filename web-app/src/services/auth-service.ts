@@ -29,6 +29,7 @@ export class AuthService {
       this.storage.setAuthToken(response.accessToken)
       this.storage.setUserEmail(response.user.email)
       this.storage.setUserIsAdmin(typeof response.user.isAdmin === 'boolean' ? response.user.isAdmin : false)
+      this.storage.setUserIsBeta(typeof response.user.isBeta === 'boolean' ? response.user.isBeta : false)
 
       return response
     } catch (error) {
@@ -62,6 +63,7 @@ export class AuthService {
       this.storage.setAuthToken(response.accessToken)
       this.storage.setUserEmail(response.user.email)
       this.storage.setUserIsAdmin(typeof response.user.isAdmin === 'boolean' ? response.user.isAdmin : false)
+      this.storage.setUserIsBeta(typeof response.user.isBeta === 'boolean' ? response.user.isBeta : false)
 
       return response
     } catch (error) {
@@ -94,6 +96,13 @@ export class AuthService {
    */
   isAdmin(): boolean {
     return this.storage.getUserIsAdmin()
+  }
+
+  /**
+   * Check if current user has beta access
+   */
+  isBeta(): boolean {
+    return this.storage.getUserIsBeta()
   }
 
   /**

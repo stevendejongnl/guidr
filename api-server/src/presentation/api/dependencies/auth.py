@@ -166,3 +166,25 @@ async def get_current_admin_user(
             detail="Admin privileges required",
         )
     return current_user
+
+
+async def get_current_beta_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Extract and validate authenticated beta user from JWT Bearer token.
+
+    Args:
+        current_user: User from JWT token (via get_current_user dependency)
+
+    Returns:
+        User entity for the authenticated beta user
+
+    Raises:
+        HTTPException(403): If user is not in the beta program
+    """
+    if not current_user.is_beta:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Beta access required",
+        )
+    return current_user

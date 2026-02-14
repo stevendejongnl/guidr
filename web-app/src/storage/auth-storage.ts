@@ -1,6 +1,7 @@
 const AUTH_TOKEN_KEY = 'Guidr_Web_AuthToken'
 const USER_EMAIL_KEY = 'Guidr_Web_UserEmail'
 const USER_IS_ADMIN_KEY = 'Guidr_Web_UserIsAdmin'
+const USER_IS_BETA_KEY = 'Guidr_Web_UserIsBeta'
 const USER_ID_KEY = 'Guidr_Web_UserId'
 
 /**
@@ -55,6 +56,19 @@ export class AuthStorage {
     localStorage.removeItem(USER_IS_ADMIN_KEY)
   }
 
+  getUserIsBeta(): boolean {
+    const value = localStorage.getItem(USER_IS_BETA_KEY)
+    return value === 'true'
+  }
+
+  setUserIsBeta(isBeta: boolean): void {
+    localStorage.setItem(USER_IS_BETA_KEY, isBeta.toString())
+  }
+
+  clearUserIsBeta(): void {
+    localStorage.removeItem(USER_IS_BETA_KEY)
+  }
+
   getUserId(): string | null {
     return localStorage.getItem(USER_ID_KEY)
   }
@@ -74,6 +88,7 @@ export class AuthStorage {
     localStorage.removeItem(AUTH_TOKEN_KEY)
     localStorage.removeItem(USER_EMAIL_KEY)
     localStorage.removeItem(USER_IS_ADMIN_KEY)
+    localStorage.removeItem(USER_IS_BETA_KEY)
     localStorage.removeItem(USER_ID_KEY)
   }
 }

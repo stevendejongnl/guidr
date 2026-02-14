@@ -1,6 +1,8 @@
-import { html, LitElement, css } from 'lit'
+import { html, LitElement, css, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
+import { consume } from '@lit/context'
 import { apiClient } from '../../services/api-client.js'
+import { authContext, AuthContextValue } from '../../contexts/auth-context.js'
 import type { Guide } from '@models/guide.js'
 
 @customElement('guides-page')
@@ -97,6 +99,10 @@ export class GuidesPage extends LitElement {
     }
   `
 
+  @consume({ context: authContext, subscribe: true })
+  @state()
+  private auth?: AuthContextValue
+
   @state()
   private guides: Guide[] = []
 
@@ -128,7 +134,7 @@ export class GuidesPage extends LitElement {
       return html`
         <div class="page-header">
           <h1>Guides</h1>
-          <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+          ${this.auth?.isBeta ? html`<button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>` : nothing}
         </div>
         <div class="loading">Loading guides...</div>
       `
@@ -138,7 +144,7 @@ export class GuidesPage extends LitElement {
       return html`
         <div class="page-header">
           <h1>Guides</h1>
-          <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+          ${this.auth?.isBeta ? html`<button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>` : nothing}
         </div>
         <div class="error">
           <strong>Error:</strong> ${this.error}
@@ -150,7 +156,7 @@ export class GuidesPage extends LitElement {
       return html`
         <div class="page-header">
           <h1>Guides</h1>
-          <button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>
+          ${this.auth?.isBeta ? html`<button class="btn-generate" @click=${this.navigateToGenerate}>Generate with AI</button>` : nothing}
         </div>
         <div class="empty">
           <p>No guides available yet.</p>

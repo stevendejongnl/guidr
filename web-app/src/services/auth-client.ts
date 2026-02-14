@@ -11,6 +11,7 @@ export interface UserDto {
   name?: string | null
   interests?: string[] | null
   isAdmin: boolean
+  isBeta: boolean
 }
 
 export interface AuthResponse {
@@ -126,6 +127,7 @@ export class AuthClient {
           name: data.user.name,
           interests: data.user.interests,
           isAdmin: typeof data.user.isAdmin === 'boolean' ? data.user.isAdmin : false,
+          isBeta: typeof data.user.isBeta === 'boolean' ? data.user.isBeta : false,
         },
       }
     } catch (error) {
@@ -186,6 +188,7 @@ export class AuthClient {
           name: data.user.name,
           interests: data.user.interests,
           isAdmin: typeof data.user.isAdmin === 'boolean' ? data.user.isAdmin : false,
+          isBeta: typeof data.user.isBeta === 'boolean' ? data.user.isBeta : false,
         },
       }
     } catch (error) {
@@ -239,6 +242,7 @@ export class AuthClient {
         name: data.name,
         interests: data.interests,
         isAdmin: typeof data.isAdmin === 'boolean' ? data.isAdmin : false,
+        isBeta: typeof data.isBeta === 'boolean' ? data.isBeta : false,
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -299,6 +303,7 @@ export class AuthClient {
         name: data.name,
         interests: data.interests,
         isAdmin: typeof data.isAdmin === 'boolean' ? data.isAdmin : false,
+        isBeta: typeof data.isBeta === 'boolean' ? data.isBeta : false,
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -418,6 +423,7 @@ export class AuthClient {
           name: data.user.name,
           interests: data.user.interests,
           isAdmin: typeof data.user.isAdmin === 'boolean' ? data.user.isAdmin : false,
+          isBeta: typeof data.user.isBeta === 'boolean' ? data.user.isBeta : false,
         },
       }
     } catch (error) {

@@ -20,6 +20,7 @@ class User:
         interests: list[str] | None = None,
         role: Role | None = None,
         is_admin: bool = False,
+        is_beta: bool = False,
         refresh_token_hash: str | None = None,
     ):
         """Initialize a User.
@@ -55,6 +56,7 @@ class User:
             role = Role(RoleType.ADMIN if is_admin else RoleType.USER)
 
         self._role = role
+        self._is_beta = is_beta
         self._refresh_token_hash = refresh_token_hash
 
     @property
@@ -101,6 +103,11 @@ class User:
     def is_admin(self) -> bool:
         """Get admin status (derived from role for backward compatibility)."""
         return self._role.is_admin()
+
+    @property
+    def is_beta(self) -> bool:
+        """Get beta program status."""
+        return self._is_beta
 
     def update_password_hash(self, new_password_hash: str) -> None:
         """Update password hash.
