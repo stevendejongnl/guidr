@@ -138,6 +138,22 @@ console.log = (...args) => {
   return
 }
 
+// Mock WebSocket globally — not available in the Jest/Node test environment
+global.WebSocket = class MockWebSocket {
+  constructor(_url, _protocols) {
+    this.readyState = 0
+    this.onopen = null
+    this.onclose = null
+    this.onmessage = null
+    this.onerror = null
+  }
+  send(_data) {}
+  close(_code, _reason) {
+    this.readyState = 3
+    if (this.onclose) this.onclose({ code: _code, reason: _reason, wasClean: true })
+  }
+}
+
 // Mock React Native Animated.Value class for tests
 const ReactNative = require('react-native')
 const mockAnimatedValue = function(initialValue) {
