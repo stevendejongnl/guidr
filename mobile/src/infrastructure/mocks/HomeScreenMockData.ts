@@ -58,7 +58,6 @@ const INTEREST_CATEGORIES = [
   'Cooking',
   'Sports & Fitness',
   'Workouts',
-  'Lab Protocols',
   'Arts & Crafts',
   'DIY & Home Improvement',
   'Beauty & Skincare',

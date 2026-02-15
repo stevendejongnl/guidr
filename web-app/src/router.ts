@@ -10,7 +10,8 @@ export interface Route {
 }
 
 export const routes: Route[] = [
-  { path: '/', component: 'home-page', title: 'Home - Guidr', requiresAuth: true },
+  { path: '/', component: 'landing-page', title: 'Guidr - Step-by-Step Guide Execution' },
+  { path: '/app', component: 'home-page', title: 'Home - Guidr', requiresAuth: true },
   { path: '/login', component: 'login-page', title: 'Login - Guidr' },
   { path: '/register', component: 'register-page', title: 'Register - Guidr' },
   { path: '/guides', component: 'guides-page', title: 'Guides - Guidr', requiresAuth: true },
@@ -44,9 +45,15 @@ export class Router {
     const path = window.location.pathname
     const route = this.matchRoute(path)
 
+    // Authenticated users skip the landing page
+    if (path === '/' && this.isAuthenticated()) {
+      this.navigateInternal('/guides')
+      return
+    }
+
     // Check auth requirements
     if (route.requiresAuth && !this.isAuthenticated()) {
-      this.navigateInternal('/login')
+      this.navigateInternal('/')
       return
     }
 

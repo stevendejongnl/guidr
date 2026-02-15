@@ -1,5 +1,6 @@
 import './components/app-root.js'
 import './components/pages/home-page.js'
+import './components/pages/landing-page.js'
 import './components/pages/guides-page.js'
 import './components/pages/guide-detail-page.js'
 import './components/pages/not-found-page.js'

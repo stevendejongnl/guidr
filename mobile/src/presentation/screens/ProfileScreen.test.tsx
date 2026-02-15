@@ -113,7 +113,7 @@ describe('ProfileScreen', () => {
       expect(getByText('Baking')).toBeTruthy()
       expect(getByText('Cooking')).toBeTruthy()
       expect(getByText('Sports & Fitness')).toBeTruthy()
-      expect(getByText('Lab Protocols')).toBeTruthy()
+      expect(getByText('Arts & Crafts')).toBeTruthy()
     })
   })
 

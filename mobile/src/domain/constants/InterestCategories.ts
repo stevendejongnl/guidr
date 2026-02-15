@@ -15,7 +15,6 @@ export const INTEREST_CATEGORIES: readonly InterestCategory[] = [
   { id: 'cooking', label: 'Cooking' },
   { id: 'sports', label: 'Sports & Fitness' },
   { id: 'workouts', label: 'Workouts' },
-  { id: 'lab', label: 'Lab Protocols' },
   { id: 'crafts', label: 'Arts & Crafts' },
   { id: 'diy', label: 'DIY & Home Improvement' },
   { id: 'beauty', label: 'Beauty & Skincare' },

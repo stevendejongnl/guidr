@@ -110,6 +110,11 @@ export class AppRoot extends LitElement {
       background-color: var(--color-background);
     }
 
+    main.full-width {
+      max-width: none;
+      padding: 0;
+    }
+
     #outlet {
       min-height: 400px;
     }
@@ -117,9 +122,13 @@ export class AppRoot extends LitElement {
 
   private router!: Router
   private boundCloseMenu = this.closeAdminMenu.bind(this)
+  private boundHandlePopstate = () => { this.currentPath = window.location.pathname }
 
   @state()
   private showAdminMenu = false
+
+  @state()
+  private currentPath = window.location.pathname
 
   @provide({ context: authContext })
   @state()
@@ -131,16 +140,19 @@ export class AppRoot extends LitElement {
     login: async (email: string, password: string) => {
       await authService.login(email, password)
       this.updateAuthState()
-      this.router.navigate('/')
+      this.currentPath = '/guides'
+      this.router.navigate('/guides')
     },
     register: async (email: string, password: string) => {
       await authService.register(email, password)
       this.updateAuthState()
-      this.router.navigate('/')
+      this.currentPath = '/guides'
+      this.router.navigate('/guides')
     },
     logout: () => {
       authService.logout()
       this.updateAuthState()
+      this.currentPath = '/login'
       this.router.navigate('/login')
     },
   }
@@ -158,11 +170,17 @@ export class AppRoot extends LitElement {
   connectedCallback(): void {
     super.connectedCallback()
     document.addEventListener('click', this.boundCloseMenu)
+    window.addEventListener('popstate', this.boundHandlePopstate)
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback()
     document.removeEventListener('click', this.boundCloseMenu)
+    window.removeEventListener('popstate', this.boundHandlePopstate)
+  }
+
+  private isLandingRoute(): boolean {
+    return this.currentPath === '/'
   }
 
   firstUpdated(): void {
@@ -196,50 +214,46 @@ export class AppRoot extends LitElement {
   private navigateAdmin(e: Event, path: string): void {
     e.preventDefault()
     this.showAdminMenu = false
+    this.currentPath = path
     this.router.navigate(path)
   }
 
   render() {
+    const showNav = !this.isLandingRoute() && this.authState.isAuthenticated
     return html`
-      <nav>
-        <div class="nav-content">
-          <h1 class="logo">Guidr</h1>
-          <ul class="nav-links">
-            ${this.authState.isAuthenticated
-              ? html`
-                  <li><a href="/" @click=${this.navigate}>Home</a></li>
-                  <li><a href="/guides" @click=${this.navigate}>Guides</a></li>
-                  <li><a href="/guides/new" @click=${this.navigate}>New Guide</a></li>
-                  ${this.authState.isAdmin
-                    ? html`
-                      <li class="admin-dropdown">
-                        <button class="admin-toggle" @click=${this.toggleAdminMenu}>
-                          Admin ▾
-                        </button>
-                        ${this.showAdminMenu
-                          ? html`
-                            <div class="admin-menu">
-                              <a href="/admin/guides" @click=${(e: Event) => this.navigateAdmin(e, '/admin/guides')}>Guides</a>
-                              <a href="/admin/users" @click=${(e: Event) => this.navigateAdmin(e, '/admin/users')}>Users</a>
-                              <a href="/admin/styleguide" @click=${(e: Event) => this.navigateAdmin(e, '/admin/styleguide')}>Styleguide</a>
-                            </div>
-                          `
-                          : ''}
-                      </li>
-                    `
-                    : ''}
-                  <li>
-                    <a href="#" @click=${this.handleLogout}>Logout (${this.authState.userEmail})</a>
+      ${showNav ? html`
+        <nav>
+          <div class="nav-content">
+            <h1 class="logo">Guidr</h1>
+            <ul class="nav-links">
+              <li><a href="/guides" @click=${this.navigate}>Guides</a></li>
+              <li><a href="/guides/new" @click=${this.navigate}>New Guide</a></li>
+              ${this.authState.isAdmin
+                ? html`
+                  <li class="admin-dropdown">
+                    <button class="admin-toggle" @click=${this.toggleAdminMenu}>
+                      Admin ▾
+                    </button>
+                    ${this.showAdminMenu
+                      ? html`
+                        <div class="admin-menu">
+                          <a href="/admin/guides" @click=${(e: Event) => this.navigateAdmin(e, '/admin/guides')}>Guides</a>
+                          <a href="/admin/users" @click=${(e: Event) => this.navigateAdmin(e, '/admin/users')}>Users</a>
+                          <a href="/admin/styleguide" @click=${(e: Event) => this.navigateAdmin(e, '/admin/styleguide')}>Styleguide</a>
+                        </div>
+                      `
+                      : ''}
                   </li>
                 `
-              : html`
-                  <li><a href="/login" @click=${this.navigate}>Login</a></li>
-                  <li><a href="/register" @click=${this.navigate}>Register</a></li>
-                `}
-          </ul>
-        </div>
-      </nav>
-      <main>
+                : ''}
+              <li>
+                <a href="#" @click=${this.handleLogout}>Logout (${this.authState.userEmail})</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      ` : ''}
+      <main class=${showNav ? '' : 'full-width'}>
         <div id="outlet"></div>
       </main>
     `
@@ -249,6 +263,7 @@ export class AppRoot extends LitElement {
     e.preventDefault()
     const href = (e.target as HTMLAnchorElement).getAttribute('href')
     if (href) {
+      this.currentPath = href
       this.router.navigate(href)
     }
   }

@@ -71,7 +71,7 @@ export class HomePage extends LitElement {
     return html`
       <div class="hero">
         <h1>Welcome to Guidr</h1>
-        <p class="subtitle">Execute step-by-step guides for recipes, workouts, and lab protocols</p>
+        <p class="subtitle">Execute step-by-step guides for cooking, workouts, and more</p>
         <a href="/guides" class="cta">Browse Guides</a>
       </div>
 
