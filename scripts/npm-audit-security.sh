@@ -17,6 +17,11 @@
 # - GHSA-37qj-frw5-hhjh: fast-xml-parser RangeError DoS (HIGH)
 # - GHSA-67mh-4wv8-2f99: esbuild CORS bypass in dev server (MODERATE)
 # - GHSA-w7fw-mjwx-w883: qs arrayLimit bypass DoS (in Metro dev server body-parser)
+# - GHSA-jmr7-xgp7-cmfj: fast-xml-parser DoS via DOCTYPE entity expansion (CRITICAL, @react-native-community/cli dev tool only)
+# - GHSA-m7jm-9gc2-mpf2: fast-xml-parser entity encoding bypass (HIGH, @react-native-community/cli dev tool only)
+# - GHSA-3ppc-4f35-3m26: minimatch ReDoS via repeated wildcards (HIGH, eslint/jest/babel dev tools only, fix requires breaking major version bump)
+# - GHSA-2g4f-4pwh-qvx6: ajv ReDoS with $data option (MODERATE, in eslint devDependency, fix locked by peer deps)
+# - GHSA-83g3-92jg-28cx: node-tar hardlink symlink escape (HIGH, bundled in npm CLI internals, not overridable)
 
 set -e
 
@@ -36,6 +41,11 @@ ACCEPTED_ADVISORIES=(
   "GHSA-37qj-frw5-hhjh"
   "GHSA-67mh-4wv8-2f99"
   "GHSA-w7fw-mjwx-w883"
+  "GHSA-jmr7-xgp7-cmfj"
+  "GHSA-m7jm-9gc2-mpf2"
+  "GHSA-3ppc-4f35-3m26"
+  "GHSA-2g4f-4pwh-qvx6"
+  "GHSA-83g3-92jg-28cx"
 )
 
 # Run npm audit and capture output
