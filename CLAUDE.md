@@ -79,27 +79,9 @@ Custom Claude Code skills for workflow acceleration:
   - **Web**: `npm run web:dev`, `npm run web:build` (React Vite)
   - Use when: working with monorepo npm scripts across packages
 
-## Session Handoff (automatic)
-
-`HANDOFF.md` maintains continuity between Claude Code sessions. **This is automatic — you MUST follow these rules:**
-
-### On session start
-- Read `HANDOFF.md` before starting any work
-- Briefly mention what the handoff says so the user knows you have context
-
-### On task completion
-- After completing a significant task, automatically update `HANDOFF.md`:
-  - Update **Active Task** to reflect current state
-  - Add new findings/decisions to **Notes**
-  - Update **Blockers** and **Next Steps**
-  - Append a dated one-liner to the **Log**
-- Do this silently — no need to ask permission, just mention you updated the handoff
-
-### Manual overrides
-- `/handoff` — Read and summarize current notes
-- `/handoff update` — Force an update mid-session
-- `/handoff <notes>` — Add specific notes (e.g. `/handoff switched to branch X`)
-- `/handoff clear` — Reset to clean template for a new task
+## Handoff Config
+<!-- handoff:file=HANDOFF.md -->
+<!-- handoff:project=Guidr monorepo -->
 
 ## Code Patterns
 **Entities**: Private fields with getters (`private _name`, `get name()`)
