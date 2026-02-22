@@ -8,7 +8,7 @@ export interface StepDto {
   order: number
   title: string
   description: string | null
-  duration: number | null // minutes
+  duration: number | null // seconds
   createdAt: string // ISO 8601
   updatedAt: string // ISO 8601
 }

@@ -342,7 +342,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
     if (!session || !currentStep) return
 
     // Calculate elapsed seconds
-    const elapsedSeconds = currentStep.duration * 60 - remainingSeconds
+    const elapsedSeconds = currentStep.duration - remainingSeconds
 
     // Update session's elapsed seconds for the pause operation
     session.setStepElapsedSeconds(elapsedSeconds)
@@ -435,7 +435,7 @@ export const SessionExecutionScreen: React.FC<SessionExecutionScreenProps> = ({
         {/* Timer */}
         {currentStep.duration > 0 && (
           <CountdownTimer
-            durationSeconds={currentStep.duration * 60}
+            durationSeconds={currentStep.duration}
             isRunning={isTimerRunning}
             onComplete={onTimerComplete}
             onSecondsChange={handleSessionSecondsChange}
