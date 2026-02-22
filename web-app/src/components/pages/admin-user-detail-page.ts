@@ -154,6 +154,11 @@ export class AdminUserDetailPage extends LitElement {
       border: 1px solid var(--color-border);
     }
 
+    .btn-danger {
+      background-color: var(--color-danger);
+      color: white;
+    }
+
     .btn-group {
       display: flex;
       gap: 8px;
@@ -382,6 +387,18 @@ export class AdminUserDetailPage extends LitElement {
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
+  private async deleteUser(): Promise<void> {
+    if (!this.user) return
+    if (!window.confirm(`Delete user "${this.user.email}"? This cannot be undone.`)) return
+    try {
+      await adminService.deleteUser(this.user.id)
+      window.history.pushState({}, '', '/admin/users')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    } catch (err) {
+      this.error = err instanceof Error ? err.message : 'Failed to delete user'
+    }
+  }
+
   render() {
     if (!this.auth?.isAdmin) {
       return html`<div style="padding: 2rem; text-align: center; color: ${colors.danger};">Access denied. Admin only.</div>`
@@ -408,7 +425,10 @@ export class AdminUserDetailPage extends LitElement {
     return html`
       <div class="header">
         <h1>${user.email}</h1>
-        <button class="btn btn-primary" @click=${this.enterEditMode}>Edit</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" @click=${this.enterEditMode}>Edit</button>
+          <button class="btn btn-danger" @click=${this.deleteUser}>Delete User</button>
+        </div>
       </div>
 
       ${this.error ? html`<div class="error" style="margin-bottom: 16px;">${this.error}</div>` : nothing}
@@ -472,6 +492,7 @@ export class AdminUserDetailPage extends LitElement {
     return html`
       <div class="header">
         <h1>Edit User</h1>
+        <button class="btn btn-danger" @click=${this.deleteUser} ?disabled=${this.saving}>Delete User</button>
       </div>
 
       <div class="card">

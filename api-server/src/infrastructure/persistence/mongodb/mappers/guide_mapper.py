@@ -32,6 +32,7 @@ class GuideMapper:
             "language": guide.language.value,
             "createdAt": guide.created_at,
             "updatedAt": guide.updated_at,
+            "deletedAt": guide.deleted_at,
         }
 
     @staticmethod
@@ -80,4 +81,5 @@ class GuideMapper:
             ),
             created_at=document["createdAt"],
             updated_at=document["updatedAt"],
+            deleted_at=document.get("deletedAt"),
         )

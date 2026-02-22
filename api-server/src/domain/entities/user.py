@@ -23,6 +23,7 @@ class User:
         is_admin: bool = False,
         is_beta: bool = False,
         refresh_token_hash: str | None = None,
+        deleted_at: datetime | None = None,
     ):
         """Initialize a User.
 
@@ -38,6 +39,7 @@ class User:
             role: User role (defaults to USER if not provided). Preferred over is_admin.
             is_admin: DEPRECATED - use role instead. Kept for backward compatibility.
             refresh_token_hash: Optional hashed refresh token for token rotation
+            deleted_at: Optional soft-delete timestamp
 
         Raises:
             ValidationException: If password_hash is empty
@@ -63,6 +65,7 @@ class User:
         self._role = role
         self._is_beta = is_beta
         self._refresh_token_hash = refresh_token_hash
+        self._deleted_at = deleted_at
 
     @property
     def id(self) -> EntityId:
@@ -192,6 +195,21 @@ class User:
     def refresh_token_hash(self) -> str | None:
         """Get refresh token hash."""
         return self._refresh_token_hash
+
+    @property
+    def deleted_at(self) -> datetime | None:
+        """Get soft-delete timestamp."""
+        return self._deleted_at
+
+    @property
+    def is_deleted(self) -> bool:
+        """Check if user is soft-deleted."""
+        return self._deleted_at is not None
+
+    def soft_delete(self) -> None:
+        """Soft-delete this user by setting deleted_at timestamp."""
+        self._deleted_at = datetime.now(UTC)
+        self._updated_at = datetime.now(UTC)
 
     def update_refresh_token_hash(self, hash: str | None) -> None:
         """Update refresh token hash.

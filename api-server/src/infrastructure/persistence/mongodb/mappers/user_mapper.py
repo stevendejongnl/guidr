@@ -32,6 +32,7 @@ class UserMapper:
             "isAdmin": user.is_admin,  # Keep: Backward compatibility
             "isBeta": user.is_beta,
             "refreshTokenHash": user.refresh_token_hash,
+            "deletedAt": user.deleted_at,
         }
 
     @staticmethod
@@ -67,4 +68,5 @@ class UserMapper:
             role=role,
             is_beta=document.get("isBeta", False),
             refresh_token_hash=document.get("refreshTokenHash"),
+            deleted_at=document.get("deletedAt"),
         )

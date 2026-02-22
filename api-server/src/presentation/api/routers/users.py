@@ -17,13 +17,14 @@ from src.application.use_cases.user import (
     ChangeEmail,
     ChangePassword,
     DeleteAccount,
+    DeleteUser,
     LoginUser,
     RegisterUser,
     UpdateProfile,
 )
 from src.container import Container
 from src.domain.entities import User
-from src.domain.exceptions import ValidationException
+from src.domain.exceptions import EntityNotFoundException, ValidationException
 from src.domain.value_objects import EntityId
 from src.infrastructure.auth.token_hasher import hash_token, verify_token_hash
 
@@ -104,6 +105,12 @@ def get_admin_update_user_use_case() -> AdminUpdateUser:
     """Get AdminUpdateUser use case."""
     assert _container is not None, "Container not initialized"
     return _container.admin_update_user_use_case()
+
+
+def get_delete_user_use_case() -> DeleteUser:
+    """Get DeleteUser use case."""
+    assert _container is not None, "Container not initialized"
+    return _container.delete_user_use_case()
 
 
 @router.post(
@@ -623,6 +630,36 @@ async def admin_update_user(
             preferredLanguages=updated.preferred_languages,
             isAdmin=updated.is_admin,
             isBeta=updated.is_beta,
+        )
+    except ValidationException as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.delete(
+    "/users/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
+)
+async def delete_user(
+    user_id: str,
+    current_user: User = Depends(get_current_admin_user),
+    use_case: DeleteUser = Depends(get_delete_user_use_case),
+) -> None:
+    """Soft-delete a user (admin only)."""
+    try:
+        await use_case.execute(user_id, current_user)
+    except EntityNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
         )
     except ValidationException as e:
         raise HTTPException(

@@ -24,6 +24,7 @@ class Guide:
         language: Language = DEFAULT_LANGUAGE,
         created_at: datetime | None = None,
         updated_at: datetime | None = None,
+        deleted_at: datetime | None = None,
     ):
         """Initialize a Guide.
 
@@ -40,6 +41,7 @@ class Guide:
             language: Content language (ISO 639-1, default English)
             created_at: Optional creation timestamp
             updated_at: Optional update timestamp
+            deleted_at: Optional soft-delete timestamp
 
         Raises:
             ValueError: If metadata is invalid for the guide type
@@ -58,6 +60,7 @@ class Guide:
         self._language = language
         self._created_at = created_at or datetime.now(UTC)
         self._updated_at = updated_at or datetime.now(UTC)
+        self._deleted_at = deleted_at
 
     @property
     def id(self) -> EntityId:
@@ -103,6 +106,21 @@ class Guide:
     def updated_at(self) -> datetime:
         """Get last update timestamp."""
         return self._updated_at
+
+    @property
+    def deleted_at(self) -> datetime | None:
+        """Get soft-delete timestamp."""
+        return self._deleted_at
+
+    @property
+    def is_deleted(self) -> bool:
+        """Check if guide is soft-deleted."""
+        return self._deleted_at is not None
+
+    def soft_delete(self) -> None:
+        """Soft-delete this guide by setting deleted_at timestamp."""
+        self._deleted_at = datetime.now(UTC)
+        self._updated_at = datetime.now(UTC)
 
     @property
     def created_by_user_id(self) -> EntityId | None:

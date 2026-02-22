@@ -92,10 +92,40 @@ async def migrate_users_add_preferred_languages(
     )
 
 
+async def migrate_guides_add_deleted_at(
+    db: AsyncIOMotorDatabase,
+) -> None:
+    """Backfill deletedAt=None on guides that don't have it yet."""
+    guides_collection = db["guides"]
+    result = await guides_collection.update_many(
+        {"deletedAt": {"$exists": False}},
+        {"$set": {"deletedAt": None}},
+    )
+    logger.info(
+        f"Set deletedAt=None on {result.modified_count} guide(s)."
+    )
+
+
+async def migrate_users_add_deleted_at(
+    db: AsyncIOMotorDatabase,
+) -> None:
+    """Backfill deletedAt=None on users that don't have it yet."""
+    users_collection = db["users"]
+    result = await users_collection.update_many(
+        {"deletedAt": {"$exists": False}},
+        {"$set": {"deletedAt": None}},
+    )
+    logger.info(
+        f"Set deletedAt=None on {result.modified_count} user(s)."
+    )
+
+
 # List of all migrations in order
 # Each tuple is (migration_id, migration_function)
 MIGRATIONS: list[tuple[str, MigrationFunc]] = [
     ("001_migrate_guides_category_to_type", migrate_guides_category_to_type),
     ("002_migrate_guides_add_language", migrate_guides_add_language),
     ("003_migrate_users_add_preferred_languages", migrate_users_add_preferred_languages),
+    ("004_add_deleted_at_to_guides", migrate_guides_add_deleted_at),
+    ("005_add_deleted_at_to_users", migrate_users_add_deleted_at),
 ]

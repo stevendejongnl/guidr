@@ -872,6 +872,18 @@ export class AdminGuideDetailPage extends LitElement {
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
+  private async deleteGuide(): Promise<void> {
+    if (!this.guide) return
+    if (!window.confirm(`Delete guide "${this.guide.title}"? This cannot be undone.`)) return
+    try {
+      await guidesService.delete(this.guide.id)
+      window.history.pushState({}, '', '/admin/guides')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    } catch (err) {
+      this.error = err instanceof Error ? err.message : 'Failed to delete guide'
+    }
+  }
+
   render() {
     if (!this.auth?.isAdmin) {
       return html`<div style="padding: 2rem; text-align: center; color: ${colors.danger};">Access denied. Admin only.</div>`
@@ -899,7 +911,10 @@ export class AdminGuideDetailPage extends LitElement {
     return html`
       <div class="header">
         <h1>${guide.title}</h1>
-        <button class="btn btn-primary" @click=${this.enterEditMode}>Edit</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" @click=${this.enterEditMode}>Edit</button>
+          <button class="btn btn-danger" @click=${this.deleteGuide}>Delete Guide</button>
+        </div>
       </div>
 
       ${this.error ? html`<div class="error" style="margin-bottom: 16px;">${this.error}</div>` : nothing}
@@ -1076,6 +1091,7 @@ export class AdminGuideDetailPage extends LitElement {
     return html`
       <div class="header">
         <h1>Edit Guide</h1>
+        <button class="btn btn-danger" @click=${this.deleteGuide} ?disabled=${this.saving}>Delete Guide</button>
       </div>
 
       <div class="card">

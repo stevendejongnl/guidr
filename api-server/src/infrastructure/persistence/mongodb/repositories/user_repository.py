@@ -1,6 +1,8 @@
 """MongoDB implementation of User repository."""
 
 
+from datetime import UTC, datetime
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from src.domain.entities import User
@@ -24,18 +26,22 @@ class MongoUserRepository(IUserRepository):
 
     async def find_by_id(self, id: EntityId) -> User | None:
         """Find user by ID."""
-        document = await self._collection.find_one({"_id": id.value})
+        document = await self._collection.find_one(
+            {"_id": id.value, "deletedAt": None}
+        )
         return self._mapper.to_entity(document) if document else None
 
     async def find_all(self) -> list[User]:
-        """Find all users."""
-        cursor = self._collection.find()
+        """Find all non-deleted users."""
+        cursor = self._collection.find({"deletedAt": None})
         documents = await cursor.to_list(length=None)
         return [self._mapper.to_entity(doc) for doc in documents]
 
     async def find_by_email(self, email: Email) -> User | None:
         """Find user by email."""
-        document = await self._collection.find_one({"email": email.value})
+        document = await self._collection.find_one(
+            {"email": email.value, "deletedAt": None}
+        )
         return self._mapper.to_entity(document) if document else None
 
     async def save(self, entity: User) -> None:
@@ -48,5 +54,9 @@ class MongoUserRepository(IUserRepository):
         )
 
     async def delete(self, id: EntityId) -> None:
-        """Delete user by ID."""
-        await self._collection.delete_one({"_id": id.value})
+        """Soft-delete user by setting deletedAt timestamp."""
+        now = datetime.now(UTC)
+        await self._collection.update_one(
+            {"_id": id.value},
+            {"$set": {"deletedAt": now, "updatedAt": now}},
+        )

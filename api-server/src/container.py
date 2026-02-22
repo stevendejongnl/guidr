@@ -56,6 +56,7 @@ from .application.use_cases.user import (
     ChangeEmail,
     ChangePassword,
     DeleteAccount,
+    DeleteUser,
     LoginUser,
     RegisterUser,
     UpdateProfile,
@@ -418,6 +419,11 @@ class Container(containers.DeclarativeContainer):
 
     admin_update_user_use_case = providers.Factory(
         AdminUpdateUser,
+        user_repository=user_repository,
+    )
+
+    delete_user_use_case = providers.Factory(
+        DeleteUser,
         user_repository=user_repository,
     )
 

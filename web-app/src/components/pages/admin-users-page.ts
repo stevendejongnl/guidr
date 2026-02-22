@@ -221,6 +221,23 @@ export class AdminUsersPage extends LitElement {
     .edit-btn:hover {
       background-color: rgba(99, 102, 241, 0.1);
     }
+
+    .delete-btn {
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--color-danger);
+      border-radius: 4px;
+      background: var(--color-surface);
+      color: var(--color-danger);
+      cursor: pointer;
+      transition: background-color 0.15s;
+      margin-left: 4px;
+    }
+
+    .delete-btn:hover {
+      background-color: rgba(244, 67, 54, 0.1);
+    }
   `
 
   connectedCallback(): void {
@@ -398,6 +415,17 @@ export class AdminUsersPage extends LitElement {
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
+  private async deleteUser(user: UserDto, e: Event): Promise<void> {
+    e.stopPropagation()
+    if (!window.confirm(`Delete user "${user.email}"? This cannot be undone.`)) return
+    try {
+      await adminService.deleteUser(user.id)
+      this.users = this.users.filter(u => u.id !== user.id)
+    } catch (err) {
+      this.error = err instanceof Error ? err.message : 'Failed to delete user'
+    }
+  }
+
   private renderTable(users: UserDto[]) {
     return html`
       <div class="table-wrapper">
@@ -442,6 +470,7 @@ export class AdminUsersPage extends LitElement {
                 <td class="date-cell">${this.formatDate(user.createdAt)}</td>
                 <td>
                   <button class="edit-btn" @click=${(e: Event) => this.navigateToEdit(user.id, e)}>Edit</button>
+                  <button class="delete-btn" @click=${(e: Event) => this.deleteUser(user, e)}>Delete</button>
                 </td>
               </tr>
             `)}

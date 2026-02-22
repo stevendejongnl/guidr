@@ -35,6 +35,10 @@ export class AdminService {
     return apiClient.patch<UserDto>(`/auth/users/${userId}`, data)
   }
 
+  async deleteUser(userId: string): Promise<void> {
+    return apiClient.delete<void>(`/auth/users/${userId}`)
+  }
+
   async getAllGuidesWithUsers(): Promise<GuideWithUser[]> {
     const [guides, users] = await Promise.all([
       apiClient.get<Guide[]>('/guides'),
