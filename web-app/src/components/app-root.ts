@@ -190,6 +190,7 @@ export class AppRoot extends LitElement {
     }
     this.router = new Router(outlet)
     this.router.start()
+    this.currentPath = window.location.pathname
 
     if (this.authState.isAuthenticated) {
       authService.refreshProfile().then(() => this.updateAuthState()).catch(() => {})
