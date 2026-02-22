@@ -17,7 +17,7 @@ import { SafeScreen } from '../components/SafeScreen'
 import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { colors, spacing, typography } from '@guidr/shared/tokens'
-import { commonStyles } from '@guidr/shared/styles/react-native'
+import { commonStyles, formStyles } from '@guidr/shared/styles/react-native'
 
 interface StepFormScreenProps {
   mode: 'create' | 'edit'
@@ -294,8 +294,8 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 
   return (
     <SafeScreen testID="step-form-screen">
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.container}>
+      <ScrollView style={formStyles.scrollView}>
+        <View style={formStyles.container}>
           <InfoBanner
             message="You are editing content created by another user"
             visible={mode === 'edit' && isAdmin && isEditingOthersContent}
@@ -310,8 +310,8 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
           {error && <Text style={commonStyles.errorText}>{error}</Text>}
 
           {/* Title Input */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Step Title</Text>
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Step Title</Text>
             <TextInput
               style={[commonStyles.input, validationError && commonStyles.inputError]}
               placeholder="Enter step title"
@@ -327,8 +327,8 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
           </View>
 
           {/* Duration Input */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Duration</Text>
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Duration</Text>
             <View style={styles.durationRow}>
               <View style={styles.durationField}>
                 <TextInput
@@ -365,10 +365,10 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
           </View>
 
           {/* Description Input */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Description</Text>
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Description</Text>
             <TextInput
-              style={[commonStyles.input, { minHeight: 100 }]}
+              style={[commonStyles.input, formStyles.descriptionInput]}
               placeholder="Enter step description (optional)"
               placeholderTextColor={colors.textMuted}
               value={description}
@@ -380,7 +380,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.buttonGroup}>
+          <View style={formStyles.buttonGroup}>
             <TouchableOpacity
               style={[commonStyles.button, saving && commonStyles.buttonDisabled]}
               onPress={handleSave}
@@ -394,7 +394,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[commonStyles.buttonSecondary, styles.cancelButton]}
+              style={[commonStyles.buttonSecondary, formStyles.cancelButton]}
               onPress={onCancel}
               disabled={saving}
               testID="step-cancel-button"
@@ -404,7 +404,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 
             {mode === 'edit' && (
               <TouchableOpacity
-                style={[commonStyles.buttonDanger, styles.deleteButton]}
+                style={[commonStyles.buttonDanger, formStyles.deleteButton]}
                 onPress={handleDelete}
                 disabled={saving}
                 testID="step-delete-button"
@@ -420,24 +420,6 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  container: {
-    padding: spacing.xl,
-    paddingBottom: spacing.xxxl,
-  },
-  formGroup: {
-    marginTop: spacing.xl,
-    marginBottom: spacing.lg,
-  },
-  label: {
-    fontSize: typography.sizeMd,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-    fontWeight: '600',
-  },
   helperText: {
     fontSize: typography.sizeSm,
     color: colors.textMuted,
@@ -456,15 +438,5 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.xs,
     marginLeft: spacing.sm,
-  },
-  buttonGroup: {
-    marginTop: spacing.xxxl,
-    gap: spacing.lg,
-  },
-  cancelButton: {
-    marginTop: spacing.md,
-  },
-  deleteButton: {
-    marginTop: spacing.lg,
   },
 })
