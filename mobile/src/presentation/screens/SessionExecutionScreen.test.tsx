@@ -12,6 +12,7 @@ import { Session, SessionStatus } from '../../domain/entities/Session'
 import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
 import { CountdownTimer } from '../components/CountdownTimer'
+import { StepNavigationControls } from '../components/StepNavigationControls'
 
 // Mock infrastructure
 jest.mock('../../infrastructure/monitoring/ErrorReporter')
@@ -399,22 +400,64 @@ describe('SessionExecutionScreen', () => {
   })
 
   describe('multi-step navigation', () => {
-    it('does not show "Complete Session" when not on last step', async () => {
-      const step1 = new Step('step-1', 'guide-456', 0, 'First Step', 300)
-      const step2 = new Step('step-2', 'guide-456', 1, 'Second Step', 300)
+    const step1 = new Step('step-1', 'guide-456', 0, 'First Step', 300)
+    const step2 = new Step('step-2', 'guide-456', 1, 'Second Step', 300)
 
+    beforeEach(() => {
+      jest.mocked(StepNavigationControls).mockClear()
       mockSessionService.getSessionById.mockResolvedValue(createSession())
       mockGuideService.getGuideById.mockResolvedValue(createGuide())
       mockStepService.getStepsByGuideId.mockResolvedValue([step1, step2])
+    })
 
+    it('does not show "Complete Session" when not on last step', async () => {
       renderScreen()
 
       await waitFor(() => {
         expect(screen.queryByText('First Step')).toBeTruthy()
       })
 
-      // On first of two steps, no Complete button
       expect(screen.queryByText('Complete Session')).toBeFalsy()
+    })
+
+    it('calls moveToStep with next step id when onNext is invoked', async () => {
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(StepNavigationControls)).toHaveBeenCalled()
+      })
+
+      const props = jest.mocked(StepNavigationControls).mock.calls[0]![0]
+      props.onNext()
+
+      await waitFor(() => {
+        expect(mockSessionService.moveToStep).toHaveBeenCalledWith('session-123', 'step-2', 'test-token')
+      })
+    })
+
+    it('does not call moveToStep when onPrevious is invoked on first step', async () => {
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(StepNavigationControls)).toHaveBeenCalled()
+      })
+
+      const props = jest.mocked(StepNavigationControls).mock.calls[0]![0]
+      props.onPrevious()
+
+      expect(mockSessionService.moveToStep).not.toHaveBeenCalled()
+    })
+
+    it('passes correct currentStepIndex and totalSteps to navigation controls', async () => {
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(StepNavigationControls)).toHaveBeenCalled()
+      })
+
+      const props = jest.mocked(StepNavigationControls).mock.calls[0]![0]
+      expect(props['currentStepIndex']).toBe(0)
+      expect(props['totalSteps']).toBe(2)
     })
   })
 })
