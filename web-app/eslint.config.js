@@ -74,7 +74,34 @@ export default [
   {
     files: ['src/**/*.{test,spec}.{ts,tsx}'],
     rules: {
-      '@typescript-eslint/no-non-null-assertion': 'off'
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.object.name='test'][callee.property.name='skip']",
+          message: 'test.skip is not allowed — remove the skip or delete the test'
+        },
+        {
+          selector: "CallExpression[callee.object.name='it'][callee.property.name='skip']",
+          message: 'it.skip is not allowed — remove the skip or delete the test'
+        },
+        {
+          selector: "CallExpression[callee.object.name='describe'][callee.property.name='skip']",
+          message: 'describe.skip is not allowed — remove the skip or delete the test'
+        },
+        {
+          selector: "CallExpression[callee.name='xtest']",
+          message: 'xtest is not allowed — remove the skip or delete the test'
+        },
+        {
+          selector: "CallExpression[callee.name='xit']",
+          message: 'xit is not allowed — remove the skip or delete the test'
+        },
+        {
+          selector: "CallExpression[callee.name='xdescribe']",
+          message: 'xdescribe is not allowed — remove the skip or delete the test'
+        }
+      ]
     }
   }
 ]

@@ -30,7 +30,11 @@ async def app():
     # Use test database
     mongo_uri = os.getenv("MONGO_TEST_URI", "mongodb://localhost:27017/guidr_test")
     if not _mongodb_is_reachable(mongo_uri):
-        pytest.skip("MongoDB is not reachable — skipping integration test")
+        pytest.fail(
+            f"MongoDB is not reachable at {mongo_uri}. "
+            "Integration tests require a running MongoDB instance. "
+            "Start one with: docker run -d -p 27017:27017 mongo"
+        )
     os.environ["MONGO_URI"] = mongo_uri
 
     application = create_application()
