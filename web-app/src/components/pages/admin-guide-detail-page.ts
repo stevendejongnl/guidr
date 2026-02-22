@@ -514,6 +514,12 @@ export class AdminGuideDetailPage extends LitElement {
     .add-btn {
       margin-top: 4px;
     }
+
+    @media (max-width: 768px) {
+      :host {
+        padding: 16px;
+      }
+    }
   `
 
   connectedCallback(): void {

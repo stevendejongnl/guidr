@@ -243,6 +243,23 @@ export class AdminGuidesPage extends LitElement {
     .delete-btn:hover {
       background-color: rgba(244, 67, 54, 0.1);
     }
+
+    @media (max-width: 768px) {
+      :host {
+        padding: 16px;
+      }
+
+      th:nth-child(1),
+      td:nth-child(1),
+      th:nth-child(4),
+      td:nth-child(4),
+      th:nth-child(5),
+      td:nth-child(5),
+      th:nth-child(7),
+      td:nth-child(7) {
+        display: none;
+      }
+    }
   `
 
   connectedCallback(): void {

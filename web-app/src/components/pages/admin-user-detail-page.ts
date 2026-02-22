@@ -248,6 +248,12 @@ export class AdminUserDetailPage extends LitElement {
       font-size: 14px;
       margin-top: 8px;
     }
+
+    @media (max-width: 768px) {
+      :host {
+        padding: 16px;
+      }
+    }
   `
 
   connectedCallback(): void {

@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit'
+import { html, LitElement, css, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { provide } from '@lit/context'
 import { Router } from '../router.js'
@@ -118,6 +118,61 @@ export class AppRoot extends LitElement {
     #outlet {
       min-height: 400px;
     }
+
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--color-text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      margin-left: auto;
+      line-height: 1;
+    }
+
+    .hamburger:hover {
+      color: var(--color-primary);
+    }
+
+    .mobile-menu {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0.5rem 0 1rem;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mobile-menu a {
+      padding: 0.75rem 0;
+      color: var(--color-text-primary);
+      text-decoration: none;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .mobile-menu a:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-menu a:hover {
+      color: var(--color-primary);
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        padding: 0.75rem 1rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: block;
+      }
+    }
   `
 
   private router!: Router
@@ -126,6 +181,9 @@ export class AppRoot extends LitElement {
 
   @state()
   private showAdminMenu = false
+
+  @state()
+  private _mobileMenuOpen = false
 
   @state()
   private currentPath = window.location.pathname
@@ -198,11 +256,18 @@ export class AppRoot extends LitElement {
   }
 
   private closeAdminMenu(e: Event): void {
-    if (!this.showAdminMenu) return
     const path = e.composedPath()
-    const dropdown = this.shadowRoot?.querySelector('.admin-dropdown')
-    if (dropdown && !path.includes(dropdown)) {
-      this.showAdminMenu = false
+    if (this.showAdminMenu) {
+      const dropdown = this.shadowRoot?.querySelector('.admin-dropdown')
+      if (dropdown && !path.includes(dropdown)) {
+        this.showAdminMenu = false
+      }
+    }
+    if (this._mobileMenuOpen) {
+      const nav = this.shadowRoot?.querySelector('nav')
+      if (nav && !path.includes(nav)) {
+        this._mobileMenuOpen = false
+      }
     }
   }
 
@@ -217,6 +282,21 @@ export class AppRoot extends LitElement {
     this.showAdminMenu = false
     this.currentPath = path
     this.router.navigate(path)
+  }
+
+  private toggleMobileMenu(e: Event): void {
+    e.stopPropagation()
+    this._mobileMenuOpen = !this._mobileMenuOpen
+  }
+
+  private navigateMobile(e: Event): void {
+    this._mobileMenuOpen = false
+    this.navigate(e)
+  }
+
+  private handleMobileLogout(e: Event): void {
+    this._mobileMenuOpen = false
+    this.handleLogout(e)
   }
 
   render() {
@@ -251,7 +331,20 @@ export class AppRoot extends LitElement {
                 <a href="#" @click=${this.handleLogout}>Logout (${this.authState.userEmail})</a>
               </li>
             </ul>
+            <button class="hamburger" @click=${this.toggleMobileMenu}>☰</button>
           </div>
+          ${this._mobileMenuOpen ? html`
+            <div class="mobile-menu">
+              <a href="/guides" @click=${this.navigateMobile}>Guides</a>
+              <a href="/guides/new" @click=${this.navigateMobile}>New Guide</a>
+              ${this.authState.isAdmin ? html`
+                <a href="/admin/guides" @click=${this.navigateMobile}>Admin - Guides</a>
+                <a href="/admin/users" @click=${this.navigateMobile}>Admin - Users</a>
+                <a href="/admin/styleguide" @click=${this.navigateMobile}>Admin - Styleguide</a>
+              ` : nothing}
+              <a href="#" @click=${this.handleMobileLogout}>Logout (${this.authState.userEmail})</a>
+            </div>
+          ` : nothing}
         </nav>
       ` : ''}
       <main class=${showNav ? '' : 'full-width'}>
