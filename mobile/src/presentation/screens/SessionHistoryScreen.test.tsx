@@ -1,5 +1,6 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Alert } from 'react-native'
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { SessionHistoryScreen } from './SessionHistoryScreen'
 import { Session, SessionStatus } from '../../domain/entities/Session'
 import {
@@ -27,6 +28,7 @@ describe('SessionHistoryScreen', () => {
   let mockAuthStorage: jest.Mocked<ReturnType<typeof createMockAuthStorage>>
 
   beforeEach(() => {
+    jest.clearAllMocks()
     mockOnBack = jest.fn()
     mockSessionService = createMockSessionService([])
     mockGuideService = createMockGuideService([])
@@ -131,11 +133,11 @@ describe('SessionHistoryScreen', () => {
   })
 
   describe('delete session', () => {
-    it('should show a confirmation dialog when delete is pressed', async () => {
+    it('should show a confirmation alert when delete is pressed', async () => {
       const sessions = [makeSession({ id: 's1' })]
       mockSessionService.getAllSessions.mockResolvedValue(sessions)
 
-      const { getByTestId, getByText } = renderScreen()
+      const { getByTestId } = renderScreen()
 
       await waitFor(() => {
         expect(getByTestId('session-delete-s1')).toBeTruthy()
@@ -143,11 +145,14 @@ describe('SessionHistoryScreen', () => {
 
       fireEvent.press(getByTestId('session-delete-s1'))
 
-      expect(getByText('Delete Session')).toBeTruthy()
-      expect(getByText('Are you sure you want to delete this session?')).toBeTruthy()
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Delete Session',
+        'Are you sure you want to delete this session? This action cannot be undone.',
+        expect.any(Array),
+      )
     })
 
-    it('should call deleteSession when confirmed in dialog', async () => {
+    it('should call deleteSession when confirmed', async () => {
       const sessions = [makeSession({ id: 's1' })]
       mockSessionService.getAllSessions.mockResolvedValue(sessions)
       mockAuthStorage.getAuthToken.mockResolvedValue('test-token')
@@ -160,11 +165,10 @@ describe('SessionHistoryScreen', () => {
 
       fireEvent.press(getByTestId('session-delete-s1'))
 
-      await waitFor(() => {
-        expect(getByTestId('confirm-delete-button')).toBeTruthy()
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
       })
-
-      fireEvent.press(getByTestId('confirm-delete-button'))
 
       await waitFor(() => {
         expect(mockSessionService.deleteSession).toHaveBeenCalledWith('s1', 'test-token')
@@ -184,22 +188,18 @@ describe('SessionHistoryScreen', () => {
 
       fireEvent.press(getByTestId('session-delete-s1'))
 
-      await waitFor(() => {
-        expect(getByTestId('confirm-delete-button')).toBeTruthy()
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
       })
 
-      fireEvent.press(getByTestId('confirm-delete-button'))
-
-      await waitFor(() => {
-        expect(mockSessionService.deleteSession).toHaveBeenCalledWith('s1', 'test-token')
-      })
       await waitFor(() => {
         expect(queryByTestId('session-item-s1')).toBeNull()
         expect(getByTestId('session-item-s2')).toBeTruthy()
       })
     })
 
-    it('should not call deleteSession when dialog is cancelled', async () => {
+    it('should not call deleteSession when alert is cancelled', async () => {
       const sessions = [makeSession({ id: 's1' })]
       mockSessionService.getAllSessions.mockResolvedValue(sessions)
 
@@ -211,12 +211,7 @@ describe('SessionHistoryScreen', () => {
 
       fireEvent.press(getByTestId('session-delete-s1'))
 
-      await waitFor(() => {
-        expect(getByTestId('cancel-delete-button')).toBeTruthy()
-      })
-
-      fireEvent.press(getByTestId('cancel-delete-button'))
-
+      expect(Alert.alert).toHaveBeenCalled()
       expect(mockSessionService.deleteSession).not.toHaveBeenCalled()
     })
   })
@@ -246,11 +241,10 @@ describe('SessionHistoryScreen', () => {
 
       fireEvent.press(getByTestId('session-delete-s1'))
 
-      await waitFor(() => {
-        expect(getByTestId('confirm-delete-button')).toBeTruthy()
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
       })
-
-      fireEvent.press(getByTestId('confirm-delete-button'))
 
       await waitFor(() => {
         expect(getByText('Failed to delete session')).toBeTruthy()

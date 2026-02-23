@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
-  Modal,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -34,7 +34,6 @@ export const SessionHistoryScreen: React.FC<SessionHistoryScreenProps> = ({
   const [authToken, setAuthToken] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const loadSessions = useCallback(async () => {
@@ -73,23 +72,27 @@ export const SessionHistoryScreen: React.FC<SessionHistoryScreenProps> = ({
     loadSessions()
   }, [loadSessions])
 
-  const handleDeleteConfirm = async () => {
-    if (!pendingDeleteId) {
-      return
-    }
-    const idToDelete = pendingDeleteId
-    setPendingDeleteId(null)
-    try {
-      setDeleteError(null)
-      await sessionService.deleteSession(idToDelete, authToken)
-      setSessions(prev => prev.filter(s => s.id !== idToDelete))
-    } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'Failed to delete session')
-    }
-  }
-
-  const handleDeleteCancel = () => {
-    setPendingDeleteId(null)
+  const handleDeletePress = (sessionId: string) => {
+    Alert.alert(
+      'Delete Session',
+      'Are you sure you want to delete this session? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDeleteError(null)
+              await sessionService.deleteSession(sessionId, authToken)
+              setSessions(prev => prev.filter(s => s.id !== sessionId))
+            } catch (err) {
+              setDeleteError(err instanceof Error ? err.message : 'Failed to delete session')
+            }
+          },
+        },
+      ],
+    )
   }
 
   const formatDate = (date: Date): string => {
@@ -144,7 +147,7 @@ export const SessionHistoryScreen: React.FC<SessionHistoryScreenProps> = ({
               </View>
               <TouchableOpacity
                 testID={`session-delete-${session.id}`}
-                onPress={() => setPendingDeleteId(session.id)}
+                onPress={() => handleDeletePress(session.id)}
                 style={styles.deleteButton}
               >
                 <Text style={styles.deleteButtonText}>Delete</Text>
@@ -154,32 +157,6 @@ export const SessionHistoryScreen: React.FC<SessionHistoryScreenProps> = ({
         </ScrollView>
       )}
 
-      <Modal visible={pendingDeleteId !== null} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Delete Session</Text>
-            <Text style={styles.modalMessage}>
-              Are you sure you want to delete this session?
-            </Text>
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                testID="cancel-delete-button"
-                onPress={handleDeleteCancel}
-                style={styles.cancelButton}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                testID="confirm-delete-button"
-                onPress={handleDeleteConfirm}
-                style={styles.confirmButton}
-              >
-                <Text style={styles.confirmButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeScreen>
   )
 }
@@ -250,55 +227,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textPrimary,
     fontWeight: '500',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalContent: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: spacing.xl,
-    marginHorizontal: spacing.xl,
-    gap: spacing.md,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  modalMessage: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  cancelButton: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cancelButtonText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  confirmButton: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: 6,
-    backgroundColor: colors.danger,
-  },
-  confirmButtonText: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    fontWeight: '600',
   },
 })

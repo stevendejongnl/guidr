@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {
+  Alert,
   View,
   Text,
   TouchableOpacity,
@@ -76,21 +77,33 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
     }
   }
 
-  const handleClearCache = async () => {
-    setLoading(true)
-    setError('')
-    setSuccessMessage('')
-
-    try {
-      await AsyncStorage.clear()
-      setSuccessMessage('Cache cleared successfully')
-      // Reload stored values to reflect cleared state
-      await loadStoredConfig()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to clear cache')
-    } finally {
-      setLoading(false)
-    }
+  const handleClearCache = () => {
+    Alert.alert(
+      'Clear All Cache',
+      'This will delete all app data including your server URL and login. Are you sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            setLoading(true)
+            setError('')
+            setSuccessMessage('')
+            try {
+              await AsyncStorage.clear()
+              setSuccessMessage('Cache cleared successfully')
+              // Reload stored values to reflect cleared state
+              await loadStoredConfig()
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Failed to clear cache')
+            } finally {
+              setLoading(false)
+            }
+          },
+        },
+      ],
+    )
   }
 
   const handleConnectionTest = async () => {

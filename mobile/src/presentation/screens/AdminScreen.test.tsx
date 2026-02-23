@@ -1,5 +1,6 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Alert } from 'react-native'
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { AdminScreen } from './AdminScreen'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
@@ -260,21 +261,50 @@ describe('AdminScreen', () => {
   })
 
   describe('clear cache', () => {
-    it('should clear AsyncStorage and show success message', async () => {
+    it('should show a confirmation alert when Clear All Cache is pressed', () => {
+      const { getByText } = render(
+        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+      )
+
+      fireEvent.press(getByText('Clear All Cache'))
+
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Clear All Cache',
+        'This will delete all app data including your server URL and login. Are you sure?',
+        expect.any(Array),
+      )
+    })
+
+    it('should clear AsyncStorage and show success message when confirmed', async () => {
       (AsyncStorage.clear as jest.Mock).mockResolvedValue(undefined)
 
       const { getByText } = render(
         <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
-      const clearButton = getByText('Clear All Cache')
-      fireEvent.press(clearButton)
+      fireEvent.press(getByText('Clear All Cache'))
+
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
+      })
 
       await waitFor(() => {
         expect(getByText('Cache cleared successfully')).toBeTruthy()
       })
 
       expect(AsyncStorage.clear).toHaveBeenCalledTimes(1)
+    })
+
+    it('should NOT clear cache when alert is cancelled', () => {
+      const { getByText } = render(
+        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+      )
+
+      fireEvent.press(getByText('Clear All Cache'))
+
+      expect(Alert.alert).toHaveBeenCalled()
+      expect(AsyncStorage.clear).not.toHaveBeenCalled()
     })
 
     it('should show error message when clear fails', async () => {
@@ -284,8 +314,12 @@ describe('AdminScreen', () => {
         <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
       )
 
-      const clearButton = getByText('Clear All Cache')
-      fireEvent.press(clearButton)
+      fireEvent.press(getByText('Clear All Cache'))
+
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
+      })
 
       await waitFor(() => {
         expect(getByText('Clear failed')).toBeTruthy()

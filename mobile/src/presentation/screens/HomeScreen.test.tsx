@@ -1,5 +1,6 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Alert } from 'react-native'
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { HomeScreen } from './HomeScreen'
 import { Guide } from '../../domain/entities/Guide'
 import { Session, SessionStatus } from '../../domain/entities/Session'
@@ -25,6 +26,7 @@ describe('HomeScreen', () => {
   let mockStepTimerClient: jest.Mocked<ReturnType<typeof createMockStepTimerClient>>
 
   beforeEach(() => {
+    jest.clearAllMocks()
     mockOnLogout = jest.fn()
     mockOnOpenSettings = jest.fn()
     mockOnOpenProfile = jest.fn()
@@ -162,7 +164,7 @@ describe('HomeScreen', () => {
   })
 
   describe('logout menu item', () => {
-    it('should call onLogout when logout menu item is pressed', () => {
+    it('should show a confirmation alert when logout menu item is pressed', async () => {
       const { getByTestId } = render(
         <HomeScreen
           onLogout={mockOnLogout}
@@ -180,7 +182,40 @@ describe('HomeScreen', () => {
       fireEvent.press(getByTestId('home-menu'))
       fireEvent.press(getByTestId('menu-item-logout'))
 
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Sign Out',
+        'Are you sure you want to sign out?',
+        expect.any(Array),
+      )
+
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
+      })
+
       expect(mockOnLogout).toHaveBeenCalledTimes(1)
+    })
+
+    it('should NOT call onLogout when sign out alert is cancelled', () => {
+      const { getByTestId } = render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      fireEvent.press(getByTestId('home-menu'))
+      fireEvent.press(getByTestId('menu-item-logout'))
+
+      expect(Alert.alert).toHaveBeenCalled()
+      expect(mockOnLogout).not.toHaveBeenCalled()
     })
 
     it('should handle async logout errors', async () => {
@@ -202,6 +237,11 @@ describe('HomeScreen', () => {
 
       fireEvent.press(getByTestId('home-menu'))
       fireEvent.press(getByTestId('menu-item-logout'))
+
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
+      })
 
       await waitFor(() => {
         expect(mockOnLogout).toHaveBeenCalledTimes(1)

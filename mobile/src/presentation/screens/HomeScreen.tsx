@@ -291,12 +291,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     await Promise.all([loadData(), refreshActiveTimers()])
   }
 
-  const handleLogout = async () => {
-    try {
-      await onLogout()
-    } catch (err) {
-      console.error('Logout error:', err)
-    }
+  const handleLogout = () => {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await onLogout()
+          } catch (err) {
+            console.error('Logout error:', err)
+          }
+        },
+      },
+    ])
   }
 
   const handleBrowseGuides = () => {
