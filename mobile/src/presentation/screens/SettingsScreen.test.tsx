@@ -329,6 +329,38 @@ describe('SettingsScreen', () => {
       })
     })
 
+    it('disables timer notifications toggle during async save', async () => {
+      mockPrefsStorage.setTimerNotificationsEnabled.mockImplementation(
+        () => new Promise(resolve => setTimeout(resolve, 100)),
+      )
+
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByTestId('timer-notifications-toggle')).toBeTruthy()
+      })
+
+      fireEvent(getByTestId('timer-notifications-toggle'), 'onValueChange', false)
+
+      expect(getByTestId('timer-notifications-toggle').props['disabled']).toBe(true)
+    })
+
+    it('disables critical notifications toggle during async save', async () => {
+      mockPrefsStorage.setCriticalNotificationsEnabled.mockImplementation(
+        () => new Promise(resolve => setTimeout(resolve, 100)),
+      )
+
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(getByTestId('critical-notifications-toggle')).toBeTruthy()
+      })
+
+      fireEvent(getByTestId('critical-notifications-toggle'), 'onValueChange', true)
+
+      expect(getByTestId('critical-notifications-toggle').props['disabled']).toBe(true)
+    })
+
     it('shows time-sensitive notification hint text', async () => {
       mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
 

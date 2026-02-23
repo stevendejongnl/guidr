@@ -588,6 +588,47 @@ describe('StepFormScreen', () => {
       })
     })
 
+    it('shows "Saving..." text on save button during async save', async () => {
+      mockStepService.createStep.mockImplementation(
+        () =>
+          new Promise(resolve =>
+            setTimeout(
+              () =>
+                resolve({
+                  id: 'step-new',
+                  guideId,
+                  order: 0,
+                  title: 'New Step',
+                  description: undefined,
+                  duration: 3600,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                } as unknown as Step),
+              100,
+            ),
+          ),
+      )
+
+      const { getByTestId, getByText } = render(
+        <StepFormScreen
+          mode="create"
+          guideId={guideId}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+          stepService={mockStepService}
+        />,
+      )
+
+      await waitFor(() => {
+        const titleInput = getByTestId('step-title-input')
+        fireEvent.changeText(titleInput, 'New Step')
+        const saveButton = getByTestId('step-save-button')
+        fireEvent.press(saveButton)
+      })
+
+      expect(getByText('Saving...')).toBeTruthy()
+    })
+
     it('shows alert when delete is pressed', async () => {
       mockStepService.getStepById.mockResolvedValue({
         id: 'step-1',

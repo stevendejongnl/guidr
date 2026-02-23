@@ -43,6 +43,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [serverVersion, setServerVersion] = useState<string | null>(null)
   const [timerNotificationsEnabled, setTimerNotificationsEnabled] = useState(true)
   const [criticalNotificationsEnabled, setCriticalNotificationsEnabled] = useState(false)
+  const [savingPrefs, setSavingPrefs] = useState(false)
 
   const prefsStorage = injectedPrefsStorage || new NotificationPreferencesStorage()
   const notifService = injectedNotifService || new NotificationService()
@@ -77,20 +78,30 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   }, [])
 
   const handleTimerNotificationsToggle = async (value: boolean) => {
-    setTimerNotificationsEnabled(value)
-    await prefsStorage.setTimerNotificationsEnabled(value)
-    if (value) {
-      await notifService.requestPermission()
-    }
-    if (!value) {
-      setCriticalNotificationsEnabled(false)
-      await prefsStorage.setCriticalNotificationsEnabled(false)
+    setSavingPrefs(true)
+    try {
+      setTimerNotificationsEnabled(value)
+      await prefsStorage.setTimerNotificationsEnabled(value)
+      if (value) {
+        await notifService.requestPermission()
+      }
+      if (!value) {
+        setCriticalNotificationsEnabled(false)
+        await prefsStorage.setCriticalNotificationsEnabled(false)
+      }
+    } finally {
+      setSavingPrefs(false)
     }
   }
 
   const handleCriticalNotificationsToggle = async (value: boolean) => {
-    setCriticalNotificationsEnabled(value)
-    await prefsStorage.setCriticalNotificationsEnabled(value)
+    setSavingPrefs(true)
+    try {
+      setCriticalNotificationsEnabled(value)
+      await prefsStorage.setCriticalNotificationsEnabled(value)
+    } finally {
+      setSavingPrefs(false)
+    }
   }
 
   return (
@@ -142,6 +153,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               <Switch
                 value={timerNotificationsEnabled}
                 onValueChange={handleTimerNotificationsToggle}
+                disabled={savingPrefs}
                 testID="timer-notifications-toggle"
               />
             </View>
@@ -155,6 +167,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   <Switch
                     value={criticalNotificationsEnabled}
                     onValueChange={handleCriticalNotificationsToggle}
+                    disabled={savingPrefs}
                     testID="critical-notifications-toggle"
                   />
                 </View>

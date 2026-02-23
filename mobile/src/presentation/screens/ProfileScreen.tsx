@@ -306,6 +306,7 @@ export function ProfileScreen({
               onChangeText={setName}
               placeholder="Enter your name (optional)"
               placeholderTextColor={colors.textMuted}
+              editable={!loading}
               testID="name-input"
             />
 
@@ -364,9 +365,8 @@ export function ProfileScreen({
               testID="update-profile-button">
               {loading ? (
                 <ActivityIndicator color={colors.textPrimary} />
-              ) : (
-                <Text style={commonStyles.buttonText}>Update Profile</Text>
-              )}
+              ) : null}
+              <Text style={commonStyles.buttonText}>{loading ? 'Saving...' : 'Update Profile'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -400,6 +400,7 @@ export function ProfileScreen({
                   placeholderTextColor={colors.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  editable={!loading}
                   testID="new-email-input"
                 />
 
@@ -411,6 +412,7 @@ export function ProfileScreen({
                   placeholder="Enter your password"
                   placeholderTextColor={colors.textMuted}
                   secureTextEntry
+                  editable={!loading}
                   testID="email-password-input"
                 />
 
@@ -421,9 +423,8 @@ export function ProfileScreen({
                   testID="change-email-submit">
                   {loading ? (
                     <ActivityIndicator color={colors.textPrimary} />
-                  ) : (
-                    <Text style={commonStyles.buttonText}>Change Email</Text>
-                  )}
+                  ) : null}
+                  <Text style={commonStyles.buttonText}>{loading ? 'Saving...' : 'Change Email'}</Text>
                 </TouchableOpacity>
               </View>
             ) : null}
@@ -453,6 +454,7 @@ export function ProfileScreen({
                   placeholder="Enter current password"
                   placeholderTextColor={colors.textMuted}
                   secureTextEntry
+                  editable={!loading}
                   testID="old-password-input"
                 />
 
@@ -464,6 +466,7 @@ export function ProfileScreen({
                   placeholder="Enter new password"
                   placeholderTextColor={colors.textMuted}
                   secureTextEntry
+                  editable={!loading}
                   testID="new-password-input"
                 />
 
@@ -475,6 +478,7 @@ export function ProfileScreen({
                   placeholder="Re-enter new password"
                   placeholderTextColor={colors.textMuted}
                   secureTextEntry
+                  editable={!loading}
                   testID="confirm-password-input"
                 />
 
@@ -485,9 +489,8 @@ export function ProfileScreen({
                   testID="change-password-submit">
                   {loading ? (
                     <ActivityIndicator color={colors.textPrimary} />
-                  ) : (
-                    <Text style={commonStyles.buttonText}>Change Password</Text>
-                  )}
+                  ) : null}
+                  <Text style={commonStyles.buttonText}>{loading ? 'Saving...' : 'Change Password'}</Text>
                 </TouchableOpacity>
               </View>
             ) : null}

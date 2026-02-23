@@ -598,6 +598,66 @@ describe('ProfileScreen', () => {
       expect(button.props['disabled']).toBe(true)
     })
 
+    it('disables name input while loading', async () => {
+      mockAuthClient.updateProfile.mockImplementation(
+        () =>
+          new Promise(resolve =>
+            setTimeout(
+              () =>
+                resolve({
+                  id: '123',
+                  email: 'test@example.com',
+                  createdAt: '2024-01-01',
+                  updatedAt: '2024-01-01',
+                }),
+              100,
+            ),
+          ),
+      )
+
+      const { getByTestId } = render(
+        <ProfileScreen
+          {...defaultProps}
+          authClient={mockAuthClient}
+          authStorage={mockAuthStorage}
+        />,
+      )
+
+      fireEvent.press(getByTestId('update-profile-button'))
+
+      expect(getByTestId('name-input').props['editable']).toBe(false)
+    })
+
+    it('shows "Saving..." text on update profile button while loading', async () => {
+      mockAuthClient.updateProfile.mockImplementation(
+        () =>
+          new Promise(resolve =>
+            setTimeout(
+              () =>
+                resolve({
+                  id: '123',
+                  email: 'test@example.com',
+                  createdAt: '2024-01-01',
+                  updatedAt: '2024-01-01',
+                }),
+              100,
+            ),
+          ),
+      )
+
+      const { getByTestId, getByText } = render(
+        <ProfileScreen
+          {...defaultProps}
+          authClient={mockAuthClient}
+          authStorage={mockAuthStorage}
+        />,
+      )
+
+      fireEvent.press(getByTestId('update-profile-button'))
+
+      expect(getByText('Saving...')).toBeTruthy()
+    })
+
     it('disables buttons during operations', async () => {
       mockAuthClient.changeEmail.mockImplementation(
         () =>

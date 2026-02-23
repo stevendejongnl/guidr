@@ -390,7 +390,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
               {saving ? (
                 <ActivityIndicator color={colors.textPrimary} style={commonStyles.activityIndicator} />
               ) : null}
-              <Text style={commonStyles.buttonText}>Save</Text>
+              <Text style={commonStyles.buttonText}>{saving ? 'Saving...' : 'Save'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
