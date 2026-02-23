@@ -476,49 +476,87 @@ jobs:
           echo "IPA_PATH=$(pwd)/mobile/ios/build/guidr.ipa" >> $GITHUB_OUTPUT
           echo "Version: $VERSION, Build: $BUILD_NUMBER"
 
-      # Extract changelog for TestFlight "What to Test" notes
+      # Generate tester-friendly TestFlight "What to Test" notes from GitHub Release
       - name: Generate TestFlight changelog
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         id: changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_EVENT_NAME: ${{ github.event_name }}
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
           BUILD_NUM="${{ env.BUILD_NUMBER }}"
 
-          # Extract the latest version's changelog section from CHANGELOG.md (at root)
-          if [ -f "../CHANGELOG.md" ]; then
-            # Get content for the current version (between ## [version] and next ## [)
-            CHANGELOG_TEXT=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' ../CHANGELOG.md)
+          # Fetch release body from GitHub Release (created by semantic-release)
+          RELEASE_BODY=$(gh release view "v${VERSION}" --json body --jq .body 2>/dev/null || echo "")
 
-            # If no exact version match, get the latest section
-            if [ -z "$CHANGELOG_TEXT" ]; then
-              CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' ../CHANGELOG.md)
+          CHANGELOG_TEXT=""
+
+          if [ -n "$RELEASE_BODY" ]; then
+            # Strip scope prefixes (**mobile:** etc), PR/commit links, and deduplicate
+            strip_links() {
+              sed 's/^\* \*\*[^:]*:\*\* //' | \
+              sed 's/^\* //' | \
+              sed 's/ (\[[^]]*\]([^)]*))//g' | \
+              sed 's/, closes.*$//' | \
+              sed '/^[[:space:]]*$/d' | \
+              sort -u | \
+              sed 's/^/• /'
+            }
+
+            FEATURES=$(echo "$RELEASE_BODY" | \
+              awk '/^### Features/{flag=1; next} /^### /{flag=0} flag' | \
+              grep '^\*' | strip_links)
+
+            FIXES=$(echo "$RELEASE_BODY" | \
+              awk '/^### Bug Fixes/{flag=1; next} /^### /{flag=0} flag' | \
+              grep '^\*' | strip_links)
+
+            # Compose tester-friendly notes with section headers
+            if [ -n "$FEATURES" ]; then
+              CHANGELOG_TEXT="New:
+${FEATURES}"
+            fi
+            if [ -n "$FIXES" ]; then
+              if [ -n "$CHANGELOG_TEXT" ]; then
+                CHANGELOG_TEXT="${CHANGELOG_TEXT}
+
+Fixed:
+${FIXES}"
+              else
+                CHANGELOG_TEXT="Fixed:
+${FIXES}"
+              fi
             fi
 
-            # Convert markdown to plain text for TestFlight (doesn't support markdown)
-            CHANGELOG_TEXT=$(echo "$CHANGELOG_TEXT" | \
-              sed 's/^### //' | \
-              sed 's/^## //' | \
-              sed 's/^# //' | \
-              sed 's/^\* /• /' | \
-              sed 's/^- /• /' | \
-              sed 's/\*\*\([^*]*\)\*\*/\1/g' | \
-              sed 's/__\([^_]*\)__/\1/g' | \
-              sed 's/\*\([^*]*\)\*/\1/g' | \
-              sed 's/_\([^_]*\)_/\1/g' | \
-              sed 's/`\([^`]*\)`/\1/g' | \
-              sed 's/\[([^]]*)\]([^)]*)/\1/g' | \
-              sed '/^$/d' | \
-              head -c 3900)
-
-            if [ -z "$CHANGELOG_TEXT" ]; then
-              CHANGELOG_TEXT="Please test the latest features and report any issues."
+            # Cap at 50 lines to stay within TestFlight's 4000-char limit
+            if [ -n "$CHANGELOG_TEXT" ]; then
+              CHANGELOG_TEXT=$(echo "$CHANGELOG_TEXT" | head -n 50)
             fi
-          else
+          fi
+
+          # Fallback: CHANGELOG.md at repo root
+          if [ -z "$CHANGELOG_TEXT" ] && [ -f "CHANGELOG.md" ]; then
+            CHANGELOG_TEXT=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+            if [ -z "$CHANGELOG_TEXT" ]; then
+              CHANGELOG_TEXT=$(awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md)
+            fi
+            if [ -n "$CHANGELOG_TEXT" ]; then
+              CHANGELOG_TEXT=$(echo "$CHANGELOG_TEXT" | \
+                sed 's/^### //' | sed 's/^## //' | sed 's/^# //' | \
+                sed 's/^\* /• /' | sed 's/^- /• /' | \
+                sed 's/\*\*\([^*]*\)\*\*/\1/g' | \
+                sed 's/`\([^`]*\)`/\1/g' | \
+                sed '/^$/d' | head -n 50)
+            fi
+          fi
+
+          if [ -z "$CHANGELOG_TEXT" ]; then
             CHANGELOG_TEXT="Please test the latest features and report any issues."
           fi
 
-          # Build the changelog file with proper formatting
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          # Build the "What to Test" message
+          if [ "$GH_EVENT_NAME" == "workflow_dispatch" ]; then
             {
               echo "🧪 Manual Test Build - v${VERSION} (Build ${BUILD_NUM})"
               echo ""
@@ -537,7 +575,6 @@ jobs:
 
           echo "CHANGELOG_FILE=/tmp/changelog.txt" >> $GITHUB_ENV
 
-          # Output for logging
           echo "=== TestFlight What to Test ==="
           cat /tmp/changelog.txt
           echo "==============================="
