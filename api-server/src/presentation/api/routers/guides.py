@@ -11,6 +11,8 @@ from src.application.use_cases.guide import (
     GetAllGuides,
     GetGuide,
     GetGuidesByType,
+    GetHighlightedGuides,
+    GetMyGuides,
     TranslateGuide,
     UpdateGuide,
 )
@@ -98,6 +100,16 @@ def get_translate_guide_use_case() -> TranslateGuide:
     return _container.translate_guide_use_case()
 
 
+def get_get_my_guides_use_case() -> GetMyGuides:
+    assert _container is not None, "Container not initialized"
+    return _container.get_my_guides_use_case()
+
+
+def get_get_highlighted_guides_use_case() -> GetHighlightedGuides:
+    assert _container is not None, "Container not initialized"
+    return _container.get_highlighted_guides_use_case()
+
+
 def _guide_response_from_dto(result) -> GuideResponse:  # type: ignore
     """Convert GuideResponseDTO to GuideResponse Pydantic model."""
     return GuideResponse(
@@ -141,6 +153,25 @@ async def create_guide(
         return _guide_response_from_dto(result)
     except (ValidationException, ValueError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/my", response_model=list[GuideResponse])
+async def get_my_guides(
+    use_case: GetMyGuides = Depends(get_get_my_guides_use_case),
+    current_user: User = Depends(get_current_user),
+) -> list[GuideResponse]:
+    """Get all guides owned by the authenticated user."""
+    results = await use_case.execute(current_user)
+    return [_guide_response_from_dto(r) for r in results]
+
+
+@router.get("/highlighted", response_model=list[GuideResponse])
+async def get_highlighted_guides(
+    use_case: GetHighlightedGuides = Depends(get_get_highlighted_guides_use_case),
+) -> list[GuideResponse]:
+    """Get all highlighted guides (featured on homepage)."""
+    results = await use_case.execute()
+    return [_guide_response_from_dto(r) for r in results]
 
 
 @router.get(

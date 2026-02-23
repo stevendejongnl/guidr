@@ -617,6 +617,42 @@ describe('HomeScreen', () => {
     })
   })
 
+  describe('featured guides via getHighlightedGuides', () => {
+    it('should call getHighlightedGuides to populate Featured Guides section', async () => {
+      const highlightedGuide = {
+        id: 'h1',
+        title: 'Highlighted Guide',
+        guideType: 'cooking',
+        isPublic: true,
+        isHighlighted: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as Guide
+
+      mockGuideService = createMockGuideService([], {
+        getHighlightedGuides: jest.fn().mockResolvedValue([highlightedGuide]),
+      })
+
+      render(
+        <HomeScreen
+          onLogout={mockOnLogout}
+          onOpenSettings={mockOnOpenSettings}
+          onOpenProfile={mockOnOpenProfile}
+          isAdmin={false}
+          guideService={mockGuideService}
+          sessionService={mockSessionService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+          authClient={mockAuthClient}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockGuideService.getHighlightedGuides).toHaveBeenCalled()
+      })
+    })
+  })
+
   describe('token refresh on AuthenticationError', () => {
     it('should refresh token and retry loadData when AuthenticationError occurs', async () => {
       // First call throws AuthenticationError, second call succeeds

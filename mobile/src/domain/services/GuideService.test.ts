@@ -129,6 +129,21 @@ describe('GuideService', () => {
     })
   })
 
+  describe('getHighlightedGuides', () => {
+    it('should return highlighted guides via repository', async () => {
+      const guides = [
+        new Guide('guide-1', 'cooking', 'Featured Pasta'),
+        new Guide('guide-2', 'workout', 'Featured HIIT'),
+      ]
+      mockGuideRepository.findHighlightedGuides.mockResolvedValue(guides)
+
+      const result = await guideService.getHighlightedGuides(authToken)
+
+      expect(result).toEqual(guides)
+      expect(mockGuideRepository.findHighlightedGuides).toHaveBeenCalledWith(authToken)
+    })
+  })
+
   describe('getGuidesByType', () => {
     it('should return guides for type', async () => {
       const guides = [

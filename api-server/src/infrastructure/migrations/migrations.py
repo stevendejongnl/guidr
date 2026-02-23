@@ -120,6 +120,37 @@ async def migrate_users_add_deleted_at(
     )
 
 
+async def migrate_guides_add_ownership_fields(
+    db: AsyncIOMotorDatabase,
+) -> None:
+    """Backfill ownership and visibility fields on legacy guides.
+
+    Guides created before ownership was introduced have no createdByUserId,
+    isPublic, or isHighlighted. Set safe defaults: no owner (admin-only
+    access), private, and not highlighted.
+    """
+    guides_collection = db["guides"]
+    result = await guides_collection.update_many(
+        {
+            "$or": [
+                {"createdByUserId": {"$exists": False}},
+                {"isPublic": {"$exists": False}},
+                {"isHighlighted": {"$exists": False}},
+            ]
+        },
+        {
+            "$set": {
+                "createdByUserId": None,
+                "isPublic": False,
+                "isHighlighted": False,
+            }
+        },
+    )
+    logger.info(
+        f"Backfilled ownership fields on {result.modified_count} guide(s)."
+    )
+
+
 # List of all migrations in order
 # Each tuple is (migration_id, migration_function)
 MIGRATIONS: list[tuple[str, MigrationFunc]] = [
@@ -128,4 +159,5 @@ MIGRATIONS: list[tuple[str, MigrationFunc]] = [
     ("003_migrate_users_add_preferred_languages", migrate_users_add_preferred_languages),
     ("004_add_deleted_at_to_guides", migrate_guides_add_deleted_at),
     ("005_add_deleted_at_to_users", migrate_users_add_deleted_at),
+    ("006_guides_add_ownership_fields", migrate_guides_add_ownership_fields),
 ]

@@ -334,7 +334,7 @@ describe('GuideRepository', () => {
 
       expect(result).toHaveLength(1)
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/guides?my_guides=true',
+        'http://localhost:8000/api/v1/guides/my',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -440,7 +440,7 @@ describe('GuideRepository', () => {
 
       expect(result).toHaveLength(1)
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/guides?highlighted=true',
+        'http://localhost:8000/api/v1/guides/highlighted',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({

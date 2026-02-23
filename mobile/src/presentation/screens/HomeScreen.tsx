@@ -213,9 +213,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       // Get services (either injected or create new)
       const services = getServices(loadedServerUrl)
 
-      // Load all guides and sessions in parallel
-      const [allGuides, allSessions] = await Promise.all([
+      // Load all guides, highlighted guides, and sessions in parallel
+      const [allGuides, highlightedGuides, allSessions] = await Promise.all([
         services.guideService.getAllGuides(token),
+        services.guideService.getHighlightedGuides(token),
         services.sessionService.getAllSessions(token),
       ])
 
@@ -229,14 +230,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
       setRecommendedGuides(recommendedViewModels)
 
-      // Get featured guides (public and highlighted)
-      const featuredList = allGuides
-        .filter(guide => guide.isPublic && guide.isHighlighted)
+      // Get featured guides from dedicated highlighted endpoint (DB-level filter)
+      const featuredViewModels: GuideViewModel[] = highlightedGuides
         .slice(0, 3)
-
-      const featuredViewModels: GuideViewModel[] = featuredList.map(guide =>
-        createGuideViewModel(guide)
-      )
+        .map(guide => createGuideViewModel(guide))
 
       setFeaturedGuides(featuredViewModels)
 

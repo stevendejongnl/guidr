@@ -7,6 +7,7 @@ import pytest
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from .migration_runner import MigrationRunner
+from .migrations import migrate_guides_add_ownership_fields
 
 
 @pytest.fixture
@@ -122,3 +123,43 @@ class TestMigrationRunner:
 
         # Verify migration was NOT marked as complete
         migrations_collection.insert_one.assert_not_called()
+
+
+class TestMigrateGuidesAddOwnershipFields:
+    """Tests for the migrate_guides_add_ownership_fields migration function."""
+
+    async def test_backfills_missing_ownership_fields(self) -> None:
+        """Guides missing ownership fields receive null/false defaults."""
+        db = AsyncMock(spec=AsyncIOMotorDatabase)
+        guides_collection = AsyncMock()
+        db.__getitem__.return_value = guides_collection
+
+        await migrate_guides_add_ownership_fields(db)
+
+        guides_collection.update_many.assert_called_once()
+        filter_arg, update_arg = guides_collection.update_many.call_args[0]
+
+        # Filter targets guides missing any of the three fields
+        assert "$or" in filter_arg
+        assert "createdByUserId" in filter_arg["$or"][0]
+        assert "isPublic" in filter_arg["$or"][1]
+        assert "isHighlighted" in filter_arg["$or"][2]
+
+        # Update sets safe defaults: no owner, private, not highlighted
+        set_fields = update_arg["$set"]
+        assert set_fields["createdByUserId"] is None
+        assert set_fields["isPublic"] is False
+        assert set_fields["isHighlighted"] is False
+
+    async def test_uses_exists_false_filter(self) -> None:
+        """Filter uses $exists: False to target legacy documents."""
+        db = AsyncMock(spec=AsyncIOMotorDatabase)
+        guides_collection = AsyncMock()
+        db.__getitem__.return_value = guides_collection
+
+        await migrate_guides_add_ownership_fields(db)
+
+        filter_arg = guides_collection.update_many.call_args[0][0]
+        for condition in filter_arg["$or"]:
+            for field_filter in condition.values():
+                assert field_filter == {"$exists": False}

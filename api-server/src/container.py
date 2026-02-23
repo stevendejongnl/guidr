@@ -14,6 +14,8 @@ from .application.use_cases.guide import (
     GetAllGuides,
     GetGuide,
     GetGuidesByType,
+    GetHighlightedGuides,
+    GetMyGuides,
     TranslateGuide,
     UpdateGuide,
 )
@@ -188,6 +190,16 @@ class Container(containers.DeclarativeContainer):
 
     get_guides_by_type_use_case = providers.Factory(
         GetGuidesByType,
+        guide_repository=guide_repository,
+    )
+
+    get_my_guides_use_case = providers.Factory(
+        GetMyGuides,
+        guide_repository=guide_repository,
+    )
+
+    get_highlighted_guides_use_case = providers.Factory(
+        GetHighlightedGuides,
         guide_repository=guide_repository,
     )
 

@@ -137,6 +137,7 @@ export const createMockGuideService = (
 ): jest.Mocked<GuideService> => ({
   getAllGuides: jest.fn().mockResolvedValue(guides),
   getMyGuides: jest.fn().mockResolvedValue(guides),
+  getHighlightedGuides: jest.fn().mockResolvedValue([]),
   getGuideById: jest.fn(),
   getGuidesByType: jest.fn(),
   updateGuideLanguage: jest.fn(),

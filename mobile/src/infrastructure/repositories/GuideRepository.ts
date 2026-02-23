@@ -269,7 +269,7 @@ export class GuideRepository implements IGuideRepository {
 
     // Fetch from API
     try {
-      const response = await fetch(`${this.apiBaseUrl}/guides?my_guides=true`, {
+      const response = await fetch(`${this.apiBaseUrl}/guides/my`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -355,7 +355,7 @@ export class GuideRepository implements IGuideRepository {
 
     // Fetch from API
     try {
-      const response = await fetch(`${this.apiBaseUrl}/guides?highlighted=true`, {
+      const response = await fetch(`${this.apiBaseUrl}/guides/highlighted`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${authToken}`,
