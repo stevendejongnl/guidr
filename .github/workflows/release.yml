@@ -11,6 +11,12 @@ permissions:
   issues: write
   pull-requests: write
 
+# Cancel any in-progress release run on main when a new commit is pushed.
+# Prevents a stale run from tagging/releasing after a newer commit has landed.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     name: Semantic Release
