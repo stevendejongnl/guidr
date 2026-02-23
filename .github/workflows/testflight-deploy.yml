@@ -514,18 +514,13 @@ jobs:
 
             # Compose tester-friendly notes with section headers
             if [ -n "$FEATURES" ]; then
-              CHANGELOG_TEXT="New:
-${FEATURES}"
+              CHANGELOG_TEXT="New:"$'\n'"${FEATURES}"
             fi
             if [ -n "$FIXES" ]; then
               if [ -n "$CHANGELOG_TEXT" ]; then
-                CHANGELOG_TEXT="${CHANGELOG_TEXT}
-
-Fixed:
-${FIXES}"
+                CHANGELOG_TEXT="${CHANGELOG_TEXT}"$'\n\n'"Fixed:"$'\n'"${FIXES}"
               else
-                CHANGELOG_TEXT="Fixed:
-${FIXES}"
+                CHANGELOG_TEXT="Fixed:"$'\n'"${FIXES}"
               fi
             fi
 
