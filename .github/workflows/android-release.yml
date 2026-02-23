@@ -23,6 +23,10 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'repository_dispatch'
+    # Cancel any in-progress Android build when a newer release is triggered
+    concurrency:
+      group: android-release
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

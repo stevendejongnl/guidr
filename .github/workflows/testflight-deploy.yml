@@ -17,6 +17,11 @@ on:
 permissions:
   contents: read
 
+# Cancel any in-progress TestFlight build when a newer release is triggered
+concurrency:
+  group: testflight-deploy
+  cancel-in-progress: true
+
 jobs:
   testflight-build:
     name: Build and Deploy to TestFlight

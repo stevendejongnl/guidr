@@ -21,6 +21,7 @@ import { GuideFormScreen } from '../screens/GuideFormScreen'
 import { BrowseGuidesScreen } from '../screens/BrowseGuidesScreen'
 import { GuideDetailScreen } from '../screens/GuideDetailScreen'
 import { StepFormScreen } from '../screens/StepFormScreen'
+import { SessionHistoryScreen } from '../screens/SessionHistoryScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
@@ -65,6 +66,7 @@ export const AppNavigator: React.FC = () => {
   const [showGuideList, setShowGuideList] = useState(false)
   const [guideFormMode, setGuideFormMode] = useState<'create' | 'edit' | null>(null)
   const [editingGuideId, setEditingGuideId] = useState<string | null>(null)
+  const [showSessionHistory, setShowSessionHistory] = useState(false)
   const [showBrowseGuides, setShowBrowseGuides] = useState(false)
   const [showGuideDetail, setShowGuideDetail] = useState(false)
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
@@ -723,6 +725,17 @@ export const AppNavigator: React.FC = () => {
     )
   }
 
+  if (showSessionHistory && servicesRef.current) {
+    return (
+      <SessionHistoryScreen
+        onBack={() => setShowSessionHistory(false)}
+        sessionService={servicesRef.current.session}
+        guideService={servicesRef.current.guide}
+        authStorage={authStorage}
+      />
+    )
+  }
+
   return (
     <HomeScreen
       onLogout={handleLogout}
@@ -731,6 +744,7 @@ export const AppNavigator: React.FC = () => {
       onBrowseGuides={handleBrowseGuides}
       onManageGuides={handleManageGuides}
       onViewSessionDetail={handleViewSessionDetail}
+      onViewSessionHistory={() => setShowSessionHistory(true)}
       onViewGuideDetail={handleViewGuide}
       isAdmin={isAdmin}
       adminModeActive={adminModeActive}

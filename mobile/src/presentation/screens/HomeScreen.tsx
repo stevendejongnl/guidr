@@ -78,6 +78,7 @@ interface HomeScreenProps {
   onBrowseGuides?: () => void
   onManageGuides?: () => void
   onViewSessionDetail?: (sessionId: string) => void
+  onViewSessionHistory?: () => void
   onViewGuideDetail?: (guideId: string) => void
   isAdmin: boolean
   adminModeActive?: boolean
@@ -98,6 +99,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onBrowseGuides,
   onManageGuides,
   onViewSessionDetail,
+  onViewSessionHistory,
   onViewGuideDetail,
   isAdmin,
   adminModeActive,
@@ -438,6 +440,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 onResume={() => handleResumeSession(session.id)}
               />
             ))}
+            {onViewSessionHistory && (
+              <TouchableOpacity onPress={onViewSessionHistory}>
+                <Text style={commonStyles.linkText}>View All Sessions →</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 

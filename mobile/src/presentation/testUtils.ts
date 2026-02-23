@@ -156,12 +156,14 @@ export const createMockSessionService = (
   getSessionById: jest.fn(),
   createSession: jest.fn(),
   getSessionsByStatus: jest.fn(),
+  getSessionsByGuideId: jest.fn().mockResolvedValue(sessions),
   startSession: jest.fn().mockResolvedValue(undefined),
   pauseSession: jest.fn().mockResolvedValue(undefined),
   resumeSession: jest.fn().mockResolvedValue(undefined),
   completeSession: jest.fn().mockResolvedValue(undefined),
   cancelSession: jest.fn().mockResolvedValue(undefined),
   moveToStep: jest.fn().mockResolvedValue(undefined),
+  deleteSession: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 } as unknown as jest.Mocked<SessionService>)
 

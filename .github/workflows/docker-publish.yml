@@ -17,6 +17,11 @@ permissions:
   contents: read
   packages: write  # Required for GHCR
 
+# Cancel any in-progress Docker publish when a newer release is triggered
+concurrency:
+  group: docker-publish
+  cancel-in-progress: true
+
 jobs:
   docker-build-push:
     name: Build and Push Docker Image
