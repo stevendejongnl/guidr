@@ -19,6 +19,7 @@ export const routes: Route[] = [
   { path: '/guides/generate', component: 'generate-guide-page', title: 'Generate Guide - Guidr', requiresAuth: true, requiresBeta: true },
   { path: '/guides/:id', component: 'guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true },
   { path: '/admin/guides', component: 'admin-guides-page', title: 'Admin Guides - Guidr', requiresAuth: true, requiresAdmin: true },
+  { path: '/admin/guides/generate', component: 'generate-guide-page', title: 'Generate Guide - Guidr', requiresAuth: true, requiresAdmin: true, requiresBeta: true },
   { path: '/admin/guides/:id', component: 'admin-guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '/admin/users', component: 'admin-users-page', title: 'Admin Users - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '/admin/users/:id', component: 'admin-user-detail-page', title: 'User Detail - Guidr', requiresAuth: true, requiresAdmin: true },

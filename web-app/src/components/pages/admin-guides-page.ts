@@ -244,6 +244,22 @@ export class AdminGuidesPage extends LitElement {
       background-color: rgba(244, 67, 54, 0.1);
     }
 
+    .generate-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--color-primary);
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--color-primary);
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    .generate-btn:hover {
+      background-color: rgba(99, 102, 241, 0.2);
+    }
+
     @media (max-width: 768px) {
       :host {
         padding: 16px;
@@ -389,8 +405,13 @@ export class AdminGuidesPage extends LitElement {
       <div class="container">
         <div class="header">
           <h1>Admin - Guides</h1>
-          <div class="stats">
-            Showing ${filtered.length} of ${this.guides.length} guides
+          <div style="display: flex; align-items: center; gap: 16px;">
+            ${this.auth?.isBeta ? html`
+              <button class="generate-btn" @click=${this.navigateToGenerate}>✦ Generate Guide</button>
+            ` : nothing}
+            <div class="stats">
+              Showing ${filtered.length} of ${this.guides.length} guides
+            </div>
           </div>
         </div>
 
@@ -434,6 +455,11 @@ export class AdminGuidesPage extends LitElement {
         }
       </div>
     `
+  }
+
+  private navigateToGenerate(): void {
+    window.history.pushState({}, '', '/admin/guides/generate')
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
   private navigateToGuide(id: string): void {
