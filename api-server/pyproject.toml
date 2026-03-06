@@ -20,6 +20,7 @@ dependencies = [
     "httpx>=0.28.1",
     "sentry-sdk[fastapi]>=2.0.0",
     "openai>=1.40.0",
+    "cryptography>=46.0.5",
 ]
 
 [project.optional-dependencies]

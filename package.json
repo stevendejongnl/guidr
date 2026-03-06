@@ -34,6 +34,9 @@
     "postinstall": "node scripts/setup-sentry-symlink.js",
     "prepare": "node scripts/setup-husky.js"
   },
+  "overrides": {
+    "rollup": ">=4.59.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@babel/runtime": "^7.24.0",

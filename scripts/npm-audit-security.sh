@@ -22,6 +22,11 @@
 # - GHSA-3ppc-4f35-3m26: minimatch ReDoS via repeated wildcards (HIGH, eslint/jest/babel dev tools only, fix requires breaking major version bump)
 # - GHSA-2g4f-4pwh-qvx6: ajv ReDoS with $data option (MODERATE, in eslint devDependency, fix locked by peer deps)
 # - GHSA-83g3-92jg-28cx: node-tar hardlink symlink escape (HIGH, bundled in npm CLI internals, not overridable)
+# - GHSA-fj3w-jwp8-x2g3: fast-xml-parser stack overflow in XMLBuilder (HIGH, @react-native-community/cli dev tool only, fix in >=4.5.4, override pending safe-chain age requirement)
+# - GHSA-7r86-cg39-jmmj: minimatch ReDoS via non-adjacent GLOBSTAR (HIGH, bundled in npm CLI internals, not overridable)
+# - GHSA-23c5-xmqv-rm74: minimatch ReDoS via nested *() extglobs (HIGH, bundled in npm CLI internals, not overridable)
+# - GHSA-mw96-cpmx-2vgc: rollup arbitrary file write via path traversal (HIGH, web build tool dev-time only, fix in >=4.59.0, override pending safe-chain age requirement)
+# - GHSA-qffp-2rhf-9h96: tar hardlink path traversal via drive-relative linkpath (HIGH, bundled in npm CLI internals, not overridable)
 
 set -e
 
@@ -46,6 +51,11 @@ ACCEPTED_ADVISORIES=(
   "GHSA-3ppc-4f35-3m26"
   "GHSA-2g4f-4pwh-qvx6"
   "GHSA-83g3-92jg-28cx"
+  "GHSA-fj3w-jwp8-x2g3"
+  "GHSA-7r86-cg39-jmmj"
+  "GHSA-23c5-xmqv-rm74"
+  "GHSA-mw96-cpmx-2vgc"
+  "GHSA-qffp-2rhf-9h96"
 )
 
 # Run npm audit and capture output
