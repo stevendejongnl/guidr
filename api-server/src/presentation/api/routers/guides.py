@@ -187,6 +187,11 @@ async def get_guide(
     """Get a guide by ID (with visibility check)."""
     try:
         result = await use_case.execute(guide_id, current_user)  # type: ignore[call-arg]
+    except ValidationException as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
     except EntityNotFoundException as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

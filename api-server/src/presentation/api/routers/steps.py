@@ -150,6 +150,8 @@ async def list_steps(
             results = await use_case_by_guide.execute(guide_id, current_user)
         else:
             results = await use_case_all.execute()
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except AuthorizationException as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 

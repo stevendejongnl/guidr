@@ -704,6 +704,16 @@ class TestStepAuthorizationIntegration:
         )
         assert response.status_code == 404
 
+    async def test_list_steps_with_invalid_guide_id_returns_400(
+        self, client: AsyncClient, auth_headers: dict
+    ) -> None:
+        """Test that GET /steps?guide_id=generate returns 400, not 500."""
+        response = await client.get(
+            "/api/v1/steps?guide_id=generate",
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
     # ═══════════════════════════════════════════════════════════════════════
     # HELPER METHODS
     # ═══════════════════════════════════════════════════════════════════════

@@ -309,6 +309,26 @@ class TestGuideVisibilityIntegration:
         assert len(guides) == 1
         assert guides[0]["isHighlighted"] is True
 
+    async def test_get_guide_with_invalid_id_returns_400(
+        self, client: AsyncClient, auth_headers: dict
+    ) -> None:
+        """Test that GET /guides/{id} with a non-UUID/ObjectId returns 400, not 500."""
+        response = await client.get(
+            "/api/v1/guides/generate",
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
+    async def test_get_guide_with_non_id_string_returns_400(
+        self, client: AsyncClient, auth_headers: dict
+    ) -> None:
+        """Test that GET /guides/{id} with any invalid ID format returns 400."""
+        response = await client.get(
+            "/api/v1/guides/not-a-valid-id",
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
     # Helper methods
     async def _login_user(
         self, client: AsyncClient, email: str
