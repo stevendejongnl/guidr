@@ -9,6 +9,7 @@ import {
   createMockServerConfigStorage,
   createMockGuideService,
   createMockStepService,
+  createMockNotificationPreferencesStorage,
 } from '../testUtils'
 
 // Mock only ErrorReporter (static utility)
@@ -457,6 +458,8 @@ describe('GuideDetailScreen', () => {
       }
       mockStepTimerClient.startTimer.mockResolvedValue(timerDto)
 
+      const mockNotifPrefsStorage = createMockNotificationPreferencesStorage()
+
       const { getByTestId } = render(
         <GuideDetailScreen
           guideId="guide-1"
@@ -467,6 +470,7 @@ describe('GuideDetailScreen', () => {
           stepTimerClient={mockStepTimerClient}
           authStorage={mockAuthStorage}
           serverConfigStorage={mockServerConfigStorage}
+          notificationPreferencesStorage={mockNotifPrefsStorage}
         />
       )
 

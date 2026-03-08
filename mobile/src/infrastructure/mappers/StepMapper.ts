@@ -30,13 +30,16 @@ export class StepMapper {
    * Used for caching and verification.
    */
   static toDto(step: Step): StepDto {
+    const dur = step.duration ?? null
     return {
       id: step.id,
       guideId: step.guideId,
       order: step.order,
       title: step.title,
       description: step.description ?? null,
-      duration: step.duration ?? null,
+      duration: dur,
+      durationMinutes: dur != null ? Math.floor(dur / 60) : null,
+      durationSecondsRemainder: dur != null ? dur % 60 : null,
       createdAt: step.createdAt.toISOString(),
       updatedAt: step.updatedAt.toISOString(),
     }

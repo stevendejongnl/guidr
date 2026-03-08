@@ -36,6 +36,8 @@ class StepResponse(BaseModel):
     title: str
     description: str | None
     duration: int | None  # seconds
+    duration_minutes: int | None = Field(None, alias="durationMinutes")
+    duration_seconds_remainder: int | None = Field(None, alias="durationSecondsRemainder")
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
 

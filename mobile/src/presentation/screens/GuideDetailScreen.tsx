@@ -451,7 +451,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                     .map((step, index) => {
                       const timerDisplay = stepTimers.timers[step.id]
                       const mode = step.duration > 0 ? 'countdown' : 'stopwatch'
-                      const initialSeconds = step.duration > 0 ? step.duration * 60 : 0
+                      const initialSeconds = step.duration > 0 ? step.duration : 0
                       return (
                         <StepListItem
                           key={step.id}
@@ -483,9 +483,20 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                                 totalDurationSeconds: initialSeconds,
                                 remainingSeconds: remaining,
                               })
+                              if (step.duration > 0) {
+                                notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
+                                  if (!enabled) return
+                                  notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
+                                    notificationService.scheduleTimerNotification(
+                                      step.id, step.title, guide.title, remaining, critical,
+                                    )
+                                  })
+                                })
+                              }
                             },
                             onPause: async () => {
                               await stepTimers.pauseTimer(step.id)
+                              notificationService.cancelTimerNotification(step.id)
                               const display = stepTimers.timers[step.id]
                               liveActivity.updateTimer(
                                 step.id,

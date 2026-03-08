@@ -26,6 +26,7 @@ class StepTimerResponse(BaseModel):
         ..., alias="accumulatedSeconds"
     )
     duration_seconds: int = Field(..., alias="durationSeconds")
+    remaining_seconds: int | None = Field(None, alias="remainingSeconds")
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
     server_time: str | None = Field(None, alias="serverTime")

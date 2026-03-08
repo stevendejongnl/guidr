@@ -127,6 +127,7 @@ describe('StepFormScreen', () => {
         expect(getByTestId('step-title-input')).toBeTruthy()
         expect(getByTestId('step-duration-hours-input')).toBeTruthy()
         expect(getByTestId('step-duration-minutes-input')).toBeTruthy()
+        expect(getByTestId('step-duration-seconds-input')).toBeTruthy()
         expect(getByTestId('step-description-input')).toBeTruthy()
       })
     })
@@ -294,7 +295,7 @@ describe('StepFormScreen', () => {
       })
 
       await waitFor(() => {
-        expect(getByText(/When hours is 24, minutes must be 0/)).toBeTruthy()
+        expect(getByText(/When hours is 24, minutes and seconds must be 0/)).toBeTruthy()
       })
     })
 
@@ -321,7 +322,7 @@ describe('StepFormScreen', () => {
       })
 
       await waitFor(() => {
-        expect(getByText(/Hours must be 0-24, minutes must be 0-59/)).toBeTruthy()
+        expect(getByText(/Hours must be 0-24, minutes must be 0-59, seconds must be 0-59/)).toBeTruthy()
       })
     })
   })

@@ -37,18 +37,20 @@ const MIN_DURATION = 0
 const MAX_DURATION = 86400
 const MAX_HOURS = 24
 const MAX_MINUTES = 59
+const MAX_SECONDS = 59
 
-const decomposeDuration = (totalSeconds: number): { hours: number; minutes: number } => {
-  const totalMinutes = Math.floor(totalSeconds / 60)
-  const hours = Math.floor(totalMinutes / 60)
-  const minutes = totalMinutes % 60
-  return { hours, minutes }
+const decomposeDuration = (totalSeconds: number): { hours: number; minutes: number; seconds: number } => {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  return { hours, minutes, seconds }
 }
 
-const computeTotalSeconds = (hoursStr: string, minutesStr: string): number => {
+const computeTotalSeconds = (hoursStr: string, minutesStr: string, secondsStr: string): number => {
   const hours = parseInt(hoursStr || '0', 10) || 0
   const minutes = parseInt(minutesStr || '0', 10) || 0
-  return (hours * 60 + minutes) * 60
+  const seconds = parseInt(secondsStr || '0', 10) || 0
+  return hours * 3600 + minutes * 60 + seconds
 }
 
 export const StepFormScreen: React.FC<StepFormScreenProps> = ({
@@ -67,6 +69,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   const [description, setDescription] = useState('')
   const [hoursStr, setHoursStr] = useState('')
   const [minutesStr, setMinutesStr] = useState('')
+  const [secondsStr, setSecondsStr] = useState('')
   const [loading, setLoading] = useState(mode === 'edit')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -128,9 +131,10 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 
       setTitle(step.title)
       setDescription(step.description || '')
-      const { hours, minutes } = decomposeDuration(step.duration)
+      const { hours, minutes, seconds } = decomposeDuration(step.duration)
       setHoursStr(hours > 0 ? hours.toString() : '')
       setMinutesStr(minutes > 0 ? minutes.toString() : '')
+      setSecondsStr(seconds > 0 ? seconds.toString() : '')
     } catch (err) {
       ErrorReporter.capture(err, { component: 'StepFormScreen', action: 'loadStep' })
       console.error('Failed to load step:', err)
@@ -148,22 +152,23 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 
     const hours = parseInt(hoursStr || '0', 10)
     const minutes = parseInt(minutesStr || '0', 10)
-    if (isNaN(hours) || isNaN(minutes)) {
+    const seconds = parseInt(secondsStr || '0', 10)
+    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
       setValidationError('Duration must contain valid numbers')
       return false
     }
 
-    if (hours < 0 || hours > MAX_HOURS || minutes < 0 || minutes > MAX_MINUTES) {
-      setValidationError(`Hours must be 0-${MAX_HOURS}, minutes must be 0-${MAX_MINUTES}`)
+    if (hours < 0 || hours > MAX_HOURS || minutes < 0 || minutes > MAX_MINUTES || seconds < 0 || seconds > MAX_SECONDS) {
+      setValidationError(`Hours must be 0-${MAX_HOURS}, minutes must be 0-${MAX_MINUTES}, seconds must be 0-${MAX_SECONDS}`)
       return false
     }
 
-    if (hours === MAX_HOURS && minutes > 0) {
-      setValidationError(`When hours is ${MAX_HOURS}, minutes must be 0`)
+    if (hours === MAX_HOURS && (minutes > 0 || seconds > 0)) {
+      setValidationError(`When hours is ${MAX_HOURS}, minutes and seconds must be 0`)
       return false
     }
 
-    const duration = computeTotalSeconds(hoursStr, minutesStr)
+    const duration = computeTotalSeconds(hoursStr, minutesStr, secondsStr)
     if (duration < MIN_DURATION || duration > MAX_DURATION) {
       setValidationError(`Duration must be between 0 and ${MAX_DURATION / 60} minutes`)
       return false
@@ -194,7 +199,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
       if (!serverUrl) throw new Error('No server URL configured')
 
       const service = getService(serverUrl)
-      const duration = computeTotalSeconds(hoursStr, minutesStr)
+      const duration = computeTotalSeconds(hoursStr, minutesStr, secondsStr)
 
       if (mode === 'create') {
         const newStep = await service.createStep(
@@ -357,6 +362,20 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
                   testID="step-duration-minutes-input"
                 />
                 <Text style={styles.durationUnit}>minutes</Text>
+              </View>
+              <View style={styles.durationField}>
+                <TextInput
+                  style={[commonStyles.input, validationError && commonStyles.inputError]}
+                  placeholder="0"
+                  placeholderTextColor={colors.textMuted}
+                  value={secondsStr}
+                  onChangeText={setSecondsStr}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  editable={!saving}
+                  testID="step-duration-seconds-input"
+                />
+                <Text style={styles.durationUnit}>seconds</Text>
               </View>
             </View>
             <Text style={styles.helperText}>

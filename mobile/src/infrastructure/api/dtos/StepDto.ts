@@ -9,6 +9,8 @@ export interface StepDto {
   title: string
   description: string | null
   duration: number | null // seconds
+  durationMinutes: number | null // floor(duration / 60)
+  durationSecondsRemainder: number | null // duration % 60
   createdAt: string // ISO 8601
   updatedAt: string // ISO 8601
 }

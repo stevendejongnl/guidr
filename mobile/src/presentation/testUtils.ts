@@ -1,5 +1,6 @@
 import { AuthStorage } from '../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../infrastructure/storage/ServerConfigStorage'
+import { NotificationPreferencesStorage } from '../infrastructure/storage/NotificationPreferencesStorage'
 import { AuthClient } from '../infrastructure/api/AuthClient'
 import { GuideFavoriteClient } from '../infrastructure/api/GuideFavoriteClient'
 import { StepTimerClient } from '../infrastructure/api/StepTimerClient'
@@ -217,3 +218,16 @@ export const createMockGuideFavoriteClient = (
   getFavoriteGuideIds: jest.fn().mockResolvedValue(favoriteIds),
   ...overrides,
 } as unknown as jest.Mocked<GuideFavoriteClient>)
+
+/**
+ * Create a mock NotificationPreferencesStorage for testing
+ */
+export const createMockNotificationPreferencesStorage = (
+  overrides: Partial<jest.Mocked<NotificationPreferencesStorage>> = {},
+): jest.Mocked<NotificationPreferencesStorage> => ({
+  getTimerNotificationsEnabled: jest.fn().mockResolvedValue(true),
+  setTimerNotificationsEnabled: jest.fn().mockResolvedValue(undefined),
+  getCriticalNotificationsEnabled: jest.fn().mockResolvedValue(false),
+  setCriticalNotificationsEnabled: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+} as unknown as jest.Mocked<NotificationPreferencesStorage>)

@@ -8,7 +8,7 @@ export function formatDuration(seconds: number): string {
   const parts: string[] = []
   if (h > 0) parts.push(`${h}h`)
   if (m > 0) parts.push(`${m}m`)
-  if (s > 0 && h === 0) parts.push(`${s}s`)
+  if (s > 0) parts.push(`${s}s`)
 
   return parts.join(' ') || '0s'
 }

@@ -1,5 +1,7 @@
 """Step timer API router."""
 
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.application.use_cases.step_timer import (
@@ -63,6 +65,17 @@ def get_get_active_timers_use_case() -> GetActiveTimers:
     return _container.get_active_timers_use_case()
 
 
+def _compute_remaining(dto) -> int | None:
+    """Compute remaining seconds server-side. Returns None for stopwatch mode."""
+    if dto.duration_seconds == 0:
+        return None
+    elapsed = dto.accumulated_seconds
+    if dto.status == "running" and dto.started_at:
+        started = datetime.fromisoformat(dto.started_at.replace("Z", "+00:00"))
+        elapsed += int((datetime.now(UTC) - started).total_seconds())
+    return int(max(0, dto.duration_seconds - elapsed))
+
+
 def _to_response(dto) -> StepTimerResponse:
     """Convert a StepTimerResponseDTO to a StepTimerResponse."""
     return StepTimerResponse(
@@ -74,6 +87,7 @@ def _to_response(dto) -> StepTimerResponse:
         startedAt=dto.started_at,
         accumulatedSeconds=dto.accumulated_seconds,
         durationSeconds=dto.duration_seconds,
+        remainingSeconds=_compute_remaining(dto),
         createdAt=dto.created_at,
         updatedAt=dto.updated_at,
         serverTime=dto.server_time,
@@ -133,6 +147,7 @@ async def get_active_timers(
             startedAt=dto.started_at,
             accumulatedSeconds=dto.accumulated_seconds,
             durationSeconds=dto.duration_seconds,
+            remainingSeconds=_compute_remaining(dto),
             createdAt=dto.created_at,
             updatedAt=dto.updated_at,
             serverTime=dto.server_time,

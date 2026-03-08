@@ -23,6 +23,23 @@ from src.domain.exceptions import (
 from ..dependencies.auth import get_current_user, get_optional_current_user
 from ..models import ErrorResponse, StepCreate, StepResponse, StepUpdate
 
+
+def _step_response(result) -> StepResponse:
+    """Build a StepResponse from a step result DTO, including decomposed duration."""
+    dur = result.duration
+    return StepResponse(
+        id=result.id,
+        guideId=result.guide_id,
+        order=result.order,
+        title=result.title,
+        description=result.description,
+        duration=dur,
+        durationMinutes=dur // 60 if dur else None,
+        durationSecondsRemainder=dur % 60 if dur else None,
+        createdAt=result.created_at,
+        updatedAt=result.updated_at,
+    )
+
 router = APIRouter(prefix="/steps", tags=["steps"])
 
 
@@ -88,16 +105,7 @@ async def create_step(
             duration=step.duration,
         )
         result = await use_case.execute(dto, current_user)
-        return StepResponse(
-            id=result.id,
-            guideId=result.guide_id,
-            order=result.order,
-            title=result.title,
-            description=result.description,
-            duration=result.duration,
-            createdAt=result.created_at,
-            updatedAt=result.updated_at,
-        )
+        return _step_response(result)
     except ValidationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except AuthorizationException as e:
@@ -121,16 +129,7 @@ async def get_step(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Step not found: {step_id}",
         )
-    return StepResponse(
-        id=result.id,
-        guideId=result.guide_id,
-        order=result.order,
-        title=result.title,
-        description=result.description,
-        duration=result.duration,
-        createdAt=result.created_at,
-        updatedAt=result.updated_at,
-    )
+    return _step_response(result)
 
 
 @router.get(
@@ -155,19 +154,7 @@ async def list_steps(
     except AuthorizationException as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
-    return [
-        StepResponse(
-            id=r.id,
-            guideId=r.guide_id,
-            order=r.order,
-            title=r.title,
-            description=r.description,
-            duration=r.duration,
-            createdAt=r.created_at,
-            updatedAt=r.updated_at,
-        )
-        for r in results
-    ]
+    return [_step_response(r) for r in results]
 
 
 @router.patch(
@@ -199,16 +186,7 @@ async def update_step(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Step not found: {step_id}",
             )
-        return StepResponse(
-            id=result.id,
-            guideId=result.guide_id,
-            order=result.order,
-            title=result.title,
-            description=result.description,
-            duration=result.duration,
-            createdAt=result.created_at,
-            updatedAt=result.updated_at,
-        )
+        return _step_response(result)
     except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ValidationException as e:

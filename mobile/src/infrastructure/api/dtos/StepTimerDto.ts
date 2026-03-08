@@ -7,6 +7,7 @@ export interface StepTimerDto {
   startedAt: string | null // ISO datetime
   accumulatedSeconds: number
   durationSeconds: number
+  remainingSeconds?: number | null // server-computed remaining (None = stopwatch)
   createdAt: string
   updatedAt: string
   serverTime?: string | null // ISO datetime from API

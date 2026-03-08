@@ -21,6 +21,8 @@ describe('StepRepository', () => {
     title: 'Mix ingredients',
     description: 'Mix all dry ingredients',
     duration: 180,
+    durationMinutes: 3,
+    durationSecondsRemainder: 0,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   }
@@ -32,6 +34,8 @@ describe('StepRepository', () => {
     title: 'Bake',
     description: 'Bake for 15 minutes',
     duration: 900,
+    durationMinutes: 15,
+    durationSecondsRemainder: 0,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   }
