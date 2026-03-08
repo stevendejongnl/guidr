@@ -374,7 +374,7 @@ describe('StepListItem', () => {
       expect(queryByTestId('test-step:timer-start')).toBeNull()
     })
 
-    it('renders timer display in MM:SS format when timer prop is provided', () => {
+    it('renders timer display in HH:MM:SS or MM:SS format when timer prop is provided', () => {
       const timer = {
         displaySeconds: 125,
         isRunning: false,

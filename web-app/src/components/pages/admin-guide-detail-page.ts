@@ -15,6 +15,7 @@ interface EditStep {
   order: number
   title: string
   description: string
+  durationHours: string    // stored as string for input binding
   durationMinutes: string // stored as string for input binding
   durationSeconds: string // stored as string for input binding
   _isNew?: boolean
@@ -591,14 +592,21 @@ export class AdminGuideDetailPage extends LitElement {
     this.editUserId = guide.createdByUserId ?? ''
     this.editIsPublic = guide.isPublic
     this.editIsHighlighted = guide.isHighlighted
-    this.editSteps = this.steps.map(s => ({
-      id: s.id,
-      order: s.order,
-      title: s.title,
-      description: s.description ?? '',
-      durationMinutes: s.durationMinutes != null ? String(s.durationMinutes) : '',
-      durationSeconds: s.durationSecondsRemainder != null ? String(s.durationSecondsRemainder) : '',
-    }))
+    this.editSteps = this.steps.map(s => {
+      const dur = s.duration ?? 0
+      const hrs = Math.floor(dur / 3600)
+      const mins = Math.floor((dur % 3600) / 60)
+      const secs = dur % 60
+      return {
+        id: s.id,
+        order: s.order,
+        title: s.title,
+        description: s.description ?? '',
+        durationHours: hrs > 0 ? String(hrs) : '',
+        durationMinutes: mins > 0 ? String(mins) : '',
+        durationSeconds: secs > 0 ? String(secs) : '',
+      }
+    })
     this.editMetadata = this.cloneMetadata(guide.metadata, guide.guideType)
   }
 
@@ -741,9 +749,10 @@ export class AdminGuideDetailPage extends LitElement {
     // Create new steps
     for (const step of this.editSteps) {
       if (step._isNew && !step._isDeleted && step.title.trim()) {
+        const hrs = Number(step.durationHours) || 0
         const mins = Number(step.durationMinutes) || 0
         const secs = Number(step.durationSeconds) || 0
-        const totalSecs = mins * 60 + secs
+        const totalSecs = hrs * 3600 + mins * 60 + secs
         await stepsService.create({
           guideId: this.guide.id,
           order: step.order,
@@ -764,9 +773,10 @@ export class AdminGuideDetailPage extends LitElement {
         if (step.order !== original.order) updates['order'] = step.order
         const newDesc = step.description || null
         if (newDesc !== original.description) updates['description'] = newDesc
+        const hrs = Number(step.durationHours) || 0
         const mins = Number(step.durationMinutes) || 0
         const secs = Number(step.durationSeconds) || 0
-        const newDur = mins * 60 + secs > 0 ? mins * 60 + secs : null
+        const newDur = hrs * 3600 + mins * 60 + secs > 0 ? hrs * 3600 + mins * 60 + secs : null
         if (newDur !== original.duration) updates['duration'] = newDur
         if (Object.keys(updates).length > 0) {
           await stepsService.update(step.id, updates)
@@ -802,6 +812,7 @@ export class AdminGuideDetailPage extends LitElement {
         order: visibleSteps.length + 1,
         title: '',
         description: '',
+        durationHours: '',
         durationMinutes: '',
         durationSeconds: '',
         _isNew: true,
@@ -1234,8 +1245,22 @@ export class AdminGuideDetailPage extends LitElement {
                   <input
                     class="form-input"
                     type="number"
+                    placeholder="Hrs"
+                    min="0"
+                    style="width:80px"
+                    .value=${step.durationHours}
+                    @input=${(e: InputEvent) => {
+                      this.updateEditStep(realIndex, 'durationHours', (e.target as HTMLInputElement).value)
+                    }}
+                    ?disabled=${this.saving}
+                  />
+                  <span style="color:var(--color-text-tertiary);font-size:13px">h</span>
+                  <input
+                    class="form-input"
+                    type="number"
                     placeholder="Min"
                     min="0"
+                    max="59"
                     style="width:80px"
                     .value=${step.durationMinutes}
                     @input=${(e: InputEvent) => {
