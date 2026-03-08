@@ -346,6 +346,7 @@ describe('RegistrationScreen', () => {
       mockAuthStorage.setAuthToken = jest.fn().mockResolvedValue(undefined)
       mockAuthStorage.setRefreshToken = jest.fn().mockResolvedValue(undefined)
       mockAuthStorage.setUserEmail = jest.fn().mockResolvedValue(undefined)
+      mockAuthStorage.setUserId = jest.fn().mockResolvedValue(undefined)
 
       const { getByPlaceholderText, getAllByText } = render(
         <RegistrationScreen
@@ -373,6 +374,7 @@ describe('RegistrationScreen', () => {
         expect(mockAuthStorage.setAuthToken).toHaveBeenCalledWith('mock-token-123')
         expect(mockAuthStorage.setRefreshToken).toHaveBeenCalledWith('mock-refresh-token-123')
         expect(mockAuthStorage.setUserEmail).toHaveBeenCalledWith('test@example.com')
+        expect(mockAuthStorage.setUserId).toHaveBeenCalledWith('user-123')
         expect(mockOnComplete).toHaveBeenCalledTimes(1)
       })
     })

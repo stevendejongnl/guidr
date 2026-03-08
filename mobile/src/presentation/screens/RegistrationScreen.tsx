@@ -100,6 +100,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
       }
       await authStorage.setUserEmail(registerResponse.user.email)
       await authStorage.setUserIsAdmin(registerResponse.user.isAdmin ?? false)
+      await authStorage.setUserId(registerResponse.user.id)
       onComplete()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')

@@ -283,6 +283,7 @@ describe('LoginScreen', () => {
       mockAuthStorage.setAuthToken.mockResolvedValue()
       mockAuthStorage.setRefreshToken.mockResolvedValue()
       mockAuthStorage.setUserEmail.mockResolvedValue()
+      mockAuthStorage.setUserId.mockResolvedValue()
 
       const { getByPlaceholderText, getByText } = render(
         <LoginScreen
@@ -310,6 +311,7 @@ describe('LoginScreen', () => {
         expect(mockAuthStorage.setAuthToken).toHaveBeenCalledWith('mock-token-123')
         expect(mockAuthStorage.setRefreshToken).toHaveBeenCalledWith('mock-refresh-token-123')
         expect(mockAuthStorage.setUserEmail).toHaveBeenCalledWith('test@example.com')
+        expect(mockAuthStorage.setUserId).toHaveBeenCalledWith('user-123')
       })
 
       await waitFor(() => {

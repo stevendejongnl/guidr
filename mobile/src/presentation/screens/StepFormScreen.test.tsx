@@ -541,7 +541,7 @@ describe('StepFormScreen', () => {
       )
 
       await waitFor(() => {
-        expect(getByText(/Only the guide owner or administrators can edit steps/)).toBeTruthy()
+        expect(getByText(/Only the guide owner can edit steps/)).toBeTruthy()
       })
 
       // Form inputs should not be rendered
@@ -566,7 +566,7 @@ describe('StepFormScreen', () => {
       })
 
       // Auth error should not be shown
-      expect(queryByText(/Only the guide owner or administrators can edit steps/)).toBeNull()
+      expect(queryByText(/Only the guide owner can edit steps/)).toBeNull()
     })
   })
 

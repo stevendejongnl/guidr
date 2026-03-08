@@ -83,6 +83,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       }
       await authStorage.setUserEmail(response.user.email)
       await authStorage.setUserIsAdmin(response.user.isAdmin ?? false)
+      await authStorage.setUserId(response.user.id)
       onComplete()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')

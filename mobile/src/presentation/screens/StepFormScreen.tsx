@@ -284,7 +284,7 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
       <SafeScreen testID="step-form-screen">
         <View style={commonStyles.loadingContainer}>
           <Text style={[commonStyles.errorText, { textAlign: 'center', marginHorizontal: spacing.xl }]}>
-            Only the guide owner or administrators can edit steps.
+            Only the guide owner can edit steps.
           </Text>
           <TouchableOpacity
             style={[commonStyles.buttonSecondary, { marginTop: spacing.xl, marginHorizontal: spacing.xl }]}
