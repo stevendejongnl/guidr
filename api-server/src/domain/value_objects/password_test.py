@@ -39,7 +39,7 @@ class TestPassword:
         password = Password("securepass123")
 
         with pytest.raises(AttributeError):
-            password.value = "newpassword"
+            setattr(password, "value", "newpassword")
 
     def test_str_returns_masked(self):
         """Should return masked representation for security."""

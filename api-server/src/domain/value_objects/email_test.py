@@ -44,7 +44,7 @@ class TestEmail:
         email = Email("test@example.com")
 
         with pytest.raises(AttributeError):
-            email.value = "new@example.com"
+            setattr(email, "value", "new@example.com")
 
     def test_equality(self):
         """Should be equal when values match."""

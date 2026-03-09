@@ -34,7 +34,7 @@ class TestEntityId:
         entity_id = EntityId(str(uuid.uuid4()))
 
         with pytest.raises(AttributeError):
-            entity_id.value = str(uuid.uuid4())
+            setattr(entity_id, "value", str(uuid.uuid4()))
 
     def test_equality(self):
         """Should be equal when values match."""

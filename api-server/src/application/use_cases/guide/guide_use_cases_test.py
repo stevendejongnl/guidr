@@ -225,6 +225,7 @@ class TestUpdateGuide:
             sample_guide.id.value, dto, admin_user
         )
 
+        assert result is not None
         assert result.title == "Updated Title"
         mock_guide_repository.save.assert_called_once()
 
@@ -315,6 +316,7 @@ class TestUpdateGuide:
             guide.id.value, dto, admin_user
         )
 
+        assert result is not None
         assert result.metadata == metadata
         mock_guide_repository.save.assert_called_once()
 

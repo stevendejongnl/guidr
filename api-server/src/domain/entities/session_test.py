@@ -293,10 +293,10 @@ class TestSession:
         session = Session(id=id, guide_id=guide_id)
 
         with pytest.raises(AttributeError):
-            session.id = EntityId("550e8400-e29b-41d4-a716-446655440002")
+            setattr(session, "id", EntityId("550e8400-e29b-41d4-a716-446655440002"))
 
         with pytest.raises(AttributeError):
-            session.guide_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
+            setattr(session, "guide_id", EntityId("550e8400-e29b-41d4-a716-446655440003"))
 
         with pytest.raises(AttributeError):
-            session.created_at = datetime.now(UTC)
+            setattr(session, "created_at", datetime.now(UTC))

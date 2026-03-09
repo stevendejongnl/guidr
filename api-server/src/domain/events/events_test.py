@@ -42,7 +42,7 @@ class TestBaseDomainEvent:
         event = BaseDomainEvent()
 
         with pytest.raises(AttributeError):
-            event.event_id = "new_id"
+            setattr(event, "event_id", "new_id")
 
 
 class TestUserEvents:
@@ -314,10 +314,10 @@ class TestEventImmutability:
         )
 
         with pytest.raises(AttributeError):
-            event.guide_id = "new_id"
+            setattr(event, "guide_id", "new_id")
 
         with pytest.raises(AttributeError):
-            event.title = "New Title"
+            setattr(event, "title", "New Title")
 
 
 class TestEventIdentity:

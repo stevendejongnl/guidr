@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 
@@ -11,14 +12,26 @@ TEST_STEP2 = "550e8400-e29b-41d4-a716-446655440003"
 TEST_STEP3 = "550e8400-e29b-41d4-a716-446655440004"
 
 
-def _make_guide(**overrides):
-    defaults = {
-        "id": EntityId(TEST_ID),
-        "guide_type": GuideType.COOKING,
-        "title": GuideTitle("Perfect Pasta"),
-    }
-    defaults.update(overrides)
-    return Guide(**defaults)
+def _make_guide(
+    id: EntityId | None = None,
+    guide_type: GuideType | None = None,
+    title: GuideTitle | None = None,
+    description: str | None = None,
+    metadata: dict[str, Any] | None = None,
+    step_ids: list[EntityId] | None = None,
+    is_public: bool = False,
+    is_highlighted: bool = False,
+) -> Guide:
+    return Guide(
+        id=id or EntityId(TEST_ID),
+        guide_type=guide_type or GuideType.COOKING,
+        title=title or GuideTitle("Perfect Pasta"),
+        description=description,
+        metadata=metadata,
+        step_ids=step_ids,
+        is_public=is_public,
+        is_highlighted=is_highlighted,
+    )
 
 
 class TestGuide:
@@ -161,13 +174,13 @@ class TestGuide:
         guide = _make_guide()
 
         with pytest.raises(AttributeError):
-            guide.id = EntityId(TEST_STEP1)
+            setattr(guide, "id", EntityId(TEST_STEP1))
 
         with pytest.raises(AttributeError):
-            guide.guide_type = GuideType.GENERAL
+            setattr(guide, "guide_type", GuideType.GENERAL)
 
         with pytest.raises(AttributeError):
-            guide.created_at = datetime.now(UTC)
+            setattr(guide, "created_at", datetime.now(UTC))
 
     def test_all_guide_types(self):
         for gt in GuideType:

@@ -110,13 +110,13 @@ class TestUser:
         user = User(id=id, email=email, password_hash=password_hash)
 
         with pytest.raises(AttributeError):
-            user.id = EntityId("550e8400-e29b-41d4-a716-446655440001")
+            setattr(user, "id", EntityId("550e8400-e29b-41d4-a716-446655440001"))
 
         with pytest.raises(AttributeError):
-            user.email = Email("new@example.com")
+            setattr(user, "email", Email("new@example.com"))
 
         with pytest.raises(AttributeError):
-            user.created_at = datetime.now(UTC)
+            setattr(user, "created_at", datetime.now(UTC))
 
     def test_create_user_with_name(self):
         """Should create user with optional name."""
@@ -306,7 +306,7 @@ class TestUser:
         user = User(id=id, email=email, password_hash=password_hash, is_admin=False)
 
         with pytest.raises(AttributeError):
-            user.is_admin = True
+            setattr(user, "is_admin", True)
 
     def test_create_user_with_refresh_token_hash(self):
         """Should create user with refresh_token_hash."""

@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 
 from src.domain.exceptions import ValidationException
@@ -38,7 +40,7 @@ class TestStepDuration:
     def test_create_with_non_integer(self):
         """Should raise ValidationException for non-integer."""
         with pytest.raises(ValidationException) as exc_info:
-            StepDuration(30.5)
+            StepDuration(cast(int, 30.5))
 
         assert "must be an integer" in str(exc_info.value)
 
@@ -47,7 +49,7 @@ class TestStepDuration:
         duration = StepDuration(60)
 
         with pytest.raises(AttributeError):
-            duration.value = 120
+            setattr(duration, "value", 120)
 
     def test_equality(self):
         """Should be equal when values match."""

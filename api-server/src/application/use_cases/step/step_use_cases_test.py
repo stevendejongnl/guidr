@@ -230,6 +230,7 @@ class TestUpdateStep:
 
         result = await use_case.execute(sample_step.id.value, dto, sample_user)
 
+        assert result is not None
         assert result.order == 2
         assert result.title == "Updated Title"
         assert result.description == "Updated Description"

@@ -33,7 +33,7 @@ class TestGuideTitle:
         title = GuideTitle("Original Title")
 
         with pytest.raises(AttributeError):
-            title.value = "New Title"
+            setattr(title, "value", "New Title")
 
     def test_equality(self):
         """Should be equal when values match."""

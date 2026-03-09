@@ -219,10 +219,10 @@ class TestStep:
         )
 
         with pytest.raises(AttributeError):
-            step.id = EntityId("550e8400-e29b-41d4-a716-446655440002")
+            setattr(step, "id", EntityId("550e8400-e29b-41d4-a716-446655440002"))
 
         with pytest.raises(AttributeError):
-            step.guide_id = EntityId("550e8400-e29b-41d4-a716-446655440003")
+            setattr(step, "guide_id", EntityId("550e8400-e29b-41d4-a716-446655440003"))
 
         with pytest.raises(AttributeError):
-            step.created_at = datetime.now(UTC)
+            setattr(step, "created_at", datetime.now(UTC))
