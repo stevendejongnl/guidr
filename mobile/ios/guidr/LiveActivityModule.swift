@@ -129,7 +129,10 @@ class LiveActivityModule: NSObject {
       scheduleCompletionForSoonest()
       saveWidgetState()
       DiagnosticLogger.shared.log("[LiveActivity] saveWidgetState done, entries=\(timerEntries.count)")
-      reloadWidgetImmediate()
+      // Delay widget reload to avoid preempting Live Activity presentation on iOS 26
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+        self?.reloadWidgetImmediate()
+      }
 
       // Schedule notification for timer completion
       NotificationHelper.shared.scheduleTimerNotification(

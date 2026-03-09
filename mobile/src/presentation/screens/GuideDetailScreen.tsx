@@ -103,11 +103,15 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     delete resetTimeoutsRef.current[stepId]
   }, [stepTimers, liveActivity, notificationService])
 
-  // Sync already-running timers to Live Activity on mount / after load
+  // Sync already-running timers to Live Activity on mount / after load.
+  // Updates prevRunningRef so the SSE effect does not double-call addTimer
+  // for the same timers in the same render cycle.
   useEffect(() => {
     if (stepTimers.loading) return
+    const alreadyRunning = new Set<string>()
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
       if (!display.isRunning) continue
+      alreadyRunning.add(stepId)
       const step = steps.find(s => s.id === stepId)
       if (!step || !guide) continue
       liveActivity.addTimer({
@@ -118,6 +122,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
         remainingSeconds: display.displaySeconds,
       })
     }
+    prevRunningRef.current = alreadyRunning
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepTimers.loading])
 
