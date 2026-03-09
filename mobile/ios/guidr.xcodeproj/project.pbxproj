@@ -17,6 +17,9 @@
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* NotificationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */; };
 		B2C3D4E5F6A7B8C9D0E1F2A3 /* NotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */; };
 		B3C4D5E6F7A8B9C0D1E2F3A4 /* NotificationModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */; };
+		7D8E9F0A1B2C3D4E5F6A7B8C /* DiagnosticLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */; };
+		8E9F0A1B2C3D4E5F6A7B8C9D /* DiagnosticLogModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */; };
+		9F0A1B2C3D4E5F6A7B8C9D0E /* DiagnosticLogModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -77,6 +80,9 @@
 		1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationHelper.swift; path = guidr/NotificationHelper.swift; sourceTree = "<group>"; };
 		2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationModule.swift; path = guidr/NotificationModule.swift; sourceTree = "<group>"; };
 		3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = NotificationModuleBridge.m; path = guidr/NotificationModuleBridge.m; sourceTree = "<group>"; };
+		4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticLogger.swift; path = guidr/DiagnosticLogger.swift; sourceTree = "<group>"; };
+		5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticLogModule.swift; path = guidr/DiagnosticLogModule.swift; sourceTree = "<group>"; };
+		6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = DiagnosticLogModule.m; path = guidr/DiagnosticLogModule.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GuidrTimerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* guidr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = guidr.entitlements; path = guidr/guidr.entitlements; sourceTree = "<group>"; };
@@ -118,6 +124,9 @@
 				1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */,
 				2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */,
 				3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */,
+			4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */,
+			5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */,
+			6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */,
 			);
 			name = guidr;
 			sourceTree = "<group>";
@@ -399,6 +408,9 @@
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* NotificationHelper.swift in Sources */,
 				B2C3D4E5F6A7B8C9D0E1F2A3 /* NotificationModule.swift in Sources */,
 				B3C4D5E6F7A8B9C0D1E2F3A4 /* NotificationModuleBridge.m in Sources */,
+			7D8E9F0A1B2C3D4E5F6A7B8C /* DiagnosticLogger.swift in Sources */,
+			8E9F0A1B2C3D4E5F6A7B8C9D /* DiagnosticLogModule.swift in Sources */,
+			9F0A1B2C3D4E5F6A7B8C9D0E /* DiagnosticLogModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

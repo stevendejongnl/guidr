@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Platform,
+  Share,
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
@@ -21,6 +22,7 @@ import { UpdateButton } from '../components/UpdateButton'
 import { UpdateCheckResult } from '../../domain/services/UpdateService'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
+import { DiagnosticLogService } from '../../infrastructure/native/DiagnosticLogService'
 
 interface AdminScreenProps {
   onBack: () => void
@@ -43,10 +45,13 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   const [appVersion, setAppVersion] = useState('0.0.0')
   const [appBuildNumber, setAppBuildNumber] = useState('0')
   const [serverVersion, setServerVersion] = useState<string | null>(null)
+  const [logEntries, setLogEntries] = useState<string[]>([])
+  const [logLoading, setLogLoading] = useState(false)
 
   useEffect(() => {
     loadStoredConfig()
     loadVersionInfo()
+    loadDiagnosticLog()
   }, [])
 
   const loadStoredConfig = async () => {
@@ -142,6 +147,38 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
     if (!token) return 'None'
     if (token.length <= 8) return token
     return '***' + token.slice(-8)
+  }
+
+  const loadDiagnosticLog = async () => {
+    setLogLoading(true)
+    try {
+      const entries = await new DiagnosticLogService().getEntries()
+      setLogEntries(entries)
+    } catch (err) {
+      console.error('Failed to load diagnostic log:', err)
+    } finally {
+      setLogLoading(false)
+    }
+  }
+
+  const handleShareLog = async () => {
+    try {
+      await Share.share({
+        message: logEntries.join('\n'),
+        title: 'Guidr Diagnostic Log',
+      })
+    } catch (err) {
+      console.error('Failed to share log:', err)
+    }
+  }
+
+  const handleClearLog = async () => {
+    try {
+      await new DiagnosticLogService().clear()
+      await loadDiagnosticLog()
+    } catch (err) {
+      console.error('Failed to clear log:', err)
+    }
   }
 
   const handleUpdateCheckComplete = (result: UpdateCheckResult) => {
@@ -243,6 +280,53 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
 
           {error && <Text style={styles.errorText}>{error}</Text>}
           {successMessage && <Text style={commonStyles.successText}>{successMessage}</Text>}
+
+          {/* Live Activity Diagnostics Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Live Activity Diagnostics</Text>
+            <TouchableOpacity
+              style={[styles.button, logLoading ? styles.buttonDisabled : null]}
+              onPress={loadDiagnosticLog}
+              disabled={logLoading}
+              accessibilityLabel="Refresh diagnostic log"
+            >
+              <Text style={commonStyles.buttonText}>Refresh Log</Text>
+            </TouchableOpacity>
+            {logLoading && (
+              <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
+            )}
+            {!logLoading && logEntries.length === 0 && (
+              <Text style={styles.infoText}>No log entries</Text>
+            )}
+            {!logLoading && logEntries.length > 0 && (
+              <ScrollView
+                style={styles.logScrollView}
+                nestedScrollEnabled
+              >
+                {logEntries.map((entry, index) => (
+                  <Text key={index} style={styles.logEntry}>
+                    {entry}
+                  </Text>
+                ))}
+              </ScrollView>
+            )}
+            {logEntries.length > 0 && (
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleShareLog}
+                accessibilityLabel="Share diagnostic log"
+              >
+                <Text style={commonStyles.buttonText}>Share Log</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.dangerButton}
+              onPress={handleClearLog}
+              accessibilityLabel="Clear diagnostic log"
+            >
+              <Text style={commonStyles.buttonText}>Clear Log</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
         <VersionDisplay />
       </View>
@@ -303,5 +387,20 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     marginTop: spacing.lg,
     textAlign: 'center',
+  },
+  logScrollView: {
+    height: 300,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.sm,
+    marginTop: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  logEntry: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontFamily: 'Courier',
+    marginBottom: 2,
   },
 })

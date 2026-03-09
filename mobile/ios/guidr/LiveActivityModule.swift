@@ -50,9 +50,13 @@ class LiveActivityModule: NSObject {
   ) {
     if #available(iOS 16.2, *) {
       NSLog("[LiveActivity] startActivity called - stepId: %@, remaining: %d", stepId, remainingSeconds)
-      NSLog("[LiveActivity] areActivitiesEnabled: %@", ActivityAuthorizationInfo().areActivitiesEnabled ? "true" : "false")
+      DiagnosticLogger.shared.log("[LiveActivity] startActivity stepId=\(stepId) duration=\(totalDurationSeconds) remaining=\(remainingSeconds)")
 
-      guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+      let activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled
+      NSLog("[LiveActivity] areActivitiesEnabled: %@", activitiesEnabled ? "true" : "false")
+      DiagnosticLogger.shared.log("[LiveActivity] areActivitiesEnabled=\(activitiesEnabled)")
+
+      guard activitiesEnabled else {
         reject("ACTIVITIES_DISABLED", "Live Activities are disabled. Enable in Settings > Guidr.", nil)
         return
       }
@@ -100,6 +104,7 @@ class LiveActivityModule: NSObject {
         Task {
           await activity.update(.init(state: state, staleDate: soonestEndDate))
           NSLog("[LiveActivity] updated existing activity: %@", activity.id)
+          DiagnosticLogger.shared.log("[LiveActivity] updated existing id=\(activity.id)")
           resolve(activity.id)
         }
       } else {
@@ -111,9 +116,11 @@ class LiveActivityModule: NSObject {
             pushType: nil
           )
           NSLog("[LiveActivity] created new activity: %@", activity.id)
+          DiagnosticLogger.shared.log("[LiveActivity] created new id=\(activity.id)")
           resolve(activity.id)
         } catch {
           NSLog("[LiveActivity] failed to create activity: %@", error.localizedDescription)
+          DiagnosticLogger.shared.log("[LiveActivity] error=\(error.localizedDescription)")
           reject("START_FAILED", "Failed to start Live Activity: \(error.localizedDescription)", error)
           return
         }
@@ -121,6 +128,7 @@ class LiveActivityModule: NSObject {
 
       scheduleCompletionForSoonest()
       saveWidgetState()
+      DiagnosticLogger.shared.log("[LiveActivity] saveWidgetState done, entries=\(timerEntries.count)")
       reloadWidgetImmediate()
 
       // Schedule notification for timer completion
