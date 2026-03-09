@@ -101,6 +101,30 @@ console.error = (...args) => {
     return
   }
 
+  // Suppress expected guide detail loading errors in tests (e.g. Guide not found, AsyncStorage window issue)
+  if (
+    typeof message === 'string' &&
+    message.includes('Failed to load guide detail:')
+  ) {
+    return
+  }
+
+  // Suppress expected step loading errors in tests
+  if (
+    typeof message === 'string' &&
+    message.includes('Failed to load steps:')
+  ) {
+    return
+  }
+
+  // Suppress expected session data loading errors in tests
+  if (
+    typeof message === 'string' &&
+    message.includes('Failed to load session data:')
+  ) {
+    return
+  }
+
   // Suppress React act() warnings - these are testing library noise
   // in React Native where proper act() wrapping is often impractical
   if (
@@ -125,6 +149,11 @@ console.warn = (...args) => {
 
   // Suppress React error boundary warnings from async state updates in tests
   if (fullMessage.includes('An error occurred in the') || fullMessage.includes('Consider adding an error boundary')) {
+    return
+  }
+
+  // Suppress expected LiveActivityService failure warnings in tests
+  if (fullMessage.includes('[LiveActivityService] Failed to')) {
     return
   }
 
