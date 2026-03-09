@@ -6,7 +6,8 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import Response
 from starlette.websockets import WebSocket
 
 from .container import Container
@@ -41,6 +42,7 @@ from .presentation.api.routers import (
 from .presentation.api.routers import (
     users as users_router,
 )
+from .presentation.api.sse.sync_handler import sse_sync_endpoint
 from .presentation.api.websocket.sync_handler import sync_endpoint
 
 # Initialize Sentry (only if SENTRY_DSN is set in environment)
@@ -128,20 +130,36 @@ def create_application() -> FastAPI:
     connection_manager = container.connection_manager()
     event_bus = container.event_bus()
     event_serializer = container.event_serializer()
+    sse_manager = container.sse_manager()
 
     @app.websocket("/api/v1/ws/sync")
     async def ws_sync(websocket: WebSocket) -> None:
         await sync_endpoint(websocket, jwt_service, connection_manager)
 
-    # Wire event bus → WebSocket broadcasting
-    async def broadcast_event(event):
+    # Wire event bus → WebSocket broadcasting (legacy)
+    async def broadcast_to_websocket(event):
         user_id = getattr(event, "user_id", "")
         if not user_id:
             return
         message = event_serializer.serialize(event)
         await connection_manager.broadcast_to_user(user_id, message)
 
-    event_bus.subscribe(None, broadcast_event)
+    event_bus.subscribe(None, broadcast_to_websocket)
+
+    # Wire event bus → SSE broadcasting
+    async def broadcast_to_sse(event):
+        user_id = getattr(event, "user_id", "")
+        if not user_id:
+            return
+        message = event_serializer.serialize(event)
+        await sse_manager.send_to_user(user_id, message)
+
+    event_bus.subscribe(None, broadcast_to_sse)
+
+    # Register SSE sync endpoint
+    @app.get("/api/v1/sse/sync", include_in_schema=True, tags=["sse"])
+    async def sse_sync(request: Request) -> Response:
+        return await sse_sync_endpoint(request, jwt_service, sse_manager)
 
     # Inject container into routers and dependencies
     audit_logs_router.set_container(container)

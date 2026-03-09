@@ -1,98 +1,156 @@
-import { renderHook } from '@testing-library/react-native'
-import { useSyncConnection } from './useSyncConnection'
-import { WebSocketSyncClient } from '../../infrastructure/api/WebSocketSyncClient'
+import { renderHook, act } from '@testing-library/react-native'
+import { useSyncConnection, ISyncClient, SyncClientFactory } from './useSyncConnection'
 
-// Mock WebSocketSyncClient
-jest.mock('../../infrastructure/api/WebSocketSyncClient')
+class FakeSyncClient implements ISyncClient {
+  connectCallCount = 0
+  disconnectCallCount = 0
+  private _isConnected = false
 
-const MockWebSocketSyncClient = WebSocketSyncClient as jest.MockedClass<typeof WebSocketSyncClient>
+  connect(): void {
+    this.connectCallCount++
+    this._isConnected = true
+  }
+
+  disconnect(): void {
+    this.disconnectCallCount++
+    this._isConnected = false
+  }
+
+  get isConnected(): boolean {
+    return this._isConnected
+  }
+
+  simulateDisconnect(): void {
+    this._isConnected = false
+  }
+}
+
+function makeFactory(client: FakeSyncClient): SyncClientFactory {
+  return (_serverUrl, _authToken, _onMessage) => client
+}
 
 describe('useSyncConnection', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    MockWebSocketSyncClient.mockClear()
+  it('does not create a client when serverUrl is null', () => {
+    let factoryCalled = false
+    const factory: SyncClientFactory = () => {
+      factoryCalled = true
+      return new FakeSyncClient()
+    }
 
-    // Setup mock prototype
-    MockWebSocketSyncClient.prototype.connect = jest.fn()
-    MockWebSocketSyncClient.prototype.disconnect = jest.fn()
-    Object.defineProperty(MockWebSocketSyncClient.prototype, 'isConnected', {
-      get: jest.fn().mockReturnValue(false),
-      configurable: true,
-    })
-  })
-
-  it('does not connect when serverUrl is null', () => {
     renderHook(() =>
       useSyncConnection({
         serverUrl: null,
         authToken: 'token',
+        clientFactory: factory,
       }),
     )
 
-    expect(MockWebSocketSyncClient).not.toHaveBeenCalled()
+    expect(factoryCalled).toBe(false)
   })
 
-  it('does not connect when authToken is null', () => {
+  it('does not create a client when authToken is null', () => {
+    let factoryCalled = false
+    const factory: SyncClientFactory = () => {
+      factoryCalled = true
+      return new FakeSyncClient()
+    }
+
     renderHook(() =>
       useSyncConnection({
-        serverUrl: 'https://api.guidr.app',
+        serverUrl: 'https://guidr.madebysteven.nl',
         authToken: null,
+        clientFactory: factory,
       }),
     )
 
-    expect(MockWebSocketSyncClient).not.toHaveBeenCalled()
+    expect(factoryCalled).toBe(false)
   })
 
-  it('creates client and connects when both credentials available', () => {
+  it('creates client and calls connect when both credentials are available', () => {
+    const fakeClient = new FakeSyncClient()
+
     renderHook(() =>
       useSyncConnection({
-        serverUrl: 'https://api.guidr.app',
+        serverUrl: 'https://guidr.madebysteven.nl',
         authToken: 'my-token',
+        clientFactory: makeFactory(fakeClient),
       }),
     )
 
-    expect(MockWebSocketSyncClient).toHaveBeenCalledWith(
-      'https://api.guidr.app',
-      'my-token',
-      expect.any(Function),
-    )
-    expect(MockWebSocketSyncClient.prototype.connect).toHaveBeenCalled()
+    expect(fakeClient.connectCallCount).toBe(1)
   })
 
-  it('disconnects on unmount', () => {
+  it('passes serverUrl and authToken to the factory', () => {
+    let capturedUrl = ''
+    let capturedToken = ''
+    const factory: SyncClientFactory = (serverUrl, authToken) => {
+      capturedUrl = serverUrl
+      capturedToken = authToken
+      return new FakeSyncClient()
+    }
+
+    renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'tok-xyz',
+        clientFactory: factory,
+      }),
+    )
+
+    expect(capturedUrl).toBe('https://guidr.madebysteven.nl')
+    expect(capturedToken).toBe('tok-xyz')
+  })
+
+  it('calls disconnect on unmount', () => {
+    const fakeClient = new FakeSyncClient()
+
     const { unmount } = renderHook(() =>
       useSyncConnection({
-        serverUrl: 'https://api.guidr.app',
+        serverUrl: 'https://guidr.madebysteven.nl',
         authToken: 'my-token',
+        clientFactory: makeFactory(fakeClient),
       }),
     )
 
     unmount()
 
-    expect(MockWebSocketSyncClient.prototype.disconnect).toHaveBeenCalled()
+    expect(fakeClient.disconnectCallCount).toBe(1)
   })
 
-  it('reconnects when credentials change', () => {
+  it('disconnects old client and connects new one when credentials change', () => {
+    const fakeClient1 = new FakeSyncClient()
+    const fakeClient2 = new FakeSyncClient()
+    let callCount = 0
+    const factory: SyncClientFactory = () => {
+      callCount++
+      return callCount === 1 ? fakeClient1 : fakeClient2
+    }
+
     const { rerender } = renderHook(
       (props: { serverUrl: string; authToken: string }) =>
-        useSyncConnection({ serverUrl: props.serverUrl, authToken: props.authToken }),
+        useSyncConnection({
+          serverUrl: props.serverUrl,
+          authToken: props.authToken,
+          clientFactory: factory,
+        }),
       {
         initialProps: {
-          serverUrl: 'https://api.guidr.app',
+          serverUrl: 'https://guidr.madebysteven.nl',
           authToken: 'token-1',
         },
       },
     )
 
-    expect(MockWebSocketSyncClient.prototype.connect).toHaveBeenCalledTimes(1)
+    expect(fakeClient1.connectCallCount).toBe(1)
 
-    rerender({
-      serverUrl: 'https://api.guidr.app',
-      authToken: 'token-2',
+    act(() => {
+      rerender({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token-2',
+      })
     })
 
-    // Should disconnect old and connect new
-    expect(MockWebSocketSyncClient.prototype.disconnect).toHaveBeenCalled()
-    expect(MockWebSocketSyncClient).toHaveBeenCalledTimes(2)
+    expect(fakeClient1.disconnectCallCount).toBe(1)
+    expect(fakeClient2.connectCallCount).toBe(1)
   })
 })

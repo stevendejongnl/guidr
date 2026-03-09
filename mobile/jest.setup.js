@@ -167,6 +167,22 @@ console.log = (...args) => {
   return
 }
 
+// Mock XMLHttpRequest globally — not available in the Jest/Node test environment
+global.XMLHttpRequest = class MockXMLHttpRequest {
+  constructor() {
+    this.readyState = 0
+    this.responseText = ''
+    this.status = 0
+    this.withCredentials = false
+  }
+  open(_method, _url) {}
+  setRequestHeader(_name, _value) {}
+  send(_body) {}
+  abort() {}
+  addEventListener(_event, _handler) {}
+  removeEventListener(_event, _handler) {}
+}
+
 // Mock WebSocket globally — not available in the Jest/Node test environment
 global.WebSocket = class MockWebSocket {
   constructor(_url, _protocols) {

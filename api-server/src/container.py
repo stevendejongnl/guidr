@@ -80,6 +80,7 @@ from .infrastructure.persistence.mongodb.repositories import (
     MongoStepTimerRepository,
     MongoUserRepository,
 )
+from .infrastructure.sse import SSEManager
 from .infrastructure.websocket import ConnectionManager, EventSerializer
 
 
@@ -165,6 +166,9 @@ class Container(containers.DeclarativeContainer):
     event_bus = providers.Singleton(InMemoryEventBus)
     connection_manager = providers.Singleton(ConnectionManager)
     event_serializer = providers.Singleton(EventSerializer)
+
+    # Infrastructure - SSE
+    sse_manager = providers.Singleton(SSEManager)
 
     # Domain Services
     event_persistence_service = providers.Singleton(
