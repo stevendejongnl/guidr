@@ -91,6 +91,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   // Live Activity hook
   const liveActivity = useLiveActivity(injectedLiveActivityService)
   const prevCompletedRef = useRef<Set<string>>(new Set())
+  const prevRunningRef = useRef<Set<string>>(new Set())
   const completedAtRef = useRef<Record<string, number>>({})
   const resetTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
@@ -101,6 +102,50 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     delete completedAtRef.current[stepId]
     delete resetTimeoutsRef.current[stepId]
   }, [stepTimers, liveActivity, notificationService])
+
+  // Sync already-running timers to Live Activity on mount / after load
+  useEffect(() => {
+    if (stepTimers.loading) return
+    for (const [stepId, display] of Object.entries(stepTimers.timers)) {
+      if (!display.isRunning) continue
+      const step = steps.find(s => s.id === stepId)
+      if (!step || !guide) continue
+      liveActivity.addTimer({
+        stepId,
+        guideTitle: guide.title,
+        stepTitle: step.title,
+        totalDurationSeconds: step.duration,
+        remainingSeconds: display.displaySeconds,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepTimers.loading])
+
+  // Sync SSE-driven timer starts to Live Activity
+  useEffect(() => {
+    const prevRunning = prevRunningRef.current
+    const nextRunning = new Set<string>()
+
+    for (const [stepId, display] of Object.entries(stepTimers.timers)) {
+      if (display.isRunning) {
+        nextRunning.add(stepId)
+        if (!prevRunning.has(stepId)) {
+          const step = steps.find(s => s.id === stepId)
+          if (step && guide) {
+            liveActivity.addTimer({
+              stepId,
+              guideTitle: guide.title,
+              stepTitle: step.title,
+              totalDurationSeconds: step.duration,
+              remainingSeconds: display.displaySeconds,
+            })
+          }
+        }
+      }
+    }
+    prevRunningRef.current = nextRunning
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepTimers.timers])
 
   // Detect timer completion: update Live Activity + fire Android notification
   useEffect(() => {
