@@ -14,7 +14,10 @@ export function useLiveActivity(
   const serviceRef = useRef(liveActivityService ?? new LiveActivityService())
 
   const addTimer = useCallback(async (data: LiveActivityData) => {
-    if (data.totalDurationSeconds <= 0) return
+    if (data.totalDurationSeconds <= 0) {
+      console.warn('[LiveActivity] BLOCKED: totalDurationSeconds <= 0', data)
+      return
+    }
     await serviceRef.current.startLiveActivity(data)
   }, [])
 

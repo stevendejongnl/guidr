@@ -25,7 +25,8 @@ export class LiveActivityService {
     if (Platform.OS !== 'ios') return null
     try {
       const available = await this.isAvailable()
-      ErrorReporter.captureMessage('LiveActivity.start', 'info', {
+      console.warn('[LiveActivityService] available=', available)
+      ErrorReporter.captureMessage('LiveActivity.start', 'warning', {
         component: 'LiveActivityService',
         action: 'startLiveActivity',
         available: available,
