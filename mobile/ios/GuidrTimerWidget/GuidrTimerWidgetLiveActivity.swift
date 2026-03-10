@@ -5,12 +5,15 @@ import WidgetKit
 @available(iOS 16.1, *)
 struct GuidrTimerWidgetLiveActivity: Widget {
   var body: some WidgetConfiguration {
-    ActivityConfiguration(for: GuidrTimerAttributes.self) { context in
-      LockScreenView(context: context)
+    let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] ActivityConfiguration body evaluated")
+    return ActivityConfiguration(for: GuidrTimerAttributes.self) { context in
+      let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] lock screen closure called — stepTitle=\(context.state.stepTitle)")
+      return LockScreenView(context: context)
         .padding()
         .activityBackgroundTint(Color.black.opacity(0.85))
         .activitySystemActionForegroundColor(Color.white)
     } dynamicIsland: { context in
+      let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] dynamicIsland closure called")
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
           Label(context.state.stepTitle, systemImage: "timer")
