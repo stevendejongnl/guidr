@@ -9,9 +9,7 @@ struct GuidrTimerWidgetBundle: WidgetBundle {
   }
 
   var body: some Widget {
-    let _ = SharedDiagnosticLogger.shared.log("[WidgetBundle] body evaluated")
-    // Track 2: GuidrHomeWidget temporarily disabled to isolate Live Activity rendering
-    // GuidrHomeWidget()
+    GuidrHomeWidget()
     if #available(iOS 16.1, *) {
       GuidrTimerWidgetLiveActivity()
     }
