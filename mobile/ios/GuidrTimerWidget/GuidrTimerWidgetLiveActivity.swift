@@ -6,11 +6,13 @@ import WidgetKit
 struct GuidrTimerWidgetLiveActivity: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: GuidrTimerAttributes.self) { context in
-      let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] LockScreenView rendering stepTitle=\(context.state.stepTitle) remaining=\(context.state.remainingSeconds)")
       LockScreenView(context: context)
         .padding()
         .activityBackgroundTint(Color.black.opacity(0.85))
         .activitySystemActionForegroundColor(Color.white)
+        .onAppear {
+          SharedDiagnosticLogger.shared.log("[LiveActivityWidget] LockScreenView appeared stepTitle=\(context.state.stepTitle) remaining=\(context.state.remainingSeconds)")
+        }
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {

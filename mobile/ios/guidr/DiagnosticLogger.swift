@@ -11,11 +11,17 @@ class DiagnosticLogger {
     defaults = UserDefaults(suiteName: suiteName)
   }
 
+  private var appVersion: String {
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+    return "v\(version)(\(build))"
+  }
+
   func log(_ message: String) {
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     let timestamp = formatter.string(from: Date())
-    let entry = "[\(timestamp)] \(message)"
+    let entry = "[\(timestamp)] [\(appVersion)] \(message)"
     NSLog("[DiagnosticLogger] %@", entry)
 
     var entries = loadEntries()
