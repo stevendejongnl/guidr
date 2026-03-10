@@ -14,7 +14,7 @@ struct GuidrTimerWidgetLiveActivity: Widget {
         .activitySystemActionForegroundColor(Color.white)
     } dynamicIsland: { context in
       let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] dynamicIsland closure called")
-      DynamicIsland {
+      return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
           Label(context.state.stepTitle, systemImage: "timer")
             .font(.caption)
