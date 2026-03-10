@@ -27,23 +27,23 @@ class SharedDiagnosticLogger {
     let entry = "[\(timestamp)] [\(appVersion)] \(message)"
     NSLog("[SharedDiagnosticLogger] %@", entry)
 
-    let defaults = self.defaults
-    let storageKey = self.storageKey
-    let maxEntries = self.maxEntries
-    queue.async {
+    // Use sync so the write completes before log() returns — the widget extension
+    // process is short-lived and may be suspended immediately after rendering.
+    // Without sync, async-queued writes are silently lost on process termination.
+    queue.sync {
       var entries: [String]
-      if let data = defaults?.data(forKey: storageKey),
+      if let data = self.defaults?.data(forKey: self.storageKey),
          let decoded = try? JSONDecoder().decode([String].self, from: data) {
         entries = decoded
       } else {
         entries = []
       }
       entries.append(entry)
-      if entries.count > maxEntries {
-        entries = Array(entries.suffix(maxEntries))
+      if entries.count > self.maxEntries {
+        entries = Array(entries.suffix(self.maxEntries))
       }
       if let data = try? JSONEncoder().encode(entries) {
-        defaults?.set(data, forKey: storageKey)
+        self.defaults?.set(data, forKey: self.storageKey)
       }
     }
   }
