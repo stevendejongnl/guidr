@@ -101,6 +101,10 @@ class LiveActivityModule: NSObject {
       // Check if an active Live Activity already exists
       let existingActivity = allActivities.first { $0.activityState == .active }
       if let activity = existingActivity {
+        // Save widget state BEFORE updating the activity so the UserDefaults write
+        // settles before the extension is asked to re-render
+        saveWidgetState()
+        DiagnosticLogger.shared.log("[LiveActivity] saveWidgetState done (update), entries=\(timerEntries.count)")
         Task {
           await activity.update(.init(state: state, staleDate: soonestEndDate))
           NSLog("[LiveActivity] updated existing activity: %@", activity.id)
@@ -108,6 +112,11 @@ class LiveActivityModule: NSObject {
           resolve(activity.id)
         }
       } else {
+        // Save widget state BEFORE creating the activity so the UserDefaults write
+        // (and any implicit extension wake on iOS 26) settles before the Live Activity
+        // presentation begins — prevents the extension from being killed mid-render
+        saveWidgetState()
+        DiagnosticLogger.shared.log("[LiveActivity] saveWidgetState done (create), entries=\(timerEntries.count)")
         do {
           let attributes = GuidrTimerAttributes(guideTitle: guideTitle)
           let activity = try Activity.request(
@@ -118,8 +127,17 @@ class LiveActivityModule: NSObject {
           NSLog("[LiveActivity] created new activity: %@", activity.id)
           DiagnosticLogger.shared.log("[LiveActivity] created new id=\(activity.id)")
           Task {
+            let createdAt = Date()
             for await actState in activity.activityStateUpdates {
-              DiagnosticLogger.shared.log("[LiveActivity] stateUpdate id=\(activity.id) state=\(actState)")
+              let elapsed = Date().timeIntervalSince(createdAt)
+              DiagnosticLogger.shared.log(
+                "[LiveActivity] stateUpdate id=\(activity.id) state=\(actState) elapsed=\(String(format: "%.3f", elapsed))s"
+              )
+              if actState == .dismissed && elapsed < 5.0 {
+                DiagnosticLogger.shared.log(
+                  "[LiveActivity] WARN: dismissed in \(String(format: "%.3f", elapsed))s — widget extension may have crashed"
+                )
+              }
             }
           }
           resolve(activity.id)
@@ -132,8 +150,6 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
-      saveWidgetState()
-      DiagnosticLogger.shared.log("[LiveActivity] saveWidgetState done, entries=\(timerEntries.count)")
       // Delay widget reload to avoid preempting Live Activity presentation on iOS 26
       DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
         self?.reloadWidgetImmediate()

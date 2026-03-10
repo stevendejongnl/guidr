@@ -38,7 +38,6 @@ class SharedTimerStorage {
       return
     }
     defaults?.set(data, forKey: storageKey)
-    defaults?.synchronize()
     NSLog("[GuidrStorage] save: wrote %d entries (%d bytes)", entries.count, data.count)
 
     // Read-back verification
@@ -63,7 +62,6 @@ class SharedTimerStorage {
 
   func clear() {
     defaults?.removeObject(forKey: storageKey)
-    defaults?.synchronize()
     NSLog("[GuidrStorage] clear: removed stored state")
   }
 }

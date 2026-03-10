@@ -8,6 +8,7 @@ class SharedDiagnosticLogger {
   private let storageKey = "diagnosticLog"
   private let maxEntries = 200
   private let defaults: UserDefaults?
+  private let queue = DispatchQueue(label: "com.guidr.SharedDiagnosticLogger")
 
   private init() {
     defaults = UserDefaults(suiteName: suiteName)
@@ -26,14 +27,24 @@ class SharedDiagnosticLogger {
     let entry = "[\(timestamp)] [\(appVersion)] \(message)"
     NSLog("[SharedDiagnosticLogger] %@", entry)
 
-    var entries = loadEntries()
-    entries.append(entry)
-    if entries.count > maxEntries {
-      entries = Array(entries.suffix(maxEntries))
-    }
-    if let data = try? JSONEncoder().encode(entries) {
-      defaults?.set(data, forKey: storageKey)
-      defaults?.synchronize()
+    let defaults = self.defaults
+    let storageKey = self.storageKey
+    let maxEntries = self.maxEntries
+    queue.async {
+      var entries: [String]
+      if let data = defaults?.data(forKey: storageKey),
+         let decoded = try? JSONDecoder().decode([String].self, from: data) {
+        entries = decoded
+      } else {
+        entries = []
+      }
+      entries.append(entry)
+      if entries.count > maxEntries {
+        entries = Array(entries.suffix(maxEntries))
+      }
+      if let data = try? JSONEncoder().encode(entries) {
+        defaults?.set(data, forKey: storageKey)
+      }
     }
   }
 
