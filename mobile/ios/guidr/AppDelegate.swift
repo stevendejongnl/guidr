@@ -15,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    CrashLogStorage.shared.subscribe()
     UNUserNotificationCenter.current().delegate = self
 
     let delegate = ReactNativeDelegate()
