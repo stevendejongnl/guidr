@@ -121,7 +121,7 @@ class LiveActivityModule: NSObject {
           let attributes = GuidrTimerAttributes(guideTitle: guideTitle)
           let activity = try Activity.request(
             attributes: attributes,
-            content: .init(state: state, staleDate: soonestEndDate),
+            content: .init(state: state, staleDate: nil),  // nil avoids iOS 26 early dismissal
             pushType: nil
           )
           NSLog("[LiveActivity] created new activity: %@", activity.id)

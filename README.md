@@ -34,8 +34,8 @@ guidr/
 
 - **Node.js**: 24.11.0+ LTS | **npm**: 11.6.0+
 - **Android**: Java 17, Android SDK
-- **iOS**: macOS + Xcode 15+
-- **API**: Python 3.12+, Poetry
+- **iOS**: macOS + Xcode 26+, minimum iOS 26.0
+- **API**: Python 3.12+, uv
 
 ## Quick Start
 

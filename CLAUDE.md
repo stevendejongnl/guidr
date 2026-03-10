@@ -15,7 +15,7 @@ Guidr monorepo: Mobile (React Native) + API (FastAPI) + Web (React). DDD/TDD arc
 - Link commits/PRs to tickets (use issue number in commit messages)
 
 ## Project Overview
-**Status**: 870 tests passing (49 test suites), Admin auth (ADR-006, ADR-007, ADR-008), Android Gradle 8.13
+**Status**: 1369 mobile tests (86 suites) + 659 API tests passing, Admin auth (ADR-006, ADR-007, ADR-008)
 **Stack**: Mobile RN 0.83.1 | API FastAPI 3.12+ | Web React | TypeScript strict | Jest
 **Domain**: GuideType (cooking/workout/general) → Guide → Steps (duration) → Session (state machine)
 
@@ -95,7 +95,7 @@ Custom Claude Code skills for workflow acceleration:
 
 ## Build & Deploy
 **Android**: Gradle 8.13, Java 17 (NOT 25+), NDK 27.1, SDK 36, Package: com.guidr
-**iOS**: Xcode 15+, Bundle ID: com.guidr, TestFlight internal testing
+**iOS**: Xcode 26+, minimum deployment target iOS 26.0, Bundle ID: com.guidr, TestFlight internal testing
 **CI**: Lint/test/typecheck → Android APK → iOS simulator | Semantic-release on merge
 
 ## Conventional Commits
