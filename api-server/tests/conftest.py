@@ -2,13 +2,15 @@
 
 import os
 import socket
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 from urllib.parse import urlparse
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from testcontainers.mongodb import MongoDbContainer
 
+from src.infrastructure.config.settings import get_settings
 from src.main import create_application
 
 
@@ -24,18 +26,32 @@ def _mongodb_is_reachable(uri: str, timeout: float = 2.0) -> bool:
         return False
 
 
+@pytest.fixture(scope="session")
+def mongo_uri() -> Generator[str, None, None]:
+    """Provide a MongoDB URI for integration tests.
+
+    Uses a locally running instance if available (respects MONGO_TEST_URI env var),
+    otherwise starts a temporary MongoDB container via Docker.
+    """
+    configured_uri = os.getenv("MONGO_TEST_URI", "mongodb://localhost:27017/guidr_test")
+    if _mongodb_is_reachable(configured_uri):
+        yield configured_uri
+        return
+
+    with MongoDbContainer("mongo:7.0") as container:
+        yield f"{container.get_connection_url()}/guidr_test"
+
+
 @pytest.fixture
-async def app():
+async def app(mongo_uri: str):
     """Create a test FastAPI application."""
-    # Use test database
-    mongo_uri = os.getenv("MONGO_TEST_URI", "mongodb://localhost:27017/guidr_test")
-    if not _mongodb_is_reachable(mongo_uri):
-        pytest.fail(
-            f"MongoDB is not reachable at {mongo_uri}. "
-            "Integration tests require a running MongoDB instance. "
-            "Start one with: docker run -d -p 27017:27017 mongo"
-        )
-    os.environ["MONGO_URI"] = mongo_uri
+    parsed = urlparse(mongo_uri)
+    db_name = parsed.path.lstrip("/") or "guidr_test"
+    base_url = f"{parsed.scheme}://{parsed.netloc}"
+
+    os.environ["MONGODB_URL"] = base_url
+    os.environ["MONGODB_DATABASE"] = db_name
+    get_settings.cache_clear()
 
     application = create_application()
 
