@@ -31,7 +31,6 @@ class DiagnosticLogger {
     }
     if let data = try? JSONEncoder().encode(entries) {
       defaults?.set(data, forKey: storageKey)
-      defaults?.synchronize()
     }
   }
 
@@ -44,6 +43,5 @@ class DiagnosticLogger {
 
   func clear() {
     defaults?.removeObject(forKey: storageKey)
-    defaults?.synchronize()
   }
 }

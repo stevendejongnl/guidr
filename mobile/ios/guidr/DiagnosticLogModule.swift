@@ -12,6 +12,15 @@ class DiagnosticLogModule: NSObject {
     resolve(DiagnosticLogger.shared.loadEntries())
   }
 
+  @objc func log(
+    _ message: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DiagnosticLogger.shared.log("[JS] \(message)")
+    resolve(nil)
+  }
+
   @objc func clear(
     _ resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock

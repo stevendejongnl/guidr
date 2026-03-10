@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Platform,
   Share,
+  Switch,
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
@@ -23,6 +24,8 @@ import { UpdateCheckResult } from '../../domain/services/UpdateService'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { DiagnosticLogService } from '../../infrastructure/native/DiagnosticLogService'
+import { DebugModeStorage } from '../../infrastructure/storage/DebugModeStorage'
+import { Logger } from '../../infrastructure/logging/Logger'
 
 interface AdminScreenProps {
   onBack: () => void
@@ -47,6 +50,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   const [serverVersion, setServerVersion] = useState<string | null>(null)
   const [logEntries, setLogEntries] = useState<string[]>([])
   const [logLoading, setLogLoading] = useState(false)
+  const [debugMode, setDebugMode] = useState(Logger.isDebugMode())
 
   useEffect(() => {
     loadStoredConfig()
@@ -181,6 +185,13 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
     }
   }
 
+  const handleDebugModeToggle = async (enabled: boolean) => {
+    setDebugMode(enabled)
+    Logger.setDebugMode(enabled)
+    await new DebugModeStorage().setDebugMode(enabled)
+    Logger.info('AdminScreen', `Debug mode ${enabled ? 'enabled' : 'disabled'}`)
+  }
+
   const handleUpdateCheckComplete = (result: UpdateCheckResult) => {
     if (result.updateAvailable) {
       console.log('Update available:', result.latestVersion)
@@ -210,6 +221,27 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
             <Text style={styles.infoText}>
               Server: {serverVersion || 'Not connected'}
             </Text>
+          </View>
+
+          {/* Debug Logging Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Debug Logging</Text>
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLabel}>
+                <Text style={styles.infoText}>Verbose debug logs</Text>
+                <Text style={styles.toggleSubtext}>
+                  {debugMode
+                    ? 'All events logged — visible in diagnostics below'
+                    : 'Only warnings and errors are logged'}
+                </Text>
+              </View>
+              <Switch
+                value={debugMode}
+                onValueChange={handleDebugModeToggle}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={colors.surface}
+              />
+            </View>
           </View>
 
           {/* Stored Configuration Section */}
@@ -387,6 +419,21 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeSm,
     marginTop: spacing.lg,
     textAlign: 'center',
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+  },
+  toggleLabel: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  toggleSubtext: {
+    fontSize: typography.sizeXs,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
   logScrollView: {
     height: 300,

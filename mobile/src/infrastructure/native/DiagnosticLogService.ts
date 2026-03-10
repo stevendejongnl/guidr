@@ -12,6 +12,15 @@ export class DiagnosticLogService {
     }
   }
 
+  async log(message: string): Promise<void> {
+    if (Platform.OS !== 'ios') return
+    try {
+      await DiagnosticLogModule.log(message)
+    } catch {
+      // best-effort
+    }
+  }
+
   async clear(): Promise<void> {
     if (Platform.OS !== 'ios') return
     try {

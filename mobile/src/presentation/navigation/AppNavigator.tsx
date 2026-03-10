@@ -29,6 +29,8 @@ import { GitHubReleaseClient } from '../../infrastructure/api/GitHubReleaseClien
 import { UpdateCheckStorage } from '../../infrastructure/storage/UpdateCheckStorage'
 import { UpdateService, UpdateCheckResult } from '../../domain/services/UpdateService'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
+import { DebugModeStorage } from '../../infrastructure/storage/DebugModeStorage'
+import { Logger } from '../../infrastructure/logging/Logger'
 import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
 import { StepService } from '../../domain/services/StepService'
@@ -96,6 +98,10 @@ export const AppNavigator: React.FC = () => {
   useEffect(() => {
     const checkConfiguration = async () => {
       try {
+        const debugMode = await new DebugModeStorage().getDebugMode()
+        Logger.setDebugMode(debugMode)
+        Logger.info('AppNavigator', 'App starting', { debugMode })
+
         await serverStorage.initializeDefaultServerUrl()
 
         const url = await serverStorage.getServerUrl()
@@ -152,6 +158,7 @@ export const AppNavigator: React.FC = () => {
 
           const adminStatus = await authStorage.getUserIsAdmin()
           setIsAdmin(adminStatus)
+          Logger.debug('AppNavigator', 'Auth state loaded', { hasToken, isAdmin: adminStatus })
         }
 
         // Check for updates on Android
