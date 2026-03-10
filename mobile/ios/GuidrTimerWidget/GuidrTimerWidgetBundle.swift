@@ -5,6 +5,7 @@ import WidgetKit
 struct GuidrTimerWidgetBundle: WidgetBundle {
   init() {
     NSLog("[GuidrWidget] WidgetBundle init — extension process launched")
+    SharedDiagnosticLogger.shared.log("[WidgetBundle] init — extension process launched")
   }
 
   var body: some Widget {
