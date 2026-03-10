@@ -103,29 +103,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     delete resetTimeoutsRef.current[stepId]
   }, [stepTimers, liveActivity, notificationService])
 
-  // Sync already-running timers to Live Activity on mount / after load.
-  // Updates prevRunningRef so the SSE effect does not double-call addTimer
-  // for the same timers in the same render cycle.
-  useEffect(() => {
-    if (stepTimers.loading) return
-    const alreadyRunning = new Set<string>()
-    for (const [stepId, display] of Object.entries(stepTimers.timers)) {
-      if (!display.isRunning) continue
-      alreadyRunning.add(stepId)
-      const step = steps.find(s => s.id === stepId)
-      if (!step || !guide) continue
-      liveActivity.addTimer({
-        stepId,
-        guideTitle: guide.title,
-        stepTitle: step.title,
-        totalDurationSeconds: step.duration,
-        remainingSeconds: display.displaySeconds,
-      })
-    }
-    prevRunningRef.current = alreadyRunning
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepTimers.loading])
-
   // Sync SSE-driven timer starts to Live Activity
   useEffect(() => {
     const prevRunning = prevRunningRef.current
@@ -526,13 +503,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                                 ? timerDisplay.displaySeconds
                                 : initialSeconds
                               await stepTimers.startTimer(step.id, step.duration)
-                              await liveActivity.addTimer({
-                                stepId: step.id,
-                                guideTitle: guide.title,
-                                stepTitle: step.title,
-                                totalDurationSeconds: initialSeconds,
-                                remainingSeconds: remaining,
-                              })
+                              // Live Activity is started by the SSE effect when stepTimers.timers updates
                               if (step.duration > 0) {
                                 notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
                                   if (!enabled) return
