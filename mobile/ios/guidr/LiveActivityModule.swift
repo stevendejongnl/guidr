@@ -298,7 +298,7 @@ class LiveActivityModule: NSObject {
 
   // MARK: - Private helpers
 
-  @available(iOS 16.2, *)
+  
   private func buildContentState() -> GuidrTimerAttributes.ContentState {
     let active = timerEntries.filter { !$0.isComplete }
     let running = active.filter { !$0.isPaused && $0.endDate != nil }
@@ -328,7 +328,7 @@ class LiveActivityModule: NSObject {
       .min()
   }
 
-  @available(iOS 16.2, *)
+  
   private func scheduleCompletionForSoonest() {
     completionWorkItem?.cancel()
 
@@ -343,7 +343,7 @@ class LiveActivityModule: NSObject {
     DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
   }
 
-  @available(iOS 16.2, *)
+  
   private func handleTimerCompletion() {
     let now = Date()
 

@@ -2,7 +2,6 @@ import ActivityKit
 import SwiftUI
 import WidgetKit
 
-@available(iOS 16.1, *)
 struct GuidrTimerWidgetLiveActivity: Widget {
   var body: some WidgetConfiguration {
     let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] ActivityConfiguration body evaluated")
@@ -41,7 +40,7 @@ struct GuidrTimerWidgetLiveActivity: Widget {
   }
 }
 
-@available(iOS 16.1, *)
+
 private struct GuidrDotsView: View {
   var body: some View {
     HStack(spacing: 1.5) {
@@ -62,7 +61,7 @@ private struct GuidrDotsView: View {
   }
 }
 
-@available(iOS 16.1, *)
+
 private struct LockScreenView: View {
   let context: ActivityViewContext<GuidrTimerAttributes>
 
@@ -120,7 +119,7 @@ private struct LockScreenView: View {
   }
 }
 
-@available(iOS 16.1, *)
+
 private struct TimerText: View {
   let state: GuidrTimerAttributes.ContentState
 
@@ -147,7 +146,7 @@ private struct TimerText: View {
   }
 }
 
-@available(iOS 16.1, *)
+
 private struct TimerProgressView: View {
   let state: GuidrTimerAttributes.ContentState
 
