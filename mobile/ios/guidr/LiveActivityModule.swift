@@ -117,6 +117,11 @@ class LiveActivityModule: NSObject {
           )
           NSLog("[LiveActivity] created new activity: %@", activity.id)
           DiagnosticLogger.shared.log("[LiveActivity] created new id=\(activity.id)")
+          Task {
+            for await actState in activity.activityStateUpdates {
+              DiagnosticLogger.shared.log("[LiveActivity] stateUpdate id=\(activity.id) state=\(actState)")
+            }
+          }
           resolve(activity.id)
         } catch {
           NSLog("[LiveActivity] failed to create activity: %@", error.localizedDescription)

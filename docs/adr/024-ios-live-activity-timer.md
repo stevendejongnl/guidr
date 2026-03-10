@@ -39,6 +39,7 @@ Live Activities require iOS 16.1+. The `@available(iOS 16.1, *)` guard ensures t
 - Single active Live Activity at a time (new timer replaces existing)
 - Countdown mode only (steps with `duration > 0`)
 - Progress bar colors match existing CountdownTimer pattern: green (>50%), yellow (25-50%), red (<25%)
+- **Dynamic Island: not supported.** The widget code includes a `dynamicIsland:` view (required by ActivityKit's API — all `ActivityConfiguration` closures must provide one), but it is not tested or validated on Dynamic Island devices (iPhone 14 Pro+). Tested only on iPhone 13 and earlier, where Live Activities appear as a lock screen banner and in the notification center.
 
 ## Consequences
 

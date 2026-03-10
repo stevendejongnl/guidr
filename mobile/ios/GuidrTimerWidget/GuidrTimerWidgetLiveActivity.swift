@@ -10,9 +10,6 @@ struct GuidrTimerWidgetLiveActivity: Widget {
         .padding()
         .activityBackgroundTint(Color.black.opacity(0.85))
         .activitySystemActionForegroundColor(Color.white)
-        .onAppear {
-          SharedDiagnosticLogger.shared.log("[LiveActivityWidget] LockScreenView appeared stepTitle=\(context.state.stepTitle) remaining=\(context.state.remainingSeconds)")
-        }
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
@@ -64,6 +61,11 @@ private struct GuidrDotsView: View {
 @available(iOS 16.1, *)
 private struct LockScreenView: View {
   let context: ActivityViewContext<GuidrTimerAttributes>
+
+  init(context: ActivityViewContext<GuidrTimerAttributes>) {
+    self.context = context
+    SharedDiagnosticLogger.shared.log("[LiveActivityWidget] LockScreenView rendered stepTitle=\(context.state.stepTitle) remaining=\(context.state.remainingSeconds)")
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
