@@ -3,4 +3,4 @@
 source "https://rubygems.org"
 
 # Fastlane for iOS deployment automation
-gem "fastlane", "~> 2.231"
+gem "fastlane", "~> 2.232"
