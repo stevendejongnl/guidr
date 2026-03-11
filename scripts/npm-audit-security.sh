@@ -27,6 +27,7 @@
 # - GHSA-23c5-xmqv-rm74: minimatch ReDoS via nested *() extglobs (HIGH, bundled in npm CLI internals, not overridable)
 # - GHSA-mw96-cpmx-2vgc: rollup arbitrary file write via path traversal (HIGH, web build tool dev-time only, fix in >=4.59.0, override pending safe-chain age requirement)
 # - GHSA-qffp-2rhf-9h96: tar hardlink path traversal via drive-relative linkpath (HIGH, bundled in npm CLI internals, not overridable)
+# - GHSA-9ppj-qmqm-q256: node-tar symlink path traversal via drive-relative linkpath (HIGH, bundled in npm CLI internals, not overridable)
 
 set -e
 
@@ -56,6 +57,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-23c5-xmqv-rm74"
   "GHSA-mw96-cpmx-2vgc"
   "GHSA-qffp-2rhf-9h96"
+  "GHSA-9ppj-qmqm-q256"
 )
 
 # Run npm audit and capture output

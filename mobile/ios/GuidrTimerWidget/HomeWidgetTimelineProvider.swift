@@ -42,6 +42,7 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<HomeWidgetEntry>) -> Void) {
+    SharedDiagnosticLogger.shared.log("[HomeWidget] getTimeline called — this wake is for the home widget")
     NSLog("[GuidrWidget] getTimeline called")
     let baseEntry = buildEntry()
 

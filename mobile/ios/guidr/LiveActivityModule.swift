@@ -150,8 +150,11 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
-      // Delay widget reload to avoid preempting Live Activity presentation on iOS 26
-      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+      // Delay home widget reload to avoid waking the extension before iOS has
+      // had a chance to do the initial Live Activity render on iOS 26.
+      // 1s was too short — the extension wake for GuidrHomeWidget at 1s was
+      // interfering with the Live Activity's initial lock screen render.
+      DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { [weak self] in
         self?.reloadWidgetImmediate()
       }
 
