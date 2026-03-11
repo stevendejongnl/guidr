@@ -36,7 +36,6 @@ struct GuidrTimerWidgetLiveActivity: Widget {
           .foregroundColor(compactColor(state: context.state))
       }
     }
-    .supplementalActivityFamilies([.small, .medium])
   }
 }
 
