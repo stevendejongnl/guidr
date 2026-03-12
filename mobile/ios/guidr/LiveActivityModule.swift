@@ -20,6 +20,7 @@ class LiveActivityModule: NSObject {
   private var timerEntries: [TimerEntry] = []
   private var completionWorkItem: DispatchWorkItem?
   private var reloadWorkItem: DispatchWorkItem?
+  private var countdownTimer: DispatchSourceTimer?
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -150,6 +151,7 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
+      startCountdownTimer()
       // 1s delay: small buffer so the Live Activity request settles before
       // the extension is woken for the home widget.
       DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
@@ -229,6 +231,14 @@ class LiveActivityModule: NSObject {
       scheduleCompletionForSoonest()
       saveWidgetState()
       reloadWidgetDebounced()
+
+      // Start or stop countdown based on whether any timers are running
+      let hasRunning = timerEntries.contains { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
+      if hasRunning {
+        startCountdownTimer()
+      } else {
+        stopCountdownTimer()
+      }
     } else {
       resolve(nil)
     }
@@ -247,6 +257,7 @@ class LiveActivityModule: NSObject {
       if timerEntries.isEmpty {
         completionWorkItem?.cancel()
         completionWorkItem = nil
+        stopCountdownTimer()
         SharedTimerStorage.shared.clear()
         WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
         Task {
@@ -281,6 +292,7 @@ class LiveActivityModule: NSObject {
     if #available(iOS 16.2, *) {
       completionWorkItem?.cancel()
       completionWorkItem = nil
+      stopCountdownTimer()
       timerEntries.removeAll()
       NotificationHelper.shared.cancelAllTimerNotifications()
       SharedTimerStorage.shared.clear()
@@ -421,5 +433,57 @@ class LiveActivityModule: NSObject {
     }
     reloadWorkItem = workItem
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+  }
+
+  // MARK: - Countdown timer
+
+  /// Ticks every second to update remainingSeconds and push fresh state to the
+  /// Live Activity so the static TimerText counts down visibly.
+  private func startCountdownTimer() {
+    countdownTimer?.cancel()
+    let timer = DispatchSource.makeTimerSource(queue: .main)
+    timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
+    timer.setEventHandler { [weak self] in
+      self?.tickCountdown()
+    }
+    countdownTimer = timer
+    timer.resume()
+  }
+
+  private func stopCountdownTimer() {
+    countdownTimer?.cancel()
+    countdownTimer = nil
+  }
+
+  private func tickCountdown() {
+    let now = Date()
+    var changed = false
+
+    for i in 0..<timerEntries.count {
+      guard !timerEntries[i].isPaused, !timerEntries[i].isComplete,
+            let endDate = timerEntries[i].endDate else { continue }
+      let remaining = max(0, Int(ceil(endDate.timeIntervalSince(now))))
+      if remaining != timerEntries[i].remainingSeconds {
+        timerEntries[i].remainingSeconds = remaining
+        changed = true
+      }
+    }
+
+    guard changed else { return }
+
+    let state = buildContentState()
+    let soonestEndDate = soonestRunningEndDate()
+
+    Task {
+      for activity in Activity<GuidrTimerAttributes>.activities where activity.activityState == .active {
+        await activity.update(.init(state: state, staleDate: soonestEndDate))
+      }
+    }
+
+    // Stop ticking if no running timers remain
+    let hasRunning = timerEntries.contains { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
+    if !hasRunning {
+      stopCountdownTimer()
+    }
   }
 }
