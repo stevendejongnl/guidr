@@ -57,13 +57,14 @@ struct HomeWidgetTimelineProvider: TimelineProvider {
       return
     }
 
-    // Multi-entry timeline for running timers
-    let entries = generateTimelineEntries(base: baseEntry)
+    // Single entry with Text(timerInterval:) / ProgressView(timerInterval:) handles
+    // the live countdown — no need for multi-entry timeline. Refresh after the soonest
+    // timer ends so we can update state to "Done".
     let soonestEnd = running.compactMap(\.endDate).min()!
     let refreshDate = soonestEnd.addingTimeInterval(1)
-    NSLog("[GuidrWidget] getTimeline: multi-entry (%d entries), refresh after %@",
-          entries.count, String(describing: refreshDate))
-    completion(Timeline(entries: entries, policy: .after(refreshDate)))
+    NSLog("[GuidrWidget] getTimeline: single entry with live countdown, refresh after %@",
+          String(describing: refreshDate))
+    completion(Timeline(entries: [baseEntry], policy: .after(refreshDate)))
   }
 
   private func buildEntry() -> HomeWidgetEntry {
