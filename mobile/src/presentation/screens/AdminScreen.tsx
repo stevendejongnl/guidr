@@ -24,7 +24,6 @@ import { UpdateCheckResult } from '../../domain/services/UpdateService'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { DiagnosticLogService } from '../../infrastructure/native/DiagnosticLogService'
-import { CrashLogService } from '../../infrastructure/native/CrashLogService'
 import { DebugModeStorage } from '../../infrastructure/storage/DebugModeStorage'
 import { Logger } from '../../infrastructure/logging/Logger'
 
@@ -51,15 +50,12 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   const [serverVersion, setServerVersion] = useState<string | null>(null)
   const [logEntries, setLogEntries] = useState<string[]>([])
   const [logLoading, setLogLoading] = useState(false)
-  const [crashEntries, setCrashEntries] = useState<string[]>([])
-  const [crashLoading, setCrashLoading] = useState(false)
   const [debugMode, setDebugMode] = useState(Logger.isDebugMode())
 
   useEffect(() => {
     loadStoredConfig()
     loadVersionInfo()
     loadDiagnosticLog()
-    loadCrashLog()
   }, [])
 
   const loadStoredConfig = async () => {
@@ -186,38 +182,6 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
       await loadDiagnosticLog()
     } catch (err) {
       console.error('Failed to clear log:', err)
-    }
-  }
-
-  const loadCrashLog = async () => {
-    setCrashLoading(true)
-    try {
-      const entries = await new CrashLogService().getEntries()
-      setCrashEntries(entries)
-    } catch (err) {
-      console.error('Failed to load crash log:', err)
-    } finally {
-      setCrashLoading(false)
-    }
-  }
-
-  const handleShareCrashLog = async () => {
-    try {
-      await Share.share({
-        message: crashEntries.join('\n\n'),
-        title: 'Guidr Crash Log',
-      })
-    } catch (err) {
-      console.error('Failed to share crash log:', err)
-    }
-  }
-
-  const handleClearCrashLog = async () => {
-    try {
-      await new CrashLogService().clear()
-      await loadCrashLog()
-    } catch (err) {
-      console.error('Failed to clear crash log:', err)
     }
   }
 
@@ -348,50 +312,6 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
 
           {error && <Text style={styles.errorText}>{error}</Text>}
           {successMessage && <Text style={commonStyles.successText}>{successMessage}</Text>}
-
-          {/* Crash Reports Section */}
-          <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>Crash Reports</Text>
-            <TouchableOpacity
-              style={[styles.button, crashLoading ? styles.buttonDisabled : null]}
-              onPress={loadCrashLog}
-              disabled={crashLoading}
-              accessibilityLabel="Refresh crash log"
-            >
-              <Text style={commonStyles.buttonText}>Refresh</Text>
-            </TouchableOpacity>
-            {crashLoading && (
-              <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
-            )}
-            {!crashLoading && crashEntries.length === 0 && (
-              <Text style={styles.infoText}>No crash reports</Text>
-            )}
-            {!crashLoading && crashEntries.length > 0 && (
-              <ScrollView style={styles.logScrollView} nestedScrollEnabled>
-                {crashEntries.map((entry, index) => (
-                  <Text key={index} style={styles.logEntry}>
-                    {entry}
-                  </Text>
-                ))}
-              </ScrollView>
-            )}
-            {crashEntries.length > 0 && (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleShareCrashLog}
-                accessibilityLabel="Share crash log"
-              >
-                <Text style={commonStyles.buttonText}>Share</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={styles.dangerButton}
-              onPress={handleClearCrashLog}
-              accessibilityLabel="Clear crash log"
-            >
-              <Text style={commonStyles.buttonText}>Clear</Text>
-            </TouchableOpacity>
-          </View>
 
           {/* Live Activity Diagnostics Section */}
           <View style={commonStyles.section}>
