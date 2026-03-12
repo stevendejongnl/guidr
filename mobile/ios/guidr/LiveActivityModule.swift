@@ -150,11 +150,9 @@ class LiveActivityModule: NSObject {
       }
 
       scheduleCompletionForSoonest()
-      // Delay home widget reload to avoid waking the extension before iOS has
-      // had a chance to do the initial Live Activity render on iOS 26.
-      // 1s was too short — the extension wake for GuidrHomeWidget at 1s was
-      // interfering with the Live Activity's initial lock screen render.
-      DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { [weak self] in
+      // 1s delay: small buffer so the Live Activity request settles before
+      // the extension is woken for the home widget.
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
         self?.reloadWidgetImmediate()
       }
 
@@ -411,6 +409,7 @@ class LiveActivityModule: NSObject {
     reloadWorkItem?.cancel()
     reloadWorkItem = nil
     NSLog("[LiveActivity] reloadWidgetImmediate: reloading GuidrHomeWidget now")
+    DiagnosticLogger.shared.log("[LiveActivity] reloadWidgetImmediate: calling reloadTimelines")
     WidgetCenter.shared.reloadTimelines(ofKind: "GuidrHomeWidget")
   }
 
