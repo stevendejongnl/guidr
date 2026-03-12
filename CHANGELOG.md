@@ -1,3 +1,9 @@
+## [1.84.8](https://github.com/stevendejongnl/guidr/compare/v1.84.7...v1.84.8) (2026-03-12)
+
+### Bug Fixes
+
+* **ios:** replace Text(timerInterval:) with static text in Live Activity ([4688bc7](https://github.com/stevendejongnl/guidr/commit/4688bc711a357dc755bb1acd050801194663dd37))
+
 ## [1.23.2](https://github.com/stevendejongnl/guidr/compare/v1.23.1...v1.23.2) (2026-01-07)
 
 ### Bug Fixes
