@@ -130,10 +130,10 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if let endDate = state.timerEndDate,
-              let safe = safeEndDate(endDate),
-              safe > Date.now {
-      Text(timerInterval: Date.now...safe, countsDown: true)
+    } else if state.timerEndDate != nil, safeEndDate(state.timerEndDate!) != nil {
+      // Static text instead of Text(timerInterval:) — the animated variant uses
+      // GeometryReader internally which crashes in Live Activity rendering contexts.
+      Text(formatTime(state.remainingSeconds))
         .foregroundColor(progressColor(state: state))
         .monospacedDigit()
     } else if state.timerEndDate != nil {
