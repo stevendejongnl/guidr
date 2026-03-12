@@ -57,6 +57,7 @@ jobs:
           defaults.project=$SENTRY_PROJECT_MOBILE
           defaults.url=$SENTRY_URL
           EOF
+          sed -i "s/^[[:space:]]*//" mobile/android/sentry.properties
 
           cat > mobile/ios/sentry.properties <<EOF
           auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -64,6 +65,7 @@ jobs:
           defaults.project=$SENTRY_PROJECT_MOBILE
           defaults.url=$SENTRY_URL
           EOF
+          sed -i "s/^[[:space:]]*//" mobile/ios/sentry.properties
 
           echo "✅ Created Sentry properties files for Android and iOS"
 
@@ -160,7 +162,7 @@ jobs:
       - name: Build Web App
         working-directory: web-app
         run: |
-          npm install
+          npm ci
           npm run build
           echo "✅ Web app built to web-app/dist/"
 
@@ -216,7 +218,7 @@ jobs:
         run: |
           source .sentry/config.env
 
-          VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          VERSION=$(node -p "require('./mobile/package.json').version")
           RELEASE_NAME="guidr-api@${VERSION}"
 
           echo "📤 Creating Sentry release for API: $RELEASE_NAME"
@@ -251,7 +253,7 @@ jobs:
           RELEASE_COMMIT_SHA=$(git rev-parse origin/main)
 
           # Extract version from package.json
-          VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
+          VERSION=$(node -p "require('./mobile/package.json').version")
           TAG="v${VERSION}"
 
           # Dispatch repository event that will trigger both Docker and TestFlight workflows

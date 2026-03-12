@@ -52,7 +52,7 @@ jobs:
         working-directory: api-server
     services:
       mongodb:
-        image: mongo:latest
+        image: mongo:7.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -160,7 +160,7 @@ jobs:
         run: npm ci --workspaces --include=dev
 
       - name: Run tests
-        run: npm test --workspace=web-app
+        run: npm run web:test
 
   android-build:
     name: Android Build
@@ -192,6 +192,7 @@ jobs:
           defaults.project=$SENTRY_PROJECT_MOBILE
           defaults.url=$SENTRY_URL
           EOF
+          sed -i "s/^[[:space:]]*//" mobile/android/sentry.properties
 
           echo "✅ Created Android Sentry properties file"
 
@@ -220,19 +221,6 @@ jobs:
       - name: Setup workspace symlinks
         run: |
           node scripts/setup-sentry-symlink.js
-
-      - name: Debug workspace symlinks
-        run: |
-          echo "=== Root node_modules @guidr ==="
-          ls -la node_modules/@guidr/ || echo "Not found"
-
-          echo ""
-          echo "=== Mobile node_modules @guidr ==="
-          ls -la mobile/node_modules/@guidr/ || echo "Not found"
-
-          echo ""
-          echo "=== Mobile node_modules symlinks ==="
-          find mobile/node_modules -maxdepth 2 -type l -ls 2>/dev/null | head -20 || true
 
       - name: Build Android APK
         run: |
@@ -276,6 +264,7 @@ jobs:
           defaults.project=$SENTRY_PROJECT_MOBILE
           defaults.url=$SENTRY_URL
           EOF
+          sed -i '' "s/^[[:space:]]*//" mobile/ios/sentry.properties
 
           echo "✅ Created iOS Sentry properties file"
 
