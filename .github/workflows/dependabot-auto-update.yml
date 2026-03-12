@@ -34,4 +34,6 @@ jobs:
           | while read -r pr; do
               echo "Updating PR #$pr"
               gh pr update-branch "$pr" --repo "$REPO" || echo "PR #$pr could not be updated (conflict?)"
+              echo "Enabling auto-merge for PR #$pr"
+              gh pr merge "$pr" --repo "$REPO" --auto --squash || echo "PR #$pr auto-merge could not be enabled"
             done
