@@ -1,3 +1,9 @@
+## [1.84.10](https://github.com/stevendejongnl/guidr/compare/v1.84.9...v1.84.10) (2026-03-12)
+
+### Bug Fixes
+
+* **ios:** use live countdown views in home widget for smooth second-by-second updates ([ca55db8](https://github.com/stevendejongnl/guidr/commit/ca55db8ad0aec9ce9ace698c74db3fe0c6151ed9))
+
 ## [1.84.9](https://github.com/stevendejongnl/guidr/compare/v1.84.8...v1.84.9) (2026-03-12)
 
 ### Bug Fixes
