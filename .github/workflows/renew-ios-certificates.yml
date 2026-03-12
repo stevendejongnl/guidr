@@ -15,7 +15,7 @@ permissions:
 jobs:
   renew-certificates:
     name: Renew iOS Certificates
-    runs-on: macos-15
+    runs-on: macos-26
     defaults:
       run:
         working-directory: mobile
@@ -35,7 +35,7 @@ jobs:
 
       - name: Configure git for Gitea access
         run: |
-          git config --global http.sslVerify false
+          git config --global http.https://git.madebysteven.nl.sslVerify false
           git config --global http.connectTimeout 60
           git config --global http.lowSpeedLimit 0
           git config --global http.lowSpeedTime 0
@@ -83,8 +83,6 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APP_STORE_CONNECT_API_KEY_JSON_PATH: ${{ env.APP_STORE_CONNECT_API_KEY_JSON_PATH }}
         run: |
-          bundle install --retry=3
-
           # Force regenerate if requested, otherwise just generate new cert if needed
           if [ "${{ github.event.inputs.force_regenerate }}" == "true" ]; then
             cd ios && bundle exec fastlane generate_certificates force:true
@@ -103,7 +101,7 @@ jobs:
         run: |
           chmod +x ../scripts/send-telegram-notification.sh
           ../scripts/send-telegram-notification.sh \
-            --type testflight_success \
+            --type certificate_success \
             --version "iOS Certificates" \
             --branch "${{ github.ref_name }}" \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
@@ -118,7 +116,7 @@ jobs:
         run: |
           chmod +x ../scripts/send-telegram-notification.sh
           ../scripts/send-telegram-notification.sh \
-            --type testflight_failure \
+            --type certificate_failure \
             --version "iOS Certificates" \
             --branch "${{ github.ref_name }}" \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
