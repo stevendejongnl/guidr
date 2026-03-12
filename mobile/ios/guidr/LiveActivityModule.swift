@@ -23,7 +23,7 @@ class LiveActivityModule: NSObject {
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
-    return true
+    return false
   }
 
   @objc
