@@ -59,8 +59,8 @@ jobs:
 
       - name: Configure git for Gitea access
         run: |
-          # Disable SSL verification for Gitea behind Cloudflare (using bypass)
-          git config --global http.sslVerify false
+          # Disable SSL verification for Gitea behind Cloudflare (scoped to Gitea host only)
+          git config --global http.https://git.madebysteven.nl.sslVerify false
           # Increase connection timeout for Gitea clone
           git config --global http.connectTimeout 60
           # Disable low-speed timeout that could kill slow clones
@@ -98,7 +98,6 @@ jobs:
           echo "Building version: $VERSION"
 
       - name: Setup Node.js
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -106,7 +105,6 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: npm ci --workspaces --include=dev
         # IMPORTANT: --workspaces flag installs all workspace packages (@guidr/shared, mobile, web-app)
         # --include=dev ensures devDependencies like @react-native/metro-config are installed
@@ -115,15 +113,14 @@ jobs:
         # See: docs/CI_CD_TROUBLESHOOTING.md#issue-testflight-build-fails-with-missing-source-map
 
       - name: Build shared package
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: npm run build:shared
 
       - name: Create mobile .env file with Sentry DSN
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cat > mobile/.env <<EOF
           SENTRY_DSN=${{ secrets.MOBILE_SENTRY_DSN }}
           EOF
+          sed -i '' "s/^[[:space:]]*//" mobile/.env
 
           echo "✅ Created mobile .env file with Sentry configuration"
 
@@ -136,14 +133,12 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install CocoaPods dependencies
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd mobile/ios
           # Install dependencies from cache (skip repo update to avoid 10-20min delay)
           pod install
 
       - name: Check for Vendored Frameworks
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd mobile/ios/Pods
 
@@ -170,7 +165,6 @@ jobs:
           fi
 
       - name: Verify and Remove CocoaPods Build System File Lists
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd mobile/ios
 
@@ -198,7 +192,6 @@ jobs:
           fi
 
       - name: Setup Ruby and Bundler
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
@@ -215,7 +208,6 @@ jobs:
       #       ${{ runner.os }}-xcode-derived-data-
 
       - name: Verify keychain setup
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           echo "📋 Keychain configuration:"
           security list-keychains
@@ -225,7 +217,6 @@ jobs:
 
       # Create API key files from secrets
       - name: Create App Store Connect API Key
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           mkdir -p $HOME/private_keys
 
@@ -244,7 +235,6 @@ jobs:
           echo "APP_STORE_CONNECT_API_KEY_JSON_PATH=$JSON_PATH" >> $GITHUB_ENV
 
       - name: Create temporary keychain for code signing
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
           KEYCHAIN_PASSWORD="temp_password_$(uuidgen)"
@@ -268,7 +258,6 @@ jobs:
           echo "✅ Temporary keychain created at $KEYCHAIN_PATH"
 
       - name: Sync code signing with fastlane match
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         working-directory: mobile/ios
         env:
           GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
@@ -284,7 +273,6 @@ jobs:
           bundle exec fastlane sync_certificates
 
       - name: Create Sentry properties file
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           source .sentry/config.env
 
@@ -294,12 +282,12 @@ jobs:
           defaults.project=$SENTRY_PROJECT_MOBILE
           defaults.url=$SENTRY_URL
           EOF
+          sed -i '' "s/^[[:space:]]*//" mobile/ios/sentry.properties
 
           echo "✅ Created iOS Sentry properties file"
 
       # Auto-increment build number with timestamp
       - name: Increment build number
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           BUILD_NUM=$(date +%Y%m%d%H%M%S)
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUM" mobile/ios/guidr/Info.plist
@@ -307,14 +295,12 @@ jobs:
           echo "BUILD_NUMBER=$BUILD_NUM" >> $GITHUB_ENV
 
       - name: Install GNU coreutils for timeout command
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           brew install coreutils
           echo "✅ GNU coreutils installed"
 
       # Build archive with manual signing via fastlane match
       - name: Build iOS archive
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         timeout-minutes: 60
         env:
           SENTRY_DISABLE_XCODE_DEBUG_UPLOAD: true
@@ -365,7 +351,7 @@ jobs:
 
       # Upload debug symbols to Sentry after successful build
       - name: Upload debug symbols to Sentry
-        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        if: success()
         continue-on-error: true
         run: |
           cd mobile/ios
@@ -393,7 +379,7 @@ jobs:
 
       # Upload JS source maps to Sentry for readable stack traces
       - name: Upload JS source maps to Sentry
-        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        if: success()
         continue-on-error: true
         run: |
           cd mobile
@@ -426,7 +412,7 @@ jobs:
 
       # Create Sentry release linked to commits for suspect commits
       - name: Create Sentry release with commits
-        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        if: success()
         continue-on-error: true
         run: |
           cd mobile
@@ -457,7 +443,6 @@ jobs:
 
       # Export signed IPA
       - name: Export IPA
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         run: |
           cd mobile/ios
           xcodebuild \
@@ -468,7 +453,6 @@ jobs:
 
       # Get version info
       - name: Get version information
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         id: version
         run: |
           VERSION=$(grep '"version"' mobile/package.json | head -1 | sed 's/.*: "\(.*\)".*/\1/')
@@ -478,7 +462,6 @@ jobs:
 
       # Generate tester-friendly TestFlight "What to Test" notes from GitHub Release
       - name: Generate TestFlight changelog
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         id: changelog
         env:
           GH_TOKEN: ${{ github.token }}
@@ -576,9 +559,7 @@ jobs:
 
       # Upload to TestFlight using Fastlane pilot (supports changelog for "What to Test")
       - name: Upload to TestFlight
-        if: |
-          (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch') &&
-          github.event.inputs.skip_testflight != 'true'
+        if: github.event.inputs.skip_testflight != 'true'
         working-directory: mobile
         run: |
           # Read changelog from file
@@ -593,7 +574,6 @@ jobs:
 
       # Upload IPA as artifact (for debugging/archiving)
       - name: Upload IPA artifact
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: guidr-testflight-v${{ steps.version.outputs.VERSION }}-build${{ env.BUILD_NUMBER }}
@@ -609,7 +589,7 @@ jobs:
           retention-days: 7
 
       - name: Notify TestFlight success
-        if: success() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        if: success()
         working-directory: .
         run: |
           chmod +x scripts/send-telegram-notification.sh
@@ -684,7 +664,7 @@ jobs:
 
       # Cleanup API key files
       - name: Cleanup API key
-        if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch')
+        if: always()
         run: |
           rm -f $HOME/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
           rm -f $HOME/private_keys/api_key.json

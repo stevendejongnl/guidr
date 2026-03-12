@@ -9,7 +9,7 @@ permissions:
 jobs:
   initialize-ios:
     name: Initialize iOS Directory
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
@@ -19,7 +19,7 @@ jobs:
 
       - name: Check if iOS directory already exists
         run: |
-          if [ -d "ios" ]; then
+          if [ -d "mobile/ios" ]; then
             echo "iOS directory already exists. Exiting."
             exit 1
           fi
