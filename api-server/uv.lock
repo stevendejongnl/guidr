@@ -442,7 +442,7 @@ wheels = [
 
 [[package]]
 name = "guidr-api-server"
-version = "1.84.8"
+version = "1.84.9"
 source = { editable = "." }
 dependencies = [
     { name = "argon2-cffi" },
