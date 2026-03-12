@@ -171,12 +171,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
-          npx semantic-release --dry-run > release-output.txt 2>&1 || true
+          npm run release -- --dry-run > release-output.txt 2>&1 || true
 
           # Show the actual output for debugging
           echo "=== Semantic-Release Output ==="
           cat release-output.txt
           echo "=============================="
+
+          # Fail early if semantic-release itself errored (plugin missing, config broken, etc.)
+          if grep -q "An error occurred while running semantic-release" release-output.txt; then
+            echo "::error::semantic-release crashed — check output above"
+            exit 1
+          fi
 
           # Extract next version from semantic-release output
           if grep -q "The next release version is" release-output.txt; then
@@ -195,7 +201,7 @@ jobs:
         working-directory: mobile
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
-        run: npx semantic-release
+        run: npm run release
 
       - name: Notify release success
         if: env.SHOULD_RELEASE == 'true'
