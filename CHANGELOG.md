@@ -1,3 +1,9 @@
+## [1.84.9](https://github.com/stevendejongnl/guidr/compare/v1.84.8...v1.84.9) (2026-03-12)
+
+### Bug Fixes
+
+* **ios:** add native countdown timer to update Live Activity every second ([f7e7fb3](https://github.com/stevendejongnl/guidr/commit/f7e7fb30a33d41e39cec39c7e5ec430878b89208))
+
 ## [1.84.8](https://github.com/stevendejongnl/guidr/compare/v1.84.7...v1.84.8) (2026-03-12)
 
 ### Bug Fixes

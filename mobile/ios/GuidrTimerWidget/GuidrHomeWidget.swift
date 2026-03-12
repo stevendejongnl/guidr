@@ -211,6 +211,10 @@ private struct TimerCountdownText: View {
       } else if timer.isPaused {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(.orange)
+      } else if let endDate = timer.endDate, endDate > Date() {
+        Text(timerInterval: Date.now...endDate, countsDown: true)
+          .foregroundColor(homeProgressColor(timer: timer))
+          .monospacedDigit()
       } else {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(homeProgressColor(timer: timer))
@@ -229,6 +233,11 @@ private struct HomeProgressView: View {
     Group {
       if allComplete || timer.isComplete {
         ProgressView(value: 1.0, total: 1.0)
+          .tint(.green)
+      } else if !timer.isPaused, let endDate = timer.endDate, endDate > Date(),
+                timer.totalDurationSeconds > 0 {
+        let startDate = endDate.addingTimeInterval(-Double(timer.totalDurationSeconds))
+        ProgressView(timerInterval: startDate...endDate, countsDown: false)
           .tint(.green)
       } else {
         ProgressView(value: homeStaticProgress(timer: timer), total: 1.0)
