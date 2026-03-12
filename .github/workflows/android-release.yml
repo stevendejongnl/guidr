@@ -77,6 +77,7 @@ jobs:
           cat > mobile/.env <<EOF
           SENTRY_DSN=${{ secrets.MOBILE_SENTRY_DSN }}
           EOF
+          sed -i "s/^[[:space:]]*//" mobile/.env
 
           echo "✅ Created mobile .env file with Sentry configuration"
 
@@ -90,6 +91,7 @@ jobs:
           defaults.project=$SENTRY_PROJECT_MOBILE
           defaults.url=$SENTRY_URL
           EOF
+          sed -i "s/^[[:space:]]*//" mobile/android/sentry.properties
 
           echo "✅ Created Android Sentry properties file"
 
