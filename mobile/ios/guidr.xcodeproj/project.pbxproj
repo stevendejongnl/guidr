@@ -14,28 +14,23 @@
 		3F8EA7B94545BA1816BFF45B /* LiveActivityModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = B60A78F642DD5279794993EC /* LiveActivityModuleBridge.m */; };
 		413C444F05526F31CFD26814 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DC02BC820536990C5FC94F0 /* Foundation.framework */; };
 		5F619710012131604894698E /* LiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDDE1947E31B3C23D3B3D3 /* LiveActivityModule.swift */; };
+		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		7D8E9F0A1B2C3D4E5F6A7B8C /* DiagnosticLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */; };
+		817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */; };
+		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8E9F0A1B2C3D4E5F6A7B8C9D /* DiagnosticLogModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */; };
+		9F0A1B2C3D4E5F6A7B8C9D0E /* DiagnosticLogModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */; };
+		A4B5C6D7E8F9A0B1C2D3E4F5 /* SharedTimerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */; };
+		AB279DD88B018B578BC6FC9C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* NotificationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */; };
 		B2C3D4E5F6A7B8C9D0E1F2A3 /* NotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */; };
 		B3C4D5E6F7A8B9C0D1E2F3A4 /* NotificationModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */; };
-		7D8E9F0A1B2C3D4E5F6A7B8C /* DiagnosticLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */; };
-		8E9F0A1B2C3D4E5F6A7B8C9D /* DiagnosticLogModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */; };
-		9F0A1B2C3D4E5F6A7B8C9D0E /* DiagnosticLogModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */; };
-		F4A5B6C7D8E9F0A1B2C3D4E5 /* CrashLogStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F0A1B2 /* CrashLogStorage.swift */; };
-		A5B6C7D8E9F0A1B2C3D4E5F6 /* CrashLogModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E3F4A5B6C7D8E9F0A1B2C3 /* CrashLogModule.swift */; };
-		B6C7D8E9F0A1B2C3D4E5F6A7 /* CrashLogModule.m in Sources */ = {isa = PBXBuildFile; fileRef = E3F4A5B6C7D8E9F0A1B2C3D4 /* CrashLogModule.m */; };
-		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		AB279DD88B018B578BC6FC9C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
-		C7D3E8A91F4B2560D8E07A3C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
-		A4B5C6D7E8F9A0B1C2D3E4F5 /* SharedTimerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */; };
 		B5C6D7E8F9A0B1C2D3E4F5A6 /* SharedTimerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */; };
+		BB2CC3DD4EE5FF6AA7BB8CC9 /* SharedDiagnosticLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1BB2CC3DD4EE5FF6AA7BB8 /* SharedDiagnosticLogger.swift */; };
 		C6D7E8F9A0B1C2D3E4F5A6B7 /* HomeWidgetTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */; };
+		C7D3E8A91F4B2560D8E07A3C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
 		D7E8F9A0B1C2D3E4F5A6B7C8 /* GuidrHomeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */; };
 		F9A0B1C2D3E4F5A6B7C8D9EA /* WidgetRenderingHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */; };
-		BB2CC3DD4EE5FF6AA7BB8CC9 /* SharedDiagnosticLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1BB2CC3DD4EE5FF6AA7BB8 /* SharedDiagnosticLogger.swift */; };
-		F5A6B7C8D9E0F1A2B3C4D5E6 /* WidgetCrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F5A6B7C8D9E0F1A2B3C4D5 /* WidgetCrashReporter.swift */; };
-		B7C8D9E0F1A2B3C4D5E6F7A8 /* MetricKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6B7C8D9E0F1A2B3C4D5E6F7 /* MetricKit.framework */; };
 		FC508176FC966C05B5DEDF3A /* GuidrTimerWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -65,41 +60,36 @@
 
 /* Begin PBXFileReference section */
 		04424E6BE0C37B437AEEA925 /* GuidrTimerWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrTimerWidgetBundle.swift; sourceTree = "<group>"; };
-		D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedTimerStorage.swift; sourceTree = "<group>"; };
-		E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeWidgetTimelineProvider.swift; sourceTree = "<group>"; };
-		F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrHomeWidget.swift; sourceTree = "<group>"; };
-		E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetRenderingHelpers.swift; sourceTree = "<group>"; };
-		AA1BB2CC3DD4EE5FF6AA7BB8 /* SharedDiagnosticLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedDiagnosticLogger.swift; sourceTree = "<group>"; };
 		11F9B7D85588CC58815D1D3F /* GuidrTimerWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = GuidrTimerWidget.entitlements; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* guidr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = guidr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = guidr/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = guidr/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = guidr/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationHelper.swift; path = guidr/NotificationHelper.swift; sourceTree = "<group>"; };
+		2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationModule.swift; path = guidr/NotificationModule.swift; sourceTree = "<group>"; };
 		314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrTimerWidgetLiveActivity.swift; sourceTree = "<group>"; };
+		3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = NotificationModuleBridge.m; path = guidr/NotificationModuleBridge.m; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-guidr.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-guidr.debug.xcconfig"; path = "Target Support Files/Pods-guidr/Pods-guidr.debug.xcconfig"; sourceTree = "<group>"; };
+		4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticLogger.swift; path = guidr/DiagnosticLogger.swift; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-guidr.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-guidr.release.xcconfig"; path = "Target Support Files/Pods-guidr/Pods-guidr.release.xcconfig"; sourceTree = "<group>"; };
+		5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticLogModule.swift; path = guidr/DiagnosticLogModule.swift; sourceTree = "<group>"; };
 		5DC02BC820536990C5FC94F0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-guidr.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-guidr.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = DiagnosticLogModule.m; path = guidr/DiagnosticLogModule.m; sourceTree = "<group>"; };
 		6DEDDE1947E31B3C23D3B3D3 /* LiveActivityModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LiveActivityModule.swift; path = guidr/LiveActivityModule.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = guidr/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = guidr/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA1BB2CC3DD4EE5FF6AA7BB8 /* SharedDiagnosticLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedDiagnosticLogger.swift; sourceTree = "<group>"; };
 		B60A78F642DD5279794993EC /* LiveActivityModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = LiveActivityModuleBridge.m; path = guidr/LiveActivityModuleBridge.m; sourceTree = "<group>"; };
-		1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationHelper.swift; path = guidr/NotificationHelper.swift; sourceTree = "<group>"; };
-		2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationModule.swift; path = guidr/NotificationModule.swift; sourceTree = "<group>"; };
-		3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = NotificationModuleBridge.m; path = guidr/NotificationModuleBridge.m; sourceTree = "<group>"; };
-		4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticLogger.swift; path = guidr/DiagnosticLogger.swift; sourceTree = "<group>"; };
-		5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DiagnosticLogModule.swift; path = guidr/DiagnosticLogModule.swift; sourceTree = "<group>"; };
-		6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = DiagnosticLogModule.m; path = guidr/DiagnosticLogModule.m; sourceTree = "<group>"; };
-		C1D2E3F4A5B6C7D8E9F0A1B2 /* CrashLogStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CrashLogStorage.swift; path = guidr/CrashLogStorage.swift; sourceTree = "<group>"; };
-		D2E3F4A5B6C7D8E9F0A1B2C3 /* CrashLogModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CrashLogModule.swift; path = guidr/CrashLogModule.swift; sourceTree = "<group>"; };
-		E3F4A5B6C7D8E9F0A1B2C3D4 /* CrashLogModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = CrashLogModule.m; path = guidr/CrashLogModule.m; sourceTree = "<group>"; };
+		D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedTimerStorage.swift; sourceTree = "<group>"; };
+		E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeWidgetTimelineProvider.swift; sourceTree = "<group>"; };
+		E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetRenderingHelpers.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GuidrTimerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* guidr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = guidr.entitlements; path = guidr/guidr.entitlements; sourceTree = "<group>"; };
+		F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrHomeWidget.swift; sourceTree = "<group>"; };
 		FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GuidrTimerAttributes.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E4F5A6B7C8D9E0F1A2B3C4D5 /* WidgetCrashReporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetCrashReporter.swift; sourceTree = "<group>"; };
-		A6B7C8D9E0F1A2B3C4D5E6F7 /* MetricKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetricKit.framework; path = System/Library/Frameworks/MetricKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,7 +106,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				413C444F05526F31CFD26814 /* Foundation.framework in Frameworks */,
-				B7C8D9E0F1A2B3C4D5E6F7A8 /* MetricKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,12 +126,9 @@
 				1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */,
 				2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */,
 				3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */,
-			4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */,
-			5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */,
-			6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */,
-			C1D2E3F4A5B6C7D8E9F0A1B2 /* CrashLogStorage.swift */,
-			D2E3F4A5B6C7D8E9F0A1B2C3 /* CrashLogModule.swift */,
-			E3F4A5B6C7D8E9F0A1B2C3D4 /* CrashLogModule.m */,
+				4A5B6C7D8E9F0A1B2C3D4E5F /* DiagnosticLogger.swift */,
+				5B6C7D8E9F0A1B2C3D4E5F6A /* DiagnosticLogModule.swift */,
+				6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */,
 			);
 			name = guidr;
 			sourceTree = "<group>";
@@ -167,7 +153,6 @@
 				F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */,
 				E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */,
 				AA1BB2CC3DD4EE5FF6AA7BB8 /* SharedDiagnosticLogger.swift */,
-				E4F5A6B7C8D9E0F1A2B3C4D5 /* WidgetCrashReporter.swift */,
 				04424E6BE0C37B437AEEA925 /* GuidrTimerWidgetBundle.swift */,
 				11F9B7D85588CC58815D1D3F /* GuidrTimerWidget.entitlements */,
 				A1B2C3D4E5F60718293A4B5C /* Info.plist */,
@@ -211,7 +196,6 @@
 			isa = PBXGroup;
 			children = (
 				5DC02BC820536990C5FC94F0 /* Foundation.framework */,
-				A6B7C8D9E0F1A2B3C4D5E6F7 /* MetricKit.framework */,
 			);
 			name = iOS;
 			sourceTree = "<group>";
@@ -347,7 +331,13 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
 			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-frameworks.sh\"\n";
@@ -392,7 +382,13 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
 			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-guidr/Pods-guidr-resources.sh\"\n";
@@ -427,12 +423,9 @@
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* NotificationHelper.swift in Sources */,
 				B2C3D4E5F6A7B8C9D0E1F2A3 /* NotificationModule.swift in Sources */,
 				B3C4D5E6F7A8B9C0D1E2F3A4 /* NotificationModuleBridge.m in Sources */,
-			7D8E9F0A1B2C3D4E5F6A7B8C /* DiagnosticLogger.swift in Sources */,
-			8E9F0A1B2C3D4E5F6A7B8C9D /* DiagnosticLogModule.swift in Sources */,
-			9F0A1B2C3D4E5F6A7B8C9D0E /* DiagnosticLogModule.m in Sources */,
-			F4A5B6C7D8E9F0A1B2C3D4E5 /* CrashLogStorage.swift in Sources */,
-			A5B6C7D8E9F0A1B2C3D4E5F6 /* CrashLogModule.swift in Sources */,
-			B6C7D8E9F0A1B2C3D4E5F6A7 /* CrashLogModule.m in Sources */,
+				7D8E9F0A1B2C3D4E5F6A7B8C /* DiagnosticLogger.swift in Sources */,
+				8E9F0A1B2C3D4E5F6A7B8C9D /* DiagnosticLogModule.swift in Sources */,
+				9F0A1B2C3D4E5F6A7B8C9D0E /* DiagnosticLogModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,7 +441,6 @@
 				F9A0B1C2D3E4F5A6B7C8D9EA /* WidgetRenderingHelpers.swift in Sources */,
 				08FF4D43162E24EABD45A19F /* GuidrTimerWidgetBundle.swift in Sources */,
 				BB2CC3DD4EE5FF6AA7BB8CC9 /* SharedDiagnosticLogger.swift in Sources */,
-				F5A6B7C8D9E0F1A2B3C4D5E6 /* WidgetCrashReporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -628,7 +620,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/react-native";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				USE_HERMES = true;
@@ -697,7 +689,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/react-native";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;

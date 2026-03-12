@@ -130,7 +130,9 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if let endDate = state.timerEndDate, let safe = safeEndDate(endDate) {
+    } else if let endDate = state.timerEndDate,
+              let safe = safeEndDate(endDate),
+              safe > Date.now {
       Text(timerInterval: Date.now...safe, countsDown: true)
         .foregroundColor(progressColor(state: state))
         .monospacedDigit()
@@ -149,27 +151,32 @@ private struct TimerText: View {
 private struct TimerProgressView: View {
   let state: GuidrTimerAttributes.ContentState
 
+  // Uses static ProgressView(value:total:) only — never ProgressView(timerInterval:)
+  // because the timer variant uses GeometryReader internally, which crashes with
+  // EXC_BREAKPOINT during zero-size layout proposals on the lock screen.
   var body: some View {
-    if state.isComplete {
-      ProgressView(value: 1.0, total: 1.0)
-        .tint(.green)
-    } else if state.isPaused {
-      ProgressView(
-        value: staticProgress(state: state),
-        total: 1.0
-      )
-      .tint(progressColor(state: state))
-    } else if let endDate = state.timerEndDate, let safe = safeEndDate(endDate) {
-      let startDate = safe.addingTimeInterval(-Double(state.totalDurationSeconds))
-      ProgressView(timerInterval: startDate...safe, countsDown: false)
-        .tint(.green)
-    } else if state.timerEndDate != nil {
-      ProgressView(value: 1.0, total: 1.0)
-        .tint(.green)
-    } else {
-      ProgressView(value: 0, total: 1.0)
-        .tint(.green)
+    ProgressView(
+      value: currentProgress,
+      total: 1.0
+    )
+    .tint(currentTint)
+  }
+
+  private var currentProgress: Double {
+    if state.isComplete || (state.timerEndDate != nil && safeEndDate(state.timerEndDate!) == nil) {
+      return 1.0
     }
+    return staticProgress(state: state)
+  }
+
+  private var currentTint: Color {
+    if state.isComplete || (state.timerEndDate != nil && safeEndDate(state.timerEndDate!) == nil) {
+      return .green
+    }
+    if state.isPaused {
+      return progressColor(state: state)
+    }
+    return .green
   }
 }
 
