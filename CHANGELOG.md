@@ -1,3 +1,9 @@
+## [1.84.11](https://github.com/stevendejongnl/guidr/compare/v1.84.10...v1.84.11) (2026-03-12)
+
+### Bug Fixes
+
+* **ios:** revert to static views in home widget with 1s timeline entries ([91ec8af](https://github.com/stevendejongnl/guidr/commit/91ec8af66b2a1a21184ae4b993511bb3acd7e45d))
+
 ## [1.84.10](https://github.com/stevendejongnl/guidr/compare/v1.84.9...v1.84.10) (2026-03-12)
 
 ### Bug Fixes
