@@ -9,7 +9,7 @@ struct GuidrTimerWidgetLiveActivity: Widget {
       let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] lock screen closure called — stepTitle=\(context.state.stepTitle)")
       return LockScreenView(context: context)
         .padding()
-        .containerBackground(.black.opacity(0.85), for: .widget)
+        .activityBackgroundTint(Color.black.opacity(0.85))
         .activitySystemActionForegroundColor(Color.white)
     } dynamicIsland: { context in
       let _ = SharedDiagnosticLogger.shared.log("[LiveActivityWidget] dynamicIsland closure called")
