@@ -4,20 +4,6 @@ set -e
 echo "Running pre-push checks..."
 echo ""
 
-# Sync with remote before checks so we run against the latest base
-BRANCH=$(git symbolic-ref --short HEAD)
-echo "🔄 Checking for remote changes on $BRANCH..."
-git fetch origin "$BRANCH" 2>/dev/null
-BEHIND=$(git rev-list --count HEAD..origin/"$BRANCH" 2>/dev/null || echo 0)
-if [ "$BEHIND" -gt 0 ]; then
-  echo "  Remote has $BEHIND new commit(s). Rebasing before checks..."
-  git pull --rebase origin "$BRANCH"
-  echo "✓ Rebase complete"
-else
-  echo "✓ Already up to date"
-fi
-echo ""
-
 # Security Scanning
 echo "🔒 Security: Scanning Mobile Dependencies..."
 ./scripts/npm-audit-security.sh . high mobile
@@ -46,19 +32,6 @@ echo ""
 echo "🔧 Running API Tests..."
 npm run api:test
 echo "✓ API tests passed"
-echo ""
-
-# Sync again right before push to pick up anything CI landed during checks
-echo "🔄 Final sync on $BRANCH before push..."
-git fetch origin "$BRANCH" 2>/dev/null
-BEHIND=$(git rev-list --count HEAD..origin/"$BRANCH" 2>/dev/null || echo 0)
-if [ "$BEHIND" -gt 0 ]; then
-  echo "  Remote has $BEHIND new commit(s). Rebasing..."
-  git pull --rebase origin "$BRANCH"
-  echo "✓ Rebase complete"
-else
-  echo "✓ Already up to date"
-fi
 echo ""
 
 echo "✓ All pre-push checks passed!"
