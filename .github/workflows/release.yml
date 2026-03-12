@@ -160,10 +160,8 @@ jobs:
         run: uv run mypy src
 
       - name: Build Web App
-        working-directory: web-app
         run: |
-          npm ci
-          npm run build
+          npm run web:build
           echo "✅ Web app built to web-app/dist/"
 
       - name: Run semantic-release (dry-run to get version)
