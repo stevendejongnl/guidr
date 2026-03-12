@@ -170,7 +170,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
-          npm run release -- --dry-run > release-output.txt 2>&1 || true
+          ./node_modules/.bin/semantic-release --dry-run > release-output.txt 2>&1 || true
 
           # Show the actual output for debugging
           echo "=== Semantic-Release Output ==="
@@ -178,7 +178,7 @@ jobs:
           echo "=============================="
 
           # Fail early if semantic-release itself errored (plugin missing, config broken, etc.)
-          if grep -qE "An error occurred while running semantic-release|npm error code 127" release-output.txt; then
+          if grep -qE "An error occurred while running semantic-release|npm error code 127|semantic-release: not found|Cannot find module" release-output.txt; then
             echo "::error::semantic-release crashed — check output above"
             exit 1
           fi
@@ -199,7 +199,7 @@ jobs:
         if: env.SHOULD_RELEASE == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
-        run: npm run release
+        run: ./node_modules/.bin/semantic-release
 
       - name: Notify release success
         if: env.SHOULD_RELEASE == 'true'
