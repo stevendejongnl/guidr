@@ -167,7 +167,6 @@ jobs:
           echo "✅ Web app built to web-app/dist/"
 
       - name: Run semantic-release (dry-run to get version)
-        working-directory: mobile
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
@@ -179,7 +178,7 @@ jobs:
           echo "=============================="
 
           # Fail early if semantic-release itself errored (plugin missing, config broken, etc.)
-          if grep -q "An error occurred while running semantic-release" release-output.txt; then
+          if grep -qE "An error occurred while running semantic-release|npm error code 127" release-output.txt; then
             echo "::error::semantic-release crashed — check output above"
             exit 1
           fi
@@ -198,7 +197,6 @@ jobs:
 
       - name: Run semantic-release
         if: env.SHOULD_RELEASE == 'true'
-        working-directory: mobile
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: npm run release
