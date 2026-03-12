@@ -1,0 +1,29 @@
+name: Dependabot Auto Update
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-dependabot-prs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Update behind Dependabot PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr list \
+            --repo "$REPO" \
+            --author "app/dependabot" \
+            --state open \
+            --json number,mergeStateStatus \
+            --jq '.[] | select(.mergeStateStatus == "BEHIND") | .number' \
+          | while read -r pr; do
+              echo "Updating PR #$pr"
+              gh pr update-branch "$pr" --repo "$REPO" || echo "PR #$pr could not be updated (conflict?)"
+            done
