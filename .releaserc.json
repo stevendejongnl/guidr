@@ -39,17 +39,17 @@
         }
       }
     ],
-    "@semantic-release/npm",
+    ["@semantic-release/npm", { "pkgRoot": "mobile" }],
     [
       "@semantic-release/changelog",
       {
-        "changelogFile": "../CHANGELOG.md"
+        "changelogFile": "CHANGELOG.md"
       }
     ],
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "echo ${nextRelease.version} > .version && chmod +x ../scripts/update-ios-version.sh ../scripts/update-android-version.sh ../scripts/update-api-server-version.sh ../scripts/update-root-version.sh && ../scripts/update-root-version.sh ${nextRelease.version} && ../scripts/update-ios-version.sh ${nextRelease.version} && ../scripts/update-android-version.sh ${nextRelease.version} && ../scripts/update-api-server-version.sh ${nextRelease.version} && cd ../api-server && uv sync && cd ../mobile"
+        "prepareCmd": "echo ${nextRelease.version} > mobile/.version && chmod +x scripts/update-ios-version.sh scripts/update-android-version.sh scripts/update-api-server-version.sh scripts/update-root-version.sh && scripts/update-root-version.sh ${nextRelease.version} && scripts/update-ios-version.sh ${nextRelease.version} && scripts/update-android-version.sh ${nextRelease.version} && scripts/update-api-server-version.sh ${nextRelease.version} && cd api-server && uv sync && cd .."
       }
     ],
     "@semantic-release/github",
@@ -57,15 +57,15 @@
       "@semantic-release/git",
       {
         "assets": [
-          "../CHANGELOG.md",
+          "CHANGELOG.md",
+          "mobile/package.json",
+          "mobile/package-lock.json",
           "package.json",
           "package-lock.json",
-          "../package.json",
-          "../package-lock.json",
-          "ios/guidr.xcodeproj/project.pbxproj",
-          "android/app/build.gradle",
-          "../api-server/pyproject.toml",
-          "../api-server/uv.lock"
+          "mobile/ios/guidr.xcodeproj/project.pbxproj",
+          "mobile/android/app/build.gradle",
+          "api-server/pyproject.toml",
+          "api-server/uv.lock"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }

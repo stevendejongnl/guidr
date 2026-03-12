@@ -32,7 +32,8 @@
     "security:fix:mobile": "npm audit fix --workspace=mobile",
     "security:fix:web": "npm audit fix --workspace=web-app",
     "postinstall": "node scripts/setup-sentry-symlink.js",
-    "prepare": "node scripts/setup-husky.js"
+    "prepare": "node scripts/setup-husky.js",
+    "release": "semantic-release"
   },
   "overrides": {
     "rollup": ">=4.59.0"
@@ -42,10 +43,13 @@
     "@babel/runtime": "^7.24.0",
     "@react-native/metro-config": "^0.83.1",
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.3",
     "@semantic-release/npm": "^13.1.3",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
     "husky": "^9.1.7",
     "semantic-release": "^25.0.3"
   }
