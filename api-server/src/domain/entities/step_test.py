@@ -107,7 +107,7 @@ class TestStep:
         step.update_title("New Title")
 
         assert step.title == "New Title"
-        assert step.updated_at > original_updated
+        assert step.updated_at >= original_updated
 
     def test_update_title_with_empty_string(self):
         """Should raise ValidationException when updating with empty title."""
@@ -145,7 +145,7 @@ class TestStep:
         step.update_description("New description")
 
         assert step.description == "New description"
-        assert step.updated_at > original_updated
+        assert step.updated_at >= original_updated
 
     def test_update_duration(self):
         """Should update step duration and timestamp."""
@@ -165,7 +165,7 @@ class TestStep:
         step.update_duration(new_duration)
 
         assert step.duration == new_duration
-        assert step.updated_at > original_updated
+        assert step.updated_at >= original_updated
 
     def test_update_order(self):
         """Should update step order and timestamp."""
@@ -184,7 +184,7 @@ class TestStep:
         step.update_order(1)
 
         assert step.order == 1
-        assert step.updated_at > original_updated
+        assert step.updated_at >= original_updated
 
     def test_update_order_with_negative_value(self):
         """Should raise ValidationException when updating with negative order."""

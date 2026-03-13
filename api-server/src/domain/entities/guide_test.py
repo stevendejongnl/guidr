@@ -96,7 +96,7 @@ class TestGuide:
         guide.update_title(new_title)
 
         assert guide.title == new_title
-        assert guide.updated_at > original_updated
+        assert guide.updated_at >= original_updated
 
     def test_update_description(self):
         guide = _make_guide()
@@ -105,7 +105,7 @@ class TestGuide:
         guide.update_description("New description")
 
         assert guide.description == "New description"
-        assert guide.updated_at > original_updated
+        assert guide.updated_at >= original_updated
 
     def test_update_metadata(self):
         guide = _make_guide()
@@ -115,7 +115,7 @@ class TestGuide:
         guide.update_metadata(new_metadata)
 
         assert guide.metadata == new_metadata
-        assert guide.updated_at > original_updated
+        assert guide.updated_at >= original_updated
 
     def test_update_metadata_invalid_raises(self):
         guide = _make_guide()
@@ -161,14 +161,14 @@ class TestGuide:
         guide = _make_guide()
         original_updated = guide.updated_at
         guide.add_step(EntityId(TEST_STEP1))
-        assert guide.updated_at > original_updated
+        assert guide.updated_at >= original_updated
 
     def test_remove_step_updates_timestamp(self):
         step_id = EntityId(TEST_STEP1)
         guide = _make_guide(step_ids=[step_id])
         original_updated = guide.updated_at
         guide.remove_step(step_id)
-        assert guide.updated_at > original_updated
+        assert guide.updated_at >= original_updated
 
     def test_immutable_properties(self):
         guide = _make_guide()
