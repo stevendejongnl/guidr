@@ -1,3 +1,9 @@
+## [1.84.14](https://github.com/stevendejongnl/guidr/compare/v1.84.13...v1.84.14) (2026-03-13)
+
+### Bug Fixes
+
+* **ios:** revert Text(timerInterval:) — crashes widget extension ([be76e78](https://github.com/stevendejongnl/guidr/commit/be76e78b09d123be4e5f5248ff6b7307aad33801))
+
 ## [1.84.13](https://github.com/stevendejongnl/guidr/compare/v1.84.12...v1.84.13) (2026-03-13)
 
 ### Bug Fixes
