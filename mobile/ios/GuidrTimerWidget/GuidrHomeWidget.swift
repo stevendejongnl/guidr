@@ -242,27 +242,15 @@ private struct HomeProgressView: View {
 // MARK: - Helpers
 
 private func homeFormatTime(_ seconds: Int) -> String {
-  let mins = seconds / 60
-  let secs = seconds % 60
-  return String(format: "%02d:%02d", mins, secs)
+  TimerFormatting.formatTime(seconds)
 }
 
 private func homeStaticProgress(timer: SharedTimerEntry) -> Double {
-  guard timer.totalDurationSeconds > 0 else { return 0 }
-  let remaining = Double(max(0, timer.remainingSeconds))
-  return 1.0 - (remaining / Double(timer.totalDurationSeconds))
+  TimerFormatting.staticProgress(remaining: timer.remainingSeconds, total: timer.totalDurationSeconds)
 }
 
 private func homeProgressColor(timer: SharedTimerEntry) -> Color {
-  guard timer.totalDurationSeconds > 0 else { return .green }
-  let ratio = Double(timer.remainingSeconds) / Double(timer.totalDurationSeconds)
-  if ratio > 0.5 {
-    return .green
-  } else if ratio > 0.25 {
-    return .yellow
-  } else {
-    return .red
-  }
+  TimerFormatting.progressColor(remaining: timer.remainingSeconds, total: timer.totalDurationSeconds)
 }
 
 // MARK: - View Modifiers
