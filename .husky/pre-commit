@@ -24,4 +24,18 @@ cd ..
 echo "✓ API checks passed"
 echo ""
 
+if command -v xcodebuild &> /dev/null; then
+  echo "🍎 Building iOS Widget Tests..."
+  cd mobile/ios
+  xcodebuild build-for-testing \
+    -project guidr.xcodeproj \
+    -scheme GuidrWidgetTests \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+    -configuration Debug \
+    -quiet
+  cd ../..
+  echo "✓ iOS widget tests build passed"
+  echo ""
+fi
+
 echo "✓ All pre-commit checks passed!"
