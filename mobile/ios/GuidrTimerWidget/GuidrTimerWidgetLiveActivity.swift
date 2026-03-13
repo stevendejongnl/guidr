@@ -130,10 +130,9 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if state.timerEndDate != nil, safeEndDate(state.timerEndDate!) != nil {
-      // Static text instead of Text(timerInterval:) — the animated variant uses
-      // GeometryReader internally which crashes in Live Activity rendering contexts.
-      Text(formatTime(state.remainingSeconds))
+    } else if let endDate = state.timerEndDate, endDate > Date() {
+      // System-driven countdown based on endDate — no drift, no dependency on updates.
+      Text(timerInterval: Date.now...endDate, countsDown: true)
         .foregroundColor(progressColor(state: state))
         .monospacedDigit()
     } else if state.timerEndDate != nil {
@@ -151,9 +150,11 @@ private struct TimerText: View {
 private struct TimerProgressView: View {
   let state: GuidrTimerAttributes.ContentState
 
-  // Uses static ProgressView(value:total:) only — never ProgressView(timerInterval:)
-  // because the timer variant uses GeometryReader internally, which crashes with
-  // EXC_BREAKPOINT during zero-size layout proposals on the lock screen.
+  private var isTimerExpired: Bool {
+    guard let endDate = state.timerEndDate else { return false }
+    return endDate <= Date()
+  }
+
   var body: some View {
     ProgressView(
       value: currentProgress,
@@ -163,14 +164,14 @@ private struct TimerProgressView: View {
   }
 
   private var currentProgress: Double {
-    if state.isComplete || (state.timerEndDate != nil && safeEndDate(state.timerEndDate!) == nil) {
+    if state.isComplete || isTimerExpired {
       return 1.0
     }
     return staticProgress(state: state)
   }
 
   private var currentTint: Color {
-    if state.isComplete || (state.timerEndDate != nil && safeEndDate(state.timerEndDate!) == nil) {
+    if state.isComplete || isTimerExpired {
       return .green
     }
     if state.isPaused {
@@ -178,12 +179,6 @@ private struct TimerProgressView: View {
     }
     return .green
   }
-}
-
-/// Returns endDate only if it's still in the future, eliminating the TOCTOU race
-/// between checking `Date() >= endDate` and constructing `Date.now...endDate`.
-private func safeEndDate(_ endDate: Date) -> Date? {
-  endDate > Date() ? endDate : nil
 }
 
 private func formatTime(_ seconds: Int) -> String {
