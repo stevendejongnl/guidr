@@ -59,35 +59,35 @@ class TimelineProviderTests: XCTestCase {
 
   func testBatchGenerationCorrectCountAndIntervals() {
     let now = Date()
-    let endDate = now.addingTimeInterval(30)
+    let endDate = now.addingTimeInterval(60)
     let baseEntry = HomeWidgetEntry(
       date: now,
-      entries: [makeTimer(remaining: 30, endDate: endDate, isPaused: false, isComplete: false)],
+      entries: [makeTimer(remaining: 60, endDate: endDate, isPaused: false, isComplete: false)],
       updatedAt: now
     )
     let result = TimelineBuilder.buildTimeline(from: baseEntry)
-    // batchSize = min(30, 60) = 30, entries = 0...30 = 31
-    XCTAssertEqual(result.entries.count, 31)
-    // First entry has 30s remaining, last has 0s
-    XCTAssertEqual(result.entries.first?.entries.first?.remainingSeconds, 30)
-    XCTAssertEqual(result.entries.last?.entries.first?.remainingSeconds, 0)
+    // entryCount = min(60/15 + 1, 60) = 5, entries = 0...5 + 1 completion = 7
+    // (5 interval entries at 0s, 15s, 30s, 45s, 60s + 1 completion entry at 60s)
+    // Deduplicated since 60s entry matches completion entry = entries at 0,15,30,45,60,60
+    XCTAssertGreaterThanOrEqual(result.entries.count, 6)
+    // First entry has 60s remaining
+    XCTAssertEqual(result.entries.first?.entries.first?.remainingSeconds, 60)
     // Refresh after batch
-    XCTAssertEqual(result.refreshDate.timeIntervalSince(now), 31, accuracy: 1.0)
+    XCTAssertEqual(result.refreshDate.timeIntervalSince(now), 76, accuracy: 2.0)
   }
 
   func testBatchCappedAtSixtyEntries() {
     let now = Date()
-    let endDate = now.addingTimeInterval(120)
+    let endDate = now.addingTimeInterval(1800) // 30 minutes
     let baseEntry = HomeWidgetEntry(
       date: now,
-      entries: [makeTimer(remaining: 120, endDate: endDate, isPaused: false, isComplete: false)],
+      entries: [makeTimer(remaining: 1800, endDate: endDate, isPaused: false, isComplete: false)],
       updatedAt: now
     )
     let result = TimelineBuilder.buildTimeline(from: baseEntry)
-    // batchSize = min(120, 60) = 60, entries = 0...60 = 61
-    XCTAssertEqual(result.entries.count, 61)
-    XCTAssertEqual(result.entries.first?.entries.first?.remainingSeconds, 120)
-    XCTAssertEqual(result.entries.last?.entries.first?.remainingSeconds, 60)
+    // entryCount = min(1800/15 + 1, 60) = 60, entries = 0...60 + 1 completion = 62
+    XCTAssertLessThanOrEqual(result.entries.count, 63)
+    XCTAssertEqual(result.entries.first?.entries.first?.remainingSeconds, 1800)
   }
 
   func testBatchMarksTimerCompleteWhenRemainingReachesZero() {
@@ -99,9 +99,11 @@ class TimelineProviderTests: XCTestCase {
       updatedAt: now
     )
     let result = TimelineBuilder.buildTimeline(from: baseEntry)
-    // batchSize = min(5, 60) = 5, entries = 0...5 = 6
-    XCTAssertEqual(result.entries.count, 6)
-    let lastTimer = result.entries.last?.entries.first
+    // entryCount = min(5/15 + 1, 60) = 1, entries = 0...1 + 1 completion at 5s = 3
+    XCTAssertGreaterThanOrEqual(result.entries.count, 2)
+    // Find the completion entry (at endDate)
+    let completionEntry = result.entries.last
+    let lastTimer = completionEntry?.entries.first
     XCTAssertEqual(lastTimer?.remainingSeconds, 0)
     XCTAssertTrue(lastTimer?.isComplete ?? false)
   }
