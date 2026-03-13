@@ -34,4 +34,18 @@ npm run api:test
 echo "✓ API tests passed"
 echo ""
 
+if command -v xcodebuild &> /dev/null; then
+  echo "🍎 Running iOS Widget Tests..."
+  cd mobile/ios
+  xcodebuild test \
+    -project guidr.xcodeproj \
+    -scheme GuidrWidgetTests \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+    -configuration Debug \
+    -quiet
+  cd ../..
+  echo "✓ iOS widget tests passed"
+  echo ""
+fi
+
 echo "✓ All pre-push checks passed!"
