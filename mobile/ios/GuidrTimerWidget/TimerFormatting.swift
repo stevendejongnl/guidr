@@ -76,11 +76,6 @@ enum TimelineBuilder {
     let refreshDate: Date
   }
 
-  /// Interval between timeline entries in seconds.
-  /// Timer text uses Text(timerInterval:) for drift-free countdown,
-  /// so entries are only needed for progress bar and color updates.
-  private static let entryIntervalSeconds = 15
-
   static func buildTimeline(from baseEntry: HomeWidgetEntry) -> TimelineResult {
     let running = baseEntry.entries.filter { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
 
@@ -91,12 +86,12 @@ enum TimelineBuilder {
 
     let soonestEnd = running.compactMap(\.endDate).min()!
     let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
-    let entryCount = min(secondsLeft / entryIntervalSeconds + 1, 60)
+    let batchSize = min(secondsLeft, 60)
 
     var entries: [HomeWidgetEntry] = []
     let now = baseEntry.date
-    for i in 0...entryCount {
-      let entryDate = now.addingTimeInterval(Double(i * entryIntervalSeconds))
+    for i in 0...batchSize {
+      let entryDate = now.addingTimeInterval(Double(i))
       let adjustedEntries = baseEntry.entries.map { timer -> SharedTimerEntry in
         guard !timer.isPaused && !timer.isComplete, let endDate = timer.endDate else {
           return timer
@@ -116,29 +111,7 @@ enum TimelineBuilder {
       entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
     }
 
-    // Also add an entry at the exact completion time for immediate "Done" state
-    if soonestEnd > now {
-      let completionEntries = baseEntry.entries.map { timer -> SharedTimerEntry in
-        guard !timer.isPaused && !timer.isComplete, let endDate = timer.endDate else {
-          return timer
-        }
-        let remaining = max(0, Int(ceil(endDate.timeIntervalSince(soonestEnd))))
-        return SharedTimerEntry(
-          stepId: timer.stepId,
-          stepTitle: timer.stepTitle,
-          guideTitle: timer.guideTitle,
-          totalDurationSeconds: timer.totalDurationSeconds,
-          endDate: timer.endDate,
-          remainingSeconds: remaining,
-          isPaused: timer.isPaused,
-          isComplete: remaining <= 0
-        )
-      }
-      entries.append(HomeWidgetEntry(date: soonestEnd, entries: completionEntries, updatedAt: baseEntry.updatedAt))
-    }
-
-    let batchDuration = Double(entryCount * entryIntervalSeconds)
-    let refreshDate = now.addingTimeInterval(batchDuration + 1)
+    let refreshDate = now.addingTimeInterval(Double(batchSize) + 1)
     return TimelineResult(entries: entries, refreshDate: refreshDate)
   }
 }

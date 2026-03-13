@@ -54,6 +54,19 @@ def _ensure_docker_running(max_wait: int = 30) -> None:
     raise RuntimeError(msg)
 
 
+def _cleanup_stale_containers() -> None:
+    """Remove stale testcontainers Ryuk reaper that may have broken port mappings."""
+    subprocess.run(
+        ["docker", "rm", "-f"]
+        + subprocess.run(
+            ["docker", "ps", "-aq", "--filter", "ancestor=testcontainers/ryuk"],
+            capture_output=True,
+            text=True,
+        ).stdout.split(),
+        capture_output=True,
+    )
+
+
 @pytest.fixture(scope="session")
 def mongo_uri() -> Generator[str, None, None]:
     """Provide a MongoDB URI for integration tests.
@@ -68,8 +81,17 @@ def mongo_uri() -> Generator[str, None, None]:
 
     _ensure_docker_running()
 
-    with MongoDbContainer("mongo:7.0") as container:
-        yield f"{container.get_connection_url()}/guidr_test"
+    # Retry once if the Ryuk reaper container has stale port mappings
+    for attempt in range(2):
+        try:
+            with MongoDbContainer("mongo:7.0") as container:
+                yield f"{container.get_connection_url()}/guidr_test"
+                return
+        except ConnectionError:
+            if attempt == 0:
+                _cleanup_stale_containers()
+            else:
+                raise
 
 
 @pytest.fixture
