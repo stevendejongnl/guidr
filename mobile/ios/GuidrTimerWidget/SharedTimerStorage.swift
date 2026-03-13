@@ -24,6 +24,10 @@ class SharedTimerStorage {
 
   private let defaults: UserDefaults?
 
+  internal init(defaults: UserDefaults) {
+    self.defaults = defaults
+  }
+
   private init() {
     defaults = UserDefaults(suiteName: suiteName)
     if defaults == nil {

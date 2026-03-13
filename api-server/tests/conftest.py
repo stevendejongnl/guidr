@@ -2,6 +2,8 @@
 
 import os
 import socket
+import subprocess
+import time
 from collections.abc import AsyncGenerator, Generator
 from urllib.parse import urlparse
 
@@ -26,17 +28,45 @@ def _mongodb_is_reachable(uri: str, timeout: float = 2.0) -> bool:
         return False
 
 
+def _ensure_docker_running(max_wait: int = 30) -> None:
+    """Start Docker daemon if not running and wait until it's ready."""
+    result = subprocess.run(
+        ["docker", "info"],
+        capture_output=True,
+        timeout=5,
+    )
+    if result.returncode == 0:
+        return
+
+    subprocess.run(["open", "-a", "Docker"], check=True)
+
+    for _ in range(max_wait):
+        time.sleep(1)
+        result = subprocess.run(
+            ["docker", "info"],
+            capture_output=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            return
+
+    msg = f"Docker daemon did not start within {max_wait}s"
+    raise RuntimeError(msg)
+
+
 @pytest.fixture(scope="session")
 def mongo_uri() -> Generator[str, None, None]:
     """Provide a MongoDB URI for integration tests.
 
     Uses a locally running instance if available (respects MONGO_TEST_URI env var),
-    otherwise starts a temporary MongoDB container via Docker.
+    otherwise starts Docker if needed and launches a temporary MongoDB container.
     """
     configured_uri = os.getenv("MONGO_TEST_URI", "mongodb://localhost:27017/guidr_test")
     if _mongodb_is_reachable(configured_uri):
         yield configured_uri
         return
+
+    _ensure_docker_running()
 
     with MongoDbContainer("mongo:7.0") as container:
         yield f"{container.get_connection_url()}/guidr_test"

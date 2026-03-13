@@ -22,6 +22,7 @@
 		9F0A1B2C3D4E5F6A7B8C9D0E /* DiagnosticLogModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C7D8E9F0A1B2C3D4E5F6A7B /* DiagnosticLogModule.m */; };
 		A4B5C6D7E8F9A0B1C2D3E4F5 /* SharedTimerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */; };
 		AB279DD88B018B578BC6FC9C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
+		B1B2B3B4B5B6B7B8B9C0C1C2 /* TimerFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A2A3A4B5B6C7C8D9D0E1E2 /* TimerFormatting.swift */; };
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* NotificationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7A8B9C0D1E2F /* NotificationHelper.swift */; };
 		B2C3D4E5F6A7B8C9D0E1F2A3 /* NotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3B4C5D6E7F8A9B0C1D2E3F /* NotificationModule.swift */; };
 		B3C4D5E6F7A8B9C0D1E2F3A4 /* NotificationModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D7E8F9A0B1C2D3E4F /* NotificationModuleBridge.m */; };
@@ -30,7 +31,17 @@
 		C6D7E8F9A0B1C2D3E4F5A6B7 /* HomeWidgetTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */; };
 		C7D3E8A91F4B2560D8E07A3C /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
 		D7E8F9A0B1C2D3E4F5A6B7C8 /* GuidrHomeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */; };
+		E1E2F3F4A5A6B7B8C9C0D1D2 /* TimerFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A2A3A4B5B6C7C8D9D0E1E2 /* TimerFormatting.swift */; };
+		E3E4F5F6A7A8B9B0C1C2D3D4 /* SharedTimerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */; };
+		E5E6F7F8A9A0B1B2C3C4D5D6 /* GuidrTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */; };
+		E7E8F9F0A1A2B3B4C5C6D7D8 /* SharedDiagnosticLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1BB2CC3DD4EE5FF6AA7BB8 /* SharedDiagnosticLogger.swift */; };
+		E9E0F1F2A3A4B5B6C7C8D9DA /* HomeWidgetTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */; };
+		F1F2A3A4B5B6C7C8D9D0E1E2 /* TimerFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C2D3D4E5E6F7F8A9A0B1B2 /* TimerFormattingTests.swift */; };
+		F3F4A5A6B7B8C9C0D1D2E3E4 /* SharedTimerStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3C4D5D6E7E8F9F0A1A2B3B4 /* SharedTimerStorageTests.swift */; };
+		F5F6A7A8B9B0C1C2D3D4E5E6 /* HomeWidgetEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C6D7D8E9E0F1F2A3A4B5B6 /* HomeWidgetEntryTests.swift */; };
+		F7F8A9A0B1B2C3C4D5D6E7E8 /* ContentStateBuildingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C8D9D0E1E2F3F4A5A6B7B8 /* ContentStateBuildingTests.swift */; };
 		F9A0B1C2D3E4F5A6B7C8D9EA /* WidgetRenderingHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */; };
+		F9F0A1A2B3B4C5C6D7D8E9E0 /* TimelineProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C0D1D2E3E4F5F6A7A8B9B0 /* TimelineProviderTests.swift */; };
 		FC508176FC966C05B5DEDF3A /* GuidrTimerWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -79,10 +90,17 @@
 		6DEDDE1947E31B3C23D3B3D3 /* LiveActivityModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LiveActivityModule.swift; path = guidr/LiveActivityModule.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = guidr/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = guidr/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A1A2A3A4B5B6C7C8D9D0E1E2 /* TimerFormatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimerFormatting.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B5C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA1BB2CC3DD4EE5FF6AA7BB8 /* SharedDiagnosticLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedDiagnosticLogger.swift; sourceTree = "<group>"; };
 		B60A78F642DD5279794993EC /* LiveActivityModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = LiveActivityModuleBridge.m; path = guidr/LiveActivityModuleBridge.m; sourceTree = "<group>"; };
+		C1C2D3D4E5E6F7F8A9A0B1B2 /* TimerFormattingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimerFormattingTests.swift; sourceTree = "<group>"; };
+		C3C4D5D6E7E8F9F0A1A2B3B4 /* SharedTimerStorageTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedTimerStorageTests.swift; sourceTree = "<group>"; };
+		C5C6D7D8E9E0F1F2A3A4B5B6 /* HomeWidgetEntryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeWidgetEntryTests.swift; sourceTree = "<group>"; };
+		C7C8D9D0E1E2F3F4A5A6B7B8 /* ContentStateBuildingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentStateBuildingTests.swift; sourceTree = "<group>"; };
+		C9C0D1D2E3E4F5F6A7A8B9B0 /* TimelineProviderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimelineProviderTests.swift; sourceTree = "<group>"; };
 		D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedTimerStorage.swift; sourceTree = "<group>"; };
+		D3D4E5E6F7F8A9A0B1B2C3C4 /* GuidrWidgetTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GuidrWidgetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeWidgetTimelineProvider.swift; sourceTree = "<group>"; };
 		E8F9A0B1C2D3E4F5A6B7C8D9 /* WidgetRenderingHelpers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetRenderingHelpers.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -106,6 +124,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				413C444F05526F31CFD26814 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D9D0E1E2F3F4A5A6B7B8C9C0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +173,7 @@
 			children = (
 				FAB2CFA75B48E19E8F9DB880 /* GuidrTimerAttributes.swift */,
 				D1E2F3A4B5C6D7E8F9A0B1C2 /* SharedTimerStorage.swift */,
+				A1A2A3A4B5B6C7C8D9D0E1E2 /* TimerFormatting.swift */,
 				314EDA045DE8B984BDDDE581 /* GuidrTimerWidgetLiveActivity.swift */,
 				E2F3A4B5C6D7E8F9A0B1C2D3 /* HomeWidgetTimelineProvider.swift */,
 				F3A4B5C6D7E8F9A0B1C2D3E4 /* GuidrHomeWidget.swift */,
@@ -177,6 +203,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				3AFA926B89F785D74EF00EF7 /* GuidrTimerWidget */,
+				D1D2E3E4F5F6A7A8B9B0C1C2 /* GuidrWidgetTests */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -188,6 +215,7 @@
 			children = (
 				13B07F961A680F5B00A75B9A /* guidr.app */,
 				F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */,
+				D3D4E5E6F7F8A9A0B1B2C3C4 /* GuidrWidgetTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -207,6 +235,19 @@
 				5709B34CF0A7D63546082F79 /* Pods-guidr.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		D1D2E3E4F5F6A7A8B9B0C1C2 /* GuidrWidgetTests */ = {
+			isa = PBXGroup;
+			children = (
+				C1C2D3D4E5E6F7F8A9A0B1B2 /* TimerFormattingTests.swift */,
+				C3C4D5D6E7E8F9F0A1A2B3B4 /* SharedTimerStorageTests.swift */,
+				C5C6D7D8E9E0F1F2A3A4B5B6 /* HomeWidgetEntryTests.swift */,
+				C7C8D9D0E1E2F3F4A5A6B7B8 /* ContentStateBuildingTests.swift */,
+				C9C0D1D2E3E4F5F6A7A8B9B0 /* TimelineProviderTests.swift */,
+			);
+			name = GuidrWidgetTests;
+			path = GuidrWidgetTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -254,6 +295,23 @@
 			productReference = F14C5812C50ECDF3B32C971D /* GuidrTimerWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		D5D6E7E8F9F0A1A2B3B4C5C6 /* GuidrWidgetTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0F1A2A3B4B5C6C7D8D9E0E1 /* Build configuration list for PBXNativeTarget "GuidrWidgetTests" */;
+			buildPhases = (
+				D7D8E9E0F1F2A3A4B5B6C7C8 /* Sources */,
+				D9D0E1E2F3F4A5A6B7B8C9C0 /* Frameworks */,
+				E0E1F2F3A4A5B6B7C8C9D0D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GuidrWidgetTests;
+			productName = GuidrWidgetTests;
+			productReference = D3D4E5E6F7F8A9A0B1B2C3C4 /* GuidrWidgetTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -266,6 +324,9 @@
 						LastSwiftMigration = 1120;
 					};
 					634A27779FA66ECE5268AE44 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					D5D6E7E8F9F0A1A2B3B4C5C6 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -285,6 +346,7 @@
 			targets = (
 				13B07F861A680F5B00A75B9A /* guidr */,
 				634A27779FA66ECE5268AE44 /* GuidrTimerWidgetExtension */,
+				D5D6E7E8F9F0A1A2B3B4C5C6 /* GuidrWidgetTests */,
 			);
 		};
 /* End PBXProject section */
@@ -301,6 +363,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5F412B3421DD1198D47E09DE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0E1F2F3A4A5B6B7C8C9D0D1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -435,12 +504,30 @@
 			files = (
 				AB279DD88B018B578BC6FC9C /* GuidrTimerAttributes.swift in Sources */,
 				A4B5C6D7E8F9A0B1C2D3E4F5 /* SharedTimerStorage.swift in Sources */,
+				B1B2B3B4B5B6B7B8B9C0C1C2 /* TimerFormatting.swift in Sources */,
 				817B26EB743E42FC6B2AACBB /* GuidrTimerWidgetLiveActivity.swift in Sources */,
 				C6D7E8F9A0B1C2D3E4F5A6B7 /* HomeWidgetTimelineProvider.swift in Sources */,
 				D7E8F9A0B1C2D3E4F5A6B7C8 /* GuidrHomeWidget.swift in Sources */,
 				F9A0B1C2D3E4F5A6B7C8D9EA /* WidgetRenderingHelpers.swift in Sources */,
 				08FF4D43162E24EABD45A19F /* GuidrTimerWidgetBundle.swift in Sources */,
 				BB2CC3DD4EE5FF6AA7BB8CC9 /* SharedDiagnosticLogger.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7D8E9E0F1F2A3A4B5B6C7C8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E1E2F3F4A5A6B7B8C9C0D1D2 /* TimerFormatting.swift in Sources */,
+				E3E4F5F6A7A8B9B0C1C2D3D4 /* SharedTimerStorage.swift in Sources */,
+				E5E6F7F8A9A0B1B2C3C4D5D6 /* GuidrTimerAttributes.swift in Sources */,
+				E7E8F9F0A1A2B3B4C5C6D7D8 /* SharedDiagnosticLogger.swift in Sources */,
+				E9E0F1F2A3A4B5B6C7C8D9DA /* HomeWidgetTimelineProvider.swift in Sources */,
+				F1F2A3A4B5B6C7C8D9D0E1E2 /* TimerFormattingTests.swift in Sources */,
+				F3F4A5A6B7B8C9C0D1D2E3E4 /* SharedTimerStorageTests.swift in Sources */,
+				F5F6A7A8B9B0C1C2D3D4E5E6 /* HomeWidgetEntryTests.swift in Sources */,
+				F7F8A9A0B1B2C3C4D5D6E7E8 /* ContentStateBuildingTests.swift in Sources */,
+				F9F0A1A2B3B4C5C6D7D8E9E0 /* TimelineProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -473,7 +560,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.84.10;
+				MARKETING_VERSION = 1.84.11;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -504,7 +591,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.84.10;
+				MARKETING_VERSION = 1.84.11;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -537,7 +624,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.84.10;
+				MARKETING_VERSION = 1.84.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.timer-widget";
 				PRODUCT_NAME = GuidrTimerWidgetExtension;
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr.timer-widget";
@@ -715,12 +802,59 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.84.10;
+				MARKETING_VERSION = 1.84.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.timer-widget";
 				PRODUCT_NAME = GuidrTimerWidgetExtension;
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.guidr.timer-widget";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F2F3A4A5B6B7C8C9D0D1E2E3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.widget-tests";
+				PRODUCT_NAME = GuidrWidgetTests;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F4F5A6A7B8B9C0C1D2D3E4E5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guidr.widget-tests";
+				PRODUCT_NAME = GuidrWidgetTests;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -753,6 +887,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0F1A2A3B4B5C6C7D8D9E0E1 /* Build configuration list for PBXNativeTarget "GuidrWidgetTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2F3A4A5B6B7C8C9D0D1E2E3 /* Debug */,
+				F4F5A6A7B8B9C0C1D2D3E4E5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

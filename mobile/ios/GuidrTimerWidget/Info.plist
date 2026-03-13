@@ -13,5 +13,7 @@
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
 	<true/>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 </dict>
 </plist>
