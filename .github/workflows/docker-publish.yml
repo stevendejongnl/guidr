@@ -30,11 +30,6 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'repository_dispatch'
-    # Serialize Cloudflare bypass operations to avoid rate limiting
-    concurrency:
-      group: cloudflare-bypass
-      cancel-in-progress: false
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -112,32 +107,6 @@ jobs:
           echo ""
           echo "Run command:"
           echo "  docker run -p 8000:8000 ghcr.io/${{ github.repository_owner }}/guidr-api-server:latest"
-
-      - name: Bypass Cloudflare for Kubernetes deployment
-        if: steps.version.outputs.VERSION != ''
-        uses: xiaotianxt/bypass-cloudflare-for-github-action@v2.1.0
-        with:
-          cf_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          cf_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          cf_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          disable_bot_fight_mode: 'true'
-          bfm_propagation_delay: 45
-
-      - name: Deploy to Kubernetes
-        if: steps.version.outputs.VERSION != ''
-        run: |
-          curl -X PATCH \
-            '${{ secrets.KUBECTL_API_URL }}/api/v1/deployments/guidr/guidr-api-server/image' \
-            -H 'accept: application/json' \
-            -H 'Authorization: Bearer ${{ secrets.KUBECTL_API_TOKEN }}' \
-            -H 'Content-Type: application/json' \
-            -H 'User-Agent: GitHub-Actions' \
-            -H 'X-Requested-With: XMLHttpRequest' \
-            -d '{
-            "container": "api-server",
-            "image": "ghcr.io/${{ github.repository_owner }}/guidr-api-server:${{ steps.version.outputs.VERSION }}"
-          }'
-          echo "✅ Deployment updated successfully!"
 
       - name: Notify Docker success
         if: success() && steps.version.outputs.VERSION != ''
