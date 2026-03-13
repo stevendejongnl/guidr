@@ -1,3 +1,10 @@
+## [1.84.12](https://github.com/stevendejongnl/guidr/compare/v1.84.11...v1.84.12) (2026-03-13)
+
+### Bug Fixes
+
+* **api:** auto-start Docker daemon before integration tests ([6f088df](https://github.com/stevendejongnl/guidr/commit/6f088df820580b706e5b51353c892eca0593545b))
+* **api:** auto-start Docker for integration tests and fix flaky timestamp assertions ([7c6d294](https://github.com/stevendejongnl/guidr/commit/7c6d2947c72d1607d484e58c1748d672547c1374))
+
 ## [1.84.11](https://github.com/stevendejongnl/guidr/compare/v1.84.10...v1.84.11) (2026-03-12)
 
 ### Bug Fixes
