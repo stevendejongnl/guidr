@@ -1,3 +1,9 @@
+## [1.84.13](https://github.com/stevendejongnl/guidr/compare/v1.84.12...v1.84.13) (2026-03-13)
+
+### Bug Fixes
+
+* **ios:** use system-driven Text(timerInterval:) for drift-free countdown ([13fa1ca](https://github.com/stevendejongnl/guidr/commit/13fa1cabf0f146932635e7cd3d78de05cd57b341))
+
 ## [1.84.12](https://github.com/stevendejongnl/guidr/compare/v1.84.11...v1.84.12) (2026-03-13)
 
 ### Bug Fixes

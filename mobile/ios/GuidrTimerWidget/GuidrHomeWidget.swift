@@ -211,10 +211,6 @@ private struct TimerCountdownText: View {
       } else if timer.isPaused {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(.orange)
-      } else if let endDate = timer.endDate, endDate > Date() {
-        Text(timerInterval: Date.now...endDate, countsDown: true)
-          .foregroundColor(homeProgressColor(timer: timer))
-          .monospacedDigit()
       } else {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(homeProgressColor(timer: timer))
