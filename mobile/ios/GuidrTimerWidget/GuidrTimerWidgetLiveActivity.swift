@@ -187,27 +187,15 @@ private func safeEndDate(_ endDate: Date) -> Date? {
 }
 
 private func formatTime(_ seconds: Int) -> String {
-  let mins = seconds / 60
-  let secs = seconds % 60
-  return String(format: "%02d:%02d", mins, secs)
+  TimerFormatting.formatTime(seconds)
 }
 
 private func staticProgress(state: GuidrTimerAttributes.ContentState) -> Double {
-  guard state.totalDurationSeconds > 0 else { return 0 }
-  let remaining = Double(max(0, state.remainingSeconds))
-  return 1.0 - (remaining / Double(state.totalDurationSeconds))
+  TimerFormatting.staticProgress(remaining: state.remainingSeconds, total: state.totalDurationSeconds)
 }
 
 private func progressColor(state: GuidrTimerAttributes.ContentState) -> Color {
-  guard state.totalDurationSeconds > 0 else { return .green }
-  let ratio = Double(state.remainingSeconds) / Double(state.totalDurationSeconds)
-  if ratio > 0.5 {
-    return .green
-  } else if ratio > 0.25 {
-    return .yellow
-  } else {
-    return .red
-  }
+  TimerFormatting.progressColor(remaining: state.remainingSeconds, total: state.totalDurationSeconds)
 }
 
 private func compactColor(state: GuidrTimerAttributes.ContentState) -> Color {

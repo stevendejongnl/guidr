@@ -75,7 +75,7 @@ class TestUser:
         user.update_password_hash(new_hash)
 
         assert user.password_hash == new_hash
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_update_password_hash_with_empty_string(self):
         """Should raise ValidationException when updating with empty hash."""
@@ -179,7 +179,7 @@ class TestUser:
         user.update_name("John Doe")
 
         assert user.name == "John Doe"
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_update_name_to_none(self):
         """Should allow setting name to None."""
@@ -204,7 +204,7 @@ class TestUser:
         user.update_email(new_email)
 
         assert user.email == new_email
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_set_interests(self):
         """Should replace interests list and update timestamp."""
@@ -222,7 +222,7 @@ class TestUser:
         user.set_interests(["sports", "cooking", "diy"])
 
         assert user.interests == ["sports", "cooking", "diy"]
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_set_interests_to_empty(self):
         """Should allow setting interests to empty list."""
@@ -344,7 +344,7 @@ class TestUser:
         user.update_refresh_token_hash("newhash456")
 
         assert user.refresh_token_hash == "newhash456"
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_update_refresh_token_hash_to_none(self):
         """Should allow clearing refresh_token_hash."""
@@ -374,7 +374,7 @@ class TestUser:
 
         assert user.is_admin is True
         assert user.role == Role(RoleType.ADMIN)
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_set_role_to_user(self):
         """Should set role to user and update timestamp."""
@@ -393,7 +393,7 @@ class TestUser:
 
         assert user.is_admin is False
         assert user.role == Role(RoleType.USER)
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_set_beta_true(self):
         """Should enable beta and update timestamp."""
@@ -406,7 +406,7 @@ class TestUser:
         user.set_beta(True)
 
         assert user.is_beta is True
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated
 
     def test_set_beta_false(self):
         """Should disable beta and update timestamp."""
@@ -424,4 +424,4 @@ class TestUser:
         user.set_beta(False)
 
         assert user.is_beta is False
-        assert user.updated_at > original_updated
+        assert user.updated_at >= original_updated

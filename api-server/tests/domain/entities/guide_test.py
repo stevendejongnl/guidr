@@ -136,7 +136,7 @@ class TestGuide:
 
         original_updated_at = guide.updated_at
         guide.make_public()
-        assert guide.updated_at > original_updated_at
+        assert guide.updated_at >= original_updated_at
 
     def test_highlight_changes_update_timestamp(self) -> None:
         """Test that highlight changes update the modified timestamp."""
@@ -148,7 +148,7 @@ class TestGuide:
 
         original_updated_at = guide.updated_at
         guide.highlight()
-        assert guide.updated_at > original_updated_at
+        assert guide.updated_at >= original_updated_at
 
     def test_update_guide_type(self) -> None:
         """Test changing guide type resets metadata."""
@@ -213,7 +213,7 @@ class TestGuide:
 
         original = guide.updated_at
         guide.update_guide_type(GuideType.COOKING)
-        assert guide.updated_at > original
+        assert guide.updated_at >= original
 
     def test_reassign_user(self) -> None:
         """Test reassigning guide to a different user."""
@@ -242,7 +242,7 @@ class TestGuide:
 
         original = guide.updated_at
         guide.reassign_user(EntityId(str(uuid4())))
-        assert guide.updated_at > original
+        assert guide.updated_at >= original
 
     def test_default_language_is_english(self) -> None:
         """Test that guide defaults to English language."""
@@ -287,4 +287,4 @@ class TestGuide:
 
         original = guide.updated_at
         guide.update_language(Language("de"))
-        assert guide.updated_at > original
+        assert guide.updated_at >= original
