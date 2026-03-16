@@ -173,8 +173,20 @@ jobs:
       - name: Install dependencies
         run: npm ci --workspaces --include=dev
 
-      - name: Run tests
-        run: npm run web:test
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: web-app
+
+      - name: Run tests with coverage
+        run: npm run web:test:coverage
+
+      - name: Upload web coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: web-app/coverage/lcov.info
+          flags: web
+          fail_ci_if_error: false
 
   android-build:
     name: Android Build

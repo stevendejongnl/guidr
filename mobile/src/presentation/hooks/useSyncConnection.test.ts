@@ -1,5 +1,7 @@
 import { renderHook, act } from '@testing-library/react-native'
+import { AppState } from 'react-native'
 import { useSyncConnection, ISyncClient, SyncClientFactory } from './useSyncConnection'
+import { SyncEventEmitter } from '../../common/SyncEventEmitter'
 
 class FakeSyncClient implements ISyncClient {
   connectCallCount = 0
@@ -152,5 +154,175 @@ describe('useSyncConnection', () => {
 
     expect(fakeClient1.disconnectCallCount).toBe(1)
     expect(fakeClient2.connectCallCount).toBe(1)
+  })
+
+  it('handles "welcome" messages without emitting to SyncEventEmitter', () => {
+    let capturedHandler!: (message: { type: string; payload?: Record<string, unknown> }) => void
+    const factory: SyncClientFactory = (_url, _token, onMessage) => {
+      capturedHandler = onMessage
+      return new FakeSyncClient()
+    }
+
+    renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token',
+        clientFactory: factory,
+      }),
+    )
+
+    // Calling handleMessage with 'welcome' should not throw and should return early
+    expect(() => capturedHandler({ type: 'welcome' })).not.toThrow()
+  })
+
+  it('emits non-welcome messages to SyncEventEmitter', () => {
+    const emitSpy = jest.spyOn(SyncEventEmitter, 'emit')
+
+    let capturedHandler!: (message: { type: string; payload?: Record<string, unknown> }) => void
+    const factory: SyncClientFactory = (_url, _token, onMessage) => {
+      capturedHandler = onMessage
+      return new FakeSyncClient()
+    }
+
+    renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token',
+        clientFactory: factory,
+      }),
+    )
+
+    const payload = { guideId: 'g-1' }
+    capturedHandler({ type: 'guide_updated', payload })
+
+    expect(emitSpy).toHaveBeenCalledWith('guide_updated', payload)
+
+    emitSpy.mockRestore()
+  })
+
+  it('emits non-welcome message with empty payload when payload is absent', () => {
+    const emitSpy = jest.spyOn(SyncEventEmitter, 'emit')
+
+    let capturedHandler!: (message: { type: string; payload?: Record<string, unknown> }) => void
+    const factory: SyncClientFactory = (_url, _token, onMessage) => {
+      capturedHandler = onMessage
+      return new FakeSyncClient()
+    }
+
+    renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token',
+        clientFactory: factory,
+      }),
+    )
+
+    capturedHandler({ type: 'ping' })
+
+    expect(emitSpy).toHaveBeenCalledWith('ping', {})
+
+    emitSpy.mockRestore()
+  })
+
+  it('reconnects and calls onReconnect when app returns to foreground while disconnected', () => {
+    const mockAppState = AppState as jest.Mocked<typeof AppState>
+    mockAppState.addEventListener.mockClear()
+
+    const fakeClient = new FakeSyncClient()
+    const onReconnect = jest.fn()
+
+    renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token',
+        onReconnect,
+        clientFactory: makeFactory(fakeClient),
+      }),
+    )
+
+    // Simulate disconnect
+    fakeClient.simulateDisconnect()
+
+    // Simulate app coming to foreground — use the most recent registered handler
+    const calls = mockAppState.addEventListener.mock.calls
+    const handler = calls[calls.length - 1]![1]
+    act(() => {
+      handler('active')
+    })
+
+    expect(fakeClient.connectCallCount).toBe(2) // initial + reconnect
+    expect(onReconnect).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not reconnect when app returns to foreground while already connected', () => {
+    const mockAppState = AppState as jest.Mocked<typeof AppState>
+    mockAppState.addEventListener.mockClear()
+
+    const fakeClient = new FakeSyncClient()
+    const onReconnect = jest.fn()
+
+    renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token',
+        onReconnect,
+        clientFactory: makeFactory(fakeClient),
+      }),
+    )
+
+    // Client is still connected - do NOT disconnect
+    const calls = mockAppState.addEventListener.mock.calls
+    const handler = calls[calls.length - 1]![1]
+    act(() => {
+      handler('active')
+    })
+
+    // Should still be 1 (no extra reconnect)
+    expect(fakeClient.connectCallCount).toBe(1)
+    expect(onReconnect).not.toHaveBeenCalled()
+  })
+
+  it('does not attempt reconnect when app goes to background', () => {
+    const mockAppState = AppState as jest.Mocked<typeof AppState>
+    mockAppState.addEventListener.mockClear()
+
+    const fakeClient = new FakeSyncClient()
+
+    renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token',
+        clientFactory: makeFactory(fakeClient),
+      }),
+    )
+
+    fakeClient.simulateDisconnect()
+
+    const calls = mockAppState.addEventListener.mock.calls
+    const handler = calls[calls.length - 1]![1]
+    act(() => {
+      handler('background')
+    })
+
+    // No additional connect calls
+    expect(fakeClient.connectCallCount).toBe(1)
+  })
+
+  it('removes AppState subscription on unmount', () => {
+    const mockAppState = AppState as jest.Mocked<typeof AppState>
+    const removeMock = jest.fn()
+    mockAppState.addEventListener.mockReturnValue({ remove: removeMock })
+
+    const { unmount } = renderHook(() =>
+      useSyncConnection({
+        serverUrl: 'https://guidr.madebysteven.nl',
+        authToken: 'token',
+        clientFactory: makeFactory(new FakeSyncClient()),
+      }),
+    )
+
+    unmount()
+
+    expect(removeMock).toHaveBeenCalled()
   })
 })

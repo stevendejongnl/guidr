@@ -13,6 +13,8 @@
     "mobile:lint": "npm run lint --workspace=mobile",
     "mobile:test": "npm test --workspace=mobile",
     "mobile:test:coverage": "npm run test:coverage --workspace=mobile",
+    "web:test": "npm run test --workspace=web-app",
+    "web:test:coverage": "npm run test:coverage --workspace=web-app",
     "mobile:typecheck": "npm run typecheck --workspace=mobile",
     "mobile:android": "npm run build:shared && bash scripts/mobile-android-tmux-new.sh",
     "mobile:ios": "npm run build:shared && npm run ios --workspace=mobile",
