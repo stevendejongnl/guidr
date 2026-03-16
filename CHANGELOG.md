@@ -1,3 +1,9 @@
+## [1.85.4](https://github.com/stevendejongnl/guidr/compare/v1.85.3...v1.85.4) (2026-03-16)
+
+### Bug Fixes
+
+* **widget:** restore per-second updates for widget and Live Activity timers ([9efe9d8](https://github.com/stevendejongnl/guidr/commit/9efe9d84ad8e733fcb3da6ed3a12d52af3e3f0cb))
+
 ## [1.85.3](https://github.com/stevendejongnl/guidr/compare/v1.85.2...v1.85.3) (2026-03-16)
 
 ### Bug Fixes
