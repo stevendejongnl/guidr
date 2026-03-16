@@ -25,12 +25,17 @@ interface DebugScreenProps {
   onBack: () => void
   serverUrl: string
   healthCheckService: IHealthCheckService
+  // Optional dependencies (for testing/DI)
+  serverConfigStorage?: ServerConfigStorage
+  authStorage?: AuthStorage
 }
 
 export const DebugScreen: React.FC<DebugScreenProps> = ({
   onBack,
   serverUrl: serverUrlProp,
   healthCheckService,
+  serverConfigStorage: injectedServerConfigStorage,
+  authStorage: injectedAuthStorage,
 }) => {
   const [storedServerUrl, setStoredServerUrl] = useState<string | null>(null)
   const [authToken, setAuthToken] = useState<string | null>(null)
@@ -50,8 +55,8 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
 
   const loadStoredConfig = async () => {
     try {
-      const serverConfigStorage = new ServerConfigStorage()
-      const authStorage = new AuthStorage()
+      const serverConfigStorage = injectedServerConfigStorage ?? new ServerConfigStorage()
+      const authStorage = injectedAuthStorage ?? new AuthStorage()
 
       const url = await serverConfigStorage.getServerUrl()
       const token = await authStorage.getAuthToken()

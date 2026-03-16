@@ -21,6 +21,8 @@ interface ServerSetupScreenProps {
   healthCheckService: IHealthCheckService
   onComplete: () => void
   currentUrl?: string
+  // Optional dependency (for testing/DI)
+  validatedStorage?: ValidatedServerStorage
 }
 
 export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
@@ -28,6 +30,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
   healthCheckService,
   onComplete,
   currentUrl,
+  validatedStorage: injectedValidatedStorage,
 }) => {
   const [url, setUrl] = useState(currentUrl || '')
   const [error, setError] = useState('')
@@ -54,7 +57,8 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
 
     try {
       // Use ValidatedServerStorage to validate and save
-      const validatedStorage = new ValidatedServerStorage(storage, healthCheckService)
+      const validatedStorage =
+        injectedValidatedStorage ?? new ValidatedServerStorage(storage, healthCheckService)
       const result = await validatedStorage.setServerUrlWithValidation(url)
 
       // Check validation result

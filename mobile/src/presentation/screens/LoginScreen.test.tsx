@@ -2,27 +2,22 @@ import React from 'react'
 import { ActivityIndicator } from 'react-native'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { LoginScreen } from './LoginScreen'
-import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
-import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { AuthResponse } from '../../infrastructure/api/dtos/UserDto'
-
-jest.mock('../../infrastructure/storage/AuthStorage')
-jest.mock('../../infrastructure/api/AuthClient')
+import { createMockAuthStorage, createMockAuthClient } from '../testUtils'
 
 describe('LoginScreen', () => {
-  let mockAuthStorage: jest.Mocked<AuthStorage>
-  let mockAuthClient: jest.Mocked<AuthClient>
+  let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
+  let mockAuthClient: ReturnType<typeof createMockAuthClient>
   let mockOnComplete: jest.Mock
   let mockOnChangeServer: jest.Mock
   let mockOnRegister: jest.Mock
 
   beforeEach(() => {
-    mockAuthStorage = new AuthStorage() as jest.Mocked<AuthStorage>
-    mockAuthClient = new AuthClient('http://localhost:8000') as jest.Mocked<AuthClient>
+    mockAuthStorage = createMockAuthStorage()
+    mockAuthClient = createMockAuthClient()
     mockOnComplete = jest.fn()
     mockOnChangeServer = jest.fn()
     mockOnRegister = jest.fn()
-    jest.clearAllMocks()
   })
 
   describe('rendering', () => {

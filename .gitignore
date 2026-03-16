@@ -11,6 +11,10 @@ types/
 junit-test-results.xml
 coverage/
 .jest/
+api-server/.coverage
+api-server/coverage.lcov
+web-app/coverage/
+web-app/.wtr/
 
 # React Native
 .expo/

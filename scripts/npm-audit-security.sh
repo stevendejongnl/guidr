@@ -28,6 +28,12 @@
 # - GHSA-mw96-cpmx-2vgc: rollup arbitrary file write via path traversal (HIGH, web build tool dev-time only, fix in >=4.59.0, override pending safe-chain age requirement)
 # - GHSA-qffp-2rhf-9h96: tar hardlink path traversal via drive-relative linkpath (HIGH, bundled in npm CLI internals, not overridable)
 # - GHSA-9ppj-qmqm-q256: node-tar symlink path traversal via drive-relative linkpath (HIGH, bundled in npm CLI internals, not overridable)
+# - GHSA-f269-vfmq-vjvj: undici WebSocket 64-bit length overflow (HIGH, @semantic-release/github dev dep only, not runtime)
+# - GHSA-2mjp-6q6p-2qxm: undici HTTP request/response smuggling (HIGH, @semantic-release/github dev dep only, not runtime)
+# - GHSA-vrm6-8vpv-qv8q: undici WebSocket permessage-deflate memory consumption (HIGH, @semantic-release/github dev dep only, not runtime)
+# - GHSA-v9p9-hfj2-hcw8: undici invalid server_max_window_bits unhandled exception (MODERATE, @semantic-release/github dev dep only, not runtime)
+# - GHSA-4992-7rv2-5pvq: undici CRLF injection via upgrade option (HIGH, @semantic-release/github dev dep only, not runtime)
+# - GHSA-phc3-fgpg-7m6h: undici DeduplicationHandler unbounded memory DoS (HIGH, @semantic-release/github dev dep only, not runtime)
 
 set -e
 
@@ -59,6 +65,12 @@ ACCEPTED_ADVISORIES=(
   "GHSA-qffp-2rhf-9h96"
   "GHSA-9ppj-qmqm-q256"
   "GHSA-25h7-pfq9-p65f"
+  "GHSA-f269-vfmq-vjvj"
+  "GHSA-2mjp-6q6p-2qxm"
+  "GHSA-vrm6-8vpv-qv8q"
+  "GHSA-v9p9-hfj2-hcw8"
+  "GHSA-4992-7rv2-5pvq"
+  "GHSA-phc3-fgpg-7m6h"
 )
 
 # Run npm audit and capture output

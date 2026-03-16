@@ -3,9 +3,6 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { UpdateDownloadScreen } from './UpdateDownloadScreen'
 import { ApkInstaller, DownloadProgress } from '../../infrastructure/update/ApkInstaller'
 
-// Mock ApkInstaller
-jest.mock('../../infrastructure/update/ApkInstaller')
-
 describe('UpdateDownloadScreen', () => {
   const mockOnComplete = jest.fn()
   const mockOnCancel = jest.fn()
@@ -22,6 +19,7 @@ describe('UpdateDownloadScreen', () => {
   let mockInstallApk: jest.Mock
   let mockCancelDownload: jest.Mock
   let mockDeleteDownloadedApk: jest.Mock
+  let mockApkInstaller: jest.Mocked<ApkInstaller>
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -32,27 +30,28 @@ describe('UpdateDownloadScreen', () => {
     mockCancelDownload = jest.fn()
     mockDeleteDownloadedApk = jest.fn()
 
-    ;(ApkInstaller as jest.MockedClass<typeof ApkInstaller>).mockImplementation(
-      () =>
-        ({
-          downloadApk: mockDownloadApk,
-          installApk: mockInstallApk,
-          cancelDownload: mockCancelDownload,
-          deleteDownloadedApk: mockDeleteDownloadedApk,
-        }) as unknown as ApkInstaller
-    )
+    mockApkInstaller = {
+      downloadApk: mockDownloadApk,
+      installApk: mockInstallApk,
+      cancelDownload: mockCancelDownload,
+      deleteDownloadedApk: mockDeleteDownloadedApk,
+    } as unknown as jest.Mocked<ApkInstaller>
   })
 
   it('should render downloading state initially', () => {
     mockDownloadApk.mockImplementation(() => new Promise(() => {})) // Never resolves
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
     expect(getByText('Downloading Update...')).toBeTruthy()
     expect(getByText('📥')).toBeTruthy()
   })
 
   it('should show progress bar with 0% initially', () => {
     mockDownloadApk.mockImplementation(() => new Promise(() => {}))
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
     expect(getByText('0%')).toBeTruthy()
   })
 
@@ -70,7 +69,9 @@ describe('UpdateDownloadScreen', () => {
       }
     )
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('50%')).toBeTruthy()
@@ -91,7 +92,9 @@ describe('UpdateDownloadScreen', () => {
       }
     )
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText(/2\.5 MB \/ 5\.0 MB/)).toBeTruthy()
@@ -102,7 +105,9 @@ describe('UpdateDownloadScreen', () => {
     mockDownloadApk.mockResolvedValue('/cache/app.apk')
     mockInstallApk.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Installing...')).toBeTruthy()
@@ -116,7 +121,7 @@ describe('UpdateDownloadScreen', () => {
     mockDownloadApk.mockResolvedValue('/cache/app.apk')
     mockInstallApk.mockResolvedValue(undefined)
 
-    render(<UpdateDownloadScreen {...defaultProps} />)
+    render(<UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />)
 
     await waitFor(() => {
       expect(mockOnComplete).toHaveBeenCalledTimes(1)
@@ -126,7 +131,9 @@ describe('UpdateDownloadScreen', () => {
   it('should show error state when download fails', async () => {
     mockDownloadApk.mockRejectedValue(new Error('Network error'))
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Download Failed')).toBeTruthy()
@@ -138,7 +145,7 @@ describe('UpdateDownloadScreen', () => {
   it('should call onError when download fails', async () => {
     mockDownloadApk.mockRejectedValue(new Error('Network error'))
 
-    render(<UpdateDownloadScreen {...defaultProps} />)
+    render(<UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />)
 
     await waitFor(() => {
       expect(mockOnError).toHaveBeenCalledWith('Network error')
@@ -148,7 +155,9 @@ describe('UpdateDownloadScreen', () => {
   it('should show error with generic message for non-Error exceptions', async () => {
     mockDownloadApk.mockRejectedValue('Something went wrong')
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Failed to download update')).toBeTruthy()
@@ -158,7 +167,9 @@ describe('UpdateDownloadScreen', () => {
   it('should show Retry and Cancel buttons in error state', async () => {
     mockDownloadApk.mockRejectedValue(new Error('Network error'))
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Retry')).toBeTruthy()
@@ -170,7 +181,9 @@ describe('UpdateDownloadScreen', () => {
     mockDownloadApk.mockRejectedValueOnce(new Error('Network error'))
     mockDownloadApk.mockImplementation(() => new Promise(() => {}))
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Download Failed')).toBeTruthy()
@@ -190,7 +203,9 @@ describe('UpdateDownloadScreen', () => {
   it('should call onCancel when Cancel button is pressed in error state', async () => {
     mockDownloadApk.mockRejectedValue(new Error('Network error'))
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Download Failed')).toBeTruthy()
@@ -203,7 +218,9 @@ describe('UpdateDownloadScreen', () => {
   it('should cancel download when Cancel button is pressed during download', async () => {
     mockDownloadApk.mockImplementation(() => new Promise(() => {}))
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Downloading Update...')).toBeTruthy()
@@ -221,7 +238,9 @@ describe('UpdateDownloadScreen', () => {
     mockDownloadApk.mockResolvedValue('/cache/app.apk')
     mockInstallApk.mockImplementation(() => new Promise(() => {}))
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Installing...')).toBeTruthy()
@@ -234,7 +253,7 @@ describe('UpdateDownloadScreen', () => {
   it('should have correct accessibility label for Cancel button', () => {
     mockDownloadApk.mockImplementation(() => new Promise(() => {}))
     const { getByLabelText } = render(
-      <UpdateDownloadScreen {...defaultProps} />
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
     )
     expect(getByLabelText('Cancel download')).toBeTruthy()
   })
@@ -242,7 +261,7 @@ describe('UpdateDownloadScreen', () => {
   it('should have correct accessibility label for Retry button', async () => {
     mockDownloadApk.mockRejectedValue(new Error('Network error'))
     const { getByLabelText } = render(
-      <UpdateDownloadScreen {...defaultProps} />
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
     )
 
     await waitFor(() => {
@@ -264,7 +283,9 @@ describe('UpdateDownloadScreen', () => {
       }
     )
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText(/1\.0 KB \/ 1\.0 MB/)).toBeTruthy()
@@ -286,7 +307,7 @@ describe('UpdateDownloadScreen', () => {
     )
 
     const { queryByText, getByText } = render(
-      <UpdateDownloadScreen {...defaultProps} />
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
     )
 
     await waitFor(() => {
@@ -303,7 +324,9 @@ describe('UpdateDownloadScreen', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => {})
 
-    const { getByText } = render(<UpdateDownloadScreen {...defaultProps} />)
+    const { getByText } = render(
+      <UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />
+    )
 
     await waitFor(() => {
       expect(getByText('Downloading Update...')).toBeTruthy()
@@ -326,7 +349,7 @@ describe('UpdateDownloadScreen', () => {
   it('should start download automatically on mount', async () => {
     mockDownloadApk.mockImplementation(() => new Promise(() => {}))
 
-    render(<UpdateDownloadScreen {...defaultProps} />)
+    render(<UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />)
 
     await waitFor(() => {
       expect(mockDownloadApk).toHaveBeenCalledWith(
@@ -341,7 +364,7 @@ describe('UpdateDownloadScreen', () => {
     mockDownloadApk.mockResolvedValue(filePath)
     mockInstallApk.mockResolvedValue(undefined)
 
-    render(<UpdateDownloadScreen {...defaultProps} />)
+    render(<UpdateDownloadScreen {...defaultProps} apkInstaller={mockApkInstaller} />)
 
     await waitFor(() => {
       expect(mockInstallApk).toHaveBeenCalledWith(filePath)

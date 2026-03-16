@@ -1,5 +1,6 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
+import { Alert } from 'react-native'
 import { SessionExecutionScreen } from './SessionExecutionScreen'
 import {
   createMockAuthStorage,
@@ -13,6 +14,7 @@ import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
 import { CountdownTimer } from '../components/CountdownTimer'
 import { StepNavigationControls } from '../components/StepNavigationControls'
+import { AutoAdvanceToggle } from '../components/AutoAdvanceToggle'
 
 // Mock infrastructure
 jest.mock('../../infrastructure/monitoring/ErrorReporter')
@@ -458,6 +460,561 @@ describe('SessionExecutionScreen', () => {
       const props = jest.mocked(StepNavigationControls).mock.calls[0]![0]
       expect(props['currentStepIndex']).toBe(0)
       expect(props['totalSteps']).toBe(2)
+    })
+  })
+
+  describe('timer completion', () => {
+    beforeEach(() => {
+      jest.mocked(CountdownTimer).mockClear()
+    })
+
+    it('auto-advances to next step when timer completes and autoAdvance is enabled', async () => {
+      const step1 = new Step('step-1', 'guide-456', 0, 'First Step', 300)
+      const step2 = new Step('step-2', 'guide-456', 1, 'Second Step', 300)
+
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.InProgress))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([step1, step2])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(CountdownTimer)).toHaveBeenCalled()
+      })
+
+      const timerProps = jest.mocked(CountdownTimer).mock.calls[0]![0]
+
+      await act(async () => {
+        timerProps.onComplete?.()
+      })
+
+      await waitFor(() => {
+        expect(mockSessionService.moveToStep).toHaveBeenCalledWith('session-123', 'step-2', 'test-token')
+      })
+    })
+
+    it('completes session when timer finishes on last step and autoAdvance is enabled', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.InProgress))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(CountdownTimer)).toHaveBeenCalled()
+      })
+
+      const timerProps = jest.mocked(CountdownTimer).mock.calls[0]![0]
+
+      await act(async () => {
+        timerProps.onComplete?.()
+      })
+
+      await waitFor(() => {
+        expect(mockSessionService.completeSession).toHaveBeenCalledWith('session-123', 'test-token')
+        expect(mockOnComplete).toHaveBeenCalled()
+      })
+    })
+
+    it('does not auto-advance when autoAdvance is disabled via toggle', async () => {
+      // Capture the onValueChange callback so we can invoke it after initial render
+      let capturedOnValueChange: ((v: boolean) => void) | undefined
+      jest.mocked(AutoAdvanceToggle).mockImplementation(
+        ({ onValueChange }: { onValueChange?: (v: boolean) => void }) => {
+          capturedOnValueChange = onValueChange
+          return null
+        },
+      )
+
+      const step1 = new Step('step-1', 'guide-456', 0, 'First Step', 300)
+      const step2 = new Step('step-2', 'guide-456', 1, 'Second Step', 300)
+
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.InProgress))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([step1, step2])
+
+      jest.mocked(CountdownTimer).mockClear()
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(CountdownTimer)).toHaveBeenCalled()
+        expect(capturedOnValueChange).toBeDefined()
+      })
+
+      // Disable auto-advance
+      await act(async () => {
+        capturedOnValueChange!(false)
+      })
+
+      // Capture latest timer props (after re-render from state change)
+      const allCalls = jest.mocked(CountdownTimer).mock.calls
+      const timerProps = allCalls[allCalls.length - 1]![0]
+
+      await act(async () => {
+        timerProps.onComplete?.()
+      })
+
+      expect(mockSessionService.moveToStep).not.toHaveBeenCalled()
+      expect(mockSessionService.completeSession).not.toHaveBeenCalled()
+    })
+
+    it('calls onSecondsChange handler from CountdownTimer', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.InProgress))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep({ duration: 600 })])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(CountdownTimer)).toHaveBeenCalled()
+      })
+
+      const timerProps = jest.mocked(CountdownTimer).mock.calls[0]![0]
+
+      // Should not throw
+      expect(() => timerProps.onSecondsChange?.(300)).not.toThrow()
+    })
+  })
+
+  describe('pause button', () => {
+    it('shows "Pause" button while timer is running after start', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Start Session')).toBeTruthy()
+      })
+
+      fireEvent.press(screen.getByText('Start Session'))
+
+      await waitFor(() => {
+        expect(mockSessionService.startSession).toHaveBeenCalled()
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Pause')).toBeTruthy()
+      })
+    })
+
+    it('calls pauseSession when Pause is pressed', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Start Session')).toBeTruthy()
+      })
+
+      fireEvent.press(screen.getByText('Start Session'))
+
+      await waitFor(() => {
+        expect(screen.queryByText('Pause')).toBeTruthy()
+      })
+
+      fireEvent.press(screen.getByText('Pause'))
+
+      await waitFor(() => {
+        expect(mockSessionService.pauseSession).toHaveBeenCalledWith('session-123', 'test-token')
+      })
+    })
+  })
+
+  describe('cancel session', () => {
+    it('shows Alert when Cancel Session is pressed', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert')
+
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Cancel Session')).toBeTruthy()
+      })
+
+      fireEvent.press(screen.getByText('Cancel Session'))
+
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Cancel Session',
+        expect.any(String),
+        expect.any(Array),
+      )
+
+      alertSpy.mockRestore()
+    })
+
+    it('calls cancelSession and onCancel when alert confirmed', async () => {
+      const alertSpy = jest
+        .spyOn(Alert, 'alert')
+        .mockImplementation((_title, _msg, buttons) => {
+          const cancelBtn = buttons?.find(b => b.text === 'Cancel Session')
+          cancelBtn?.onPress?.()
+        })
+
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Cancel Session')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Cancel Session'))
+      })
+
+      await waitFor(() => {
+        expect(mockSessionService.cancelSession).toHaveBeenCalledWith('session-123', 'test-token')
+        expect(mockOnCancel).toHaveBeenCalled()
+      })
+
+      alertSpy.mockRestore()
+    })
+  })
+
+  describe('error dismissal', () => {
+    it('shows error when start session fails', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+      mockSessionService.startSession.mockRejectedValue(new Error('Start failed'))
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Start Session')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Start Session'))
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to start session')).toBeTruthy()
+      })
+    })
+
+    it('can dismiss inline error', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+      mockSessionService.startSession.mockRejectedValue(new Error('Start failed'))
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Start Session')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Start Session'))
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to start session')).toBeTruthy()
+      })
+
+      fireEvent.press(screen.getByText('Dismiss'))
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to start session')).toBeFalsy()
+      })
+    })
+  })
+
+  describe('back button with running timer', () => {
+    it('pauses session before calling onBack when timer is running', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Start Session')).toBeTruthy()
+      })
+
+      // Start the session so timer is running
+      fireEvent.press(screen.getByText('Start Session'))
+
+      await waitFor(() => {
+        expect(screen.queryByText('Pause')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Back'))
+      })
+
+      await waitFor(() => {
+        expect(mockSessionService.pauseSession).toHaveBeenCalled()
+        expect(mockOnBack).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('previous step navigation', () => {
+    it('calls moveToStep with previous step id when onPrevious is invoked from index > 0', async () => {
+      jest.mocked(StepNavigationControls).mockClear()
+
+      const step1 = new Step('step-1', 'guide-456', 0, 'First Step', 300)
+      const step2 = new Step('step-2', 'guide-456', 1, 'Second Step', 300)
+
+      mockSessionService.getSessionById.mockResolvedValue(createSession())
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([step1, step2])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(StepNavigationControls)).toHaveBeenCalled()
+      })
+
+      // Move to step 2 first
+      const propsAfterLoad = jest.mocked(StepNavigationControls).mock.calls[0]![0]
+      await act(async () => {
+        propsAfterLoad.onNext()
+      })
+
+      await waitFor(() => {
+        expect(mockSessionService.moveToStep).toHaveBeenCalledWith('session-123', 'step-2', 'test-token')
+      })
+
+      // Now move back — get latest props after re-render
+      const allCalls = jest.mocked(StepNavigationControls).mock.calls
+      const latestProps = allCalls[allCalls.length - 1]![0]
+
+      await act(async () => {
+        latestProps.onPrevious()
+      })
+
+      await waitFor(() => {
+        expect(mockSessionService.moveToStep).toHaveBeenCalledWith('session-123', 'step-1', 'test-token')
+      })
+    })
+  })
+
+  describe('error paths in service calls', () => {
+    it('shows error when pauseSession fails', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+      mockSessionService.pauseSession.mockRejectedValue(new Error('Pause failed'))
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Start Session')).toBeTruthy()
+      })
+
+      // Start first
+      fireEvent.press(screen.getByText('Start Session'))
+
+      await waitFor(() => {
+        expect(screen.queryByText('Pause')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Pause'))
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to pause session')).toBeTruthy()
+      })
+    })
+
+    it('shows error when cancelSession fails', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+        const cancelBtn = buttons?.find(b => b.text === 'Cancel Session')
+        cancelBtn?.onPress?.()
+      })
+
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+      mockSessionService.cancelSession.mockRejectedValue(new Error('Cancel failed'))
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Cancel Session')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Cancel Session'))
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to cancel session')).toBeTruthy()
+      })
+
+      alertSpy.mockRestore()
+    })
+
+    it('shows error when resumeSession fails', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.Paused))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+      mockSessionService.resumeSession.mockRejectedValue(new Error('Resume failed'))
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Resume')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Resume'))
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to resume session')).toBeTruthy()
+      })
+    })
+
+    it('shows error when completeSession fails', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession(SessionStatus.NotStarted))
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+      mockSessionService.completeSession.mockRejectedValue(new Error('Complete failed'))
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Complete Session')).toBeTruthy()
+      })
+
+      await act(async () => {
+        fireEvent.press(screen.getByText('Complete Session'))
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to complete session')).toBeTruthy()
+      })
+    })
+
+    it('shows error when moveToStep fails during navigation', async () => {
+      jest.mocked(StepNavigationControls).mockClear()
+
+      const step1 = new Step('step-1', 'guide-456', 0, 'First Step', 300)
+      const step2 = new Step('step-2', 'guide-456', 1, 'Second Step', 300)
+
+      mockSessionService.getSessionById.mockResolvedValue(createSession())
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([step1, step2])
+      mockSessionService.moveToStep.mockRejectedValue(new Error('Move failed'))
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(StepNavigationControls)).toHaveBeenCalled()
+      })
+
+      const props = jest.mocked(StepNavigationControls).mock.calls[0]![0]
+
+      await act(async () => {
+        props.onNext()
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Failed to move to step')).toBeTruthy()
+      })
+    })
+  })
+
+  describe('error paths during load', () => {
+    it('shows error when auth token is null', async () => {
+      mockAuthStorage = createMockAuthStorage({
+        getAuthToken: jest.fn().mockResolvedValue(null),
+      })
+
+      render(
+        <SessionExecutionScreen
+          sessionId="session-123"
+          onComplete={mockOnComplete}
+          onCancel={mockOnCancel}
+          onBack={mockOnBack}
+          sessionService={mockSessionService}
+          guideService={mockGuideService}
+          stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+        />,
+      )
+
+      await waitFor(() => {
+        expect(screen.queryByText('Session Not Found')).toBeTruthy()
+      })
+    })
+
+    it('shows error when server URL is null', async () => {
+      mockServerConfigStorage = createMockServerConfigStorage({
+        getServerUrl: jest.fn().mockResolvedValue(null),
+      })
+
+      render(
+        <SessionExecutionScreen
+          sessionId="session-123"
+          onComplete={mockOnComplete}
+          onCancel={mockOnCancel}
+          onBack={mockOnBack}
+          sessionService={mockSessionService}
+          guideService={mockGuideService}
+          stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
+        />,
+      )
+
+      await waitFor(() => {
+        expect(screen.queryByText('Session Not Found')).toBeTruthy()
+      })
+    })
+
+    it('shows error when guide is not found', async () => {
+      mockSessionService.getSessionById.mockResolvedValue(createSession())
+      mockGuideService.getGuideById.mockResolvedValue(null)
+      mockStepService.getStepsByGuideId.mockResolvedValue([createStep()])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(screen.queryByText('Session Not Found')).toBeTruthy()
+      })
+    })
+  })
+
+  describe('session starting from currentStepId', () => {
+    it('sets currentStepIndex from session currentStepId', async () => {
+      jest.mocked(StepNavigationControls).mockClear()
+
+      const step1 = new Step('step-1', 'guide-456', 0, 'First Step', 300)
+      const step2 = new Step('step-2', 'guide-456', 1, 'Second Step', 300)
+
+      const sessionWithStep = new Session('session-123', 'guide-456')
+      sessionWithStep.start()
+      // Set currentStepId to step2
+      Object.defineProperty(sessionWithStep, 'currentStepId', { get: () => 'step-2' })
+
+      mockSessionService.getSessionById.mockResolvedValue(sessionWithStep)
+      mockGuideService.getGuideById.mockResolvedValue(createGuide())
+      mockStepService.getStepsByGuideId.mockResolvedValue([step1, step2])
+
+      renderScreen()
+
+      await waitFor(() => {
+        expect(jest.mocked(StepNavigationControls)).toHaveBeenCalled()
+      })
+
+      const props = jest.mocked(StepNavigationControls).mock.calls[0]![0]
+      expect(props['currentStepIndex']).toBe(1)
     })
   })
 })
