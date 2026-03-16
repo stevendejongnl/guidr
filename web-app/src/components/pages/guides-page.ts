@@ -1,6 +1,7 @@
 import { html, LitElement, css, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { apiClient } from '../../services/api-client.js'
+import { formatDuration } from '../../utils/format-duration.js'
 import type { Guide } from '@models/guide.js'
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -259,6 +260,10 @@ export class GuidesPage extends LitElement {
           : nothing}
         <div class="card-footer">
           <span>${guide.stepIds.length} step${guide.stepIds.length !== 1 ? 's' : ''}</span>
+          ${guide.totalDuration
+            ? html`<span class="separator">&middot;</span>
+                   <span>⏱ ${formatDuration(guide.totalDuration)}</span>`
+            : nothing}
           <span class="separator">&middot;</span>
           <span>${relativeTime(guide.createdAt)}</span>
         </div>
