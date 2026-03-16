@@ -130,11 +130,10 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if let endDate = state.timerEndDate, endDate > Date() {
-      // System-driven countdown — no app updates needed for display.
-      // Text(_:style:) with .timer style counts down to the date natively.
-      // NOTE: This is distinct from Text(timerInterval:) which crashes.
-      Text(endDate, style: .timer)
+    } else if state.timerEndDate != nil, state.timerEndDate! > Date() {
+      // Static text updated every 30s by the dispatch timer.
+      // Text(timerInterval:) and Text(_:style:.timer) both crash the widget extension.
+      Text(formatTime(state.remainingSeconds))
         .foregroundColor(progressColor(state: state))
         .monospacedDigit()
     } else if state.timerEndDate != nil {
