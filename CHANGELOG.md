@@ -1,3 +1,10 @@
+## [1.85.3](https://github.com/stevendejongnl/guidr/compare/v1.85.2...v1.85.3) (2026-03-16)
+
+### Bug Fixes
+
+* **warnings:** resolve all ESLint and pytest deprecation warnings ([6439950](https://github.com/stevendejongnl/guidr/commit/6439950376071756e84ad645c3db52e2ee816825))
+* **widget:** add TimelineView for smooth countdown and per-minute widget timeline ([9519bb8](https://github.com/stevendejongnl/guidr/commit/9519bb88e9ee29e03bd00980458796f64203438c))
+
 ## [1.85.2](https://github.com/stevendejongnl/guidr/compare/v1.85.1...v1.85.2) (2026-03-16)
 
 ### Bug Fixes
