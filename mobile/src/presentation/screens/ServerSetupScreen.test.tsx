@@ -4,9 +4,9 @@ import { ServerSetupScreen } from './ServerSetupScreen'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { ValidatedServerStorage } from '../../infrastructure/storage/ValidatedServerStorage'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
+import { createMockServerConfigStorage } from '../testUtils'
 
 jest.mock('../../infrastructure/storage/ServerConfigStorage')
-jest.mock('../../infrastructure/storage/ValidatedServerStorage')
 
 describe('ServerSetupScreen', () => {
   let mockStorage: jest.Mocked<ServerConfigStorage>
@@ -16,7 +16,7 @@ describe('ServerSetupScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockStorage = new ServerConfigStorage() as jest.Mocked<ServerConfigStorage>
+    mockStorage = createMockServerConfigStorage() as unknown as jest.Mocked<ServerConfigStorage>
     mockHealthCheckService = {
       validateServer: jest.fn(),
     } as unknown as jest.Mocked<IHealthCheckService>
@@ -28,7 +28,6 @@ describe('ServerSetupScreen', () => {
       initializeDefaultServerUrl: jest.fn(),
       getDefaultServerUrl: jest.fn(),
     } as unknown as jest.Mocked<ValidatedServerStorage>
-    ;(ValidatedServerStorage as jest.Mock).mockImplementation(() => mockValidatedStorage)
     mockOnComplete = jest.fn()
   })
 
@@ -37,6 +36,7 @@ describe('ServerSetupScreen', () => {
       <ServerSetupScreen
         storage={mockStorage}
         healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
         onComplete={mockOnComplete}
       />
     )
@@ -50,6 +50,7 @@ describe('ServerSetupScreen', () => {
       <ServerSetupScreen
         storage={mockStorage}
         healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
         onComplete={mockOnComplete}
       />
     )
@@ -63,6 +64,7 @@ describe('ServerSetupScreen', () => {
       <ServerSetupScreen
         storage={mockStorage}
         healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
         onComplete={mockOnComplete}
       />
     )
@@ -78,6 +80,7 @@ describe('ServerSetupScreen', () => {
       <ServerSetupScreen
         storage={mockStorage}
         healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
         onComplete={mockOnComplete}
       />
     )
@@ -104,6 +107,7 @@ describe('ServerSetupScreen', () => {
       <ServerSetupScreen
         storage={mockStorage}
         healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
         onComplete={mockOnComplete}
       />
     )
@@ -131,6 +135,7 @@ describe('ServerSetupScreen', () => {
       <ServerSetupScreen
         storage={mockStorage}
         healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
         onComplete={mockOnComplete}
       />
     )
@@ -153,7 +158,12 @@ describe('ServerSetupScreen', () => {
 
   it('should not render version display (hidden for non-admin users)', () => {
     const { queryByTestId } = render(
-      <ServerSetupScreen storage={mockStorage} healthCheckService={mockHealthCheckService} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
+        onComplete={mockOnComplete}
+      />
     )
 
     expect(queryByTestId('version-display')).toBeNull()
@@ -164,6 +174,7 @@ describe('ServerSetupScreen', () => {
       <ServerSetupScreen
         storage={mockStorage}
         healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
         onComplete={mockOnComplete}
         currentUrl="https://existing.server.com"
       />
@@ -174,7 +185,12 @@ describe('ServerSetupScreen', () => {
 
   it('should start with empty input when currentUrl is not provided', () => {
     const { getByPlaceholderText } = render(
-      <ServerSetupScreen storage={mockStorage} healthCheckService={mockHealthCheckService} onComplete={mockOnComplete} />
+      <ServerSetupScreen
+        storage={mockStorage}
+        healthCheckService={mockHealthCheckService}
+        validatedStorage={mockValidatedStorage}
+        onComplete={mockOnComplete}
+      />
     )
 
     const input = getByPlaceholderText('https://api.example.com')

@@ -54,3 +54,23 @@ Live Activities require iOS 16.1+. The `@available(iOS 16.1, *)` guard ensures t
 - Widget extension requires separate App ID and provisioning profile in Apple Developer Portal
 - `project.pbxproj` changes require Xcode for adding the widget target
 - Live Activities don't work in the iOS Simulator (physical device required for testing)
+- Progress bar only updates on meaningful events (pause/resume/step change), not every second
+
+## Known Issues & Fixes
+
+### Timer Display Freezes After ~15 Minutes (Fixed)
+
+**Symptom**: Live Activity countdown stopped updating visually after ~10–15 minutes when app was backgrounded. Logs showed `state=stale` cycling with `state=active`.
+
+**Root cause**: iOS enforces a budget of ~15 Live Activity updates per hour for backgrounded apps. The original implementation called `activity.update()` every second via a `DispatchSourceTimer`, exhausting the budget in ~15 minutes, after which iOS throttled further updates.
+
+Additionally, passing `staleDate: soonestRunningEndDate()` on every update told iOS "this content expires at the timer's end", which may have contributed to reduced update priority.
+
+**Fix** (commit: see git history):
+1. `TimerText` in `GuidrTimerWidgetLiveActivity.swift` now uses `Text(endDate, style: .timer)` — an OS-native countdown that renders system-side without requiring app updates.
+2. The `tickCountdown()` dispatch timer no longer calls `activity.update()`. It still ticks every second to keep `timerEntries.remainingSeconds` current for in-app display.
+3. All `activity.update()` calls now pass `staleDate: nil` to prevent iOS from pre-emptively marking content stale.
+
+**Why `Text(timerInterval:countsDown:)` was not used**: This API crashes the widget extension in Live Activity contexts (first discovered in commits 13fa1ca / be76e78, March 2026). `Text(_:style: .timer)` with a `Date` argument is a different API that takes the end date directly and does not crash.
+
+**Trade-off**: The progress bar (`TimerProgressView`) is based on `remainingSeconds` and only updates on meaningful events, not every second. The countdown text remains accurate as it is rendered natively.

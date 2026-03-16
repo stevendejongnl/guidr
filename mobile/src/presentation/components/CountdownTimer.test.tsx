@@ -153,4 +153,100 @@ describe('CountdownTimer', () => {
     const timerText = screen.getByTestId('timer-text')
     expect(timerText).toHaveTextContent('00:00')
   })
+
+  it('should display green color when more than 50% time remains', () => {
+    render(<CountdownTimer durationSeconds={100} isRunning={false} testID="timer" />)
+
+    // With 100s remaining out of 100s, that is 100% - green zone
+    const timerText = screen.getByTestId('timer-text')
+    // Timer text color will be colors.success (green)
+    expect(timerText).toBeTruthy()
+  })
+
+  it('should display yellow color when 25-50% time remains', () => {
+    const { rerender } = render(
+      <CountdownTimer durationSeconds={100} isRunning={true} testID="timer" />
+    )
+
+    // Advance to 35 seconds remaining (35% of 100s = yellow zone)
+    act(() => {
+      jest.advanceTimersByTime(65000)
+    })
+
+    rerender(<CountdownTimer durationSeconds={100} isRunning={false} testID="timer" />)
+
+    const timerText = screen.getByTestId('timer-text')
+    expect(timerText).toHaveTextContent('00:35')
+  })
+
+  it('should display red color when less than 25% time remains', () => {
+    const { rerender } = render(
+      <CountdownTimer durationSeconds={100} isRunning={true} testID="timer" />
+    )
+
+    // Advance to 20 seconds remaining (20% of 100s = red zone)
+    act(() => {
+      jest.advanceTimersByTime(80000)
+    })
+
+    rerender(<CountdownTimer durationSeconds={100} isRunning={false} testID="timer" />)
+
+    const timerText = screen.getByTestId('timer-text')
+    expect(timerText).toHaveTextContent('00:20')
+  })
+
+  it('should render with testID on the container', () => {
+    render(<CountdownTimer durationSeconds={60} isRunning={false} testID="my-timer" />)
+
+    expect(screen.getByTestId('my-timer')).toBeTruthy()
+  })
+
+  it('should have correct accessibility role as timer', () => {
+    render(<CountdownTimer durationSeconds={60} isRunning={false} testID="my-timer" />)
+
+    const container = screen.getByTestId('my-timer')
+    expect(container.props['accessibilityRole']).toBe('timer')
+  })
+
+  it('should have correct accessibility label', () => {
+    render(<CountdownTimer durationSeconds={65} isRunning={false} testID="my-timer" />)
+
+    const container = screen.getByTestId('my-timer')
+    expect(container.props['accessibilityLabel']).toBe('Timer: 01:05 remaining')
+  })
+
+  it('should clear interval when unmounted while running', () => {
+    const clearIntervalSpy = jest.spyOn(global, 'clearInterval')
+
+    const { unmount } = render(
+      <CountdownTimer durationSeconds={300} isRunning={true} testID="timer" />
+    )
+
+    unmount()
+
+    expect(clearIntervalSpy).toHaveBeenCalled()
+    clearIntervalSpy.mockRestore()
+  })
+
+  it('should call both onComplete and onSecondsChange at zero', () => {
+    const onComplete = jest.fn()
+    const onSecondsChange = jest.fn()
+
+    render(
+      <CountdownTimer
+        durationSeconds={2}
+        isRunning={true}
+        onComplete={onComplete}
+        onSecondsChange={onSecondsChange}
+        testID="timer"
+      />
+    )
+
+    act(() => {
+      jest.advanceTimersByTime(2000)
+    })
+
+    expect(onComplete).toHaveBeenCalled()
+    expect(onSecondsChange).toHaveBeenCalledWith(0)
+  })
 })

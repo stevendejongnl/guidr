@@ -31,6 +31,8 @@ interface StepFormScreenProps {
   isEditingOthersContent?: boolean
   // Optional dependencies (for testing/DI)
   stepService?: StepService
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
 }
 
 const MIN_DURATION = 0
@@ -64,6 +66,8 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   isAdmin = false,
   isEditingOthersContent = false,
   stepService: injectedStepService,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
 }) => {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -76,8 +80,14 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null)
   const [showAuthError, setShowAuthError] = useState(!canEdit)
 
-  const authStorage = new AuthStorage()
-  const serverConfigStorage = new ServerConfigStorage()
+  const authStorage = React.useMemo(
+    () => injectedAuthStorage ?? new AuthStorage(),
+    [injectedAuthStorage],
+  )
+  const serverConfigStorage = React.useMemo(
+    () => injectedServerConfigStorage ?? new ServerConfigStorage(),
+    [injectedServerConfigStorage],
+  )
 
   // Initialize service (use injected or create new)
   const serviceRef = React.useRef<StepService | null>(null)

@@ -1,3 +1,9 @@
+## [1.85.0](https://github.com/stevendejongnl/guidr/compare/v1.84.14...v1.85.0) (2026-03-16)
+
+### Features
+
+* **guides:** add total duration to guide responses and type-specific metadata UI ([f0247f3](https://github.com/stevendejongnl/guidr/commit/f0247f34c927d67ac4d0503caf791074eb9c33df))
+
 ## [1.84.14](https://github.com/stevendejongnl/guidr/compare/v1.84.13...v1.84.14) (2026-03-13)
 
 ### Bug Fixes
