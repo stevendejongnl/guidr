@@ -211,6 +211,13 @@ private struct TimerCountdownText: View {
       } else if timer.isPaused {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(.orange)
+      } else if let endDate = timer.endDate {
+        TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+          let computed = max(0, Int(ceil(endDate.timeIntervalSince(Date()))))
+          Text(homeFormatTime(computed))
+            .foregroundColor(TimerFormatting.progressColor(remaining: computed, total: timer.totalDurationSeconds))
+            .monospacedDigit()
+        }
       } else {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(homeProgressColor(timer: timer))
@@ -230,6 +237,12 @@ private struct HomeProgressView: View {
       if allComplete || timer.isComplete {
         ProgressView(value: 1.0, total: 1.0)
           .tint(.green)
+      } else if let endDate = timer.endDate, !timer.isPaused, timer.totalDurationSeconds > 0 {
+        TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+          let remaining = max(0, Int(ceil(endDate.timeIntervalSince(Date()))))
+          ProgressView(value: TimerFormatting.staticProgress(remaining: remaining, total: timer.totalDurationSeconds), total: 1.0)
+            .tint(TimerFormatting.progressColor(remaining: remaining, total: timer.totalDurationSeconds))
+        }
       } else {
         ProgressView(value: homeStaticProgress(timer: timer), total: 1.0)
           .tint(homeProgressColor(timer: timer))

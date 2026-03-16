@@ -86,32 +86,49 @@ enum TimelineBuilder {
 
     let soonestEnd = running.compactMap(\.endDate).min()!
     let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
-    let batchSize = min(secondsLeft, 60)
-
-    var entries: [HomeWidgetEntry] = []
     let now = baseEntry.date
-    for i in 0...batchSize {
-      let entryDate = now.addingTimeInterval(Double(i))
-      let adjustedEntries = baseEntry.entries.map { timer -> SharedTimerEntry in
-        guard !timer.isPaused && !timer.isComplete, let endDate = timer.endDate else {
-          return timer
-        }
-        let remaining = max(0, Int(ceil(endDate.timeIntervalSince(entryDate))))
-        return SharedTimerEntry(
-          stepId: timer.stepId,
-          stepTitle: timer.stepTitle,
-          guideTitle: timer.guideTitle,
-          totalDurationSeconds: timer.totalDurationSeconds,
-          endDate: timer.endDate,
-          remainingSeconds: remaining,
-          isPaused: timer.isPaused,
-          isComplete: remaining <= 0
-        )
+
+    // Short timers (≤ 60s): per-second entries
+    if secondsLeft <= 60 {
+      let batchSize = secondsLeft
+      var entries: [HomeWidgetEntry] = []
+      for i in 0...batchSize {
+        let entryDate = now.addingTimeInterval(Double(i))
+        let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
+        entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
       }
-      entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
+      let refreshDate = now.addingTimeInterval(Double(batchSize) + 1)
+      return TimelineResult(entries: entries, refreshDate: refreshDate)
     }
 
-    let refreshDate = now.addingTimeInterval(Double(batchSize) + 1)
+    // Long timers (> 60s): 1 entry per minute, up to 120 entries
+    let minutesLeft = Int(ceil(Double(secondsLeft) / 60.0))
+    let entryCount = min(minutesLeft, 120)
+    var entries: [HomeWidgetEntry] = []
+    for i in 0...entryCount {
+      let entryDate = now.addingTimeInterval(Double(i) * 60.0)
+      let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
+      entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
+    }
+    // Refresh shortly after the soonest timer expires
+    let refreshDate = soonestEnd.addingTimeInterval(5)
     return TimelineResult(entries: entries, refreshDate: refreshDate)
+  }
+
+  private static func adjust(_ timers: [SharedTimerEntry], at entryDate: Date) -> [SharedTimerEntry] {
+    timers.map { timer in
+      guard !timer.isPaused && !timer.isComplete, let endDate = timer.endDate else { return timer }
+      let remaining = max(0, Int(ceil(endDate.timeIntervalSince(entryDate))))
+      return SharedTimerEntry(
+        stepId: timer.stepId,
+        stepTitle: timer.stepTitle,
+        guideTitle: timer.guideTitle,
+        totalDurationSeconds: timer.totalDurationSeconds,
+        endDate: timer.endDate,
+        remainingSeconds: remaining,
+        isPaused: timer.isPaused,
+        isComplete: remaining <= 0
+      )
+    }
   }
 }

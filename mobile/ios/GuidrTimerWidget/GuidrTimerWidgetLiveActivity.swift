@@ -130,12 +130,13 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if state.timerEndDate != nil, state.timerEndDate! > Date() {
-      // Static text updated every 30s by the dispatch timer.
-      // Text(timerInterval:) and Text(_:style:.timer) both crash the widget extension.
-      Text(formatTime(state.remainingSeconds))
-        .foregroundColor(progressColor(state: state))
-        .monospacedDigit()
+    } else if let endDate = state.timerEndDate, endDate > Date() {
+      TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+        let computed = max(0, Int(ceil(endDate.timeIntervalSince(Date()))))
+        Text(formatTime(computed))
+          .foregroundColor(progressColor(state: state))
+          .monospacedDigit()
+      }
     } else if state.timerEndDate != nil {
       Text("Done")
         .foregroundColor(.green)
@@ -157,18 +158,18 @@ private struct TimerProgressView: View {
   }
 
   var body: some View {
-    ProgressView(
-      value: currentProgress,
-      total: 1.0
-    )
-    .tint(currentTint)
-  }
-
-  private var currentProgress: Double {
     if state.isComplete || isTimerExpired {
-      return 1.0
+      ProgressView(value: 1.0, total: 1.0).tint(.green)
+    } else if let endDate = state.timerEndDate, !state.isPaused, state.totalDurationSeconds > 0 {
+      TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+        let remaining = max(0, Int(ceil(endDate.timeIntervalSince(Date()))))
+        let progress = TimerFormatting.staticProgress(remaining: remaining, total: state.totalDurationSeconds)
+        ProgressView(value: progress, total: 1.0)
+          .tint(TimerFormatting.progressColor(remaining: remaining, total: state.totalDurationSeconds))
+      }
+    } else {
+      ProgressView(value: staticProgress(state: state), total: 1.0).tint(currentTint)
     }
-    return staticProgress(state: state)
   }
 
   private var currentTint: Color {
