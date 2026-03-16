@@ -1,3 +1,9 @@
+## [1.85.2](https://github.com/stevendejongnl/guidr/compare/v1.85.1...v1.85.2) (2026-03-16)
+
+### Bug Fixes
+
+* **live-activity:** throttle updates to 30s to prevent freeze without crashing ([98f473a](https://github.com/stevendejongnl/guidr/commit/98f473a447dcb2244f029b64d92af6d90f67f85f))
+
 ## [1.85.1](https://github.com/stevendejongnl/guidr/compare/v1.85.0...v1.85.1) (2026-03-16)
 
 ### Bug Fixes
