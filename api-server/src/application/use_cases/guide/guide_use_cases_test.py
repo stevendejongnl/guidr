@@ -36,6 +36,14 @@ def mock_guide_repository():
 
 
 @pytest.fixture
+def mock_step_repository():
+    """Create mock step repository."""
+    mock = AsyncMock()
+    mock.find_by_guide_id.return_value = []
+    return mock
+
+
+@pytest.fixture
 def mock_event_persistence_service():
     """Create mock event persistence service."""
     return AsyncMock()
@@ -137,13 +145,13 @@ class TestGetGuide:
     """Tests for GetGuide use case."""
 
     async def test_get_guide_success(
-        self, mock_guide_repository, sample_guide
+        self, mock_guide_repository, mock_step_repository, sample_guide
     ):
         """Test getting existing guide."""
         mock_guide_repository.find_by_id.return_value = (
             sample_guide
         )
-        use_case = GetGuide(mock_guide_repository)
+        use_case = GetGuide(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute(
             sample_guide.id.value
@@ -154,11 +162,11 @@ class TestGetGuide:
         assert result.title == sample_guide.title.value
 
     async def test_get_guide_not_found(
-        self, mock_guide_repository
+        self, mock_guide_repository, mock_step_repository
     ):
         """Test getting non-existent guide."""
         mock_guide_repository.find_by_id.return_value = None
-        use_case = GetGuide(mock_guide_repository)
+        use_case = GetGuide(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute(str(uuid4()))
 
@@ -169,13 +177,13 @@ class TestGetAllGuides:
     """Tests for GetAllGuides use case."""
 
     async def test_get_all_guides(
-        self, mock_guide_repository, sample_guide
+        self, mock_guide_repository, mock_step_repository, sample_guide
     ):
         """Test getting all guides."""
         mock_guide_repository.find_all.return_value = [
             sample_guide
         ]
-        use_case = GetAllGuides(mock_guide_repository)
+        use_case = GetAllGuides(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute()
 
@@ -187,13 +195,13 @@ class TestGetGuidesByType:
     """Tests for GetGuidesByType use case."""
 
     async def test_get_guides_by_type(
-        self, mock_guide_repository, sample_guide
+        self, mock_guide_repository, mock_step_repository, sample_guide
     ):
         """Test getting guides by type."""
         mock_guide_repository.find_by_type.return_value = [
             sample_guide
         ]
-        use_case = GetGuidesByType(mock_guide_repository)
+        use_case = GetGuidesByType(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute("cooking")
 
@@ -402,7 +410,7 @@ class TestGetMyGuides:
     """Tests for GetMyGuides use case."""
 
     async def test_returns_only_users_own_guides(
-        self, mock_guide_repository, non_admin_user
+        self, mock_guide_repository, mock_step_repository, non_admin_user
     ):
         """Test that only the authenticated user's guides are returned."""
         own_guide = Guide(
@@ -413,7 +421,7 @@ class TestGetMyGuides:
             is_public=False,
         )
         mock_guide_repository.find_by_user_id.return_value = [own_guide]
-        use_case = GetMyGuides(mock_guide_repository)
+        use_case = GetMyGuides(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute(non_admin_user)
 
@@ -424,22 +432,22 @@ class TestGetMyGuides:
         )
 
     async def test_returns_empty_list_when_no_guides(
-        self, mock_guide_repository, non_admin_user
+        self, mock_guide_repository, mock_step_repository, non_admin_user
     ):
         """Test returns empty list when user has no guides."""
         mock_guide_repository.find_by_user_id.return_value = []
-        use_case = GetMyGuides(mock_guide_repository)
+        use_case = GetMyGuides(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute(non_admin_user)
 
         assert result == []
 
     async def test_does_not_call_find_all(
-        self, mock_guide_repository, non_admin_user
+        self, mock_guide_repository, mock_step_repository, non_admin_user
     ):
         """Test that DB-level filter is used, not find_all."""
         mock_guide_repository.find_by_user_id.return_value = []
-        use_case = GetMyGuides(mock_guide_repository)
+        use_case = GetMyGuides(mock_guide_repository, mock_step_repository)
 
         await use_case.execute(non_admin_user)
 
@@ -450,7 +458,7 @@ class TestGetHighlightedGuides:
     """Tests for GetHighlightedGuides use case."""
 
     async def test_returns_highlighted_guides(
-        self, mock_guide_repository
+        self, mock_guide_repository, mock_step_repository
     ):
         """Test that highlighted guides are returned."""
         highlighted = Guide(
@@ -463,7 +471,7 @@ class TestGetHighlightedGuides:
         mock_guide_repository.find_highlighted_guides.return_value = [
             highlighted
         ]
-        use_case = GetHighlightedGuides(mock_guide_repository)
+        use_case = GetHighlightedGuides(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute()
 
@@ -472,20 +480,20 @@ class TestGetHighlightedGuides:
         mock_guide_repository.find_highlighted_guides.assert_called_once()
 
     async def test_returns_empty_list_when_none_highlighted(
-        self, mock_guide_repository
+        self, mock_guide_repository, mock_step_repository
     ):
         """Test returns empty list when no guides are highlighted."""
         mock_guide_repository.find_highlighted_guides.return_value = []
-        use_case = GetHighlightedGuides(mock_guide_repository)
+        use_case = GetHighlightedGuides(mock_guide_repository, mock_step_repository)
 
         result = await use_case.execute()
 
         assert result == []
 
-    async def test_no_auth_required(self, mock_guide_repository):
+    async def test_no_auth_required(self, mock_guide_repository, mock_step_repository):
         """Test that no user is required (public endpoint)."""
         mock_guide_repository.find_highlighted_guides.return_value = []
-        use_case = GetHighlightedGuides(mock_guide_repository)
+        use_case = GetHighlightedGuides(mock_guide_repository, mock_step_repository)
 
         # Should not raise even without any user context
         result = await use_case.execute()

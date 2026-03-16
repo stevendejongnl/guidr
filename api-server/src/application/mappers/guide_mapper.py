@@ -8,7 +8,7 @@ class GuideMapper:
     """Mapper for Guide entity to DTOs."""
 
     @staticmethod
-    def to_response_dto(guide: Guide) -> GuideResponseDTO:
+    def to_response_dto(guide: Guide, total_duration: int | None = None) -> GuideResponseDTO:
         """Convert Guide entity to GuideResponseDTO."""
         return GuideResponseDTO(
             id=guide.id.value,
@@ -30,4 +30,5 @@ class GuideMapper:
             language=guide.language.value,
             created_at=guide.created_at.isoformat(),
             updated_at=guide.updated_at.isoformat(),
+            total_duration=total_duration,
         )

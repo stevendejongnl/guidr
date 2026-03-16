@@ -125,6 +125,7 @@ def _guide_response_from_dto(result) -> GuideResponse:  # type: ignore
         language=result.language,
         createdAt=result.created_at,
         updatedAt=result.updated_at,
+        totalDuration=result.total_duration,
     )
 
 

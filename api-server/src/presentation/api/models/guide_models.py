@@ -70,5 +70,6 @@ class GuideResponse(BaseModel):
     language: str = "en"
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
+    total_duration: int | None = Field(default=None, alias="totalDuration")
 
     model_config = ConfigDict(populate_by_name=True)

@@ -32,6 +32,17 @@ import { NotificationPreferencesStorage } from '../../infrastructure/storage/Not
 
 const TIMER_RESET_DELAY_MS = 2 * 60 * 1000
 
+function formatTotalDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  const parts: string[] = []
+  if (h > 0) parts.push(`${h}h`)
+  if (m > 0) parts.push(`${m}m`)
+  if (s > 0) parts.push(`${s}s`)
+  return parts.join(' ') || '0s'
+}
+
 interface GuideDetailScreenProps {
   guideId: string
   onBack: () => void
@@ -390,6 +401,14 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
               <Text style={styles.metadataLabel}>Steps</Text>
               <Text style={styles.metadataValue}>{steps.length}</Text>
             </View>
+            {guide.totalDuration != null && guide.totalDuration > 0 && (
+              <View style={styles.metadataItem}>
+                <Text style={styles.metadataLabel}>Total Time</Text>
+                <Text style={styles.metadataValue}>
+                  {formatTotalDuration(guide.totalDuration)}
+                </Text>
+              </View>
+            )}
             <View style={styles.metadataItem}>
               <Text style={styles.metadataLabel}>Created</Text>
               <Text style={styles.metadataValue}>

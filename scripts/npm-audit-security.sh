@@ -58,6 +58,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-mw96-cpmx-2vgc"
   "GHSA-qffp-2rhf-9h96"
   "GHSA-9ppj-qmqm-q256"
+  "GHSA-25h7-pfq9-p65f"
 )
 
 # Run npm audit and capture output
