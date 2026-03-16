@@ -21,6 +21,8 @@ class LiveActivityModule: NSObject {
   private var completionWorkItem: DispatchWorkItem?
   private var reloadWorkItem: DispatchWorkItem?
   private var countdownTimer: DispatchSourceTimer?
+  private var liveActivityUpdateCounter: Int = 0
+  private let liveActivityUpdateInterval: Int = 30  // push Live Activity update every 30 ticks (seconds)
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -435,10 +437,12 @@ class LiveActivityModule: NSObject {
   // MARK: - Countdown timer
 
   /// Ticks every second to update remainingSeconds for in-app display.
-  /// Does NOT push Live Activity updates — the widget uses Text(_:style: .timer)
-  /// with timerEndDate for system-driven countdown to avoid iOS update budget exhaustion.
+  /// Pushes Live Activity updates every 30s to stay within iOS budget (~15/hour).
+  /// Text(timerInterval:) and Text(_:style:.timer) both crash the widget extension,
+  /// so static text is used and synced periodically.
   private func startCountdownTimer() {
     countdownTimer?.cancel()
+    liveActivityUpdateCounter = 0
     let timer = DispatchSource.makeTimerSource(queue: .main)
     timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
     timer.setEventHandler { [weak self] in
@@ -469,9 +473,18 @@ class LiveActivityModule: NSObject {
 
     guard changed else { return }
 
-    // No Live Activity update here — the widget uses Text(_:style: .timer) with timerEndDate
-    // for system-driven countdown display, avoiding iOS update budget exhaustion (~15/hour).
-    // timerEntries.remainingSeconds is kept current for when the user returns to the app.
+    // Throttle Live Activity updates to every 30s to stay within iOS budget (~15/hour).
+    // Every tick still updates timerEntries.remainingSeconds for in-app display.
+    liveActivityUpdateCounter += 1
+    if liveActivityUpdateCounter >= liveActivityUpdateInterval {
+      liveActivityUpdateCounter = 0
+      let state = buildContentState()
+      Task {
+        for activity in Activity<GuidrTimerAttributes>.activities where activity.activityState == .active {
+          await activity.update(.init(state: state, staleDate: nil))
+        }
+      }
+    }
 
     // Stop ticking if no running timers remain
     let hasRunning = timerEntries.contains { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
