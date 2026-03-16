@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -48,12 +48,7 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
   const [appBuildNumber, setAppBuildNumber] = useState('0')
   const [serverVersion, setServerVersion] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadStoredConfig()
-    loadVersionInfo()
-  }, [])
-
-  const loadStoredConfig = async () => {
+  const loadStoredConfig = useCallback(async () => {
     try {
       const serverConfigStorage = injectedServerConfigStorage ?? new ServerConfigStorage()
       const authStorage = injectedAuthStorage ?? new AuthStorage()
@@ -68,7 +63,12 @@ export const DebugScreen: React.FC<DebugScreenProps> = ({
     } catch (err) {
       console.error('Failed to load stored config:', err)
     }
-  }
+  }, [injectedServerConfigStorage, injectedAuthStorage])
+
+  useEffect(() => {
+    loadStoredConfig()
+    loadVersionInfo()
+  }, [loadStoredConfig])
 
   const loadVersionInfo = () => {
     try {
