@@ -29,7 +29,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - run: npm ci --workspaces --include=dev
-      - run: npm run mobile:test
+      - run: npm run mobile:test:coverage
+      - name: Upload mobile coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: mobile/coverage/lcov.info
+          flags: mobile
+          fail_ci_if_error: false
 
   typecheck:
     name: Type Check
@@ -84,8 +91,15 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: uv run pytest
+      - name: Upload API coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: api-server/coverage.lcov
+          flags: api
+          fail_ci_if_error: false
 
   api-server-lint:
     name: API Server Lint

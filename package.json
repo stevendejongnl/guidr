@@ -12,6 +12,7 @@
     "build:shared": "npm run build --workspace=shared",
     "mobile:lint": "npm run lint --workspace=mobile",
     "mobile:test": "npm test --workspace=mobile",
+    "mobile:test:coverage": "npm run test:coverage --workspace=mobile",
     "mobile:typecheck": "npm run typecheck --workspace=mobile",
     "mobile:android": "npm run build:shared && bash scripts/mobile-android-tmux-new.sh",
     "mobile:ios": "npm run build:shared && npm run ios --workspace=mobile",

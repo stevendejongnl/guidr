@@ -1,0 +1,28 @@
+coverage:
+  status:
+    project:
+      default:
+        enabled: false
+      mobile:
+        flags: [mobile]
+        target: 95%
+        threshold: 1%
+      api:
+        flags: [api]
+        target: 95%
+        threshold: 1%
+
+flags:
+  mobile:
+    carryforward: false
+    paths:
+      - mobile/src/
+  api:
+    carryforward: false
+    paths:
+      - api-server/src/
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true
