@@ -88,30 +88,18 @@ enum TimelineBuilder {
     let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
     let now = baseEntry.date
 
-    // Short timers (≤ 60s): per-second entries
-    if secondsLeft <= 60 {
-      let batchSize = secondsLeft
-      var entries: [HomeWidgetEntry] = []
-      for i in 0...batchSize {
-        let entryDate = now.addingTimeInterval(Double(i))
-        let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
-        entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
-      }
-      let refreshDate = now.addingTimeInterval(Double(batchSize) + 1)
-      return TimelineResult(entries: entries, refreshDate: refreshDate)
-    }
-
-    // Long timers (> 60s): 1 entry per minute, up to 120 entries
-    let minutesLeft = Int(ceil(Double(secondsLeft) / 60.0))
-    let entryCount = min(minutesLeft, 120)
+    // Per-second entries, capped at 240 (4 minutes rolling window).
+    // iOS calls getTimeline again before the window expires thanks to the
+    // 30s buffer in the refresh date.
+    let windowSize = min(secondsLeft, 240)
     var entries: [HomeWidgetEntry] = []
-    for i in 0...entryCount {
-      let entryDate = now.addingTimeInterval(Double(i) * 60.0)
+    for i in 0...windowSize {
+      let entryDate = now.addingTimeInterval(Double(i))
       let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
       entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
     }
-    // Refresh shortly after the soonest timer expires
-    let refreshDate = soonestEnd.addingTimeInterval(5)
+    // Refresh 30s before the window runs out so iOS has time to call getTimeline again
+    let refreshDate = now.addingTimeInterval(Double(max(1, windowSize - 30)))
     return TimelineResult(entries: entries, refreshDate: refreshDate)
   }
 

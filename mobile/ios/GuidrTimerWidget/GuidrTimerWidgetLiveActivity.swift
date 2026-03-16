@@ -130,20 +130,16 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if let endDate = state.timerEndDate, endDate > Date() {
-      TimelineView(.periodic(from: .now, by: 1.0)) { _ in
-        let computed = max(0, Int(ceil(endDate.timeIntervalSince(Date()))))
-        Text(formatTime(computed))
-          .foregroundColor(progressColor(state: state))
-          .monospacedDigit()
-      }
-    } else if state.timerEndDate != nil {
+    } else if state.remainingSeconds > 0 {
+      // Use remainingSeconds directly — accurate because activity.update() is called every second.
+      // TimelineView(.periodic) does NOT re-render per-second in LA context on iOS 26.
+      Text(formatTime(state.remainingSeconds))
+        .foregroundColor(progressColor(state: state))
+        .monospacedDigit()
+    } else {
       Text("Done")
         .foregroundColor(.green)
         .fontWeight(.semibold)
-    } else {
-      Text(formatTime(state.remainingSeconds))
-        .widgetPrimaryText()
     }
   }
 }
@@ -152,34 +148,14 @@ private struct TimerText: View {
 private struct TimerProgressView: View {
   let state: GuidrTimerAttributes.ContentState
 
-  private var isTimerExpired: Bool {
-    guard let endDate = state.timerEndDate else { return false }
-    return endDate <= Date()
-  }
-
   var body: some View {
-    if state.isComplete || isTimerExpired {
+    if state.isComplete || state.remainingSeconds <= 0 {
       ProgressView(value: 1.0, total: 1.0).tint(.green)
-    } else if let endDate = state.timerEndDate, !state.isPaused, state.totalDurationSeconds > 0 {
-      TimelineView(.periodic(from: .now, by: 1.0)) { _ in
-        let remaining = max(0, Int(ceil(endDate.timeIntervalSince(Date()))))
-        let progress = TimerFormatting.staticProgress(remaining: remaining, total: state.totalDurationSeconds)
-        ProgressView(value: progress, total: 1.0)
-          .tint(TimerFormatting.progressColor(remaining: remaining, total: state.totalDurationSeconds))
-      }
     } else {
-      ProgressView(value: staticProgress(state: state), total: 1.0).tint(currentTint)
+      // Use remainingSeconds directly — accurate because activity.update() is called every second.
+      ProgressView(value: staticProgress(state: state), total: 1.0)
+        .tint(progressColor(state: state))
     }
-  }
-
-  private var currentTint: Color {
-    if state.isComplete || isTimerExpired {
-      return .green
-    }
-    if state.isPaused {
-      return progressColor(state: state)
-    }
-    return .green
   }
 }
 
