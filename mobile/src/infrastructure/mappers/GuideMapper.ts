@@ -24,7 +24,8 @@ export class GuideMapper {
       dto.isPublic,
       dto.isHighlighted,
       dto.metadata ?? undefined,
-      dto.language ?? 'en'
+      dto.language ?? 'en',
+      dto.totalDuration ?? undefined
     )
 
     // Reconstruct stepIds array
@@ -53,6 +54,7 @@ export class GuideMapper {
       isPublic: guide.isPublic,
       isHighlighted: guide.isHighlighted,
       language: guide.language,
+      totalDuration: guide.totalDuration ?? null,
     }
   }
 

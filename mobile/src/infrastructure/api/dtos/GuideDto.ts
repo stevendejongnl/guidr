@@ -15,6 +15,7 @@ export interface GuideDto {
   isPublic: boolean
   isHighlighted: boolean
   language?: string
+  totalDuration?: number | null
 }
 
 /**
