@@ -185,26 +185,31 @@ class Container(containers.DeclarativeContainer):
     get_guide_use_case = providers.Factory(
         GetGuide,
         guide_repository=guide_repository,
+        step_repository=step_repository,
     )
 
     get_all_guides_use_case = providers.Factory(
         GetAllGuides,
         guide_repository=guide_repository,
+        step_repository=step_repository,
     )
 
     get_guides_by_type_use_case = providers.Factory(
         GetGuidesByType,
         guide_repository=guide_repository,
+        step_repository=step_repository,
     )
 
     get_my_guides_use_case = providers.Factory(
         GetMyGuides,
         guide_repository=guide_repository,
+        step_repository=step_repository,
     )
 
     get_highlighted_guides_use_case = providers.Factory(
         GetHighlightedGuides,
         guide_repository=guide_repository,
+        step_repository=step_repository,
     )
 
     update_guide_use_case = providers.Factory(

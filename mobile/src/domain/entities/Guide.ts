@@ -13,6 +13,7 @@ export class Guide {
   private _language: string
   readonly createdAt: Date
   private _updatedAt: Date
+  readonly totalDuration: number | undefined
 
   constructor(
     id: string,
@@ -23,7 +24,8 @@ export class Guide {
     isPublic: boolean = false,
     isHighlighted: boolean = false,
     metadata?: Record<string, unknown>,
-    language: string = 'en'
+    language: string = 'en',
+    totalDuration?: number
   ) {
     if (!id || id.trim() === '') {
       throw new Error('Guide id cannot be empty')
@@ -47,6 +49,7 @@ export class Guide {
     this._language = language
     this.createdAt = new Date()
     this._updatedAt = new Date()
+    this.totalDuration = totalDuration
   }
 
   get title(): string {

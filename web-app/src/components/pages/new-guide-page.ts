@@ -6,6 +6,11 @@ import { guidesService } from '../../services/guides-service.js'
 
 type PageState = 'form' | 'saving'
 
+interface IngredientRow { name: string; quantity: string; unit: string }
+interface MuscleRow { name: string; focus: string }
+interface EquipmentRow { name: string; weight: string }
+interface NoteRow { key: string; value: string }
+
 @customElement('new-guide-page')
 export class NewGuidePage extends LitElement {
   @consume({ context: authContext, subscribe: true })
@@ -18,6 +23,10 @@ export class NewGuidePage extends LitElement {
   @state() isPublic = false
   @state() language = 'en'
   @state() error: string | null = null
+  @state() ingredients: IngredientRow[] = []
+  @state() targetMuscles: MuscleRow[] = []
+  @state() equipment: EquipmentRow[] = []
+  @state() notes: NoteRow[] = []
 
   static styles = css`
     :host {
@@ -169,6 +178,57 @@ export class NewGuidePage extends LitElement {
     .ai-link:hover {
       color: var(--color-primary);
     }
+
+    .metadata-section {
+      margin-top: 24px;
+      border-top: 1px solid var(--color-border);
+      padding-top: 16px;
+    }
+
+    .metadata-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      margin: 0 0 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metadata-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .metadata-row .form-input {
+      flex: 1;
+    }
+
+    .btn-remove {
+      padding: 6px 10px;
+      background: rgba(244, 67, 54, 0.1);
+      color: var(--color-danger);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .btn-add {
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0);
+      color: var(--color-primary);
+      border: 1px solid var(--color-primary);
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-add:hover, .btn-remove:hover {
+      opacity: 0.8;
+    }
   `
 
   render() {
@@ -210,7 +270,7 @@ export class NewGuidePage extends LitElement {
             <select
               class="form-select"
               .value=${this.guideType}
-              @change=${(e: Event) => { this.guideType = (e.target as HTMLSelectElement).value }}
+              @change=${(e: Event) => { this.guideType = (e.target as HTMLSelectElement).value; this._resetMetadata() }}
               ?disabled=${saving}
             >
               <option value="general" ?selected=${this.guideType === 'general'}>General</option>
@@ -252,6 +312,8 @@ export class NewGuidePage extends LitElement {
             </label>
           </div>
 
+          ${this._renderMetadataSection(saving)}
+
           <div class="form-actions">
             <button
               class="btn btn-primary"
@@ -267,6 +329,104 @@ export class NewGuidePage extends LitElement {
     `
   }
 
+  private _resetMetadata(): void {
+    this.ingredients = []
+    this.targetMuscles = []
+    this.equipment = []
+    this.notes = []
+  }
+
+  private _buildMetadata(): Record<string, unknown> | null {
+    if (this.guideType === 'cooking' && this.ingredients.length > 0) {
+      return { ingredients: this.ingredients }
+    }
+    if (this.guideType === 'workout' && (this.targetMuscles.length > 0 || this.equipment.length > 0)) {
+      return { target_muscles: this.targetMuscles, equipment: this.equipment }
+    }
+    if (this.guideType === 'general' && this.notes.length > 0) {
+      return { notes: this.notes }
+    }
+    return null
+  }
+
+  private _renderMetadataSection(saving: boolean) {
+    if (this.guideType === 'cooking') {
+      return html`
+        <div class="metadata-section">
+          <h3>Ingredients</h3>
+          ${this.ingredients.map((ing, i) => html`
+            <div class="metadata-row">
+              <input class="form-input" placeholder="Name" .value=${ing.name}
+                @input=${(e: InputEvent) => { this.ingredients = this.ingredients.map((r, j) => j === i ? { ...r, name: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <input class="form-input" placeholder="Qty" .value=${ing.quantity}
+                @input=${(e: InputEvent) => { this.ingredients = this.ingredients.map((r, j) => j === i ? { ...r, quantity: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <input class="form-input" placeholder="Unit" .value=${ing.unit}
+                @input=${(e: InputEvent) => { this.ingredients = this.ingredients.map((r, j) => j === i ? { ...r, unit: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <button class="btn-remove" @click=${() => { this.ingredients = this.ingredients.filter((_, j) => j !== i) }} ?disabled=${saving}>✕</button>
+            </div>
+          `)}
+          <button class="btn-add" @click=${() => { this.ingredients = [...this.ingredients, { name: '', quantity: '', unit: '' }] }} ?disabled=${saving}>+ Add Ingredient</button>
+        </div>
+      `
+    }
+    if (this.guideType === 'workout') {
+      return html`
+        <div class="metadata-section">
+          <h3>Target Muscles</h3>
+          ${this.targetMuscles.map((m, i) => html`
+            <div class="metadata-row">
+              <input class="form-input" placeholder="Muscle name" .value=${m.name}
+                @input=${(e: InputEvent) => { this.targetMuscles = this.targetMuscles.map((r, j) => j === i ? { ...r, name: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <input class="form-input" placeholder="Focus (primary/secondary)" .value=${m.focus}
+                @input=${(e: InputEvent) => { this.targetMuscles = this.targetMuscles.map((r, j) => j === i ? { ...r, focus: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <button class="btn-remove" @click=${() => { this.targetMuscles = this.targetMuscles.filter((_, j) => j !== i) }} ?disabled=${saving}>✕</button>
+            </div>
+          `)}
+          <button class="btn-add" @click=${() => { this.targetMuscles = [...this.targetMuscles, { name: '', focus: '' }] }} ?disabled=${saving}>+ Add Muscle</button>
+
+          <h3 style="margin-top:16px;">Equipment</h3>
+          ${this.equipment.map((eq, i) => html`
+            <div class="metadata-row">
+              <input class="form-input" placeholder="Equipment name" .value=${eq.name}
+                @input=${(e: InputEvent) => { this.equipment = this.equipment.map((r, j) => j === i ? { ...r, name: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <input class="form-input" placeholder="Weight (optional)" .value=${eq.weight}
+                @input=${(e: InputEvent) => { this.equipment = this.equipment.map((r, j) => j === i ? { ...r, weight: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <button class="btn-remove" @click=${() => { this.equipment = this.equipment.filter((_, j) => j !== i) }} ?disabled=${saving}>✕</button>
+            </div>
+          `)}
+          <button class="btn-add" @click=${() => { this.equipment = [...this.equipment, { name: '', weight: '' }] }} ?disabled=${saving}>+ Add Equipment</button>
+        </div>
+      `
+    }
+    if (this.guideType === 'general') {
+      return html`
+        <div class="metadata-section">
+          <h3>Notes</h3>
+          ${this.notes.map((n, i) => html`
+            <div class="metadata-row">
+              <input class="form-input" placeholder="Key" .value=${n.key}
+                @input=${(e: InputEvent) => { this.notes = this.notes.map((r, j) => j === i ? { ...r, key: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <input class="form-input" placeholder="Value" .value=${n.value}
+                @input=${(e: InputEvent) => { this.notes = this.notes.map((r, j) => j === i ? { ...r, value: (e.target as HTMLInputElement).value } : r) }}
+                ?disabled=${saving} />
+              <button class="btn-remove" @click=${() => { this.notes = this.notes.filter((_, j) => j !== i) }} ?disabled=${saving}>✕</button>
+            </div>
+          `)}
+          <button class="btn-add" @click=${() => { this.notes = [...this.notes, { key: '', value: '' }] }} ?disabled=${saving}>+ Add Note</button>
+        </div>
+      `
+    }
+    return nothing
+  }
+
   private async handleSave(): Promise<void> {
     this.error = null
     this.pageState = 'saving'
@@ -278,6 +438,7 @@ export class NewGuidePage extends LitElement {
         description: this.description.trim() || undefined,
         isPublic: this.isPublic,
         language: this.language,
+        metadata: this._buildMetadata(),
       })
 
       window.history.pushState({}, '', `/guides/${guide.id}`)

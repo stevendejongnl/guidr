@@ -353,6 +353,11 @@ export class GuideDetailPage extends LitElement {
     return html`
       <a href="/guides" class="back-link" @click=${this.navigateBack}>← Back to Guides</a>
       <h1>${this.guide.title}</h1>
+      ${this.guide.totalDuration
+        ? html`<p class="description" style="font-size:0.95rem; color:var(--color-text-tertiary); margin-bottom:0.5rem;">
+            ⏱ Total time: ${formatDuration(this.guide.totalDuration)}
+          </p>`
+        : nothing}
       <p class="description">${this.guide.description}</p>
 
       ${this.renderSteps()}

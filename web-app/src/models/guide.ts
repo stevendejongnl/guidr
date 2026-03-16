@@ -11,6 +11,7 @@ export interface Guide {
   language?: string
   createdAt: string
   updatedAt: string
+  totalDuration?: number | null
 }
 
 export interface CreateGuideRequest {
@@ -19,6 +20,7 @@ export interface CreateGuideRequest {
   description?: string
   isPublic?: boolean
   language?: string
+  metadata?: Record<string, unknown> | null
 }
 
 export interface UpdateGuideRequest {
