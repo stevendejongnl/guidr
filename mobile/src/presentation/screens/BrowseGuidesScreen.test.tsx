@@ -3,15 +3,12 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { BrowseGuidesScreen } from './BrowseGuidesScreen'
 import { GuideService } from '../../domain/services/GuideService'
 import { Guide } from '../../domain/entities/Guide'
-import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
-import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
-import { AuthClient } from '../../infrastructure/api/AuthClient'
-import { createMockGuideFavoriteClient } from '../testUtils'
+import {
+  createMockAuthStorage,
+  createMockServerConfigStorage,
+  createMockGuideFavoriteClient,
+} from '../testUtils'
 
-// Mock storage and API clients
-jest.mock('../../infrastructure/storage/AuthStorage')
-jest.mock('../../infrastructure/storage/ServerConfigStorage')
-jest.mock('../../infrastructure/api/AuthClient')
 jest.mock('../../infrastructure/monitoring/ErrorReporter')
 
 // Create mock service factory
@@ -28,40 +25,21 @@ describe('BrowseGuidesScreen', () => {
   const mockOnBack = jest.fn()
   const mockOnViewGuide = jest.fn()
   let mockGuideService: jest.Mocked<GuideService>
+  let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
+  let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
 
   beforeEach(() => {
     mockOnBack.mockClear()
     mockOnViewGuide.mockClear()
 
-    // Create default mock services with empty data
     mockGuideService = createMockGuideService([])
-
-    // Mock storage
-    const mockAuthStorage = {
-      getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
+    mockAuthStorage = createMockAuthStorage({
       getAuthToken: jest.fn().mockResolvedValue('test-token'),
       getUserId: jest.fn().mockResolvedValue('user1'),
-    } as unknown as jest.Mocked<AuthStorage>
-
-    const mockServerConfigStorage = {
+    })
+    mockServerConfigStorage = createMockServerConfigStorage({
       getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000'),
-    } as unknown as jest.Mocked<ServerConfigStorage>
-
-    ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
-    ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerConfigStorage)
-
-    // Mock AuthClient
-    const mockAuthClientInstance = {
-      getProfile: jest.fn().mockResolvedValue({
-        id: 'user1',
-        email: 'test@example.com',
-        name: 'Test User',
-        interests: [],
-        isAdmin: false,
-      }),
-    } as unknown as jest.Mocked<AuthClient>
-
-    ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
+    })
   })
 
   it('renders screen title', () => {
@@ -71,6 +49,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -84,6 +64,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -97,6 +79,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -111,6 +95,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -126,6 +112,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -160,6 +148,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -198,6 +188,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -235,6 +227,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -275,6 +269,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -293,6 +289,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -333,6 +331,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -373,6 +373,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -404,6 +406,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -419,13 +423,10 @@ describe('BrowseGuidesScreen', () => {
   })
 
   it('shows error when auth token is missing', async () => {
-    // Override AuthStorage mock to return null token
-    const mockAuthStorageNoToken = {
-      getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
+    const noTokenStorage = createMockAuthStorage({
       getAuthToken: jest.fn().mockResolvedValue(null),
       getUserId: jest.fn().mockResolvedValue('user1'),
-    } as unknown as jest.Mocked<AuthStorage>
-    ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorageNoToken)
+    })
 
     const { getByText } = render(
       <BrowseGuidesScreen
@@ -433,6 +434,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={noTokenStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -442,10 +445,9 @@ describe('BrowseGuidesScreen', () => {
   })
 
   it('shows error when server URL is missing', async () => {
-    const mockServerConfigStorageNoUrl = {
+    const noUrlStorage = createMockServerConfigStorage({
       getServerUrl: jest.fn().mockResolvedValue(null),
-    } as unknown as jest.Mocked<ServerConfigStorage>
-    ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerConfigStorageNoUrl)
+    })
 
     const { getByText } = render(
       <BrowseGuidesScreen
@@ -453,6 +455,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={noUrlStorage}
       />
     )
 
@@ -471,6 +475,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -507,6 +513,8 @@ describe('BrowseGuidesScreen', () => {
         testID="browse-guides"
         guideService={mockGuideService}
         guideFavoriteClient={mockFavoriteClient}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -552,6 +560,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -586,6 +596,8 @@ describe('BrowseGuidesScreen', () => {
         onViewGuide={mockOnViewGuide}
         testID="browse-guides"
         guideService={mockGuideService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -624,6 +636,8 @@ describe('BrowseGuidesScreen', () => {
         testID="browse-guides"
         guideService={mockGuideService}
         guideFavoriteClient={mockFavoriteClient}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -670,6 +684,8 @@ describe('BrowseGuidesScreen', () => {
         testID="browse-guides"
         guideService={mockGuideService}
         guideFavoriteClient={mockFavoriteClient}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -714,6 +730,8 @@ describe('BrowseGuidesScreen', () => {
         testID="browse-guides"
         guideService={mockGuideService}
         guideFavoriteClient={mockFavoriteClient}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 
@@ -757,6 +775,8 @@ describe('BrowseGuidesScreen', () => {
         testID="browse-guides"
         guideService={mockGuideService}
         guideFavoriteClient={mockFavoriteClient}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
       />
     )
 

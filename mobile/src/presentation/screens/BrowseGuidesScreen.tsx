@@ -32,6 +32,8 @@ interface BrowseGuidesScreenProps {
   // Optional dependencies (for testing/DI)
   guideService?: GuideService
   guideFavoriteClient?: GuideFavoriteClient
+  authStorage?: AuthStorage
+  serverConfigStorage?: ServerConfigStorage
 }
 
 export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
@@ -40,6 +42,8 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   testID,
   guideService: injectedGuideService,
   guideFavoriteClient: injectedFavoriteClient,
+  authStorage: injectedAuthStorage,
+  serverConfigStorage: injectedServerConfigStorage,
 }) => {
   const [searchText, setSearchText] = useState('')
   const [selectedType, setSelectedType] = useState<GuideType | 'all'>('all')
@@ -50,8 +54,14 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  const authStorage = new AuthStorage()
-  const serverConfigStorage = new ServerConfigStorage()
+  const authStorage = React.useMemo(
+    () => injectedAuthStorage ?? new AuthStorage(),
+    [injectedAuthStorage],
+  )
+  const serverConfigStorage = React.useMemo(
+    () => injectedServerConfigStorage ?? new ServerConfigStorage(),
+    [injectedServerConfigStorage],
+  )
 
   // Initialize services (use injected or create new)
   const servicesRef = React.useRef<{

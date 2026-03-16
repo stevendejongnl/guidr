@@ -16,12 +16,12 @@ from src.infrastructure.config.settings import Settings
 def _make_settings(
     api_key: str | None = "test-key",
 ) -> Settings:
-    """Create test settings."""
-    settings = MagicMock(spec=Settings)
-    settings.openai_api_key = api_key
-    settings.openai_model = "gpt-4o"
-    settings.openai_max_tokens = 4096
-    return settings
+    """Create test settings with real Settings object."""
+    return Settings(
+        openai_api_key=api_key,
+        openai_model="gpt-4o",
+        openai_max_tokens=4096,
+    )
 
 
 def _mock_response(content: dict) -> MagicMock:
