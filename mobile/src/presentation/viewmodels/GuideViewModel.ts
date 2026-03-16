@@ -74,5 +74,9 @@ export function createGuideViewModel(guide: Guide): GuideViewModel {
     vm.description = guide.description
   }
 
+  if (guide.totalDuration !== undefined && guide.totalDuration > 0) {
+    vm.duration = Math.round(guide.totalDuration / 60)
+  }
+
   return vm
 }
