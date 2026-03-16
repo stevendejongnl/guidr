@@ -3,14 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { StepFormScreen } from './StepFormScreen'
 import { StepService } from '../../domain/services/StepService'
 import { Step } from '../../domain/entities/Step'
-import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
-import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
-import { AuthClient } from '../../infrastructure/api/AuthClient'
-
-// Mock storage and API clients
-jest.mock('../../infrastructure/storage/AuthStorage')
-jest.mock('../../infrastructure/storage/ServerConfigStorage')
-jest.mock('../../infrastructure/api/AuthClient')
+import { createMockAuthStorage, createMockServerConfigStorage } from '../testUtils'
 
 // Create mock service factory
 const createMockStepService = (): jest.Mocked<StepService> => {
@@ -32,39 +25,20 @@ describe('StepFormScreen', () => {
   const mockOnCancel = jest.fn()
   const guideId = 'guide-1'
   let mockStepService: jest.Mocked<StepService>
+  let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
+  let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
 
   beforeEach(() => {
     mockOnSave.mockClear()
     mockOnCancel.mockClear()
 
-    // Create default mock service
     mockStepService = createMockStepService()
-
-    // Mock storage
-    const mockAuthStorage = {
-      getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
+    mockAuthStorage = createMockAuthStorage({
       getAuthToken: jest.fn().mockResolvedValue('test-token'),
-    } as unknown as jest.Mocked<AuthStorage>
-
-    const mockServerConfigStorage = {
+    })
+    mockServerConfigStorage = createMockServerConfigStorage({
       getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000'),
-    } as unknown as jest.Mocked<ServerConfigStorage>
-
-    ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
-    ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerConfigStorage)
-
-    // Mock AuthClient
-    const mockAuthClientInstance = {
-      getProfile: jest.fn().mockResolvedValue({
-        id: 'user1',
-        email: 'test@example.com',
-        name: 'Test User',
-        interests: [],
-        isAdmin: false,
-      }),
-    } as unknown as jest.Mocked<AuthClient>
-
-    ;(AuthClient as jest.Mock).mockImplementation(() => mockAuthClientInstance)
+    })
   })
 
   describe('rendering', () => {
@@ -76,6 +50,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -104,6 +80,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -120,6 +98,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -140,6 +120,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -169,6 +151,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -187,6 +171,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -208,6 +194,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -246,6 +234,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -277,6 +267,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -307,6 +299,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -348,6 +342,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -379,6 +375,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -409,6 +407,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -441,6 +441,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -494,6 +496,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -537,6 +541,8 @@ describe('StepFormScreen', () => {
           onCancel={mockOnCancel}
           canEdit={false}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -558,6 +564,8 @@ describe('StepFormScreen', () => {
           canEdit={true}
           isAdmin={false}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -579,6 +587,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 
@@ -617,6 +627,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />,
       )
 
@@ -650,6 +662,8 @@ describe('StepFormScreen', () => {
           onSave={mockOnSave}
           onCancel={mockOnCancel}
           stepService={mockStepService}
+          authStorage={mockAuthStorage}
+          serverConfigStorage={mockServerConfigStorage}
         />
       )
 

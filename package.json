@@ -1,6 +1,6 @@
 {
   "name": "guidr-monorepo",
-  "version": "1.84.14",
+  "version": "1.85.0",
   "private": true,
   "description": "Guidr monorepo - mobile app, API server, and web app",
   "workspaces": [
@@ -12,6 +12,9 @@
     "build:shared": "npm run build --workspace=shared",
     "mobile:lint": "npm run lint --workspace=mobile",
     "mobile:test": "npm test --workspace=mobile",
+    "mobile:test:coverage": "npm run test:coverage --workspace=mobile",
+    "web:test": "npm run test --workspace=web-app",
+    "web:test:coverage": "npm run test:coverage --workspace=web-app",
     "mobile:typecheck": "npm run typecheck --workspace=mobile",
     "mobile:android": "npm run build:shared && bash scripts/mobile-android-tmux-new.sh",
     "mobile:ios": "npm run build:shared && npm run ios --workspace=mobile",

@@ -2,12 +2,34 @@
 
 import os
 from importlib.metadata import PackageNotFoundError
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
 from src.main import create_application
 from src.presentation.api.app import _get_version, create_app
+from src.presentation.api.routers import system as system_router
+
+
+class _FakeDb:
+    async def command(self, _cmd: str) -> None:
+        pass
+
+
+class _FakeDatabase:
+    def __init__(self) -> None:
+        self.db = _FakeDb()
+
+
+class _FakeContainer:
+    def __init__(self) -> None:
+        self._database = _FakeDatabase()
+
+    def database(self) -> _FakeDatabase:
+        return self._database
+
+    def telegram_notification_service(self) -> None:
+        return None
 
 
 class TestVersionResolution:
@@ -61,41 +83,39 @@ class TestHealthEndpoint:
 
     def test_health_endpoint_returns_status_and_version(self) -> None:
         """Health endpoint should return status and version."""
-        with patch.dict(os.environ, {"GUIDR_VERSION": "1.23.2"}):
-            app = create_application()
-            client = TestClient(app)
-
-            # Mock the database ping
-            with patch("src.presentation.api.routers.system.container") as mock_container:
-                mock_db_service = MagicMock()
-                mock_db_service.db.command = AsyncMock(return_value=None)
-                mock_container.database.return_value = mock_db_service
-
+        fake_container = _FakeContainer()
+        try:
+            with patch.dict(os.environ, {"GUIDR_VERSION": "1.23.2"}):
+                app = create_application()
+                # Override container after create_application() wires its own
+                system_router.set_container(fake_container)  # type: ignore[arg-type]
+                client = TestClient(app)
                 response = client.get("/api/v1/health")
 
             assert response.status_code == 200
             data = response.json()
             assert data["status"] == "healthy"
             assert data["version"] == "1.23.2"
+        finally:
+            system_router.set_container(None)  # type: ignore[arg-type]
 
     def test_health_endpoint_version_from_app(self) -> None:
         """Health endpoint should use version from FastAPI app."""
-        with patch.dict(os.environ, {}, clear=True):
-            with patch(
-                "src.presentation.api.app.version", return_value="2.0.0"
-            ):
-                app = create_application()
-                client = TestClient(app)
-
-                # Mock the database ping
-                with patch("src.presentation.api.routers.system.container") as mock_container:
-                    mock_db_service = MagicMock()
-                    mock_db_service.db.command = AsyncMock(return_value=None)
-                    mock_container.database.return_value = mock_db_service
-
+        fake_container = _FakeContainer()
+        try:
+            with patch.dict(os.environ, {}, clear=True):
+                with patch(
+                    "src.presentation.api.app.version", return_value="2.0.0"
+                ):
+                    app = create_application()
+                    # Override container after create_application() wires its own
+                    system_router.set_container(fake_container)  # type: ignore[arg-type]
+                    client = TestClient(app)
                     response = client.get("/api/v1/health")
 
-                assert response.status_code == 200
-                data = response.json()
-                assert data["status"] == "healthy"
-                assert data["version"] == "2.0.0"
+            assert response.status_code == 200
+            data = response.json()
+            assert data["status"] == "healthy"
+            assert data["version"] == "2.0.0"
+        finally:
+            system_router.set_container(None)  # type: ignore[arg-type]

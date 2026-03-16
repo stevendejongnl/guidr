@@ -107,7 +107,7 @@ class LiveActivityModule: NSObject {
         saveWidgetState()
         DiagnosticLogger.shared.log("[LiveActivity] saveWidgetState done (update), entries=\(timerEntries.count)")
         Task {
-          await activity.update(.init(state: state, staleDate: soonestEndDate))
+          await activity.update(.init(state: state, staleDate: nil))
           NSLog("[LiveActivity] updated existing activity: %@", activity.id)
           DiagnosticLogger.shared.log("[LiveActivity] updated existing id=\(activity.id)")
           resolve(activity.id)
@@ -219,11 +219,10 @@ class LiveActivityModule: NSObject {
       }
 
       let state = buildContentState()
-      let soonestEndDate = soonestRunningEndDate()
 
       Task {
         for activity in Activity<GuidrTimerAttributes>.activities {
-          await activity.update(.init(state: state, staleDate: soonestEndDate))
+          await activity.update(.init(state: state, staleDate: nil))
         }
         resolve(nil)
       }
@@ -268,10 +267,9 @@ class LiveActivityModule: NSObject {
         }
       } else {
         let state = buildContentState()
-        let soonestEndDate = soonestRunningEndDate()
         Task {
           for activity in Activity<GuidrTimerAttributes>.activities {
-            await activity.update(.init(state: state, staleDate: soonestEndDate))
+            await activity.update(.init(state: state, staleDate: nil))
           }
           resolve(nil)
         }
@@ -370,7 +368,6 @@ class LiveActivityModule: NSObject {
     }
 
     let state = buildContentState()
-    let soonestEndDate = soonestRunningEndDate()
     let allDone = timerEntries.filter({ !$0.isComplete }).isEmpty && !timerEntries.isEmpty
 
     saveWidgetState()
@@ -378,7 +375,7 @@ class LiveActivityModule: NSObject {
 
     Task {
       for activity in Activity<GuidrTimerAttributes>.activities {
-        await activity.update(.init(state: state, staleDate: soonestEndDate))
+        await activity.update(.init(state: state, staleDate: nil))
       }
 
       if allDone {
@@ -437,8 +434,9 @@ class LiveActivityModule: NSObject {
 
   // MARK: - Countdown timer
 
-  /// Ticks every second to update remainingSeconds and push fresh state to the
-  /// Live Activity so the static TimerText counts down visibly.
+  /// Ticks every second to update remainingSeconds for in-app display.
+  /// Does NOT push Live Activity updates — the widget uses Text(_:style: .timer)
+  /// with timerEndDate for system-driven countdown to avoid iOS update budget exhaustion.
   private func startCountdownTimer() {
     countdownTimer?.cancel()
     let timer = DispatchSource.makeTimerSource(queue: .main)
@@ -471,14 +469,9 @@ class LiveActivityModule: NSObject {
 
     guard changed else { return }
 
-    let state = buildContentState()
-    let soonestEndDate = soonestRunningEndDate()
-
-    Task {
-      for activity in Activity<GuidrTimerAttributes>.activities where activity.activityState == .active {
-        await activity.update(.init(state: state, staleDate: soonestEndDate))
-      }
-    }
+    // No Live Activity update here — the widget uses Text(_:style: .timer) with timerEndDate
+    // for system-driven countdown display, avoiding iOS update budget exhaustion (~15/hour).
+    // timerEntries.remainingSeconds is kept current for when the user returns to the app.
 
     // Stop ticking if no running timers remain
     let hasRunning = timerEntries.contains { !$0.isPaused && !$0.isComplete && $0.endDate != nil }

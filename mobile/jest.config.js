@@ -40,6 +40,15 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/**/index.ts',
   ],
+  coverageReporters: ['text', 'lcov'],
+  coverageThreshold: {
+    global: {
+      lines: 75,
+      statements: 75,
+      branches: 65,
+      functions: 75,
+    },
+  },
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-navigation)/)',
   ],

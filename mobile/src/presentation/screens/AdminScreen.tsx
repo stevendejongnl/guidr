@@ -31,12 +31,17 @@ interface AdminScreenProps {
   onBack: () => void
   serverUrl: string
   healthCheckService: IHealthCheckService
+  // Optional dependencies (for testing/DI)
+  serverConfigStorage?: ServerConfigStorage
+  authStorage?: AuthStorage
 }
 
 export const AdminScreen: React.FC<AdminScreenProps> = ({
   onBack,
   serverUrl: serverUrlProp,
   healthCheckService,
+  serverConfigStorage: injectedServerConfigStorage,
+  authStorage: injectedAuthStorage,
 }) => {
   const [storedServerUrl, setStoredServerUrl] = useState<string | null>(null)
   const [authToken, setAuthToken] = useState<string | null>(null)
@@ -60,8 +65,8 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
 
   const loadStoredConfig = async () => {
     try {
-      const serverConfigStorage = new ServerConfigStorage()
-      const authStorage = new AuthStorage()
+      const serverConfigStorage = injectedServerConfigStorage ?? new ServerConfigStorage()
+      const authStorage = injectedAuthStorage ?? new AuthStorage()
 
       const url = await serverConfigStorage.getServerUrl()
       const token = await authStorage.getAuthToken()

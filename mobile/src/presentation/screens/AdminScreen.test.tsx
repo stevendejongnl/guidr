@@ -4,14 +4,11 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { AdminScreen } from './AdminScreen'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
-import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
-import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
+import { createMockAuthStorage, createMockServerConfigStorage } from '../testUtils'
 
 jest.mock('@react-native-async-storage/async-storage')
 jest.mock('react-native-device-info')
-jest.mock('../../infrastructure/storage/ServerConfigStorage')
-jest.mock('../../infrastructure/storage/AuthStorage')
 
 // Mock fetch globally
 global.fetch = jest.fn()
@@ -19,6 +16,8 @@ global.fetch = jest.fn()
 describe('AdminScreen', () => {
   let mockOnBack: jest.Mock
   let mockHealthCheckService: jest.Mocked<IHealthCheckService>
+  let mockAuthStorage: ReturnType<typeof createMockAuthStorage>
+  let mockServerConfigStorage: ReturnType<typeof createMockServerConfigStorage>
   const serverUrl = 'http://localhost:8000/api/v1'
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
 
@@ -38,24 +37,25 @@ describe('AdminScreen', () => {
     ;(DeviceInfo.getVersion as jest.Mock).mockReturnValue('1.0.0')
     ;(DeviceInfo.getBuildNumber as jest.Mock).mockReturnValue('100')
 
-    // Mock ServerConfigStorage
-    const mockServerStorage = {
-      getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000/api/v1'),
-    }
-    ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerStorage)
-
-    // Mock AuthStorage
-    const mockAuthStorage = {
+    mockAuthStorage = createMockAuthStorage({
       getAuthToken: jest.fn().mockResolvedValue('mock-token-12345678'),
       getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
-    }
-    ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
+    })
+    mockServerConfigStorage = createMockServerConfigStorage({
+      getServerUrl: jest.fn().mockResolvedValue('http://localhost:8000/api/v1'),
+    })
   })
 
   describe('rendering', () => {
     it('should render all sections', () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       expect(getByText('Admin Tools')).toBeTruthy()
@@ -67,7 +67,13 @@ describe('AdminScreen', () => {
 
     it('should render back button', () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       expect(getByText('← Back')).toBeTruthy()
@@ -75,7 +81,13 @@ describe('AdminScreen', () => {
 
     it('should render action buttons', () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       expect(getByText('Test Connection')).toBeTruthy()
@@ -86,7 +98,13 @@ describe('AdminScreen', () => {
   describe('version information', () => {
     it('should display app version and build number', async () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       await waitFor(() => {
@@ -96,7 +114,13 @@ describe('AdminScreen', () => {
 
     it('should display server version as not connected initially', () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       expect(getByText('Server: Not connected')).toBeTruthy()
@@ -106,7 +130,13 @@ describe('AdminScreen', () => {
   describe('stored configuration', () => {
     it('should display stored server URL', async () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       await waitFor(() => {
@@ -116,7 +146,13 @@ describe('AdminScreen', () => {
 
     it('should display masked auth token', async () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       await waitFor(() => {
@@ -126,7 +162,13 @@ describe('AdminScreen', () => {
 
     it('should display user email', async () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       await waitFor(() => {
@@ -135,19 +177,22 @@ describe('AdminScreen', () => {
     })
 
     it('should display None for missing values', async () => {
-      const mockServerStorage = {
+      const noValueServerStorage = createMockServerConfigStorage({
         getServerUrl: jest.fn().mockResolvedValue(null),
-      }
-      ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerStorage)
-
-      const mockAuthStorage = {
+      })
+      const noValueAuthStorage = createMockAuthStorage({
         getAuthToken: jest.fn().mockResolvedValue(null),
         getUserEmail: jest.fn().mockResolvedValue(null),
-      }
-      ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
+      })
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={noValueServerStorage}
+          authStorage={noValueAuthStorage}
+        />
       )
 
       await waitFor(() => {
@@ -161,7 +206,13 @@ describe('AdminScreen', () => {
   describe('back button', () => {
     it('should call onBack when back button is pressed', () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       fireEvent.press(getByText('← Back'))
@@ -179,7 +230,13 @@ describe('AdminScreen', () => {
       })
 
       const { getByText, queryByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       const testButton = getByText('Test Connection')
@@ -203,7 +260,13 @@ describe('AdminScreen', () => {
       })
 
       const { getByText, queryByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       const testButton = getByText('Test Connection')
@@ -224,7 +287,13 @@ describe('AdminScreen', () => {
       })
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       const testButton = getByText('Test Connection')
@@ -237,13 +306,18 @@ describe('AdminScreen', () => {
     })
 
     it('should show error when server URL is not configured', async () => {
-      const mockServerStorage = {
+      const noUrlStorage = createMockServerConfigStorage({
         getServerUrl: jest.fn().mockResolvedValue(null),
-      }
-      ;(ServerConfigStorage as jest.Mock).mockImplementation(() => mockServerStorage)
+      })
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl="" healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl=""
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={noUrlStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       await waitFor(() => {
@@ -263,7 +337,13 @@ describe('AdminScreen', () => {
   describe('clear cache', () => {
     it('should show a confirmation alert when Clear All Cache is pressed', () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       fireEvent.press(getByText('Clear All Cache'))
@@ -279,7 +359,13 @@ describe('AdminScreen', () => {
       (AsyncStorage.clear as jest.Mock).mockResolvedValue(undefined)
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       fireEvent.press(getByText('Clear All Cache'))
@@ -298,7 +384,13 @@ describe('AdminScreen', () => {
 
     it('should NOT clear cache when alert is cancelled', () => {
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       fireEvent.press(getByText('Clear All Cache'))
@@ -311,7 +403,13 @@ describe('AdminScreen', () => {
       (AsyncStorage.clear as jest.Mock).mockRejectedValue(new Error('Clear failed'))
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       fireEvent.press(getByText('Clear All Cache'))
@@ -342,7 +440,13 @@ describe('AdminScreen', () => {
       mockFetch.mockReturnValue(promise)
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={mockAuthStorage}
+        />
       )
 
       const testButton = getByText('Test Connection')
@@ -362,14 +466,19 @@ describe('AdminScreen', () => {
 
   describe('token masking', () => {
     it('should mask long tokens correctly', async () => {
-      const mockAuthStorage = {
+      const longTokenStorage = createMockAuthStorage({
         getAuthToken: jest.fn().mockResolvedValue('very-long-token-12345678'),
         getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
-      }
-      ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
+      })
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={longTokenStorage}
+        />
       )
 
       await waitFor(() => {
@@ -378,14 +487,19 @@ describe('AdminScreen', () => {
     })
 
     it('should not mask short tokens', async () => {
-      const mockAuthStorage = {
+      const shortTokenStorage = createMockAuthStorage({
         getAuthToken: jest.fn().mockResolvedValue('short'),
         getUserEmail: jest.fn().mockResolvedValue('test@example.com'),
-      }
-      ;(AuthStorage as jest.Mock).mockImplementation(() => mockAuthStorage)
+      })
 
       const { getByText } = render(
-        <AdminScreen onBack={mockOnBack} serverUrl={serverUrl} healthCheckService={mockHealthCheckService} />
+        <AdminScreen
+          onBack={mockOnBack}
+          serverUrl={serverUrl}
+          healthCheckService={mockHealthCheckService}
+          serverConfigStorage={mockServerConfigStorage}
+          authStorage={shortTokenStorage}
+        />
       )
 
       await waitFor(() => {
