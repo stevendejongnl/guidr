@@ -1,3 +1,13 @@
+## [1.85.1](https://github.com/stevendejongnl/guidr/compare/v1.85.0...v1.85.1) (2026-03-16)
+
+### Bug Fixes
+
+* **live-activity:** use system timer to prevent display freeze after 15min ([ea22de9](https://github.com/stevendejongnl/guidr/commit/ea22de97c9d30fba7c0c9033f7516fe01db2cc02))
+
+### Code Refactoring
+
+* **tests:** replace jest.mock() and [@patch](https://github.com/patch) with DI injection across mobile screens and API tests ([1d9bbb1](https://github.com/stevendejongnl/guidr/commit/1d9bbb13301ea2ca5c998826377b41f6d7748c68))
+
 ## [1.85.0](https://github.com/stevendejongnl/guidr/compare/v1.84.14...v1.85.0) (2026-03-16)
 
 ### Features

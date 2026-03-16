@@ -67,10 +67,10 @@ Live Activities require iOS 16.1+. The `@available(iOS 16.1, *)` guard ensures t
 Additionally, passing `staleDate: soonestRunningEndDate()` on every update told iOS "this content expires at the timer's end", which may have contributed to reduced update priority.
 
 **Fix** (commit: see git history):
-1. `TimerText` in `GuidrTimerWidgetLiveActivity.swift` now uses `Text(endDate, style: .timer)` — an OS-native countdown that renders system-side without requiring app updates.
-2. The `tickCountdown()` dispatch timer no longer calls `activity.update()`. It still ticks every second to keep `timerEntries.remainingSeconds` current for in-app display.
-3. All `activity.update()` calls now pass `staleDate: nil` to prevent iOS from pre-emptively marking content stale.
+1. `tickCountdown()` still ticks every second to keep `timerEntries.remainingSeconds` current for in-app display, but only calls `activity.update()` every 30 ticks (≤2 updates/minute, ~120/hour worst-case — well within iOS budget of ~15/hour when backgrounded but safe when foregrounded).
+2. All `activity.update()` calls now pass `staleDate: nil` to prevent iOS from pre-emptively marking content stale.
+3. `TimerText` continues using `Text(formatTime(remainingSeconds))` — static text that is safe in the widget extension.
 
-**Why `Text(timerInterval:countsDown:)` was not used**: This API crashes the widget extension in Live Activity contexts (first discovered in commits 13fa1ca / be76e78, March 2026). `Text(_:style: .timer)` with a `Date` argument is a different API that takes the end date directly and does not crash.
+**Why system-driven Text APIs were not used**: Both `Text(timerInterval:countsDown:)` (commit 13fa1ca) and `Text(_:style:.timer)` (commit ea22de9) crash the widget extension immediately on Live Activity presentation. The crash is in the widget extension process, not the main app — the Live Activity is dismissed within <0.5s. Root cause is unknown (possibly an iOS 26 beta regression or an incompatibility with the `ActivityConfiguration` render context). Static text with periodic updates is the only confirmed stable approach.
 
-**Trade-off**: The progress bar (`TimerProgressView`) is based on `remainingSeconds` and only updates on meaningful events, not every second. The countdown text remains accurate as it is rendered natively.
+**Trade-off**: The countdown display updates every 30s instead of every second, so displayed time may be up to 30s ahead of actual. Pause/resume/complete events still update immediately.
