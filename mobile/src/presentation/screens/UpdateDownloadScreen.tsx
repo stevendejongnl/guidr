@@ -23,6 +23,8 @@ interface UpdateDownloadScreenProps {
   onComplete: () => void
   onCancel: () => void
   onError: (error: string) => void
+  // Optional dependency (for testing/DI)
+  apkInstaller?: ApkInstaller
 }
 
 type DownloadState = 'downloading' | 'installing' | 'error'
@@ -32,6 +34,7 @@ export const UpdateDownloadScreen: React.FC<UpdateDownloadScreenProps> = ({
   onComplete,
   onCancel,
   onError,
+  apkInstaller: injectedApkInstaller,
 }) => {
   const [state, setState] = useState<DownloadState>('downloading')
   const [progress, setProgress] = useState(0)
@@ -40,7 +43,10 @@ export const UpdateDownloadScreen: React.FC<UpdateDownloadScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [apkPath, setApkPath] = useState<string | null>(null)
 
-  const installer = new ApkInstaller()
+  const installer = React.useMemo(
+    () => injectedApkInstaller ?? new ApkInstaller(),
+    [injectedApkInstaller],
+  )
 
   useEffect(() => {
     startDownload()

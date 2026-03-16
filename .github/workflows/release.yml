@@ -103,7 +103,15 @@ jobs:
         run: npm run mobile:lint && npm run web:lint
 
       - name: Run Mobile Tests
-        run: npm run mobile:test
+        run: npm run mobile:test:coverage
+      - name: Upload mobile coverage to Codecov
+        uses: codecov/codecov-action@v5
+        continue-on-error: true
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: mobile/coverage/lcov.info
+          flags: mobile
+          fail_ci_if_error: false
 
       - name: Run Mobile & Web Type Check
         run: npm run mobile:typecheck && npm run web:typecheck
@@ -150,6 +158,14 @@ jobs:
         env:
           MONGO_TEST_URI: mongodb://localhost:27017/guidr_test
         run: uv run pytest
+      - name: Upload API coverage to Codecov
+        uses: codecov/codecov-action@v5
+        continue-on-error: true
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: api-server/coverage.lcov
+          flags: api
+          fail_ci_if_error: false
 
       - name: Run API server lint
         working-directory: api-server
