@@ -83,6 +83,9 @@ Custom Claude Code skills for workflow acceleration:
 <!-- handoff:file=HANDOFF.md -->
 <!-- handoff:project=Guidr monorepo -->
 
+## Scout Rule
+**Always leave the codebase cleaner than you found it.** If tests are failing — even if unrelated to the current task — investigate and fix them before pushing. Never push with known test failures. This applies to all test suites: mobile (Jest), API (pytest), iOS widget (XCTest), and security scans.
+
 ## Code Patterns
 **Entities**: Private fields with getters (`private _name`, `get name()`)
 **Services**: Constructor injection, async, repository pattern
