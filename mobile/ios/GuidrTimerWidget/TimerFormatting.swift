@@ -88,10 +88,11 @@ enum TimelineBuilder {
     let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
     let now = baseEntry.date
 
-    // Per-second entries, capped at 240 (4 minutes rolling window).
+    // Per-second entries, capped at 60 (1 minute rolling window).
+    // Larger windows (e.g. 240) cause iOS to stop calling getTimeline.
     // iOS calls getTimeline again before the window expires thanks to the
     // 30s buffer in the refresh date.
-    let windowSize = min(secondsLeft, 240)
+    let windowSize = min(secondsLeft, 60)
     var entries: [HomeWidgetEntry] = []
     for i in 0...windowSize {
       let entryDate = now.addingTimeInterval(Double(i))

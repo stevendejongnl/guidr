@@ -83,6 +83,6 @@ Additionally, passing `staleDate: soonestRunningEndDate()` on every update told 
 
 **Fix**:
 1. **Home widget**: Removed `TimelineView` from `TimerCountdownText` and `HomeProgressView`. Uses `remainingSeconds` directly from the timeline entry — accurate because the timeline is built with per-second entries (rolling window of 240 entries / 4 minutes, with 30s buffer for iOS to call `getTimeline` again).
-2. **Live Activity**: Removed `TimelineView` from `TimerText` and `TimerProgressView`. Uses `state.remainingSeconds` directly — accurate because `activity.update()` is called every second from a `DispatchSourceTimer` (restored from the approach proven in commit `f7e7fb3`). Foreground `activity.update()` calls are unlimited per Apple docs; background calls may be throttled by iOS.
+2. **Live Activity**: Removed `TimelineView` from `TimerText` and `TimerProgressView`. Uses `state.remainingSeconds` directly — updated by `activity.update()` every 5 seconds from a `DispatchSourceTimer`. Every-second updates (commit `f7e7fb3`) cause iOS to dismiss the LA after ~12 minutes; every 5s is the tested compromise between display smoothness and iOS update budget.
 
 See `docs/debugging/widget-live-activity-history.md` for the full history of approaches tried.

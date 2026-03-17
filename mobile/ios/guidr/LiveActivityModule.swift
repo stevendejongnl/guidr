@@ -21,6 +21,8 @@ class LiveActivityModule: NSObject {
   private var completionWorkItem: DispatchWorkItem?
   private var reloadWorkItem: DispatchWorkItem?
   private var countdownTimer: DispatchSourceTimer?
+  private var liveActivityUpdateCounter: Int = 0
+  private let liveActivityUpdateInterval: Int = 5  // push Live Activity update every 5 ticks (seconds)
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -434,12 +436,12 @@ class LiveActivityModule: NSObject {
 
   // MARK: - Countdown timer
 
-  /// Ticks every second to update remainingSeconds and push Live Activity updates.
-  /// Foreground activity.update() calls are unlimited (Apple docs). Background calls
-  /// may be throttled by iOS but endDate remains correct. Per-second updates were
-  /// proven working in commit f7e7fb3 before being wrongly throttled to 30s.
+  /// Ticks every second to update remainingSeconds for in-app display.
+  /// Pushes Live Activity updates every 5s — a compromise between 1s (iOS kills the
+  /// LA after ~12min due to excessive updates) and 30s (timer display jumps visibly).
   private func startCountdownTimer() {
     countdownTimer?.cancel()
+    liveActivityUpdateCounter = 0
     let timer = DispatchSource.makeTimerSource(queue: .main)
     timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
     timer.setEventHandler { [weak self] in
@@ -470,11 +472,16 @@ class LiveActivityModule: NSObject {
 
     guard changed else { return }
 
-    // Update Live Activity every tick so the countdown display stays current.
-    let state = buildContentState()
-    Task {
-      for activity in Activity<GuidrTimerAttributes>.activities where activity.activityState == .active {
-        await activity.update(.init(state: state, staleDate: nil))
+    // Throttle Live Activity updates to every 5s. Updating every 1s causes iOS to
+    // dismiss the LA after ~12 minutes. Every 5s = ~720 updates/hour when foregrounded.
+    liveActivityUpdateCounter += 1
+    if liveActivityUpdateCounter >= liveActivityUpdateInterval {
+      liveActivityUpdateCounter = 0
+      let state = buildContentState()
+      Task {
+        for activity in Activity<GuidrTimerAttributes>.activities where activity.activityState == .active {
+          await activity.update(.init(state: state, staleDate: nil))
+        }
       }
     }
 

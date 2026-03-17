@@ -82,7 +82,7 @@ Institutional knowledge documenting all attempts, failures, and successes with i
 
 ### What WORKS
 
-5. **`activity.update()` every 1s from DispatchSourceTimer** — Proven in commit `f7e7fb3` for Live Activity. Apple docs confirm foreground `activity.update()` calls are unlimited.
-6. **Per-second timeline entries** — Works for home widget (commit `91ec8af`). Needs rolling window (max ~240 entries) with early refresh for long timers.
+5. **`activity.update()` every 1s** — Works for short timers (commit `f7e7fb3`) but iOS dismisses the LA after ~12 minutes for long timers due to excessive updates. **Use every 5s instead** — compromise between smoothness and iOS budget.
+6. **Per-second timeline entries (240 window)** — Too many entries; iOS stops calling `getTimeline` after the first batch. **Use 60-entry window (1 minute)** with 30s refresh buffer.
 7. **`saveWidgetState` before `Activity.request`** — Required on iOS 26 to prevent instant dismissal.
 8. **Static text + static ProgressView** — The only stable rendering approach in widget extension on iOS 26.
