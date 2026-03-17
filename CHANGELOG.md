@@ -1,3 +1,22 @@
+## [1.85.4](https://github.com/stevendejongnl/guidr/compare/v1.85.3...v1.85.4) (2026-03-16)
+
+### Bug Fixes
+
+* **widget:** restore per-second updates for widget and Live Activity timers ([9efe9d8](https://github.com/stevendejongnl/guidr/commit/9efe9d84ad8e733fcb3da6ed3a12d52af3e3f0cb))
+
+## [1.85.3](https://github.com/stevendejongnl/guidr/compare/v1.85.2...v1.85.3) (2026-03-16)
+
+### Bug Fixes
+
+* **warnings:** resolve all ESLint and pytest deprecation warnings ([6439950](https://github.com/stevendejongnl/guidr/commit/6439950376071756e84ad645c3db52e2ee816825))
+* **widget:** add TimelineView for smooth countdown and per-minute widget timeline ([9519bb8](https://github.com/stevendejongnl/guidr/commit/9519bb88e9ee29e03bd00980458796f64203438c))
+
+## [1.85.2](https://github.com/stevendejongnl/guidr/compare/v1.85.1...v1.85.2) (2026-03-16)
+
+### Bug Fixes
+
+* **live-activity:** throttle updates to 30s to prevent freeze without crashing ([98f473a](https://github.com/stevendejongnl/guidr/commit/98f473a447dcb2244f029b64d92af6d90f67f85f))
+
 ## [1.85.1](https://github.com/stevendejongnl/guidr/compare/v1.85.0...v1.85.1) (2026-03-16)
 
 ### Bug Fixes

@@ -80,15 +80,19 @@ def mongo_uri() -> Generator[str, None, None]:
         return
 
     _ensure_docker_running()
+    _cleanup_stale_containers()
 
-    # Retry once if the Ryuk reaper container has stale port mappings
+    # Retry once if the Ryuk reaper container has stale port mappings.
+    # Catch both ConnectionError and any Docker API error (e.g. 409 Conflict
+    # when a Ryuk container name already exists from a previous test run).
     for attempt in range(2):
         try:
             with MongoDbContainer("mongo:7.0") as container:
                 yield f"{container.get_connection_url()}/guidr_test"
                 return
-        except ConnectionError:
-            if attempt == 0:
+        except (ConnectionError, Exception) as exc:
+            is_docker_conflict = "409" in str(exc)
+            if attempt == 0 and (isinstance(exc, ConnectionError) or is_docker_conflict):
                 _cleanup_stale_containers()
             else:
                 raise

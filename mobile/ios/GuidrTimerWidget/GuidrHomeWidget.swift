@@ -212,6 +212,8 @@ private struct TimerCountdownText: View {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(.orange)
       } else {
+        // Use remainingSeconds directly — accurate because timeline entries are per-second.
+        // TimelineView(.periodic) does NOT re-render per-second in widget context on iOS 26.
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(homeProgressColor(timer: timer))
           .monospacedDigit()
@@ -231,6 +233,7 @@ private struct HomeProgressView: View {
         ProgressView(value: 1.0, total: 1.0)
           .tint(.green)
       } else {
+        // Use remainingSeconds directly — accurate because timeline entries are per-second.
         ProgressView(value: homeStaticProgress(timer: timer), total: 1.0)
           .tint(homeProgressColor(timer: timer))
       }
