@@ -130,19 +130,16 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if state.timerEndDate != nil, state.timerEndDate! > Date() {
-      // Static text updated every 30s by the dispatch timer.
-      // Text(timerInterval:) and Text(_:style:.timer) both crash the widget extension.
+    } else if state.remainingSeconds > 0 {
+      // Use remainingSeconds directly — accurate because activity.update() is called every second.
+      // TimelineView(.periodic) does NOT re-render per-second in LA context on iOS 26.
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(progressColor(state: state))
         .monospacedDigit()
-    } else if state.timerEndDate != nil {
+    } else {
       Text("Done")
         .foregroundColor(.green)
         .fontWeight(.semibold)
-    } else {
-      Text(formatTime(state.remainingSeconds))
-        .widgetPrimaryText()
     }
   }
 }
@@ -151,34 +148,14 @@ private struct TimerText: View {
 private struct TimerProgressView: View {
   let state: GuidrTimerAttributes.ContentState
 
-  private var isTimerExpired: Bool {
-    guard let endDate = state.timerEndDate else { return false }
-    return endDate <= Date()
-  }
-
   var body: some View {
-    ProgressView(
-      value: currentProgress,
-      total: 1.0
-    )
-    .tint(currentTint)
-  }
-
-  private var currentProgress: Double {
-    if state.isComplete || isTimerExpired {
-      return 1.0
+    if state.isComplete || state.remainingSeconds <= 0 {
+      ProgressView(value: 1.0, total: 1.0).tint(.green)
+    } else {
+      // Use remainingSeconds directly — accurate because activity.update() is called every second.
+      ProgressView(value: staticProgress(state: state), total: 1.0)
+        .tint(progressColor(state: state))
     }
-    return staticProgress(state: state)
-  }
-
-  private var currentTint: Color {
-    if state.isComplete || isTimerExpired {
-      return .green
-    }
-    if state.isPaused {
-      return progressColor(state: state)
-    }
-    return .green
   }
 }
 

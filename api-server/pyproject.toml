@@ -1,6 +1,6 @@
 [project]
 name = "guidr-api-server"
-version = "1.85.1"
+version = "1.85.4"
 description = "API server for Guidr mobile app"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -66,6 +66,9 @@ python_classes = "Test*"
 python_functions = "test_*"
 asyncio_mode = "auto"
 addopts = "--cov=src --cov-report=term-missing --cov-report=lcov:coverage.lcov"
+filterwarnings = [
+    "ignore::DeprecationWarning:testcontainers",
+]
 
 [tool.coverage.run]
 source = ["src"]

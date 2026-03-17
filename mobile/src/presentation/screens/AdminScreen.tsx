@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Alert,
   View,
@@ -57,13 +57,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   const [logLoading, setLogLoading] = useState(false)
   const [debugMode, setDebugMode] = useState(Logger.isDebugMode())
 
-  useEffect(() => {
-    loadStoredConfig()
-    loadVersionInfo()
-    loadDiagnosticLog()
-  }, [])
-
-  const loadStoredConfig = async () => {
+  const loadStoredConfig = useCallback(async () => {
     try {
       const serverConfigStorage = injectedServerConfigStorage ?? new ServerConfigStorage()
       const authStorage = injectedAuthStorage ?? new AuthStorage()
@@ -78,7 +72,13 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
     } catch (err) {
       console.error('Failed to load stored config:', err)
     }
-  }
+  }, [injectedServerConfigStorage, injectedAuthStorage])
+
+  useEffect(() => {
+    loadStoredConfig()
+    loadVersionInfo()
+    loadDiagnosticLog()
+  }, [loadStoredConfig])
 
   const loadVersionInfo = () => {
     try {

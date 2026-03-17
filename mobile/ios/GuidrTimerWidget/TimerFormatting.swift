@@ -86,32 +86,37 @@ enum TimelineBuilder {
 
     let soonestEnd = running.compactMap(\.endDate).min()!
     let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
-    let batchSize = min(secondsLeft, 60)
-
-    var entries: [HomeWidgetEntry] = []
     let now = baseEntry.date
-    for i in 0...batchSize {
+
+    // Per-second entries, capped at 240 (4 minutes rolling window).
+    // iOS calls getTimeline again before the window expires thanks to the
+    // 30s buffer in the refresh date.
+    let windowSize = min(secondsLeft, 240)
+    var entries: [HomeWidgetEntry] = []
+    for i in 0...windowSize {
       let entryDate = now.addingTimeInterval(Double(i))
-      let adjustedEntries = baseEntry.entries.map { timer -> SharedTimerEntry in
-        guard !timer.isPaused && !timer.isComplete, let endDate = timer.endDate else {
-          return timer
-        }
-        let remaining = max(0, Int(ceil(endDate.timeIntervalSince(entryDate))))
-        return SharedTimerEntry(
-          stepId: timer.stepId,
-          stepTitle: timer.stepTitle,
-          guideTitle: timer.guideTitle,
-          totalDurationSeconds: timer.totalDurationSeconds,
-          endDate: timer.endDate,
-          remainingSeconds: remaining,
-          isPaused: timer.isPaused,
-          isComplete: remaining <= 0
-        )
-      }
+      let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
       entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
     }
-
-    let refreshDate = now.addingTimeInterval(Double(batchSize) + 1)
+    // Refresh 30s before the window runs out so iOS has time to call getTimeline again
+    let refreshDate = now.addingTimeInterval(Double(max(1, windowSize - 30)))
     return TimelineResult(entries: entries, refreshDate: refreshDate)
+  }
+
+  private static func adjust(_ timers: [SharedTimerEntry], at entryDate: Date) -> [SharedTimerEntry] {
+    timers.map { timer in
+      guard !timer.isPaused && !timer.isComplete, let endDate = timer.endDate else { return timer }
+      let remaining = max(0, Int(ceil(endDate.timeIntervalSince(entryDate))))
+      return SharedTimerEntry(
+        stepId: timer.stepId,
+        stepTitle: timer.stepTitle,
+        guideTitle: timer.guideTitle,
+        totalDurationSeconds: timer.totalDurationSeconds,
+        endDate: timer.endDate,
+        remainingSeconds: remaining,
+        isPaused: timer.isPaused,
+        isComplete: remaining <= 0
+      )
+    }
   }
 }
