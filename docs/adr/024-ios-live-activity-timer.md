@@ -82,7 +82,7 @@ Additionally, passing `staleDate: soonestRunningEndDate()` on every update told 
 **Root cause**: `TimelineView(.periodic)` does not provide per-second re-renders in widget extension or Live Activity contexts on iOS 26. It works in regular app views but is ineffective in these constrained environments.
 
 **Fix**:
-1. **Home widget**: Removed `TimelineView` from `TimerCountdownText` and `HomeProgressView`. Uses `remainingSeconds` directly from the timeline entry. The full timeline is pre-generated upfront (per-second for 2 min, then per-minute) because iOS exhausts its widget reload budget after 1-2 `getTimeline` calls and never calls again.
-2. **Live Activity**: Removed `TimelineView` from `TimerText` and `TimerProgressView`. Uses `state.remainingSeconds` directly — updated by `activity.update()` every 15 seconds from a `DispatchSourceTimer`. Tested update frequencies: 1s → killed after ~12min, 5s → killed after ~38min, 15s (240/hr) should survive 60-min timers.
+1. **Home widget**: Removed `TimelineView` from `TimerCountdownText` and `HomeProgressView`. Uses `remainingSeconds` directly from pre-generated timeline entries (per-second for 2 min, then per-minute). iOS exhausts its widget reload budget after 1-2 `getTimeline` calls, so the full timeline must be generated upfront.
+2. **Live Activity**: Uses `Text(timerInterval:countsDown:)` for OS-native per-second countdown — no periodic `activity.update()` calls needed. Activity is only updated on user actions (pause/resume/reset/complete). Previous periodic update approaches all failed: 1s → killed after ~12min, 5s → killed after ~38min. The earlier crashes with `Text(timerInterval:)` appear to have been an iOS 26 beta regression.
 
 See `docs/debugging/widget-live-activity-history.md` for the full history of approaches tried.

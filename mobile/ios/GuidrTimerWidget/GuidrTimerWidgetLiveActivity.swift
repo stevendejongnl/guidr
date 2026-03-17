@@ -130,10 +130,10 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if state.remainingSeconds > 0 {
-      // Use remainingSeconds directly — accurate because activity.update() is called every second.
-      // TimelineView(.periodic) does NOT re-render per-second in LA context on iOS 26.
-      Text(formatTime(state.remainingSeconds))
+    } else if let endDate = state.timerEndDate, endDate > Date() {
+      // OS-native countdown: ticks every second without activity.update() calls.
+      // Only updated on user actions (pause/resume/reset/complete).
+      Text(timerInterval: Date()...endDate, countsDown: true)
         .foregroundColor(progressColor(state: state))
         .monospacedDigit()
     } else {
@@ -152,7 +152,8 @@ private struct TimerProgressView: View {
     if state.isComplete || state.remainingSeconds <= 0 {
       ProgressView(value: 1.0, total: 1.0).tint(.green)
     } else {
-      // Use remainingSeconds directly — accurate because activity.update() is called every second.
+      // Static progress — ProgressView(timerInterval:) crashes on iOS 26.
+      // Updates only on user actions (pause/resume/reset/complete).
       ProgressView(value: staticProgress(state: state), total: 1.0)
         .tint(progressColor(state: state))
     }

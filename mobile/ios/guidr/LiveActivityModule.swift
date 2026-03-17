@@ -21,8 +21,6 @@ class LiveActivityModule: NSObject {
   private var completionWorkItem: DispatchWorkItem?
   private var reloadWorkItem: DispatchWorkItem?
   private var countdownTimer: DispatchSourceTimer?
-  private var liveActivityUpdateCounter: Int = 0
-  private let liveActivityUpdateInterval: Int = 15  // push Live Activity update every 15 ticks (seconds)
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -436,13 +434,11 @@ class LiveActivityModule: NSObject {
 
   // MARK: - Countdown timer
 
-  /// Ticks every second to update remainingSeconds for in-app display.
-  /// Pushes Live Activity updates every 15s. iOS dismisses the LA when updates are
-  /// too frequent: 1s → killed after ~12min, 5s → killed after ~38min.
-  /// At 15s (240 updates/hr) the LA should survive a 60-min timer.
+  /// Ticks every second to update remainingSeconds for in-app display only.
+  /// Live Activity uses Text(timerInterval:) for OS-native countdown — no
+  /// activity.update() calls needed during normal countdown.
   private func startCountdownTimer() {
     countdownTimer?.cancel()
-    liveActivityUpdateCounter = 0
     let timer = DispatchSource.makeTimerSource(queue: .main)
     timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
     timer.setEventHandler { [weak self] in
@@ -473,18 +469,8 @@ class LiveActivityModule: NSObject {
 
     guard changed else { return }
 
-    // Throttle Live Activity updates to every 5s. Updating every 1s causes iOS to
-    // dismiss the LA after ~12 minutes. Every 5s = ~720 updates/hour when foregrounded.
-    liveActivityUpdateCounter += 1
-    if liveActivityUpdateCounter >= liveActivityUpdateInterval {
-      liveActivityUpdateCounter = 0
-      let state = buildContentState()
-      Task {
-        for activity in Activity<GuidrTimerAttributes>.activities where activity.activityState == .active {
-          await activity.update(.init(state: state, staleDate: nil))
-        }
-      }
-    }
+    // No activity.update() here — Live Activity uses Text(timerInterval:) for
+    // OS-native per-second countdown. Only user actions trigger updates.
 
     // Stop ticking if no running timers remain
     let hasRunning = timerEntries.contains { !$0.isPaused && !$0.isComplete && $0.endDate != nil }
