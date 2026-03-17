@@ -21,6 +21,7 @@ dependencies = [
     "sentry-sdk[fastapi]>=2.0.0",
     "openai>=1.40.0",
     "cryptography>=46.0.5",
+    "pyasn1>=0.6.3",
 ]
 
 [project.optional-dependencies]

@@ -1,9 +1,9 @@
 """Role value object for RBAC."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class RoleType(str, Enum):
+class RoleType(StrEnum):
     """User role types."""
 
     USER = "user"
