@@ -1,3 +1,11 @@
+## [1.85.7](https://github.com/stevendejongnl/guidr/compare/v1.85.6...v1.85.7) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** use Mac Catalyst for widget tests on macos-26 runner ([0ad7830](https://github.com/stevendejongnl/guidr/commit/0ad78307fb71d836e2597554ed7b7f0586f3cf49))
+* **ci:** use macos-15 runner with iOS Simulator for widget tests ([bbad71e](https://github.com/stevendejongnl/guidr/commit/bbad71ea9dc4bf3e6e36442dbb75a17b3cfd58a1))
+* **widget:** use Text(timerInterval:) for LA countdown, stop periodic updates ([eb9875d](https://github.com/stevendejongnl/guidr/commit/eb9875da52a45f6bc84143df4a8fc4ae35b2bcc9))
+
 ## [1.85.6](https://github.com/stevendejongnl/guidr/compare/v1.85.5...v1.85.6) (2026-03-17)
 
 ### Bug Fixes
