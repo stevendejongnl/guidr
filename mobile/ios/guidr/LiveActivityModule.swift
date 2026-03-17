@@ -22,7 +22,7 @@ class LiveActivityModule: NSObject {
   private var reloadWorkItem: DispatchWorkItem?
   private var countdownTimer: DispatchSourceTimer?
   private var liveActivityUpdateCounter: Int = 0
-  private let liveActivityUpdateInterval: Int = 5  // push Live Activity update every 5 ticks (seconds)
+  private let liveActivityUpdateInterval: Int = 15  // push Live Activity update every 15 ticks (seconds)
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -437,8 +437,9 @@ class LiveActivityModule: NSObject {
   // MARK: - Countdown timer
 
   /// Ticks every second to update remainingSeconds for in-app display.
-  /// Pushes Live Activity updates every 5s — a compromise between 1s (iOS kills the
-  /// LA after ~12min due to excessive updates) and 30s (timer display jumps visibly).
+  /// Pushes Live Activity updates every 15s. iOS dismisses the LA when updates are
+  /// too frequent: 1s → killed after ~12min, 5s → killed after ~38min.
+  /// At 15s (240 updates/hr) the LA should survive a 60-min timer.
   private func startCountdownTimer() {
     countdownTimer?.cancel()
     liveActivityUpdateCounter = 0

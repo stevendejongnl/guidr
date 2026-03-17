@@ -82,7 +82,7 @@ Institutional knowledge documenting all attempts, failures, and successes with i
 
 ### What WORKS
 
-5. **`activity.update()` every 1s** — Works for short timers (commit `f7e7fb3`) but iOS dismisses the LA after ~12 minutes for long timers due to excessive updates. **Use every 5s instead** — compromise between smoothness and iOS budget.
-6. **Per-second timeline entries (240 window)** — Too many entries; iOS stops calling `getTimeline` after the first batch. **Use 60-entry window (1 minute)** with 30s refresh buffer.
+5. **`activity.update()` frequency** — 1s → killed after ~12min. 5s → killed after ~38min. **Use 15s** (240 updates/hr) to survive 60-min timers. Display jumps by 15s but LA stays alive.
+6. **Widget timeline strategy** — Rolling windows (60 or 240 entries) fail because iOS exhausts its widget reload budget after 1-2 `getTimeline` calls and never calls again. **Pre-generate the full timeline upfront**: per-second for first 2 min (121 entries) + per-minute for the rest. A 60-min timer = ~179 entries total.
 7. **`saveWidgetState` before `Activity.request`** — Required on iOS 26 to prevent instant dismissal.
 8. **Static text + static ProgressView** — The only stable rendering approach in widget extension on iOS 26.

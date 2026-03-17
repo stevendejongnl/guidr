@@ -88,19 +88,33 @@ enum TimelineBuilder {
     let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
     let now = baseEntry.date
 
-    // Per-second entries, capped at 60 (1 minute rolling window).
-    // Larger windows (e.g. 240) cause iOS to stop calling getTimeline.
-    // iOS calls getTimeline again before the window expires thanks to the
-    // 30s buffer in the refresh date.
-    let windowSize = min(secondsLeft, 60)
+    // Pre-generate the FULL timeline upfront — iOS has a limited widget reload
+    // budget and may never call getTimeline again after the first 1-2 calls.
+    // Multi-granularity: per-second while fresh, per-minute for the long tail.
+    let perSecondLimit = min(secondsLeft, 120)  // per-second for first 2 minutes
     var entries: [HomeWidgetEntry] = []
-    for i in 0...windowSize {
+
+    // Phase 1: per-second entries (0 .. perSecondLimit)
+    for i in 0...perSecondLimit {
       let entryDate = now.addingTimeInterval(Double(i))
       let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
       entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
     }
-    // Refresh 30s before the window runs out so iOS has time to call getTimeline again
-    let refreshDate = now.addingTimeInterval(Double(max(1, windowSize - 30)))
+
+    // Phase 2: per-minute entries (after perSecondLimit .. end)
+    if secondsLeft > perSecondLimit {
+      let remainingAfterPerSecond = secondsLeft - perSecondLimit
+      let minuteEntries = Int(ceil(Double(remainingAfterPerSecond) / 60.0))
+      for i in 1...minuteEntries {
+        let offset = Double(perSecondLimit) + Double(i) * 60.0
+        let entryDate = now.addingTimeInterval(offset)
+        let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
+        entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
+      }
+    }
+
+    // Refresh after the full timeline expires (fallback if iOS has budget left)
+    let refreshDate = soonestEnd.addingTimeInterval(5)
     return TimelineResult(entries: entries, refreshDate: refreshDate)
   }
 
