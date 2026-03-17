@@ -82,7 +82,7 @@ Institutional knowledge documenting all attempts, failures, and successes with i
 
 ### What WORKS
 
-5. **`Text(timerInterval:countsDown:)` for Live Activity** — Retested and WORKS (earlier crashes may have been an iOS 26 beta regression). Provides OS-native per-second countdown with zero `activity.update()` calls. Only update on user actions (pause/resume/reset/complete). Previous periodic update attempts: 1s → killed after ~12min, 5s → killed after ~38min, 15s → survived but jumpy display.
+5. **`activity.update()` every 15s** — Use static text + periodic updates at 15s intervals (~240/hr). Tested: 1s → killed after ~12min, 5s → killed after ~38min, **15s → stable**. Display jumps by up to 15s but LA stays alive. `Text(timerInterval:countsDown:)` was retested (v1.85.7) and still crashes the widget extension (<2s dismissal) — not an iOS 26 beta regression, confirmed persistent.
 6. **Widget timeline strategy** — Rolling windows (60 or 240 entries) fail because iOS exhausts its widget reload budget after 1-2 `getTimeline` calls and never calls again. **Pre-generate the full timeline upfront**: per-second for first 2 min (121 entries) + per-minute for the rest. A 60-min timer = ~179 entries total.
 7. **`saveWidgetState` before `Activity.request`** — Required on iOS 26 to prevent instant dismissal.
-8. **Static text + static ProgressView** — Required for home widget on iOS 26. `ProgressView(timerInterval:)` still crashes in widget context. `Text(timerInterval:)` works in LA context but needs testing in home widget.
+8. **Static text + static ProgressView** — Required for both home widget and Live Activity on iOS 26. All auto-updating view APIs (`Text(timerInterval:)`, `ProgressView(timerInterval:)`, `Text(_, style: .timer)`) crash the widget extension.

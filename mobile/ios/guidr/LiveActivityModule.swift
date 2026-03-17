@@ -21,6 +21,9 @@ class LiveActivityModule: NSObject {
   private var completionWorkItem: DispatchWorkItem?
   private var reloadWorkItem: DispatchWorkItem?
   private var countdownTimer: DispatchSourceTimer?
+  private var liveActivityUpdateCounter: Int = 0
+  /// Update Live Activity every 15 ticks (15s). Tested: 1s→killed ~12min, 5s→killed ~38min.
+  private let liveActivityUpdateInterval: Int = 15
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -434,10 +437,10 @@ class LiveActivityModule: NSObject {
 
   // MARK: - Countdown timer
 
-  /// Ticks every second to update remainingSeconds for in-app display only.
-  /// Live Activity uses Text(timerInterval:) for OS-native countdown — no
-  /// activity.update() calls needed during normal countdown.
+  /// Ticks every second to keep remainingSeconds current for in-app display
+  /// and calls activity.update() every 15s to refresh the Live Activity.
   private func startCountdownTimer() {
+    liveActivityUpdateCounter = 0
     countdownTimer?.cancel()
     let timer = DispatchSource.makeTimerSource(queue: .main)
     timer.schedule(deadline: .now() + 1.0, repeating: 1.0)
@@ -469,8 +472,19 @@ class LiveActivityModule: NSObject {
 
     guard changed else { return }
 
-    // No activity.update() here — Live Activity uses Text(timerInterval:) for
-    // OS-native per-second countdown. Only user actions trigger updates.
+    // Update Live Activity every 15s to refresh the static countdown text.
+    // Text(timerInterval:countsDown:) crashes the widget extension on iOS 26,
+    // so we use static text that needs periodic refreshes.
+    liveActivityUpdateCounter += 1
+    if #available(iOS 16.2, *), liveActivityUpdateCounter >= liveActivityUpdateInterval {
+      liveActivityUpdateCounter = 0
+      let state = buildContentState()
+      Task {
+        for activity in Activity<GuidrTimerAttributes>.activities {
+          await activity.update(.init(state: state, staleDate: nil))
+        }
+      }
+    }
 
     // Stop ticking if no running timers remain
     let hasRunning = timerEntries.contains { !$0.isPaused && !$0.isComplete && $0.endDate != nil }

@@ -130,10 +130,10 @@ private struct TimerText: View {
     } else if state.isPaused {
       Text(formatTime(state.remainingSeconds))
         .foregroundColor(.orange)
-    } else if let endDate = state.timerEndDate, endDate > Date() {
-      // OS-native countdown: ticks every second without activity.update() calls.
-      // Only updated on user actions (pause/resume/reset/complete).
-      Text(timerInterval: Date()...endDate, countsDown: true)
+    } else if state.remainingSeconds > 0 {
+      // Static text updated every 15s via activity.update() from LiveActivityModule.
+      // Text(timerInterval:countsDown:) crashes the widget extension on iOS 26.
+      Text(formatTime(state.remainingSeconds))
         .foregroundColor(progressColor(state: state))
         .monospacedDigit()
     } else {
