@@ -1,3 +1,9 @@
+## [1.85.8](https://github.com/stevendejongnl/guidr/compare/v1.85.7...v1.85.8) (2026-03-17)
+
+### Bug Fixes
+
+* **widget:** revert LA to static text + 15s periodic updates ([14bf29a](https://github.com/stevendejongnl/guidr/commit/14bf29a8a1a29ac42cc220cdc7062d55f8e7a81a))
+
 ## [1.85.7](https://github.com/stevendejongnl/guidr/compare/v1.85.6...v1.85.7) (2026-03-17)
 
 ### Bug Fixes
