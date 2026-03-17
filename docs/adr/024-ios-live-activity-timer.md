@@ -89,4 +89,20 @@ Additionally, passing `staleDate: soonestRunningEndDate()` on every update told 
 
 **Trade-off**: The countdown display updates every 15s instead of every second, so displayed time may be up to 15s ahead of actual. Pause/resume/complete events still update immediately.
 
+### Xcode Downgrade to 16.2 — Native Timer APIs Restored (2026-03-17)
+
+**Discovery**: All auto-updating SwiftUI Text APIs (`Text(timerInterval:countsDown:)`, `Text(_, style: .timer)`, `ProgressView(timerInterval:)`) crash the widget extension only when compiled with **Xcode 26** (iOS 26 SDK). Apps compiled with older Xcode versions (e.g., Xcode 15.1) work fine on iOS 26 devices due to SDK-linked backwards compatibility — the runtime uses a legacy code path for binaries built against older SDKs.
+
+**Decision**: Downgrade from Xcode 26 to Xcode 16.2 for building the iOS app. Since the app is in TestFlight (internal testing) status, there is no App Store compatibility constraint requiring the latest Xcode/SDK.
+
+**Changes**:
+1. **Deployment target**: iOS 26.0 → iOS 16.2 (Podfile + project.pbxproj)
+2. **CI runners**: `macos-26` → `macos-15` (which has Xcode 16.x pre-installed)
+3. **Live Activity**: Restored `Text(timerInterval:countsDown:)` for OS-native per-second countdown
+4. **Live Activity**: Restored `ProgressView(timerInterval:)` for OS-native animated progress bar
+5. **Home Widget**: Same native timer APIs, simplified timeline to just 2 entries (current + completion)
+6. **LiveActivityModule**: Removed 15s throttled `activity.update()` — no longer needed since the OS renders the countdown natively
+
+**Trade-off**: Building against iOS 16.2 SDK means iOS 26-specific APIs (Liquid Glass, etc.) are unavailable. This is acceptable for the current TestFlight-only phase. When Apple fixes the Xcode 26 SDK regression, we can upgrade back.
+
 See `docs/debugging/widget-live-activity-history.md` for the full history of approaches tried.

@@ -85,35 +85,15 @@ enum TimelineBuilder {
     }
 
     let soonestEnd = running.compactMap(\.endDate).min()!
-    let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
-    let now = baseEntry.date
 
-    // Pre-generate the FULL timeline upfront — iOS has a limited widget reload
-    // budget and may never call getTimeline again after the first 1-2 calls.
-    // Multi-granularity: per-second while fresh, per-minute for the long tail.
-    let perSecondLimit = min(secondsLeft, 120)  // per-second for first 2 minutes
-    var entries: [HomeWidgetEntry] = []
+    // With native Text(timerInterval:countsDown:), the OS renders the countdown
+    // automatically. No more per-second entries needed — just current state +
+    // completion state. Compiled with Xcode 16.2 (older SDK) to avoid the
+    // Xcode 26 SDK-linked crash in auto-updating Text/ProgressView APIs.
+    var entries: [HomeWidgetEntry] = [baseEntry]
+    let completionEntries = adjust(baseEntry.entries, at: soonestEnd)
+    entries.append(HomeWidgetEntry(date: soonestEnd, entries: completionEntries, updatedAt: baseEntry.updatedAt))
 
-    // Phase 1: per-second entries (0 .. perSecondLimit)
-    for i in 0...perSecondLimit {
-      let entryDate = now.addingTimeInterval(Double(i))
-      let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
-      entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
-    }
-
-    // Phase 2: per-minute entries (after perSecondLimit .. end)
-    if secondsLeft > perSecondLimit {
-      let remainingAfterPerSecond = secondsLeft - perSecondLimit
-      let minuteEntries = Int(ceil(Double(remainingAfterPerSecond) / 60.0))
-      for i in 1...minuteEntries {
-        let offset = Double(perSecondLimit) + Double(i) * 60.0
-        let entryDate = now.addingTimeInterval(offset)
-        let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
-        entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
-      }
-    }
-
-    // Refresh after the full timeline expires (fallback if iOS has budget left)
     let refreshDate = soonestEnd.addingTimeInterval(5)
     return TimelineResult(entries: entries, refreshDate: refreshDate)
   }

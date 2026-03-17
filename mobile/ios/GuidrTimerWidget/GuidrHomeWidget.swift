@@ -211,12 +211,14 @@ private struct TimerCountdownText: View {
       } else if timer.isPaused {
         Text(homeFormatTime(timer.remainingSeconds))
           .foregroundColor(.orange)
-      } else {
-        // Use remainingSeconds directly — accurate because timeline entries are per-second.
-        // TimelineView(.periodic) does NOT re-render per-second in widget context on iOS 26.
-        Text(homeFormatTime(timer.remainingSeconds))
+      } else if let endDate = timer.endDate, endDate > Date() {
+        Text(timerInterval: Date()...endDate, countsDown: true)
           .foregroundColor(homeProgressColor(timer: timer))
           .monospacedDigit()
+      } else {
+        Text("Done")
+          .foregroundColor(.green)
+          .fontWeight(.semibold)
       }
     }
     .contentTransitionIdentity()
@@ -232,8 +234,11 @@ private struct HomeProgressView: View {
       if allComplete || timer.isComplete {
         ProgressView(value: 1.0, total: 1.0)
           .tint(.green)
+      } else if let endDate = timer.endDate {
+        let startDate = endDate.addingTimeInterval(-Double(timer.totalDurationSeconds))
+        ProgressView(timerInterval: startDate...endDate) { Text("") } currentValueLabel: { Text("") }
+          .tint(homeProgressColor(timer: timer))
       } else {
-        // Use remainingSeconds directly — accurate because timeline entries are per-second.
         ProgressView(value: homeStaticProgress(timer: timer), total: 1.0)
           .tint(homeProgressColor(timer: timer))
       }

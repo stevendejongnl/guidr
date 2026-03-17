@@ -16,7 +16,7 @@
     "preandroid": "node ../scripts/copy-config.js",
     "preios": "node ../scripts/copy-config.js",
     "start": "npm run prebuild && react-native start",
-    "prebuild": "npm run build --workspace=shared",
+    "prebuild": "npm run build --prefix ../shared",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

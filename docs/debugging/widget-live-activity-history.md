@@ -67,22 +67,45 @@ Institutional knowledge documenting all attempts, failures, and successes with i
 | `98f473a` | **FAILURE**: Text(_, style: .timer) also crashes, throttle activity.update() to 30s — timer jumps every 30s on Live Activity |
 | `9519bb8` | add TimelineView(.periodic) for smooth countdown + per-minute entries for home widget — **FAILURE**: TimelineView doesn't re-render per-second in widget/LA context |
 
+## Phase 7: Xcode 16.2 Downgrade — Native Timer APIs Restored (2026-03-17)
+
+**Root cause identified**: The crash in `Text(timerInterval:countsDown:)`, `Text(_, style: .timer)`, and `ProgressView(timerInterval:)` is an **Xcode 26 SDK-linked regression**, not a deployment target issue. iOS 26 provides backwards-compatible behavior for binaries compiled with older SDKs — the runtime uses a legacy code path that works correctly. Mobileraker (compiled with Xcode 15.1) uses these APIs successfully on iOS 26.
+
+**Solution**: Downgrade from Xcode 26 to Xcode 16.2, compiling against the iOS 16.2 SDK. This enables all native auto-updating SwiftUI APIs.
+
+| Change | Description |
+|--------|-------------|
+| Podfile + pbxproj | deployment target 26.0 → 16.2 |
+| CI workflows | `macos-26` → `macos-15` runners (Xcode 16.x pre-installed) |
+| `GuidrTimerWidgetLiveActivity.swift` | Restored `Text(timerInterval:countsDown:)` + `ProgressView(timerInterval:)` for LA |
+| `GuidrHomeWidget.swift` | Restored `Text(timerInterval:countsDown:)` + `ProgressView(timerInterval:)` for home widget |
+| `TimerFormatting.swift` | Simplified timeline to 2 entries (current + completion) — OS handles countdown |
+| `LiveActivityModule.swift` | Removed 15s throttled `activity.update()` — no longer needed |
+
+**Result**: Per-second countdown rendered natively by the OS in both widget and Live Activity. No periodic updates needed. No hybrid timeline needed. Eliminates all workarounds from Phases 4-6.
+
 ## Key Learnings
 
 ### What CRASHES on iOS 26 Widget Extension
 
-1. **`Text(timerInterval:countsDown:)`** — GeometryReader EXC_BREAKPOINT crash
+1. **`Text(timerInterval:countsDown:)`** — GeometryReader EXC_BREAKPOINT crash. Mobileraker uses this API successfully because their binary is compiled with **Xcode 15.1** (iOS 18 SDK). iOS 26 provides backwards-compatible behavior for binaries compiled with older SDKs. When compiled with **Xcode 26** (iOS 26 SDK), the runtime uses a new (buggy) code path that crashes. Tested with deployment targets 16.2 and 26.0 — both crash. **This is an Xcode 26 SDK-linked regression**, not a deployment target issue. Will be fixed when Apple patches the bug.
 2. **`Text(_, style: .timer)`** — Same crash mechanism
-3. **`ProgressView(timerInterval:)`** — Same crash mechanism
-4. **`supplementalActivityFamilies`** — Broke iPhone 13 rendering
+3. **`Text(date, style: .relative)`** — Also crashes (tested 2026-03-17)
+4. **`ProgressView(timerInterval:)`** — Same crash mechanism
+5. **`supplementalActivityFamilies`** — Broke iPhone 13 rendering
 
 ### What DOES NOT WORK (no crash, just broken)
 
-4. **`TimelineView(.periodic(from: .now, by: 1.0))`** — Does NOT re-render per-second in widget/LA contexts on iOS 26. Timer appears frozen.
+6. **`TimelineView(.periodic(from: .now, by: 1.0))`** — Does NOT re-render per-second in widget/LA contexts on iOS 26. Timer appears frozen.
+7. **`activity.update()` every 1s** — iOS kills the Live Activity within 1 minute due to excessive update overhead (watchdog + widget extension re-render per update).
+8. **Full per-second widget timeline** — 3600 entries = 18MB timeline archive. iOS rejects with "too large timeline archive" error.
+9. **Rolling window widget timeline** — iOS exhausts its widget reload budget after 1-2 `getTimeline` calls and never calls again. Window expires, widget freezes.
 
 ### What WORKS
 
-5. **`activity.update()` every 15s** — Use static text + periodic updates at 15s intervals (~240/hr). Tested: 1s → killed after ~12min, 5s → killed after ~38min, **15s → stable**. Display jumps by up to 15s but LA stays alive. `Text(timerInterval:countsDown:)` was retested (v1.85.7) and still crashes the widget extension (<2s dismissal) — not an iOS 26 beta regression, confirmed persistent.
-6. **Widget timeline strategy** — Rolling windows (60 or 240 entries) fail because iOS exhausts its widget reload budget after 1-2 `getTimeline` calls and never calls again. **Pre-generate the full timeline upfront**: per-second for first 2 min (121 entries) + per-minute for the rest. A 60-min timer = ~179 entries total.
-7. **`saveWidgetState` before `Activity.request`** — Required on iOS 26 to prevent instant dismissal.
-8. **Static text + static ProgressView** — Required for both home widget and Live Activity on iOS 26. All auto-updating view APIs (`Text(timerInterval:)`, `ProgressView(timerInterval:)`, `Text(_, style: .timer)`) crash the widget extension.
+10. **`activity.update()` every 15s** — Use static text + periodic updates at 15s intervals. Tested: 1s → killed <1min, 5s → killed ~38min, **15s → stable**. Display jumps by up to 15s but LA stays alive. Only updates while app is in foreground (DispatchSourceTimer suspended when backgrounded).
+11. **Hybrid widget timeline** — Per-second for first 5 min (300 entries) + per-minute on :00 boundaries for middle + per-second for last 5 min (300 entries). 60-min timer ≈ 650 entries (~3.3MB). Timers ≤10 min are all per-second.
+12. **`saveWidgetState` before `Activity.request`** — Required on iOS 26 to prevent instant dismissal.
+13. **Static text + static ProgressView** — Required for both home widget and Live Activity on iOS 26. ALL auto-updating view APIs crash the widget extension.
+14. **Widget reload from foreground tick** — Calling `reloadTimelines` every 15s from the foreground tick handler gives the widget fresh per-second entries while the app is open.
+15. **Xcode 16.2 downgrade** — Compiling with Xcode 16.2 (iOS 16.2 SDK) instead of Xcode 26 enables all native auto-updating Text/ProgressView APIs. The crash is SDK-linked: iOS 26 provides backwards-compatible behavior for binaries built with older SDKs. See Phase 7.
