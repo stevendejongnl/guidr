@@ -1,3 +1,9 @@
+## [1.85.6](https://github.com/stevendejongnl/guidr/compare/v1.85.5...v1.85.6) (2026-03-17)
+
+### Bug Fixes
+
+* **widget:** pre-generate full timeline and throttle LA updates to 15s ([ffa5cd0](https://github.com/stevendejongnl/guidr/commit/ffa5cd06cddd9b94d59c939d0b8323fd801ac93b))
+
 ## [1.85.5](https://github.com/stevendejongnl/guidr/compare/v1.85.4...v1.85.5) (2026-03-17)
 
 ### Bug Fixes
