@@ -66,16 +66,16 @@ class TimelineProviderTests: XCTestCase {
       updatedAt: now
     )
     let result = TimelineBuilder.buildTimeline(from: baseEntry)
-    // batchSize = min(30, 60) = 30, entries = 0...30 = 31
+    // windowSize = min(30, 240) = 30, entries = 0...30 = 31
     XCTAssertEqual(result.entries.count, 31)
     // First entry has 30s remaining, last has 0s
     XCTAssertEqual(result.entries.first?.entries.first?.remainingSeconds, 30)
     XCTAssertEqual(result.entries.last?.entries.first?.remainingSeconds, 0)
-    // Refresh after batch
-    XCTAssertEqual(result.refreshDate.timeIntervalSince(now), 31, accuracy: 1.0)
+    // Refresh 30s before window runs out: max(1, 30-30) = 1
+    XCTAssertEqual(result.refreshDate.timeIntervalSince(now), 1, accuracy: 1.0)
   }
 
-  func testBatchCappedAtSixtyEntries() {
+  func testLongTimerUsesPerSecondEntries() {
     let now = Date()
     let endDate = now.addingTimeInterval(120)
     let baseEntry = HomeWidgetEntry(
@@ -84,10 +84,39 @@ class TimelineProviderTests: XCTestCase {
       updatedAt: now
     )
     let result = TimelineBuilder.buildTimeline(from: baseEntry)
-    // batchSize = min(120, 60) = 60, entries = 0...60 = 61
-    XCTAssertEqual(result.entries.count, 61)
+    // windowSize = min(120, 240) = 120, entries = 0...120 = 121
+    XCTAssertEqual(result.entries.count, 121)
     XCTAssertEqual(result.entries.first?.entries.first?.remainingSeconds, 120)
-    XCTAssertEqual(result.entries.last?.entries.first?.remainingSeconds, 60)
+    // Last entry at t=120s should have 0s remaining
+    XCTAssertEqual(result.entries.last?.entries.first?.remainingSeconds, 0)
+    // Refresh 30s before window runs out: max(1, 120-30) = 90
+    XCTAssertEqual(result.refreshDate.timeIntervalSince(now), 90, accuracy: 1.0)
+  }
+
+  func testLongTimerRefreshDateIs30sBeforeWindowEnd() {
+    let now = Date()
+    let endDate = now.addingTimeInterval(300) // 5 minutes
+    let baseEntry = HomeWidgetEntry(
+      date: now,
+      entries: [makeTimer(remaining: 300, endDate: endDate, isPaused: false, isComplete: false)],
+      updatedAt: now
+    )
+    let result = TimelineBuilder.buildTimeline(from: baseEntry)
+    // windowSize = min(300, 240) = 240, refresh = max(1, 240-30) = 210
+    XCTAssertEqual(result.refreshDate.timeIntervalSince(now), 210, accuracy: 1.0)
+  }
+
+  func testVeryLongTimerCappedAt240SecondEntries() {
+    let now = Date()
+    let endDate = now.addingTimeInterval(3 * 60 * 60) // 3 hours
+    let baseEntry = HomeWidgetEntry(
+      date: now,
+      entries: [makeTimer(remaining: 3 * 60 * 60, endDate: endDate, isPaused: false, isComplete: false)],
+      updatedAt: now
+    )
+    let result = TimelineBuilder.buildTimeline(from: baseEntry)
+    // windowSize = min(10800, 240) = 240, entries = 0...240 = 241
+    XCTAssertEqual(result.entries.count, 241)
   }
 
   func testBatchMarksTimerCompleteWhenRemainingReachesZero() {

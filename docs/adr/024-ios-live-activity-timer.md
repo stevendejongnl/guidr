@@ -74,3 +74,15 @@ Additionally, passing `staleDate: soonestRunningEndDate()` on every update told 
 **Why system-driven Text APIs were not used**: Both `Text(timerInterval:countsDown:)` (commit 13fa1ca) and `Text(_:style:.timer)` (commit ea22de9) crash the widget extension immediately on Live Activity presentation. The crash is in the widget extension process, not the main app — the Live Activity is dismissed within <0.5s. Root cause is unknown (possibly an iOS 26 beta regression or an incompatibility with the `ActivityConfiguration` render context). Static text with periodic updates is the only confirmed stable approach.
 
 **Trade-off**: The countdown display updates every 30s instead of every second, so displayed time may be up to 30s ahead of actual. Pause/resume/complete events still update immediately.
+
+### TimelineView(.periodic) Does Not Work in Widget/LA Context (Fixed)
+
+**Symptom**: After switching from 30s throttled updates to `TimelineView(.periodic(from: .now, by: 1.0))` in both the home widget and Live Activity, timers appeared frozen — only jumping occasionally (~60s for widget, ~30s for LA).
+
+**Root cause**: `TimelineView(.periodic)` does not provide per-second re-renders in widget extension or Live Activity contexts on iOS 26. It works in regular app views but is ineffective in these constrained environments.
+
+**Fix**:
+1. **Home widget**: Removed `TimelineView` from `TimerCountdownText` and `HomeProgressView`. Uses `remainingSeconds` directly from the timeline entry — accurate because the timeline is built with per-second entries (rolling window of 240 entries / 4 minutes, with 30s buffer for iOS to call `getTimeline` again).
+2. **Live Activity**: Removed `TimelineView` from `TimerText` and `TimerProgressView`. Uses `state.remainingSeconds` directly — accurate because `activity.update()` is called every second from a `DispatchSourceTimer` (restored from the approach proven in commit `f7e7fb3`). Foreground `activity.update()` calls are unlimited per Apple docs; background calls may be throttled by iOS.
+
+See `docs/debugging/widget-live-activity-history.md` for the full history of approaches tried.
