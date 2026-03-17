@@ -1,3 +1,9 @@
+## [1.85.5](https://github.com/stevendejongnl/guidr/compare/v1.85.4...v1.85.5) (2026-03-17)
+
+### Bug Fixes
+
+* **widget:** throttle LA updates to 5s and reduce widget window to 60 entries ([df68ae6](https://github.com/stevendejongnl/guidr/commit/df68ae69f20e23b338ee6c04c424892123a1b200))
+
 ## [1.85.4](https://github.com/stevendejongnl/guidr/compare/v1.85.3...v1.85.4) (2026-03-16)
 
 ### Bug Fixes
