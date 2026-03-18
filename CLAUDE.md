@@ -98,7 +98,7 @@ Custom Claude Code skills for workflow acceleration:
 
 ## Build & Deploy
 **Android**: Gradle 8.13, Java 17 (NOT 25+), NDK 27.1, SDK 36, Package: com.guidr
-**iOS**: Xcode 26+, minimum deployment target iOS 26.0, Bundle ID: com.guidr, TestFlight internal testing
+**iOS**: Xcode 16.2, minimum deployment target iOS 16.2, Bundle ID: com.guidr, TestFlight internal testing
 **CI**: Lint/test/typecheck → Android APK → iOS simulator | Semantic-release on merge
 
 ## Conventional Commits

@@ -9,7 +9,7 @@ permissions:
 jobs:
   initialize-ios:
     name: Initialize iOS Directory
-    runs-on: macos-26
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
