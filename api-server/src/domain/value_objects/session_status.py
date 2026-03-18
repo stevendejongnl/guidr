@@ -1,9 +1,9 @@
 """Session status value object."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class SessionStatus(str, Enum):
+class SessionStatus(StrEnum):
     """Session status enum.
 
     Represents the possible states of a session.

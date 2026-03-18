@@ -1,6 +1,6 @@
 [project]
 name = "guidr-api-server"
-version = "1.85.4"
+version = "1.85.9"
 description = "API server for Guidr mobile app"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -21,6 +21,7 @@ dependencies = [
     "sentry-sdk[fastapi]>=2.0.0",
     "openai>=1.40.0",
     "cryptography>=46.0.5",
+    "pyasn1>=0.6.3",
 ]
 
 [project.optional-dependencies]

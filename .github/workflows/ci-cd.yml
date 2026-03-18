@@ -262,10 +262,10 @@ jobs:
 
   ios-widget-tests:
     name: iOS Widget Tests (${{ matrix.device }})
-    runs-on: macos-26
+    runs-on: macos-15
     strategy:
       matrix:
-        device: ['iPhone 16e', 'iPhone 17 Pro', 'iPad Air 13-inch (M3)']
+        device: ['iPhone 16 Pro', 'iPhone 16', 'iPad Air 13-inch (M3)']
     steps:
       - uses: actions/checkout@v4
 
@@ -280,7 +280,7 @@ jobs:
 
   ios-build:
     name: iOS Build
-    runs-on: macos-26
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 

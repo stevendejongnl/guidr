@@ -1,6 +1,6 @@
 {
   "name": "guidr",
-  "version": "1.85.4",
+  "version": "1.85.9",
   "private": true,
   "engines": {
     "node": ">=24.11.0",
@@ -16,7 +16,7 @@
     "preandroid": "node ../scripts/copy-config.js",
     "preios": "node ../scripts/copy-config.js",
     "start": "npm run prebuild && react-native start",
-    "prebuild": "npm run build --workspace=shared",
+    "prebuild": "npm run build --prefix ../shared",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

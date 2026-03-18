@@ -1,10 +1,10 @@
 """GuideType value object for predefined guide types."""
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class GuideType(str, Enum):
+class GuideType(StrEnum):
     """Predefined guide types."""
 
     COOKING = "cooking"

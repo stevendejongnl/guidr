@@ -40,7 +40,7 @@ jobs:
         id: widget-tests
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'iOS Widget Tests (iPhone 17 Pro)'
+          checkName: 'iOS Widget Tests'
           ref: ${{ github.sha }}
           timeoutSeconds: 600
           intervalSeconds: 15
