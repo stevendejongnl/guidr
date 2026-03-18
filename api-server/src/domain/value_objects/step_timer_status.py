@@ -1,9 +1,9 @@
 """Step timer status value object."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class StepTimerStatus(str, Enum):
+class StepTimerStatus(StrEnum):
     """Step timer status enum.
 
     Represents the possible states of a step timer.

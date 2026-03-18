@@ -57,10 +57,12 @@ class LiveActivityModule: NSObject {
       NSLog("[LiveActivity] areActivitiesEnabled: %@", activitiesEnabled ? "true" : "false")
       DiagnosticLogger.shared.log("[LiveActivity] areActivitiesEnabled=\(activitiesEnabled)")
 
+      #if !targetEnvironment(simulator)
       guard activitiesEnabled else {
         reject("ACTIVITIES_DISABLED", "Live Activities are disabled. Enable in Settings > Guidr.", nil)
         return
       }
+      #endif
 
       let endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
 
@@ -434,10 +436,9 @@ class LiveActivityModule: NSObject {
 
   // MARK: - Countdown timer
 
-  /// Ticks every second to update remainingSeconds and push Live Activity updates.
-  /// Foreground activity.update() calls are unlimited (Apple docs). Background calls
-  /// may be throttled by iOS but endDate remains correct. Per-second updates were
-  /// proven working in commit f7e7fb3 before being wrongly throttled to 30s.
+  /// Ticks every second to keep remainingSeconds current for in-app display.
+  /// Runs on main queue — only fires while app is in foreground.
+  /// Live Activity uses Text(timerInterval:) for OS-native countdown when available.
   private func startCountdownTimer() {
     countdownTimer?.cancel()
     let timer = DispatchSource.makeTimerSource(queue: .main)
@@ -470,13 +471,9 @@ class LiveActivityModule: NSObject {
 
     guard changed else { return }
 
-    // Update Live Activity every tick so the countdown display stays current.
-    let state = buildContentState()
-    Task {
-      for activity in Activity<GuidrTimerAttributes>.activities where activity.activityState == .active {
-        await activity.update(.init(state: state, staleDate: nil))
-      }
-    }
+    // Native Text(timerInterval:) handles countdown rendering in the LA and widget.
+    // No need to push periodic activity.update() calls — only state changes
+    // (pause/resume/complete) trigger updates.
 
     // Stop ticking if no running timers remain
     let hasRunning = timerEntries.contains { !$0.isPaused && !$0.isComplete && $0.endDate != nil }

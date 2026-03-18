@@ -55,16 +55,15 @@ def _ensure_docker_running(max_wait: int = 30) -> None:
 
 
 def _cleanup_stale_containers() -> None:
-    """Remove stale testcontainers Ryuk reaper that may have broken port mappings."""
-    subprocess.run(
-        ["docker", "rm", "-f"]
-        + subprocess.run(
-            ["docker", "ps", "-aq", "--filter", "ancestor=testcontainers/ryuk"],
+    """Remove stale testcontainers (Ryuk reaper + MongoDB) from previous runs."""
+    for image in ("testcontainers/ryuk", "mongo:7.0"):
+        ids = subprocess.run(
+            ["docker", "ps", "-aq", "--filter", f"ancestor={image}"],
             capture_output=True,
             text=True,
-        ).stdout.split(),
-        capture_output=True,
-    )
+        ).stdout.split()
+        if ids:
+            subprocess.run(["docker", "rm", "-f", *ids], capture_output=True)
 
 
 @pytest.fixture(scope="session")
@@ -82,17 +81,18 @@ def mongo_uri() -> Generator[str, None, None]:
     _ensure_docker_running()
     _cleanup_stale_containers()
 
-    # Retry once if the Ryuk reaper container has stale port mappings.
-    # Catch both ConnectionError and any Docker API error (e.g. 409 Conflict
-    # when a Ryuk container name already exists from a previous test run).
+    # Disable Ryuk reaper to avoid 409 Conflict when container name already
+    # exists from a previous run. We handle cleanup ourselves above.
+    os.environ["TESTCONTAINERS_RYUK_DISABLED"] = "true"
+
+    # Retry once after cleanup if the first container start fails.
     for attempt in range(2):
         try:
             with MongoDbContainer("mongo:7.0") as container:
                 yield f"{container.get_connection_url()}/guidr_test"
                 return
-        except (ConnectionError, Exception) as exc:
-            is_docker_conflict = "409" in str(exc)
-            if attempt == 0 and (isinstance(exc, ConnectionError) or is_docker_conflict):
+        except Exception:
+            if attempt == 0:
                 _cleanup_stale_containers()
             else:
                 raise
