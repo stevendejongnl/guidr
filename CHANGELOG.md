@@ -1,3 +1,37 @@
+## [1.85.9](https://github.com/stevendejongnl/guidr/compare/v1.85.8...v1.85.9) (2026-03-17)
+
+### Bug Fixes
+
+* **security:** accept GHSA-8gc5-j5rx-235r fast-xml-parser in mobile devDeps ([540bc1d](https://github.com/stevendejongnl/guidr/commit/540bc1dd417537dfbf2680cb088acdf0bc0fb261))
+* **security:** upgrade pyasn1, pip; use StrEnum for enum value objects ([bf7821d](https://github.com/stevendejongnl/guidr/commit/bf7821dac6188f3d7e261812265789e07675fcda))
+* **widget:** downgrade to Xcode 16.2 to restore native timer APIs ([8f83045](https://github.com/stevendejongnl/guidr/commit/8f8304511579fe43df171a7e77c0c7f7ac74261f))
+
+## [1.85.8](https://github.com/stevendejongnl/guidr/compare/v1.85.7...v1.85.8) (2026-03-17)
+
+### Bug Fixes
+
+* **widget:** revert LA to static text + 15s periodic updates ([14bf29a](https://github.com/stevendejongnl/guidr/commit/14bf29a8a1a29ac42cc220cdc7062d55f8e7a81a))
+
+## [1.85.7](https://github.com/stevendejongnl/guidr/compare/v1.85.6...v1.85.7) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** use Mac Catalyst for widget tests on macos-26 runner ([0ad7830](https://github.com/stevendejongnl/guidr/commit/0ad78307fb71d836e2597554ed7b7f0586f3cf49))
+* **ci:** use macos-15 runner with iOS Simulator for widget tests ([bbad71e](https://github.com/stevendejongnl/guidr/commit/bbad71ea9dc4bf3e6e36442dbb75a17b3cfd58a1))
+* **widget:** use Text(timerInterval:) for LA countdown, stop periodic updates ([eb9875d](https://github.com/stevendejongnl/guidr/commit/eb9875da52a45f6bc84143df4a8fc4ae35b2bcc9))
+
+## [1.85.6](https://github.com/stevendejongnl/guidr/compare/v1.85.5...v1.85.6) (2026-03-17)
+
+### Bug Fixes
+
+* **widget:** pre-generate full timeline and throttle LA updates to 15s ([ffa5cd0](https://github.com/stevendejongnl/guidr/commit/ffa5cd06cddd9b94d59c939d0b8323fd801ac93b))
+
+## [1.85.5](https://github.com/stevendejongnl/guidr/compare/v1.85.4...v1.85.5) (2026-03-17)
+
+### Bug Fixes
+
+* **widget:** throttle LA updates to 5s and reduce widget window to 60 entries ([df68ae6](https://github.com/stevendejongnl/guidr/commit/df68ae69f20e23b338ee6c04c424892123a1b200))
+
 ## [1.85.4](https://github.com/stevendejongnl/guidr/compare/v1.85.3...v1.85.4) (2026-03-16)
 
 ### Bug Fixes

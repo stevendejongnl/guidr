@@ -85,21 +85,16 @@ enum TimelineBuilder {
     }
 
     let soonestEnd = running.compactMap(\.endDate).min()!
-    let secondsLeft = max(1, Int(ceil(soonestEnd.timeIntervalSince(baseEntry.date))))
-    let now = baseEntry.date
 
-    // Per-second entries, capped at 240 (4 minutes rolling window).
-    // iOS calls getTimeline again before the window expires thanks to the
-    // 30s buffer in the refresh date.
-    let windowSize = min(secondsLeft, 240)
-    var entries: [HomeWidgetEntry] = []
-    for i in 0...windowSize {
-      let entryDate = now.addingTimeInterval(Double(i))
-      let adjustedEntries = adjust(baseEntry.entries, at: entryDate)
-      entries.append(HomeWidgetEntry(date: entryDate, entries: adjustedEntries, updatedAt: baseEntry.updatedAt))
-    }
-    // Refresh 30s before the window runs out so iOS has time to call getTimeline again
-    let refreshDate = now.addingTimeInterval(Double(max(1, windowSize - 30)))
+    // With native Text(timerInterval:countsDown:), the OS renders the countdown
+    // automatically. No more per-second entries needed — just current state +
+    // completion state. Compiled with Xcode 16.2 (older SDK) to avoid the
+    // Xcode 26 SDK-linked crash in auto-updating Text/ProgressView APIs.
+    var entries: [HomeWidgetEntry] = [baseEntry]
+    let completionEntries = adjust(baseEntry.entries, at: soonestEnd)
+    entries.append(HomeWidgetEntry(date: soonestEnd, entries: completionEntries, updatedAt: baseEntry.updatedAt))
+
+    let refreshDate = soonestEnd.addingTimeInterval(5)
     return TimelineResult(entries: entries, refreshDate: refreshDate)
   }
 
