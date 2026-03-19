@@ -1,3 +1,9 @@
+## [1.85.10](https://github.com/stevendejongnl/guidr/compare/v1.85.9...v1.85.10) (2026-03-18)
+
+### Bug Fixes
+
+* **widget:** revert to static text — SDK-linkage theory disproved ([18bc6ea](https://github.com/stevendejongnl/guidr/commit/18bc6ea92f73c9673bce3eeb936bb7250d49552c))
+
 ## [1.85.9](https://github.com/stevendejongnl/guidr/compare/v1.85.8...v1.85.9) (2026-03-17)
 
 ### Bug Fixes
