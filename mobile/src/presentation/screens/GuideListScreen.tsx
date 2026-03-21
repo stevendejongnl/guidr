@@ -49,7 +49,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterTab, setFilterTab] = useState<'all' | 'mine' | 'public' | 'favorites'>('all')
+  const [filterTab, setFilterTab] = useState<'mine' | 'public' | 'favorites'>('mine')
   const [favoriteGuides, setFavoriteGuides] = useState<Guide[]>([])
 
   const authStorage = injectedAuthStorage || new AuthStorage()
@@ -85,7 +85,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     injectedFavoriteClient || null,
   )
 
-  const loadGuides = useCallback(async (tab: 'all' | 'mine' | 'public' | 'favorites') => {
+  const loadGuides = useCallback(async (tab: 'mine' | 'public' | 'favorites') => {
     try {
       setError(null)
 
@@ -145,7 +145,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
     await loadGuides(filterTab)
   }
 
-  const handleFilterTabChange = (tab: 'all' | 'mine' | 'public' | 'favorites') => {
+  const handleFilterTabChange = (tab: 'mine' | 'public' | 'favorites') => {
     setFilterTab(tab)
   }
 
@@ -213,21 +213,6 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
 
         {/* Filter Tabs */}
         <View style={styles.filterTabs}>
-          <TouchableOpacity
-            style={[
-              styles.filterTab,
-              filterTab === 'all' && styles.filterTabActive,
-            ]}
-            onPress={() => handleFilterTabChange('all')}
-            testID="filter-tab-all"
-          >
-            <Text style={[
-              styles.filterTabText,
-              filterTab === 'all' && styles.filterTabTextActive,
-            ]}>
-              All
-            </Text>
-          </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.filterTab,

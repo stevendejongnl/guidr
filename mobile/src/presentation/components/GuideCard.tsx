@@ -100,9 +100,16 @@ export const GuideCard: React.FC<GuideCardProps> = ({
 
       {/* Metadata */}
       <View style={styles.metadata}>
-        <Text style={styles.metadataText}>{guide.stepCount} steps</Text>
-        <Text style={styles.metadataText}>{durationDisplay}</Text>
-        <Text style={styles.metadataText}>{guide.guideTypeLabel}</Text>
+        <View style={styles.metadataLeft}>
+          <Text style={styles.metadataText}>{guide.stepCount} steps</Text>
+          <Text style={styles.metadataText}>{durationDisplay}</Text>
+          <Text style={styles.metadataText}>{guide.guideTypeLabel}</Text>
+        </View>
+        {guide.createdByName && (
+          <Text style={styles.authorText} testID={`${testID}:author`}>
+            {guide.createdByName}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   )
@@ -177,11 +184,22 @@ const styles = StyleSheet.create({
   },
   metadata: {
     flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  metadataLeft: {
+    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+    flex: 1,
   },
   metadataText: {
     fontSize: typography.sizeSm,
     color: colors.textSecondary,
+  },
+  authorText: {
+    fontSize: typography.sizeSm,
+    color: colors.textSecondary,
+    textAlign: 'right',
   },
 })

@@ -124,49 +124,27 @@ describe('GuideListScreen', () => {
     expect(mockOnCreateGuide).toHaveBeenCalled()
   })
 
-  it('defaults to "All" tab regardless of isAdmin', () => {
+  it('defaults to "My Guides" tab', () => {
     const { getByTestId } = render(
       <GuideListScreen
         onCreateGuide={mockOnCreateGuide}
         onEditGuide={mockOnEditGuide}
         onViewGuide={mockOnViewGuide}
         onBack={mockOnBack}
-        isAdmin={true}
         guideService={mockGuideService}
         authStorage={mockAuthStorage}
         serverConfigStorage={mockServerConfigStorage}
       />
     )
-    const allTab = getByTestId('filter-tab-all')
-    expect(allTab.props['style']).toEqual(
+    const mineTab = getByTestId('filter-tab-mine')
+    expect(mineTab.props['style']).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ backgroundColor: expect.any(String) }),
       ])
     )
   })
 
-  it('defaults to "All" tab when isAdmin is false', () => {
-    const { getByTestId } = render(
-      <GuideListScreen
-        onCreateGuide={mockOnCreateGuide}
-        onEditGuide={mockOnEditGuide}
-        onViewGuide={mockOnViewGuide}
-        onBack={mockOnBack}
-        isAdmin={false}
-        guideService={mockGuideService}
-        authStorage={mockAuthStorage}
-        serverConfigStorage={mockServerConfigStorage}
-      />
-    )
-    const allTab = getByTestId('filter-tab-all')
-    expect(allTab.props['style']).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ backgroundColor: expect.any(String) }),
-      ])
-    )
-  })
-
-  it('calls getAllGuides on initial load (All tab)', async () => {
+  it('calls getMyGuides on initial load (My Guides tab)', async () => {
     render(
       <GuideListScreen
         onCreateGuide={mockOnCreateGuide}
@@ -180,9 +158,8 @@ describe('GuideListScreen', () => {
     )
 
     await waitFor(() => {
-      expect(mockGuideService.getAllGuides).toHaveBeenCalledWith('test-token')
+      expect(mockGuideService.getMyGuides).toHaveBeenCalledWith('test-token')
     })
-    expect(mockGuideService.getMyGuides).not.toHaveBeenCalled()
   })
 
   it('calls getMyGuides when Mine tab is selected', async () => {
@@ -218,7 +195,7 @@ describe('GuideListScreen', () => {
     })
   })
 
-  it('calls getAllGuides when switching back to All tab', async () => {
+  it('calls getAllGuides when switching to Public tab', async () => {
     const { getByTestId } = render(
       <GuideListScreen
         onCreateGuide={mockOnCreateGuide}
@@ -231,16 +208,7 @@ describe('GuideListScreen', () => {
       />
     )
 
-    // Switch to Mine
-    fireEvent.press(getByTestId('filter-tab-mine'))
-    await waitFor(() => {
-      expect(mockGuideService.getMyGuides).toHaveBeenCalled()
-    })
-
-    mockGuideService.getAllGuides.mockClear()
-
-    // Switch back to All
-    fireEvent.press(getByTestId('filter-tab-all'))
+    fireEvent.press(getByTestId('filter-tab-public'))
     await waitFor(() => {
       expect(mockGuideService.getAllGuides).toHaveBeenCalledWith('test-token')
     })

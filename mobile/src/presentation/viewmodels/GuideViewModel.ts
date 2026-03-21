@@ -11,6 +11,7 @@ export interface GuideViewModel {
   createdAt: Date
   updatedAt: Date
   createdByUserId: string | undefined
+  createdByName?: string
   isPublic: boolean
   isHighlighted: boolean
 
@@ -48,6 +49,10 @@ export function createGuideViewModel(guide: Guide): GuideViewModel {
 
   if (guide.description !== undefined) {
     vm.description = guide.description
+  }
+
+  if (guide.createdByName !== undefined) {
+    vm.createdByName = guide.createdByName
   }
 
   if (guide.totalDuration !== undefined && guide.totalDuration > 0) {
