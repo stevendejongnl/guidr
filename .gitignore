@@ -65,9 +65,9 @@ mobile/ios/.xcode.env.local
 # Python API server
 api-server/venv/
 api-server/.venv/
-api-server/__pycache__/
-api-server/**/__pycache__/
-api-server/*.pyc
+__pycache__/
+**/__pycache__/
+*.pyc
 api-server/.pytest_cache/
 
 # Sentry
