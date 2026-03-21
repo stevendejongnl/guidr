@@ -16,7 +16,6 @@ export interface GuideViewModel {
 
   // UI-specific fields
   guideTypeLabel: string
-  thumbnailEmoji: string
 
   // Future features (currently optional)
   duration?: number
@@ -27,28 +26,6 @@ export interface GuideViewModel {
   status?: 'completed' | 'in-progress' | 'paused' | 'not-started'
 }
 
-/**
- * Generate a consistent emoji for a guide title based on hash
- */
-function generateThumbnailEmoji(title: string): string {
-  const emojis = [
-    '📚', '🎓', '🧑‍🎓', '📖', '✏️', '📝', '📋', '🎯', '🏆', '⭐',
-    '🔥', '💡', '🌟', '🎨', '🎭', '🎬', '🎪', '🎸', '🎹', '🎺',
-    '🏃', '🧘', '🏋️', '⚽', '🏀', '🎾', '🏐', '🏈', '⛳', '🏊',
-    '👨‍💻', '👩‍💻', '👨‍🍳', '👩‍🍳', '👨‍🔧', '👩‍🔧', '🚀', '✈️', '🚁', '🚂',
-  ]
-
-  // Simple hash function based on title
-  let hash = 0
-  for (let i = 0; i < title.length; i++) {
-    const char = title.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash // Convert to 32bit integer
-  }
-
-  const index = Math.abs(hash) % emojis.length
-  return emojis[index] ?? '📚'
-}
 
 export function createGuideViewModel(guide: Guide): GuideViewModel {
   const guideTypeLabel = GUIDE_TYPE_LABELS[guide.guideType as GuideType] || guide.guideType
@@ -67,7 +44,6 @@ export function createGuideViewModel(guide: Guide): GuideViewModel {
 
     // UI-specific fields
     guideTypeLabel,
-    thumbnailEmoji: generateThumbnailEmoji(guide.title),
   }
 
   if (guide.description !== undefined) {

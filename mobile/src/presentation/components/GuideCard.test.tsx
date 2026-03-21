@@ -12,7 +12,6 @@ describe('GuideCard', () => {
     guideTypeLabel: 'Cooking',
     stepCount: 8,
     duration: 180,
-    thumbnailEmoji: '🍞',
     createdAt: new Date(),
     updatedAt: new Date(),
     createdByUserId: undefined,
@@ -27,14 +26,6 @@ describe('GuideCard', () => {
 
     expect(getByText('Perfect Sourdough Bread')).toBeDefined()
     expect(getByText('Master the art of sourdough with this step-by-step guide to creating artisan bread.')).toBeDefined()
-  })
-
-  it('displays emoji thumbnail', () => {
-    const { getByText } = render(
-      <GuideCard guide={mockGuide} testID="guide-card" />,
-    )
-
-    expect(getByText('🍞')).toBeDefined()
   })
 
   it('shows step count, duration, and guide type metadata', () => {
@@ -74,20 +65,6 @@ describe('GuideCard', () => {
 
     const card = getByTestId('my-guide')
     expect(card).toBeDefined()
-  })
-
-  it('displays different emoji for different guides', () => {
-    const cookingGuide = {
-      ...mockGuide,
-      thumbnailEmoji: '🍳',
-      guideTypeLabel: 'Cooking',
-    }
-
-    const { getByText } = render(
-      <GuideCard guide={cookingGuide} testID="guide-card" />,
-    )
-
-    expect(getByText('🍳')).toBeDefined()
   })
 
   it('renders with image url when provided', () => {
