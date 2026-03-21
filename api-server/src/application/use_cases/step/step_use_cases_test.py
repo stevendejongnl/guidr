@@ -8,6 +8,7 @@ import pytest
 from src.application.dtos import StepCreateDTO, StepUpdateDTO
 from src.application.use_cases.step import (
     CreateStep,
+    DeleteStep,
     GetStepsByGuide,
     UpdateStep,
 )
@@ -109,6 +110,8 @@ class TestCreateStep:
         assert result.order == 1
         assert result.duration == 60
         mock_step_repository.save.assert_called_once()
+        mock_guide_repository.save.assert_called_once_with(sample_guide)
+        assert len(sample_guide.step_ids) == 1
 
     async def test_create_step_by_admin(
         self, mock_step_repository, mock_guide_repository, sample_guide, sample_admin
@@ -264,3 +267,50 @@ class TestUpdateStep:
 
         with pytest.raises(EntityNotFoundException, match="Step not found"):
             await use_case.execute(str(uuid4()), dto, sample_user)
+
+
+class TestDeleteStep:
+    """Tests for DeleteStep use case."""
+
+    async def test_delete_step_removes_from_guide(
+        self, mock_step_repository, mock_guide_repository, sample_step, sample_guide, sample_user
+    ):
+        """Test deleting a step removes it from the guide's stepIds."""
+        sample_guide.add_step(sample_step.id)
+        assert len(sample_guide.step_ids) == 1
+
+        mock_step_repository.find_by_id.return_value = sample_step
+        mock_guide_repository.find_by_id.return_value = sample_guide
+        use_case = DeleteStep(mock_step_repository, mock_guide_repository)
+
+        await use_case.execute(sample_step.id.value, sample_user)
+
+        mock_step_repository.delete.assert_called_once()
+        mock_guide_repository.save.assert_called_once_with(sample_guide)
+        assert len(sample_guide.step_ids) == 0
+
+    async def test_delete_step_not_found(
+        self, mock_step_repository, mock_guide_repository, sample_user
+    ):
+        """Test deleting non-existent step raises EntityNotFoundException."""
+        mock_step_repository.find_by_id.return_value = None
+        use_case = DeleteStep(mock_step_repository, mock_guide_repository)
+
+        with pytest.raises(EntityNotFoundException, match="Step not found"):
+            await use_case.execute(str(uuid4()), sample_user)
+
+    async def test_delete_step_unauthorized(
+        self, mock_step_repository, mock_guide_repository, sample_step, sample_guide
+    ):
+        """Test non-owner cannot delete a step."""
+        other_user = User(
+            id=EntityId(str(uuid4())),
+            email=Email("other@example.com"),
+            password_hash="hashed",
+        )
+        mock_step_repository.find_by_id.return_value = sample_step
+        mock_guide_repository.find_by_id.return_value = sample_guide
+        use_case = DeleteStep(mock_step_repository, mock_guide_repository)
+
+        with pytest.raises(AuthorizationException):
+            await use_case.execute(sample_step.id.value, other_user)
