@@ -1,3 +1,13 @@
+## [1.87.0](https://github.com/stevendejongnl/guidr/compare/v1.86.0...v1.87.0) (2026-03-21)
+
+### Features
+
+* **web:** add audit log admin page ([c94f570](https://github.com/stevendejongnl/guidr/commit/c94f570f51f9fa63324bcb7136d7d07a6e47b351))
+
+### Bug Fixes
+
+* **ci:** resolve iPhone 16 Pro simulator lookup by ID to avoid runner flakiness ([af26b3d](https://github.com/stevendejongnl/guidr/commit/af26b3dbbeb8db5acf29d60ab7509759160008fd))
+
 ## [1.86.0](https://github.com/stevendejongnl/guidr/compare/v1.85.11...v1.86.0) (2026-03-21)
 
 ### Features
