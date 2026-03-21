@@ -1,3 +1,9 @@
+## [1.86.0](https://github.com/stevendejongnl/guidr/compare/v1.85.11...v1.86.0) (2026-03-21)
+
+### Features
+
+* **guides:** remove All tab from guide list and show author name on cards ([ce8b7dc](https://github.com/stevendejongnl/guidr/commit/ce8b7dcad4a9247acf4a793da32976c9a8e8b9dd))
+
 ## [1.85.11](https://github.com/stevendejongnl/guidr/compare/v1.85.10...v1.85.11) (2026-03-21)
 
 ### Bug Fixes
