@@ -35,6 +35,8 @@
 # - GHSA-v9p9-hfj2-hcw8: undici invalid server_max_window_bits unhandled exception (MODERATE, @semantic-release/github dev dep only, not runtime)
 # - GHSA-4992-7rv2-5pvq: undici CRLF injection via upgrade option (HIGH, @semantic-release/github dev dep only, not runtime)
 # - GHSA-phc3-fgpg-7m6h: undici DeduplicationHandler unbounded memory DoS (HIGH, @semantic-release/github dev dep only, not runtime)
+# - GHSA-jp2q-39xq-3w4g: fast-xml-parser entity expansion bypass via DOCTYPE (CRITICAL, @react-native-community/cli dev tool only, same root cause as GHSA-jmr7-xgp7-cmfj)
+# - GHSA-rf6f-7fwh-wjgh: flatted Prototype Pollution via parse() (HIGH, mobile devDependency only, not runtime)
 
 set -e
 
@@ -73,6 +75,8 @@ ACCEPTED_ADVISORIES=(
   "GHSA-v9p9-hfj2-hcw8"
   "GHSA-4992-7rv2-5pvq"
   "GHSA-phc3-fgpg-7m6h"
+  "GHSA-jp2q-39xq-3w4g"
+  "GHSA-rf6f-7fwh-wjgh"
 )
 
 # Run npm audit and capture output
