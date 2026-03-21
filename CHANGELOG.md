@@ -1,3 +1,9 @@
+## [1.85.11](https://github.com/stevendejongnl/guidr/compare/v1.85.10...v1.85.11) (2026-03-21)
+
+### Bug Fixes
+
+* **step:** sync guide stepIds on create and delete ([455fdc3](https://github.com/stevendejongnl/guidr/commit/455fdc3a0e229fa11f9acc3b397431e8148de7e7))
+
 ## [1.85.10](https://github.com/stevendejongnl/guidr/compare/v1.85.9...v1.85.10) (2026-03-18)
 
 ### Bug Fixes
