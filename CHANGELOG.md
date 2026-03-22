@@ -1,3 +1,10 @@
+## [1.88.0](https://github.com/stevendejongnl/guidr/compare/v1.87.0...v1.88.0) (2026-03-22)
+
+### Features
+
+* **mobile:** add background token refresh with auto-logout and split large test files ([60f983d](https://github.com/stevendejongnl/guidr/commit/60f983def7bcef7dbbb7eb6703253d8bd78979fa))
+* **mobile:** add server maintenance screen for 503 responses ([078066f](https://github.com/stevendejongnl/guidr/commit/078066fa06b345c2a522307b82531ef53a25cf01))
+
 ## [1.87.0](https://github.com/stevendejongnl/guidr/compare/v1.86.0...v1.87.0) (2026-03-21)
 
 ### Features
