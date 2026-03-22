@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, View, Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
@@ -40,6 +40,7 @@ import { SessionRepository } from '../../infrastructure/repositories/SessionRepo
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { GuideFavoriteClient } from '../../infrastructure/api/GuideFavoriteClient'
+import { TokenRefreshService } from '../../infrastructure/api/TokenRefreshService'
 import { MaintenanceEventEmitter } from '../../common/MaintenanceEventEmitter'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
@@ -102,6 +103,8 @@ export const AppNavigator: React.FC = () => {
     stepTimerClient: StepTimerClient
     guideFavoriteClient: GuideFavoriteClient
   } | null>(null)
+
+  const tokenRefreshServiceRef = useRef<TokenRefreshService | null>(null)
 
   useEffect(() => {
     const checkConfiguration = async () => {
@@ -225,7 +228,15 @@ export const AppNavigator: React.FC = () => {
         stepTimerClient: new StepTimerClient(serverUrl),
         guideFavoriteClient: new GuideFavoriteClient(serverUrl),
       }
+
+      tokenRefreshServiceRef.current = new TokenRefreshService(
+        new AuthClient(serverUrl),
+        authStorage,
+        serverStorage,
+        handleLogout,
+      )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverUrl])
 
   const handleServerSetupComplete = async () => {
@@ -779,6 +790,9 @@ export const AppNavigator: React.FC = () => {
       {...(servicesRef.current && {
         guideService: servicesRef.current.guide,
         sessionService: servicesRef.current.session,
+      })}
+      {...(tokenRefreshServiceRef.current && {
+        tokenRefreshService: tokenRefreshServiceRef.current,
       })}
     />
   )
