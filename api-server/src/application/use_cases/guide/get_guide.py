@@ -3,22 +3,29 @@
 
 from src.application.dtos import GuideResponseDTO
 from src.application.mappers import GuideMapper
-from src.domain.repositories import IGuideRepository, IStepRepository
+from src.domain.repositories import IGuideRepository, IStepRepository, IUserRepository
 from src.domain.value_objects import EntityId
 
 
 class GetGuide:
     """Use case for getting a guide by ID."""
 
-    def __init__(self, guide_repository: IGuideRepository, step_repository: IStepRepository):
+    def __init__(
+        self,
+        guide_repository: IGuideRepository,
+        step_repository: IStepRepository,
+        user_repository: IUserRepository,
+    ):
         """Initialize use case.
 
         Args:
             guide_repository: Repository for guide persistence
             step_repository: Repository for step persistence (for total duration)
+            user_repository: Repository for user lookup (for author name)
         """
         self._repository = guide_repository
         self._step_repository = step_repository
+        self._user_repository = user_repository
         self._mapper = GuideMapper()
 
     async def _to_dto(self, guide) -> GuideResponseDTO:  # type: ignore[no-untyped-def]
@@ -26,7 +33,14 @@ class GetGuide:
         total_duration = sum(
             s.duration.value for s in steps if s.duration is not None
         ) or None
-        return self._mapper.to_response_dto(guide, total_duration=total_duration)
+        created_by_name: str | None = None
+        if guide.created_by_user_id:
+            author = await self._user_repository.find_by_id(guide.created_by_user_id)
+            if author:
+                created_by_name = author.name
+        return self._mapper.to_response_dto(
+            guide, total_duration=total_duration, created_by_name=created_by_name,
+        )
 
     async def execute(self, guide_id: str, user=None) -> GuideResponseDTO | None:  # type: ignore[no-untyped-def]
         """Get a guide by ID (with visibility check).

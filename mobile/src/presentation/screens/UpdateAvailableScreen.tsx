@@ -40,15 +40,10 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
     return isMandatory ? 'Update Required' : 'Update Available'
   }
 
-  const getIcon = () => {
-    return isMandatory ? '⚠️' : '🚀'
-  }
-
   return (
     <SafeScreen>
       <View style={commonStyles.container}>
         <ScrollView contentContainerStyle={commonStyles.contentCentered}>
-          <Text style={styles.icon}>{getIcon()}</Text>
           <Text style={styles.title}>{getTitle()}</Text>
 
           <View style={styles.versionContainer}>
@@ -107,10 +102,6 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
-  icon: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
-  },
   title: {
     fontSize: typography.sizeXxl,
     fontWeight: typography.weightBold,

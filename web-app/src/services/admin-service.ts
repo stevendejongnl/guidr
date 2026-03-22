@@ -1,5 +1,6 @@
 import { apiClient } from './api-client.js'
 import type { Guide } from '@models/guide.js'
+import type { AuditLog, AuditLogFilters } from '@models/audit-log.js'
 
 export interface UserDto {
   id: string
@@ -57,6 +58,19 @@ export class AdminService {
         userName: user?.name ?? null,
       }
     })
+  }
+
+  async getAuditLogs(filters: AuditLogFilters = {}): Promise<AuditLog[]> {
+    const params = new URLSearchParams()
+    if (filters.userId) params.set('userId', filters.userId)
+    if (filters.resourceType) params.set('resourceType', filters.resourceType)
+    if (filters.resourceId) params.set('resourceId', filters.resourceId)
+    if (filters.startDate) params.set('startDate', filters.startDate)
+    if (filters.endDate) params.set('endDate', filters.endDate)
+    if (filters.limit !== undefined) params.set('limit', String(filters.limit))
+    if (filters.offset !== undefined) params.set('offset', String(filters.offset))
+    const query = params.toString()
+    return apiClient.get<AuditLog[]>(`/audit-logs${query ? `?${query}` : ''}`)
   }
 }
 

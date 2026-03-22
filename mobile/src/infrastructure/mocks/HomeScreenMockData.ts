@@ -33,7 +33,6 @@ export interface MockGuide {
   guideTypeLabel: string
   stepCount: number
   duration: number // minutes
-  thumbnailEmoji: string
   // New fields for enhanced UI
   imageUrl?: string
   rating?: number
@@ -68,7 +67,7 @@ const INTEREST_CATEGORIES = [
 ]
 
 const MOCK_GUIDES: MockGuide[] = [
-  // Baking (🍞)
+  // Baking
   {
     id: 'g1',
     title: 'Perfect Sourdough Bread',
@@ -77,7 +76,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Cooking',
     stepCount: 8,
     duration: 180,
-    thumbnailEmoji: '🍞',
     imageUrl: 'https://picsum.photos/48/48?random=1',
     rating: 4.8,
     ratingCount: 156,
@@ -92,7 +90,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Cooking',
     stepCount: 6,
     duration: 45,
-    thumbnailEmoji: '🍪',
     imageUrl: 'https://picsum.photos/48/48?random=2',
     rating: 4.9,
     ratingCount: 203,
@@ -107,7 +104,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Cooking',
     stepCount: 12,
     duration: 480,
-    thumbnailEmoji: '🥐',
     imageUrl: 'https://picsum.photos/48/48?random=3',
     rating: 4.5,
     ratingCount: 89,
@@ -115,7 +111,7 @@ const MOCK_GUIDES: MockGuide[] = [
     currentStep: 7,
   },
 
-  // Cooking (🍳)
+  // Cooking
   {
     id: 'g4',
     title: 'Thai Green Curry',
@@ -124,7 +120,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Cooking',
     stepCount: 7,
     duration: 60,
-    thumbnailEmoji: '🍲',
     imageUrl: 'https://picsum.photos/48/48?random=4',
     rating: 4.7,
     ratingCount: 124,
@@ -137,7 +132,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Cooking',
     stepCount: 9,
     duration: 90,
-    thumbnailEmoji: '🍣',
     imageUrl: 'https://picsum.photos/48/48?random=5',
     rating: 4.6,
     ratingCount: 98,
@@ -152,13 +146,12 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Cooking',
     stepCount: 8,
     duration: 75,
-    thumbnailEmoji: '🍝',
     imageUrl: 'https://picsum.photos/48/48?random=6',
     rating: 4.8,
     ratingCount: 167,
   },
 
-  // Sports & Fitness (⚽)
+  // Sports & Fitness
   {
     id: 'g7',
     title: 'Basketball Shooting Drills',
@@ -167,7 +160,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Workout',
     stepCount: 10,
     duration: 45,
-    thumbnailEmoji: '🏀',
   },
   {
     id: 'g8',
@@ -177,7 +169,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Workout',
     stepCount: 8,
     duration: 60,
-    thumbnailEmoji: '⚽',
   },
   {
     id: 'g9',
@@ -187,10 +178,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Workout',
     stepCount: 6,
     duration: 45,
-    thumbnailEmoji: '🎾',
   },
 
-  // Workouts (💪)
+  // Workouts
   {
     id: 'g10',
     title: 'HIIT Cardio Workout',
@@ -199,7 +189,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Workout',
     stepCount: 5,
     duration: 30,
-    thumbnailEmoji: '💪',
   },
   {
     id: 'g11',
@@ -209,7 +198,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Workout',
     stepCount: 7,
     duration: 20,
-    thumbnailEmoji: '🏋️',
   },
   {
     id: 'g12',
@@ -219,10 +207,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'Workout',
     stepCount: 12,
     duration: 15,
-    thumbnailEmoji: '🧘',
   },
 
-  // Arts & Crafts (🎨)
+  // Arts & Crafts
   {
     id: 'g13',
     title: 'Watercolor Painting Basics',
@@ -231,7 +218,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 8,
     duration: 90,
-    thumbnailEmoji: '🎨',
   },
   {
     id: 'g14',
@@ -241,7 +227,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 10,
     duration: 120,
-    thumbnailEmoji: '🏺',
   },
   {
     id: 'g15',
@@ -251,10 +236,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 12,
     duration: 180,
-    thumbnailEmoji: '🖌️',
   },
 
-  // DIY & Home Improvement (🔨)
+  // DIY & Home Improvement
   {
     id: 'g16',
     title: 'Build a Wooden Shelving Unit',
@@ -263,7 +247,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 11,
     duration: 180,
-    thumbnailEmoji: '🪵',
   },
   {
     id: 'g17',
@@ -273,7 +256,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 9,
     duration: 240,
-    thumbnailEmoji: '🎨',
   },
   {
     id: 'g18',
@@ -283,10 +265,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 7,
     duration: 45,
-    thumbnailEmoji: '🚰',
   },
 
-  // Beauty & Skincare (💅)
+  // Beauty & Skincare
   {
     id: 'g19',
     title: 'Natural Face Mask Recipes',
@@ -295,7 +276,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 6,
     duration: 30,
-    thumbnailEmoji: '💆',
   },
   {
     id: 'g20',
@@ -305,7 +285,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 8,
     duration: 45,
-    thumbnailEmoji: '💄',
   },
   {
     id: 'g21',
@@ -315,10 +294,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 7,
     duration: 40,
-    thumbnailEmoji: '💁',
   },
 
-  // Music Practice (🎸)
+  // Music Practice
   {
     id: 'g22',
     title: 'Guitar Chord Transitions',
@@ -327,7 +305,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 8,
     duration: 30,
-    thumbnailEmoji: '🎸',
   },
   {
     id: 'g23',
@@ -337,7 +314,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 12,
     duration: 45,
-    thumbnailEmoji: '🎹',
   },
   {
     id: 'g24',
@@ -347,10 +323,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 6,
     duration: 20,
-    thumbnailEmoji: '🎤',
   },
 
-  // Gardening (🌱)
+  // Gardening
   {
     id: 'g25',
     title: 'Grow Tomatoes from Seed',
@@ -359,7 +334,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 10,
     duration: 60,
-    thumbnailEmoji: '🍅',
   },
   {
     id: 'g26',
@@ -369,7 +343,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 8,
     duration: 30,
-    thumbnailEmoji: '♻️',
   },
   {
     id: 'g27',
@@ -379,10 +352,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 6,
     duration: 45,
-    thumbnailEmoji: '🌿',
   },
 
-  // Meditation & Wellness (🧘)
+  // Meditation & Wellness
   {
     id: 'g28',
     title: 'Mindfulness Meditation for Beginners',
@@ -391,7 +363,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 5,
     duration: 15,
-    thumbnailEmoji: '🧘',
   },
   {
     id: 'g29',
@@ -401,7 +372,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 7,
     duration: 25,
-    thumbnailEmoji: '🌬️',
   },
   {
     id: 'g30',
@@ -411,10 +381,9 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 8,
     duration: 20,
-    thumbnailEmoji: '😴',
   },
 
-  // Study & Learning (📚)
+  // Study & Learning
   {
     id: 'g31',
     title: 'Effective Note-Taking Strategies',
@@ -423,7 +392,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 6,
     duration: 30,
-    thumbnailEmoji: '📝',
   },
   {
     id: 'g32',
@@ -433,7 +401,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 9,
     duration: 45,
-    thumbnailEmoji: '📖',
   },
   {
     id: 'g33',
@@ -443,7 +410,6 @@ const MOCK_GUIDES: MockGuide[] = [
     guideTypeLabel: 'General',
     stepCount: 10,
     duration: 60,
-    thumbnailEmoji: '🧠',
   },
 ]
 

@@ -20,8 +20,13 @@ jobs:
       - name: Run widget unit tests
         run: |
           cd mobile/ios
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | grep -v "Plus\|Max" | head -1 | grep -oE '\([A-F0-9-]{36}\)' | tr -d '()')
+          if [ -z "$SIMULATOR_ID" ]; then
+            SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Max" | head -1 | grep -oE '\([A-F0-9-]{36}\)' | tr -d '()')
+          fi
+          echo "Using simulator: $SIMULATOR_ID"
           xcodebuild test \
             -project guidr.xcodeproj \
             -scheme GuidrWidgetTests \
-            -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
             -configuration Debug
