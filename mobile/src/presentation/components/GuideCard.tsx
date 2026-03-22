@@ -51,21 +51,19 @@ export const GuideCard: React.FC<GuideCardProps> = ({
             testID={`${testID}:favorite`}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.favoriteIcon}>{isFavorited ? '❤️' : '🤍'}</Text>
+            <Text style={styles.favoriteIcon}>{isFavorited ? '♥' : '♡'}</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Header with Image/Emoji and Title */}
+      {/* Header with Image and Title */}
       <View style={styles.header}>
-        {guide.imageUrl ? (
+        {guide.imageUrl && (
           <Image
             source={{ uri: guide.imageUrl }}
             style={styles.thumbnail}
             testID={`${testID}:image`}
           />
-        ) : (
-          <Text style={styles.emoji}>{guide.thumbnailEmoji}</Text>
         )}
         <View style={styles.titleSection}>
           <Text style={styles.title}>{guide.title}</Text>
@@ -83,7 +81,7 @@ export const GuideCard: React.FC<GuideCardProps> = ({
       {guide.rating !== undefined && (
         <View style={styles.ratingContainer}>
           <Text style={styles.ratingText}>
-            ⭐ {guide.rating.toFixed(1)} {guide.ratingCount ? `(${guide.ratingCount})` : ''}
+            {guide.rating.toFixed(1)} {guide.ratingCount ? `(${guide.ratingCount})` : ''}
           </Text>
         </View>
       )}
@@ -102,9 +100,16 @@ export const GuideCard: React.FC<GuideCardProps> = ({
 
       {/* Metadata */}
       <View style={styles.metadata}>
-        <Text style={styles.metadataText}>📝 {guide.stepCount} steps</Text>
-        <Text style={styles.metadataText}>⏱ {durationDisplay}</Text>
-        <Text style={styles.metadataText}>🏷️ {guide.guideTypeLabel}</Text>
+        <View style={styles.metadataLeft}>
+          <Text style={styles.metadataText}>{guide.stepCount} steps</Text>
+          <Text style={styles.metadataText}>{durationDisplay}</Text>
+          <Text style={styles.metadataText}>{guide.guideTypeLabel}</Text>
+        </View>
+        {guide.createdByName && (
+          <Text style={styles.authorText} testID={`${testID}:author`}>
+            {guide.createdByName}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   )
@@ -154,11 +159,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     backgroundColor: colors.cardElevated,
   },
-  emoji: {
-    fontSize: 48,
-    marginRight: spacing.lg,
-    marginTop: spacing.xs,
-  },
   titleSection: {
     flex: 1,
   },
@@ -184,11 +184,22 @@ const styles = StyleSheet.create({
   },
   metadata: {
     flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  metadataLeft: {
+    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+    flex: 1,
   },
   metadataText: {
     fontSize: typography.sizeSm,
     color: colors.textSecondary,
+  },
+  authorText: {
+    fontSize: typography.sizeSm,
+    color: colors.textSecondary,
+    textAlign: 'right',
   },
 })

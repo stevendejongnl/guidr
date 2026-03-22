@@ -115,18 +115,6 @@ describe('UpdateAvailableScreen', () => {
     expect(queryByText('Change Server')).toBeNull()
   })
 
-  it('should show rocket icon for optional updates', () => {
-    const { getByText } = render(<UpdateAvailableScreen {...defaultProps} />)
-    expect(getByText('🚀')).toBeTruthy()
-  })
-
-  it('should show warning icon for mandatory updates', () => {
-    const { getByText } = render(
-      <UpdateAvailableScreen {...defaultProps} isMandatory={true} />
-    )
-    expect(getByText('⚠️')).toBeTruthy()
-  })
-
   it('should render without changelog', () => {
     const props = {
       ...defaultProps,
