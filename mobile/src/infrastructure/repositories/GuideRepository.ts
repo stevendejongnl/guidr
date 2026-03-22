@@ -3,6 +3,7 @@ import { IGuideRepository } from '@domain/repositories/IGuideRepository'
 import { EntityCache } from '../storage/EntityCache'
 import { GuideMapper } from '../mappers/GuideMapper'
 import type { GuideDto, GuideCreateRequest, GuideUpdateRequest } from '../api/dtos/GuideDto'
+import { checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 /**
  * HTTP-based implementation of IGuideRepository with AsyncStorage caching.
@@ -51,6 +52,7 @@ export class GuideRepository implements IGuideRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch guide')
       }
@@ -87,6 +89,7 @@ export class GuideRepository implements IGuideRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch guides')
       }
@@ -133,6 +136,7 @@ export class GuideRepository implements IGuideRepository {
       )
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch guides by type')
       }
@@ -241,6 +245,7 @@ export class GuideRepository implements IGuideRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to delete guide')
       }
@@ -278,6 +283,7 @@ export class GuideRepository implements IGuideRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch my guides')
       }
@@ -321,6 +327,7 @@ export class GuideRepository implements IGuideRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch public guides')
       }
@@ -364,6 +371,7 @@ export class GuideRepository implements IGuideRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch highlighted guides')
       }

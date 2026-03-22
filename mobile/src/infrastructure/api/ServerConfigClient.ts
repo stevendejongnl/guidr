@@ -1,4 +1,4 @@
-import { extractErrorMessage } from '../../common/ApiErrorUtils'
+import { extractErrorMessage, checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 export interface ServerConfigResponse {
   minAppVersion: string | null
@@ -33,6 +33,7 @@ export class ServerConfigClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         try {
           const errorData = await response.json()
           throw new Error(extractErrorMessage(errorData, 'Failed to fetch server config'))

@@ -1,4 +1,64 @@
-import { extractErrorMessage, AuthenticationError } from './ApiErrorUtils'
+import { extractErrorMessage, AuthenticationError, ServerMaintenanceError, checkForMaintenanceError } from './ApiErrorUtils'
+import { MaintenanceEventEmitter } from './MaintenanceEventEmitter'
+
+describe('ServerMaintenanceError', () => {
+  it('should be an instance of Error', () => {
+    const error = new ServerMaintenanceError()
+    expect(error).toBeInstanceOf(Error)
+  })
+
+  it('should have name ServerMaintenanceError', () => {
+    const error = new ServerMaintenanceError()
+    expect(error.name).toBe('ServerMaintenanceError')
+  })
+
+  it('should have default message', () => {
+    const error = new ServerMaintenanceError()
+    expect(error.message).toBe('Server is under maintenance')
+  })
+
+  it('should accept custom message', () => {
+    const error = new ServerMaintenanceError('Custom maintenance message')
+    expect(error.message).toBe('Custom maintenance message')
+  })
+
+  it('should be distinguishable from regular Error via instanceof', () => {
+    const maintenanceError = new ServerMaintenanceError()
+    const regularError = new Error('some error')
+    expect(maintenanceError instanceof ServerMaintenanceError).toBe(true)
+    expect(regularError instanceof ServerMaintenanceError).toBe(false)
+  })
+})
+
+describe('checkForMaintenanceError', () => {
+  beforeEach(() => {
+    MaintenanceEventEmitter.setListener(null)
+  })
+
+  it('should throw ServerMaintenanceError on 503', () => {
+    expect(() => checkForMaintenanceError({ status: 503 })).toThrow(ServerMaintenanceError)
+  })
+
+  it('should emit maintenance event on 503', () => {
+    const listener = jest.fn()
+    MaintenanceEventEmitter.setListener(listener)
+    expect(() => checkForMaintenanceError({ status: 503 })).toThrow()
+    expect(listener).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not throw on non-503 status', () => {
+    expect(() => checkForMaintenanceError({ status: 500 })).not.toThrow()
+    expect(() => checkForMaintenanceError({ status: 404 })).not.toThrow()
+    expect(() => checkForMaintenanceError({ status: 401 })).not.toThrow()
+  })
+
+  it('should not emit event on non-503 status', () => {
+    const listener = jest.fn()
+    MaintenanceEventEmitter.setListener(listener)
+    checkForMaintenanceError({ status: 500 })
+    expect(listener).not.toHaveBeenCalled()
+  })
+})
 
 describe('AuthenticationError', () => {
   it('should be an instance of Error', () => {

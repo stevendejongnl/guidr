@@ -23,6 +23,7 @@ import { GuideDetailScreen } from '../screens/GuideDetailScreen'
 import { StepFormScreen } from '../screens/StepFormScreen'
 import { SessionHistoryScreen } from '../screens/SessionHistoryScreen'
 import { AppOutdatedScreen } from '../screens/AppOutdatedScreen'
+import { ServerMaintenanceScreen } from '../screens/ServerMaintenanceScreen'
 import { UpdateAvailableScreen } from '../screens/UpdateAvailableScreen'
 import { UpdateDownloadScreen } from '../screens/UpdateDownloadScreen'
 import { GitHubReleaseClient } from '../../infrastructure/api/GitHubReleaseClient'
@@ -39,6 +40,7 @@ import { SessionRepository } from '../../infrastructure/repositories/SessionRepo
 import { StepRepository } from '../../infrastructure/repositories/StepRepository'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { GuideFavoriteClient } from '../../infrastructure/api/GuideFavoriteClient'
+import { MaintenanceEventEmitter } from '../../common/MaintenanceEventEmitter'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
@@ -81,6 +83,12 @@ export const AppNavigator: React.FC = () => {
   const [editingGuideOwnerId, setEditingGuideOwnerId] = useState<string | null>(null)
   const [editingStepGuideOwnerId, setEditingStepGuideOwnerId] = useState<string | null>(null)
   const [stepsRefreshKey, setStepsRefreshKey] = useState(0)
+  const [serverMaintenance, setServerMaintenance] = useState(false)
+
+  useEffect(() => {
+    MaintenanceEventEmitter.setListener(() => setServerMaintenance(true))
+    return () => MaintenanceEventEmitter.setListener(null)
+  }, [])
 
   const serverStorage = new ServerConfigStorage()
   const authStorage = new AuthStorage()
@@ -473,6 +481,18 @@ export const AppNavigator: React.FC = () => {
       <View style={commonStyles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
+    )
+  }
+
+  if (serverMaintenance) {
+    return (
+      <ServerMaintenanceScreen
+        onRetry={() => setServerMaintenance(false)}
+        onChangeServer={() => {
+          setServerMaintenance(false)
+          setShowServerSetup(true)
+        }}
+      />
     )
   }
 
