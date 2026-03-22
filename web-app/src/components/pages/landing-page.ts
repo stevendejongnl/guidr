@@ -280,8 +280,8 @@ export class LandingPage extends LitElement {
     }
 
     .guide-card .card-icon {
-      font-size: 2.5rem;
       margin-bottom: 1rem;
+      color: var(--card-accent, var(--color-primary));
     }
 
     .guide-card h3 {
@@ -317,8 +317,8 @@ export class LandingPage extends LitElement {
     }
 
     .feature-tile .tile-icon {
-      font-size: 1.75rem;
       margin-bottom: 0.75rem;
+      color: var(--color-primary);
     }
 
     .feature-tile h4 {
@@ -399,8 +399,8 @@ export class LandingPage extends LitElement {
     }
 
     .mobile-cta .phone-icon {
-      font-size: 4rem;
       margin-bottom: 1.5rem;
+      color: var(--color-primary);
     }
 
     .mobile-cta h2 {
@@ -424,6 +424,9 @@ export class LandingPage extends LitElement {
     }
 
     .platform-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
       padding: 0.6rem 1.5rem;
       border: 1px solid var(--color-border);
       border-radius: 999px;
@@ -559,7 +562,7 @@ export class LandingPage extends LitElement {
         <div class="hero-grid-bg"></div>
         <div class="hero-glow"></div>
 
-        <div class="hero-badge">✨ Step-by-step. Every time.</div>
+        <div class="hero-badge">Step-by-step. Every time.</div>
 
         <h1>Master anything with<br><span>guided precision</span></h1>
         <p class="hero-sub">
@@ -573,8 +576,8 @@ export class LandingPage extends LitElement {
         </div>
 
         <div class="app-badges">
-          <div class="app-badge">📱 iOS App</div>
-          <div class="app-badge">🤖 Android App</div>
+          <div class="app-badge"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> iOS App</div>
+          <div class="app-badge"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> Android App</div>
         </div>
       </div>
 
@@ -608,7 +611,7 @@ export class LandingPage extends LitElement {
         </p>
         <div class="guide-cards">
           <div class="guide-card" style="--card-accent: #F97316">
-            <div class="card-icon">🍳</div>
+            <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></div>
             <h3>Cooking</h3>
             <p>
               Document recipes with ingredients, portions, and step timing.
@@ -616,7 +619,7 @@ export class LandingPage extends LitElement {
             </p>
           </div>
           <div class="guide-card" style="--card-accent: #EF4444">
-            <div class="card-icon">💪</div>
+            <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg></div>
             <h3>Workouts</h3>
             <p>
               Structure training sessions with sets, reps, rest periods,
@@ -624,7 +627,7 @@ export class LandingPage extends LitElement {
             </p>
           </div>
           <div class="guide-card" style="--card-accent: #9AF5CF">
-            <div class="card-icon">📋</div>
+            <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></div>
             <h3>General</h3>
             <p>
               Anything else — DIY projects, music practice, study routines.
@@ -640,32 +643,32 @@ export class LandingPage extends LitElement {
         <h2 class="section-title">Everything you need to execute</h2>
         <div class="feature-grid">
           <div class="feature-tile">
-            <div class="tile-icon">⏱️</div>
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <h4>Step timing</h4>
             <p>Assign durations to each step. The app counts down so you stay on track without watching the clock.</p>
           </div>
           <div class="feature-tile">
-            <div class="tile-icon">▶️</div>
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
             <h4>Session management</h4>
             <p>Start, pause, resume, and complete guides. Your progress is saved so you can pick up where you left off.</p>
           </div>
           <div class="feature-tile">
-            <div class="tile-icon">🤖</div>
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3 4 6"/><path d="M19 18l-1 3"/><path d="M3 19l3-1"/><path d="M18 4l3 1"/></svg></div>
             <h4>AI guide generation</h4>
             <p>Describe what you want to do and let AI draft the steps, timing, and metadata for you.</p>
           </div>
           <div class="feature-tile">
-            <div class="tile-icon">🌍</div>
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
             <h4>Multi-language</h4>
             <p>Copy and translate any guide into another language in one tap — great for sharing with others.</p>
           </div>
           <div class="feature-tile">
-            <div class="tile-icon">📱</div>
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
             <h4>Mobile-first</h4>
             <p>Native iOS and Android apps built with React Native for a smooth, responsive experience on any device.</p>
           </div>
           <div class="feature-tile">
-            <div class="tile-icon">🔄</div>
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
             <h4>Synced everywhere</h4>
             <p>Create on the web, execute on mobile. Your guides and sessions stay in sync across all your devices.</p>
           </div>
@@ -704,12 +707,12 @@ export class LandingPage extends LitElement {
       <!-- Mobile App CTA -->
       <div class="mobile-cta">
         <section>
-          <div class="phone-icon">📱</div>
+          <div class="phone-icon"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
           <h2>Take your guides anywhere</h2>
           <p>The Guidr mobile app puts all your guides in your pocket. Cook, work out, or work through any project — hands-free.</p>
           <div class="platform-pills">
-            <div class="platform-pill">📱 iOS</div>
-            <div class="platform-pill">🤖 Android</div>
+            <div class="platform-pill"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> iOS</div>
+            <div class="platform-pill"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> Android</div>
           </div>
         </section>
       </div>
@@ -719,7 +722,7 @@ export class LandingPage extends LitElement {
         <h3>Built in the open</h3>
         <p>Guidr is open source. Browse the code, report issues, or contribute on GitHub.</p>
         <a href="https://github.com/stevendejongnl/guidr" target="_blank" rel="noopener">
-          ⭐ View on GitHub
+          View on GitHub
         </a>
       </div>
 

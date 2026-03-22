@@ -12,6 +12,7 @@ export interface GuideDto {
   createdAt: string // ISO 8601
   updatedAt: string // ISO 8601
   createdByUserId: string | undefined // Optional for backward compatibility
+  createdByName?: string | null
   isPublic: boolean
   isHighlighted: boolean
   language?: string

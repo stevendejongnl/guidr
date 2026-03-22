@@ -4,6 +4,7 @@ export class Guide {
   readonly id: string
   readonly guideType: string
   readonly createdByUserId: string | undefined
+  readonly createdByName: string | undefined
   private _title: string
   private _description: string | undefined
   private _metadata: Record<string, unknown> | undefined
@@ -25,7 +26,8 @@ export class Guide {
     isHighlighted: boolean = false,
     metadata?: Record<string, unknown>,
     language: string = 'en',
-    totalDuration?: number
+    totalDuration?: number,
+    createdByName?: string
   ) {
     if (!id || id.trim() === '') {
       throw new Error('Guide id cannot be empty')
@@ -40,6 +42,7 @@ export class Guide {
     this.id = id
     this.guideType = guideType
     this.createdByUserId = createdByUserId
+    this.createdByName = createdByName
     this._title = title
     this._description = description
     this._metadata = metadata
