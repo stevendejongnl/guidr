@@ -71,5 +71,6 @@ class GuideResponse(BaseModel):
     created_at: str = Field(..., alias="createdAt")
     updated_at: str = Field(..., alias="updatedAt")
     total_duration: int | None = Field(default=None, alias="totalDuration")
+    created_by_name: str | None = Field(default=None, alias="createdByName")
 
     model_config = ConfigDict(populate_by_name=True)

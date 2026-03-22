@@ -23,6 +23,7 @@ export const routes: Route[] = [
   { path: '/admin/guides/:id', component: 'admin-guide-detail-page', title: 'Guide Detail - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '/admin/users', component: 'admin-users-page', title: 'Admin Users - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '/admin/users/:id', component: 'admin-user-detail-page', title: 'User Detail - Guidr', requiresAuth: true, requiresAdmin: true },
+  { path: '/admin/audit-logs', component: 'admin-audit-logs-page', title: 'Audit Logs - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '/admin/styleguide', component: 'admin-styleguide-page', title: 'Styleguide - Guidr', requiresAuth: true, requiresAdmin: true },
   { path: '*', component: 'not-found-page', title: 'Not Found - Guidr' }
 ]

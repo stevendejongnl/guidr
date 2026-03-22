@@ -49,5 +49,7 @@ class DeleteStep:
         # Check authorization - user must be guide owner or admin
         require_owner_or_admin(current_user, guide.created_by_user_id)
 
-        # Delete the step
+        # Delete the step and update guide's stepIds
         await self._repository.delete(EntityId(step_id))
+        guide.remove_step(EntityId(step_id))
+        await self._guide_repository.save(guide)

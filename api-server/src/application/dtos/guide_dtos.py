@@ -55,3 +55,4 @@ class GuideResponseDTO:
     updated_at: str  # ISO format
     language: str = "en"
     total_duration: int | None = None
+    created_by_name: str | None = None

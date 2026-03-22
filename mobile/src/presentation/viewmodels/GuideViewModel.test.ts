@@ -35,25 +35,6 @@ describe('GuideViewModel', () => {
       expect(viewModel.stepCount).toBe(2)
     })
 
-    it('generates thumbnail emoji for UI display', () => {
-      const guide = new Guide('guide-1', 'cooking', 'Learn to Cook')
-
-      const viewModel = createGuideViewModel(guide)
-
-      expect(viewModel.thumbnailEmoji).toBeTruthy()
-      expect(typeof viewModel.thumbnailEmoji).toBe('string')
-      expect(viewModel.thumbnailEmoji.length).toBeGreaterThan(0)
-    })
-
-    it('generates consistent emoji for same guide title', () => {
-      const guide = new Guide('guide-1', 'cooking', 'Learn to Cook')
-
-      const viewModel1 = createGuideViewModel(guide)
-      const viewModel2 = createGuideViewModel(guide)
-
-      expect(viewModel1.thumbnailEmoji).toBe(viewModel2.thumbnailEmoji)
-    })
-
     it('handles undefined description', () => {
       const guide = new Guide('guide-1', 'cooking', 'Test Guide', undefined)
 

@@ -63,6 +63,8 @@ class CreateStep:
             duration=duration,
         )
 
-        # Save and return
+        # Save step and update guide's stepIds
         await self._step_repository.save(step)
+        guide.add_step(step.id)
+        await self._guide_repository.save(guide)
         return self._mapper.to_response_dto(step)

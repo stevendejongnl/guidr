@@ -321,6 +321,7 @@ export class AppRoot extends LitElement {
                           <a href="/admin/guides" @click=${(e: Event) => this.navigateAdmin(e, '/admin/guides')}>Guides</a>
                           ${this.authState.isBeta ? html`<a href="/admin/guides/generate" @click=${(e: Event) => this.navigateAdmin(e, '/admin/guides/generate')}>Generate Guide ✦</a>` : nothing}
                           <a href="/admin/users" @click=${(e: Event) => this.navigateAdmin(e, '/admin/users')}>Users</a>
+                          <a href="/admin/audit-logs" @click=${(e: Event) => this.navigateAdmin(e, '/admin/audit-logs')}>Audit Logs</a>
                           <a href="/admin/styleguide" @click=${(e: Event) => this.navigateAdmin(e, '/admin/styleguide')}>Styleguide</a>
                         </div>
                       `
@@ -342,6 +343,7 @@ export class AppRoot extends LitElement {
                 <a href="/admin/guides" @click=${this.navigateMobile}>Admin - Guides</a>
                 ${this.authState.isBeta ? html`<a href="/admin/guides/generate" @click=${this.navigateMobile}>Admin - Generate Guide ✦</a>` : nothing}
                 <a href="/admin/users" @click=${this.navigateMobile}>Admin - Users</a>
+                <a href="/admin/audit-logs" @click=${this.navigateMobile}>Admin - Audit Logs</a>
                 <a href="/admin/styleguide" @click=${this.navigateMobile}>Admin - Styleguide</a>
               ` : nothing}
               <a href="#" @click=${this.handleMobileLogout}>Logout (${this.authState.userEmail})</a>

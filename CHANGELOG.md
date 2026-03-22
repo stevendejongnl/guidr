@@ -1,3 +1,25 @@
+## [1.87.0](https://github.com/stevendejongnl/guidr/compare/v1.86.0...v1.87.0) (2026-03-21)
+
+### Features
+
+* **web:** add audit log admin page ([c94f570](https://github.com/stevendejongnl/guidr/commit/c94f570f51f9fa63324bcb7136d7d07a6e47b351))
+
+### Bug Fixes
+
+* **ci:** resolve iPhone 16 Pro simulator lookup by ID to avoid runner flakiness ([af26b3d](https://github.com/stevendejongnl/guidr/commit/af26b3dbbeb8db5acf29d60ab7509759160008fd))
+
+## [1.86.0](https://github.com/stevendejongnl/guidr/compare/v1.85.11...v1.86.0) (2026-03-21)
+
+### Features
+
+* **guides:** remove All tab from guide list and show author name on cards ([ce8b7dc](https://github.com/stevendejongnl/guidr/commit/ce8b7dcad4a9247acf4a793da32976c9a8e8b9dd))
+
+## [1.85.11](https://github.com/stevendejongnl/guidr/compare/v1.85.10...v1.85.11) (2026-03-21)
+
+### Bug Fixes
+
+* **step:** sync guide stepIds on create and delete ([455fdc3](https://github.com/stevendejongnl/guidr/commit/455fdc3a0e229fa11f9acc3b397431e8148de7e7))
+
 ## [1.85.10](https://github.com/stevendejongnl/guidr/compare/v1.85.9...v1.85.10) (2026-03-18)
 
 ### Bug Fixes
