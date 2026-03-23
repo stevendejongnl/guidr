@@ -3,6 +3,7 @@ import { IStepRepository } from '@domain/repositories/IStepRepository'
 import { EntityCache } from '../storage/EntityCache'
 import { StepMapper } from '../mappers/StepMapper'
 import type { StepDto, StepCreateRequest, StepUpdateRequest } from '../api/dtos/StepDto'
+import { checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 /**
  * HTTP-based implementation of IStepRepository with AsyncStorage caching.
@@ -52,6 +53,7 @@ export class StepRepository implements IStepRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch step')
       }
@@ -88,6 +90,7 @@ export class StepRepository implements IStepRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch steps')
       }
@@ -131,6 +134,7 @@ export class StepRepository implements IStepRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch steps by guide')
       }
@@ -238,6 +242,7 @@ export class StepRepository implements IStepRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to delete step')
       }

@@ -25,7 +25,7 @@ fi
 echo ""
 
 echo "📱 Running Mobile Tests..."
-npm test --workspace=mobile
+NODE_OPTIONS="--max-old-space-size=8192" npm test --workspace=mobile
 echo "✓ Mobile tests passed"
 echo ""
 

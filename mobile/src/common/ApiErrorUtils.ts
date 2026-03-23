@@ -1,3 +1,29 @@
+import { MaintenanceEventEmitter } from './MaintenanceEventEmitter'
+
+/**
+ * Error thrown when an API call receives a 503 Service Unavailable response.
+ * Used to show the server maintenance screen.
+ */
+export class ServerMaintenanceError extends Error {
+  constructor(message: string = 'Server is under maintenance') {
+    super(message)
+    this.name = 'ServerMaintenanceError'
+  }
+}
+
+/**
+ * Checks if the response is a 503 and throws ServerMaintenanceError if so.
+ * Also emits a maintenance event so AppNavigator can show the maintenance screen.
+ *
+ * Call this as the first check inside any `!response.ok` block.
+ */
+export function checkForMaintenanceError(response: { status: number }): void {
+  if (response.status === 503) {
+    MaintenanceEventEmitter.emit()
+    throw new ServerMaintenanceError()
+  }
+}
+
 /**
  * Error thrown when an API call receives a 401 Unauthorized response.
  * Used to trigger token refresh flows.

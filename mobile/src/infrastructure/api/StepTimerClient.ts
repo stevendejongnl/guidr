@@ -1,6 +1,6 @@
 import { ActiveStepTimerDto } from './dtos/ActiveStepTimerDto'
 import { StepTimerDto } from './dtos/StepTimerDto'
-import { extractErrorMessage } from '../../common/ApiErrorUtils'
+import { extractErrorMessage, checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 export class StepTimerClient {
   private readonly apiBaseUrl: string
@@ -37,6 +37,7 @@ export class StepTimerClient {
     })
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to start timer'))
     }
@@ -58,6 +59,7 @@ export class StepTimerClient {
     )
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to pause timer'))
     }
@@ -79,6 +81,7 @@ export class StepTimerClient {
     )
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to reset timer'))
     }
@@ -97,6 +100,7 @@ export class StepTimerClient {
     })
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to load active timers'))
     }
@@ -121,6 +125,7 @@ export class StepTimerClient {
     )
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to load timers'))
     }

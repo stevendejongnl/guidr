@@ -8,6 +8,7 @@ import type {
   MoveToStepRequest,
   PauseSessionRequest,
 } from '../api/dtos/SessionDto'
+import { checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 /**
  * HTTP-based implementation of ISessionRepository with AsyncStorage caching.
@@ -58,6 +59,7 @@ export class SessionRepository implements ISessionRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch session')
       }
@@ -94,6 +96,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch sessions')
       }
@@ -137,6 +140,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch sessions by guide')
       }
@@ -180,6 +184,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch sessions by status')
       }
@@ -263,6 +268,7 @@ export class SessionRepository implements ISessionRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to delete session')
       }
@@ -295,6 +301,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to start session')
       }
@@ -334,6 +341,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to pause session')
       }
@@ -369,6 +377,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to resume session')
       }
@@ -404,6 +413,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to complete session')
       }
@@ -439,6 +449,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to cancel session')
       }
@@ -477,6 +488,7 @@ export class SessionRepository implements ISessionRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to move session to step')
       }
