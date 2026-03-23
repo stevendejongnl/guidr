@@ -1,5 +1,5 @@
 import { AuthResponse, UserDto } from './dtos/UserDto'
-import { extractErrorMessage, AuthenticationError } from '../../common/ApiErrorUtils'
+import { extractErrorMessage, AuthenticationError, checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 export class AuthClient {
   private readonly apiBaseUrl: string
@@ -55,6 +55,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         try {
           const errorData = await response.json()
           throw new Error(extractErrorMessage(errorData, 'Login failed'))
@@ -110,6 +111,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         try {
           const errorData = await response.json()
           throw new Error(extractErrorMessage(errorData, 'Registration failed'))
@@ -162,6 +164,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         try {
           const errorData = await response.json()
           throw new Error(extractErrorMessage(errorData, 'Token refresh failed'))
@@ -228,6 +231,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         if (response.status === 401) {
           throw new AuthenticationError('Invalid or expired token')
         }
@@ -280,6 +284,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         if (response.status === 401) {
           throw new AuthenticationError('Invalid or expired token')
         }
@@ -335,6 +340,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         if (response.status === 401) {
           throw new AuthenticationError('Invalid or expired token')
         }
@@ -398,6 +404,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         if (response.status === 401) {
           throw new AuthenticationError('Invalid or expired token')
         }
@@ -456,6 +463,7 @@ export class AuthClient {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         if (response.status === 401) {
           throw new AuthenticationError('Invalid or expired token')
         }
