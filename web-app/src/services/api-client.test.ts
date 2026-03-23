@@ -147,6 +147,78 @@ describe('ApiClient', () => {
     })
   })
 
+  describe('401 retry with token refresh', () => {
+    it('retries with new token on 401 and succeeds', async () => {
+      let callCount = 0
+      window.fetch = async () => {
+        callCount++
+        if (callCount === 1) {
+          return new Response(JSON.stringify({ detail: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        }
+        return new Response(JSON.stringify({ id: 1 }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }
+      const c = new ApiClient('/api/v1', () => 'old-token')
+      c.setOnUnauthorized(async () => 'new-token')
+      const result = await c.get<{ id: number }>('/items')
+      expect(result.id).to.equal(1)
+      expect(callCount).to.equal(2)
+    })
+
+    it('throws after retry still returns 401', async () => {
+      window.fetch = async () =>
+        new Response(JSON.stringify({ detail: 'Unauthorized' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      const c = new ApiClient('/api/v1', () => 'old-token')
+      c.setOnUnauthorized(async () => 'new-token')
+      try {
+        await c.get('/items')
+        throw new Error('should have thrown')
+      } catch (err) {
+        expect(err).to.be.instanceOf(ApiError)
+        expect((err as ApiError).status).to.equal(401)
+      }
+    })
+
+    it('throws ApiError directly on 401 when no onUnauthorized handler', async () => {
+      mockFetch(401, { detail: 'Unauthorized' })
+      try {
+        await client.get('/items')
+        throw new Error('should have thrown')
+      } catch (err) {
+        expect(err).to.be.instanceOf(ApiError)
+        expect((err as ApiError).status).to.equal(401)
+      }
+    })
+
+    it('uses new token in retry Authorization header', async () => {
+      let retryHeaders: Record<string, string> | undefined
+      let callCount = 0
+      window.fetch = async (_url: RequestInfo | URL, opts?: RequestInit) => {
+        callCount++
+        if (callCount === 1) {
+          return new Response(JSON.stringify({ detail: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        }
+        retryHeaders = opts?.headers as Record<string, string>
+        return new Response(JSON.stringify({}), { status: 200 })
+      }
+      const c = new ApiClient('/api/v1', () => 'old-token')
+      c.setOnUnauthorized(async () => 'refreshed-token')
+      await c.get('/items')
+      expect(retryHeaders?.['Authorization']).to.equal('Bearer refreshed-token')
+    })
+  })
+
   describe('ApiError', () => {
     it('has correct name, status, and message', () => {
       const err = new ApiError(422, 'Unprocessable', 'custom message')

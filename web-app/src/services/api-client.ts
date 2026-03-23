@@ -12,10 +12,15 @@ export class ApiError extends Error {
 export class ApiClient {
   private baseUrl: string
   private getAuthToken?: () => string | null
+  private onUnauthorized?: () => Promise<string>
 
   constructor(baseUrl: string = '/api/v1', getAuthToken?: () => string | null) {
     this.baseUrl = baseUrl
     this.getAuthToken = getAuthToken
+  }
+
+  setOnUnauthorized(handler: () => Promise<string>): void {
+    this.onUnauthorized = handler
   }
 
   async get<T>(path: string): Promise<T> {
@@ -70,11 +75,37 @@ export class ApiClient {
       const response = await fetch(url, options)
 
       if (!response.ok) {
-        throw new ApiError(
+        const apiError = new ApiError(
           response.status,
           response.statusText,
           await this.getErrorMessage(response)
         )
+
+        // On 401, attempt token refresh and retry once
+        if (response.status === 401 && this.onUnauthorized) {
+          const newToken = await this.onUnauthorized()
+          const retryOptions: RequestInit = {
+            ...options,
+            headers: {
+              ...(options.headers as Record<string, string>),
+              Authorization: `Bearer ${newToken}`,
+            },
+          }
+          const retryResponse = await fetch(url, retryOptions)
+          if (!retryResponse.ok) {
+            throw new ApiError(
+              retryResponse.status,
+              retryResponse.statusText,
+              await this.getErrorMessage(retryResponse)
+            )
+          }
+          if (retryResponse.status === 204) {
+            return {} as T
+          }
+          return await retryResponse.json()
+        }
+
+        throw apiError
       }
 
       // Handle empty responses (204 No Content)

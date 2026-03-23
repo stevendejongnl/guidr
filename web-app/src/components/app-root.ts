@@ -4,6 +4,10 @@ import { provide } from '@lit/context'
 import { Router } from '../router.js'
 import { authContext, AuthContextValue } from '../contexts/auth-context'
 import { authService } from '../services/auth-service'
+import { TokenRefreshService } from '../services/token-refresh-service'
+import { apiClient } from '../services/api-client'
+import { AuthClient } from '../services/auth-client'
+import { AuthStorage } from '../storage/auth-storage'
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -249,6 +253,13 @@ export class AppRoot extends LitElement {
     this.router = new Router(outlet)
     this.router.start()
     this.currentPath = window.location.pathname
+
+    const tokenRefreshService = new TokenRefreshService(
+      new AuthClient(window.location.origin),
+      new AuthStorage(),
+      () => this.authState.logout(),
+    )
+    apiClient.setOnUnauthorized(() => tokenRefreshService.refreshAndRetry())
 
     if (this.authState.isAuthenticated) {
       authService.refreshProfile().then(() => this.updateAuthState()).catch(() => {})

@@ -27,6 +27,9 @@ export class AuthService {
 
       // Persist to storage
       this.storage.setAuthToken(response.accessToken)
+      if (response.refreshToken) {
+        this.storage.setRefreshToken(response.refreshToken)
+      }
       this.storage.setUserEmail(response.user.email)
       this.storage.setUserIsAdmin(typeof response.user.isAdmin === 'boolean' ? response.user.isAdmin : false)
       this.storage.setUserIsBeta(typeof response.user.isBeta === 'boolean' ? response.user.isBeta : false)
@@ -61,6 +64,9 @@ export class AuthService {
 
       // Persist to storage
       this.storage.setAuthToken(response.accessToken)
+      if (response.refreshToken) {
+        this.storage.setRefreshToken(response.refreshToken)
+      }
       this.storage.setUserEmail(response.user.email)
       this.storage.setUserIsAdmin(typeof response.user.isAdmin === 'boolean' ? response.user.isAdmin : false)
       this.storage.setUserIsBeta(typeof response.user.isBeta === 'boolean' ? response.user.isBeta : false)
@@ -117,6 +123,14 @@ export class AuthService {
    */
   getAuthToken(): string | null {
     return this.storage.getAuthToken()
+  }
+
+  getRefreshToken(): string | null {
+    return this.storage.getRefreshToken()
+  }
+
+  setRefreshToken(token: string): void {
+    this.storage.setRefreshToken(token)
   }
 
   /**
