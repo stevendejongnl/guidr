@@ -11,6 +11,7 @@ import {
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
+import { TokenRefreshService } from '../../infrastructure/api/TokenRefreshService'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
 import { Menu, MenuItem, MenuToggleItem } from '../components/Menu'
@@ -90,6 +91,7 @@ interface HomeScreenProps {
   serverConfigStorage?: ServerConfigStorage
   authClient?: AuthClient
   stepTimerClient?: StepTimerClient
+  tokenRefreshService?: TokenRefreshService
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -110,6 +112,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   serverConfigStorage: injectedServerConfigStorage,
   authClient: injectedAuthClient,
   stepTimerClient: injectedStepTimerClient,
+  tokenRefreshService,
 }) => {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserDto | null>(null)
@@ -253,20 +256,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       setRecentSessions(recentSessionsList)
     } catch (err) {
       if (err instanceof AuthenticationError) {
-        const refreshToken = await authStorage.getRefreshToken()
-        if (refreshToken) {
+        if (tokenRefreshService) {
           try {
-            const serverUrl = await serverConfigStorage.getServerUrl()
-            if (serverUrl) {
-              const authClient = injectedAuthClient || new AuthClient(serverUrl)
-              const response = await authClient.refreshToken(refreshToken)
-              await authStorage.setAuthToken(response.accessToken)
-              await authStorage.setRefreshToken(response.refreshToken)
-              await loadData()
-              return
-            }
+            await tokenRefreshService.refreshAndRetry()
+            await loadData()
+            return
           } catch {
-            // Refresh failed — fall through to logout
+            // Refresh failed — service already called onLogout
+            return
           }
         }
         await onLogout()

@@ -3,6 +3,7 @@ import { IUserRepository } from '@domain/repositories/IUserRepository'
 import { EntityCache } from '../storage/EntityCache'
 import { UserMapper } from '../mappers/UserMapper'
 import type { UserDto, UserCreateRequest, UserUpdateRequest } from '../api/dtos/UserDto'
+import { checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 /**
  * HTTP-based implementation of IUserRepository with AsyncStorage caching.
@@ -52,6 +53,7 @@ export class UserRepository implements IUserRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch user')
       }
@@ -90,6 +92,7 @@ export class UserRepository implements IUserRepository {
       })
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to fetch users')
       }
@@ -242,6 +245,7 @@ export class UserRepository implements IUserRepository {
       }
 
       if (!response.ok) {
+        checkForMaintenanceError(response)
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Failed to delete user')
       }

@@ -1,4 +1,4 @@
-import { extractErrorMessage } from '../../common/ApiErrorUtils'
+import { extractErrorMessage, checkForMaintenanceError } from '../../common/ApiErrorUtils'
 
 export interface GuideFavoriteListResponse {
   guideIds: string[]
@@ -32,6 +32,7 @@ export class GuideFavoriteClient {
     )
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to favorite guide'))
     }
@@ -50,6 +51,7 @@ export class GuideFavoriteClient {
     )
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to unfavorite guide'))
     }
@@ -65,6 +67,7 @@ export class GuideFavoriteClient {
     })
 
     if (!response.ok) {
+      checkForMaintenanceError(response)
       const errorData = await response.json().catch(() => ({}))
       throw new Error(extractErrorMessage(errorData, 'Failed to load favorites'))
     }
