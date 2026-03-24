@@ -5,32 +5,37 @@ echo "Running pre-push checks..."
 echo ""
 
 # Security Scanning
-echo "🔒 Security: Scanning Mobile Dependencies..."
+echo "🔒 Security: Scanning dependencies..."
 ./scripts/npm-audit-security.sh . high mobile
-echo "✓ Mobile security scan passed"
-echo ""
-
-echo "🔒 Security: Scanning Web Dependencies..."
 ./scripts/npm-audit-security.sh . high || true
-echo "✓ Web security scan passed"
-echo ""
-
-echo "🔒 Security: Scanning API Dependencies..."
 if [ -f api-server/.venv/bin/pip-audit ]; then
-  (cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp) || true
-  echo "✓ API security scan passed"
+  PIP_AUDIT_OUTPUT=$((cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp) 2>&1) || {
+    echo "$PIP_AUDIT_OUTPUT"
+    echo "❌ API security scan failed"
+    exit 1
+  }
 else
   echo "⚠ pip-audit not installed, skipping API security scan"
 fi
 echo ""
 
 echo "📱 Running Mobile Tests..."
-NODE_OPTIONS="--max-old-space-size=8192" npm test --workspace=mobile
+MOBILE_OUTPUT=$(NODE_OPTIONS="--max-old-space-size=8192" npm test --workspace=mobile 2>&1) || {
+  echo "$MOBILE_OUTPUT" | grep -E "^(FAIL|●|✕|✗| FAIL | ● )" || echo "$MOBILE_OUTPUT" | tail -30
+  echo "❌ Mobile tests failed"
+  exit 1
+}
+echo "$MOBILE_OUTPUT" | grep -E "^Tests:" | tail -1
 echo "✓ Mobile tests passed"
 echo ""
 
 echo "🔧 Running API Tests..."
-npm run api:test
+API_OUTPUT=$(npm run api:test 2>&1) || {
+  echo "$API_OUTPUT" | grep -E "^(FAILED|ERROR|error)" || echo "$API_OUTPUT" | tail -30
+  echo "❌ API tests failed"
+  exit 1
+}
+echo "$API_OUTPUT" | grep -E "passed|failed" | tail -1
 echo "✓ API tests passed"
 echo ""
 
