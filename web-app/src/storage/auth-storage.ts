@@ -1,4 +1,5 @@
 const AUTH_TOKEN_KEY = 'Guidr_Web_AuthToken'
+const REFRESH_TOKEN_KEY = 'Guidr_Web_RefreshToken'
 const USER_EMAIL_KEY = 'Guidr_Web_UserEmail'
 const USER_IS_ADMIN_KEY = 'Guidr_Web_UserIsAdmin'
 const USER_IS_BETA_KEY = 'Guidr_Web_UserIsBeta'
@@ -26,6 +27,21 @@ export class AuthStorage {
 
   clearAuthToken(): void {
     localStorage.removeItem(AUTH_TOKEN_KEY)
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_TOKEN_KEY)
+  }
+
+  setRefreshToken(token: string): void {
+    if (!token || token.trim() === '') {
+      throw new Error('Refresh token cannot be empty')
+    }
+    localStorage.setItem(REFRESH_TOKEN_KEY, token)
+  }
+
+  clearRefreshToken(): void {
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
   }
 
   getUserEmail(): string | null {
@@ -86,6 +102,7 @@ export class AuthStorage {
 
   clearAll(): void {
     localStorage.removeItem(AUTH_TOKEN_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(USER_EMAIL_KEY)
     localStorage.removeItem(USER_IS_ADMIN_KEY)
     localStorage.removeItem(USER_IS_BETA_KEY)

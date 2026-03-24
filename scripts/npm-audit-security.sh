@@ -111,33 +111,14 @@ while IFS= read -r line; do
   fi
 done <<< "$AUDIT_OUTPUT"
 
-# Print the full audit output for reference
-echo "$AUDIT_OUTPUT"
-
 # Exit appropriately
 if [[ "$UNACCEPTED_FOUND" == true ]]; then
+  echo "$AUDIT_OUTPUT"
   echo ""
   echo "❌ Security audit failed: Found unaccepted vulnerabilities"
   echo "   Accepted vulnerabilities: ${ACCEPTED_ADVISORIES[*]}"
   exit 1
 else
-  # Check if there are any vulnerabilities at all
-  if echo "$AUDIT_OUTPUT" | grep -q "up to date\|# npm audit report"; then
-    if echo "$AUDIT_OUTPUT" | grep -q "up to date"; then
-      # No vulnerabilities at all
-      echo ""
-      echo "✓ Security scan passed: No vulnerabilities found"
-      exit 0
-    else
-      # Vulnerabilities found but all are accepted
-      echo ""
-      echo "✓ Security scan passed: Only accepted vulnerabilities found"
-      exit 0
-    fi
-  else
-    # Unclear state, play it safe
-    echo ""
-    echo "✓ Security scan passed: Known vulnerabilities only"
-    exit 0
-  fi
+  echo "✓ Security scan passed"
+  exit 0
 fi
