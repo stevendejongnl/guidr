@@ -1,3 +1,9 @@
+## [1.89.0](https://github.com/stevendejongnl/guidr/compare/v1.88.0...v1.89.0) (2026-03-23)
+
+### Features
+
+* **web:** add token refresh and auto-logout on 401 ([b566da7](https://github.com/stevendejongnl/guidr/commit/b566da78d7db5e0ccdb1a66cafc557ca1d5af9a2))
+
 ## [1.88.0](https://github.com/stevendejongnl/guidr/compare/v1.87.0...v1.88.0) (2026-03-22)
 
 ### Features

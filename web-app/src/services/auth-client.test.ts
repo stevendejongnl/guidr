@@ -257,6 +257,42 @@ describe('AuthClient', () => {
     })
   })
 
+  describe('refreshToken', () => {
+    it('throws on empty token', async () => {
+      const client = new AuthClient('http://localhost:8000')
+      await expectThrows(() => client.refreshToken(''), 'Refresh token cannot be empty')
+    })
+
+    it('returns new auth response with access and refresh tokens', async () => {
+      mockFetch(200, {
+        ...validAuthResponse,
+        refreshToken: 'new-refresh-token',
+      })
+      const client = new AuthClient('http://localhost:8000')
+      const result = await client.refreshToken('old-refresh-token')
+      expect(result.accessToken).to.equal('access-token')
+      expect(result.refreshToken).to.equal('new-refresh-token')
+    })
+
+    it('throws on API error', async () => {
+      mockFetch(401, { detail: 'Invalid or expired refresh token' })
+      const client = new AuthClient('http://localhost:8000')
+      await expectThrows(() => client.refreshToken('bad-token'), 'Invalid or expired refresh token')
+    })
+
+    it('throws on invalid response (missing accessToken)', async () => {
+      mockFetch(200, { tokenType: 'bearer', user: validUser })
+      const client = new AuthClient('http://localhost:8000')
+      await expectThrows(() => client.refreshToken('token'), 'Invalid response from server')
+    })
+
+    it('throws with status text on non-JSON error body', async () => {
+      window.fetch = async () => new Response('Service Unavailable', { status: 503, statusText: 'Service Unavailable' })
+      const client = new AuthClient('http://localhost:8000')
+      await expectThrows(() => client.refreshToken('token'), 'Server error: 503')
+    })
+  })
+
   describe('deleteAccount', () => {
     it('throws on empty password', async () => {
       const client = new AuthClient('http://localhost:8000')

@@ -20,6 +20,7 @@ function makeUser(overrides = {}) {
 function makeAuthResponse(overrides = {}): AuthResponse {
   return {
     accessToken: 'access-token',
+    refreshToken: 'refresh-token',
     tokenType: 'bearer',
     user: makeUser(),
     ...overrides,
@@ -33,6 +34,9 @@ function makeStorage(overrides: Partial<AuthStorage> = {}): AuthStorage {
     setAuthToken: (t: string) => { store['token'] = t },
     hasAuthToken: () => 'token' in store,
     clearAuthToken: () => { delete store['token'] },
+    getRefreshToken: () => store['refreshToken'] ?? null,
+    setRefreshToken: (t: string) => { store['refreshToken'] = t },
+    clearRefreshToken: () => { delete store['refreshToken'] },
     getUserEmail: () => store['email'] ?? null,
     setUserEmail: (e: string) => { store['email'] = e },
     clearUserEmail: () => { delete store['email'] },
@@ -59,6 +63,7 @@ function makeClient(overrides: Partial<AuthClient> = {}): AuthClient {
     changePassword: async () => {},
     changeEmail: async () => makeAuthResponse(),
     deleteAccount: async () => {},
+    refreshToken: async () => makeAuthResponse(),
     ...overrides,
   } as unknown as AuthClient
 }
@@ -91,6 +96,13 @@ describe('AuthService', () => {
       await service.login('user@example.com', 'password')
       expect(storage.getUserIsAdmin()).to.be.true
       expect(storage.getUserIsBeta()).to.be.true
+    })
+
+    it('persists refresh token on login', async () => {
+      const storage = makeStorage()
+      const service = new AuthService(makeClient(), storage)
+      await service.login('user@example.com', 'password')
+      expect(storage.getRefreshToken()).to.equal('refresh-token')
     })
 
     it('throws when response has no accessToken', async () => {
@@ -129,6 +141,13 @@ describe('AuthService', () => {
       const service = new AuthService(makeClient(), storage)
       await service.register('user@example.com', 'password123')
       expect(storage.getAuthToken()).to.equal('access-token')
+    })
+
+    it('persists refresh token on register', async () => {
+      const storage = makeStorage()
+      const service = new AuthService(makeClient(), storage)
+      await service.register('user@example.com', 'password123')
+      expect(storage.getRefreshToken()).to.equal('refresh-token')
     })
 
     it('throws when response missing accessToken', async () => {
