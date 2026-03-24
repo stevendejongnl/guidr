@@ -137,9 +137,35 @@ describe('AuthStorage', () => {
     })
   })
 
+  describe('refresh token', () => {
+    it('returns null when not set', () => {
+      expect(storage.getRefreshToken()).to.be.null
+    })
+
+    it('stores and retrieves refresh token', () => {
+      storage.setRefreshToken('refresh-token-value')
+      expect(storage.getRefreshToken()).to.equal('refresh-token-value')
+    })
+
+    it('throws on empty refresh token', () => {
+      expect(() => storage.setRefreshToken('')).to.throw('Refresh token cannot be empty')
+    })
+
+    it('throws on whitespace-only refresh token', () => {
+      expect(() => storage.setRefreshToken('   ')).to.throw('Refresh token cannot be empty')
+    })
+
+    it('clearRefreshToken removes the token', () => {
+      storage.setRefreshToken('refresh-token-value')
+      storage.clearRefreshToken()
+      expect(storage.getRefreshToken()).to.be.null
+    })
+  })
+
   describe('clearAll', () => {
-    it('clears all stored values', () => {
+    it('clears all stored values including refresh token', () => {
       storage.setAuthToken('token')
+      storage.setRefreshToken('refresh-token')
       storage.setUserEmail('user@example.com')
       storage.setUserIsAdmin(true)
       storage.setUserIsBeta(true)
@@ -148,6 +174,7 @@ describe('AuthStorage', () => {
       storage.clearAll()
 
       expect(storage.getAuthToken()).to.be.null
+      expect(storage.getRefreshToken()).to.be.null
       expect(storage.getUserEmail()).to.be.null
       expect(storage.getUserIsAdmin()).to.be.false
       expect(storage.getUserIsBeta()).to.be.false

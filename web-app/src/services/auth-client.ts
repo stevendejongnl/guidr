@@ -16,6 +16,7 @@ export interface UserDto {
 
 export interface AuthResponse {
   accessToken: string
+  refreshToken: string
   tokenType: string
   user: UserDto
 }
@@ -118,6 +119,7 @@ export class AuthClient {
 
       return {
         accessToken: data.accessToken,
+        refreshToken: data.refreshToken ?? '',
         tokenType: data.tokenType,
         user: {
           id: data.user.id,
@@ -179,6 +181,7 @@ export class AuthClient {
 
       return {
         accessToken: data.accessToken,
+        refreshToken: data.refreshToken ?? '',
         tokenType: data.tokenType,
         user: {
           id: data.user.id,
@@ -414,6 +417,7 @@ export class AuthClient {
 
       return {
         accessToken: data.accessToken,
+        refreshToken: data.refreshToken ?? '',
         tokenType: data.tokenType,
         user: {
           id: data.user.id,
@@ -431,6 +435,65 @@ export class AuthClient {
         throw error
       }
       throw new Error('An unexpected error occurred during email change')
+    }
+  }
+
+  /**
+   * Refresh access token using a refresh token.
+   * Implements token rotation: each refresh token can only be used once.
+   */
+  async refreshToken(token: string): Promise<AuthResponse> {
+    if (!token || token.trim() === '') {
+      throw new Error('Refresh token cannot be empty')
+    }
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken: token }),
+      })
+
+      if (!response.ok) {
+        try {
+          const errorData = await response.json()
+          throw new Error(extractErrorMessage(errorData, 'Token refresh failed'))
+        } catch (jsonError) {
+          if (jsonError instanceof SyntaxError) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          }
+          throw jsonError
+        }
+      }
+
+      const data = await response.json()
+
+      if (!data.accessToken || !data.tokenType || !data.user || !data.user.email) {
+        throw new Error('Invalid response from server')
+      }
+
+      return {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken ?? '',
+        tokenType: data.tokenType,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          createdAt: data.user.createdAt,
+          updatedAt: data.user.updatedAt,
+          name: data.user.name,
+          interests: data.user.interests,
+          isAdmin: typeof data.user.isAdmin === 'boolean' ? data.user.isAdmin : false,
+          isBeta: typeof data.user.isBeta === 'boolean' ? data.user.isBeta : false,
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('An unexpected error occurred during token refresh')
     }
   }
 
