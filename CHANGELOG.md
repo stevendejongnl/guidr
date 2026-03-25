@@ -1,3 +1,9 @@
+## [1.90.3](https://github.com/stevendejongnl/guidr/compare/v1.90.2...v1.90.3) (2026-03-25)
+
+### Bug Fixes
+
+* **ios:** resolve sentry-xcode.sh from mobile/node_modules instead of root ([fe413f6](https://github.com/stevendejongnl/guidr/commit/fe413f6838a0506b5ab41bbace2d262e3b4cfb5c))
+
 ## [1.90.2](https://github.com/stevendejongnl/guidr/compare/v1.90.1...v1.90.2) (2026-03-25)
 
 ### Bug Fixes
