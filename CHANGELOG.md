@@ -1,3 +1,9 @@
+## [1.90.2](https://github.com/stevendejongnl/guidr/compare/v1.90.1...v1.90.2) (2026-03-25)
+
+### Bug Fixes
+
+* **android:** resolve sentry.gradle from mobile/node_modules instead of root ([36a6a62](https://github.com/stevendejongnl/guidr/commit/36a6a6229dbfebeaf5ec10e849bf4d7763380d0f))
+
 ## [1.90.1](https://github.com/stevendejongnl/guidr/compare/v1.90.0...v1.90.1) (2026-03-25)
 
 ### Bug Fixes
