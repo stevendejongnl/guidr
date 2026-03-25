@@ -1,3 +1,9 @@
+## [1.90.0](https://github.com/stevendejongnl/guidr/compare/v1.89.0...v1.90.0) (2026-03-25)
+
+### Features
+
+* **monitoring:** migrate from Sentry.io to self-hosted GlitchTip ([d3b7f4c](https://github.com/stevendejongnl/guidr/commit/d3b7f4c511137402cac3e4d6f967b3a02595b751))
+
 ## [1.89.0](https://github.com/stevendejongnl/guidr/compare/v1.88.0...v1.89.0) (2026-03-23)
 
 ### Features
