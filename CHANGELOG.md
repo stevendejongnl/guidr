@@ -1,3 +1,9 @@
+## [1.90.4](https://github.com/stevendejongnl/guidr/compare/v1.90.3...v1.90.4) (2026-03-25)
+
+### Bug Fixes
+
+* **android:** disable sentry.gradle auto-upload during build ([6ac835e](https://github.com/stevendejongnl/guidr/commit/6ac835ef4813447917acc6b5da0305e0fc99aca1))
+
 ## [1.90.3](https://github.com/stevendejongnl/guidr/compare/v1.90.2...v1.90.3) (2026-03-25)
 
 ### Bug Fixes
