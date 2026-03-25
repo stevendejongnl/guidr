@@ -1,3 +1,9 @@
+## [1.90.1](https://github.com/stevendejongnl/guidr/compare/v1.90.0...v1.90.1) (2026-03-25)
+
+### Bug Fixes
+
+* **ci:** point sentry-cli release tracking to GlitchTip ([3c8fce7](https://github.com/stevendejongnl/guidr/commit/3c8fce7e30bf0cf2721aef1e9c63ec2453076504))
+
 ## [1.90.0](https://github.com/stevendejongnl/guidr/compare/v1.89.0...v1.90.0) (2026-03-25)
 
 ### Features
