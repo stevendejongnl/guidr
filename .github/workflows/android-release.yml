@@ -132,6 +132,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: guidr-release
           KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          SENTRY_DISABLE_AUTO_UPLOAD: "true"
         run: |
           cd mobile
           chmod +x android/gradlew
