@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser'
 import './components/app-root.js'
 import './components/pages/home-page.js'
 import './components/pages/landing-page.js'
@@ -14,3 +15,7 @@ import './components/pages/admin-guide-detail-page.js'
 import './components/pages/admin-users-page.js'
 import './components/pages/admin-user-detail-page.js'
 import './components/pages/admin-audit-logs-page.js'
+
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN })
+}

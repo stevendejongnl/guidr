@@ -272,20 +272,6 @@ jobs:
           # Run fastlane from mobile/ios directory
           bundle exec fastlane sync_certificates
 
-      - name: Create Sentry properties file
-        run: |
-          source .sentry/config.env
-
-          cat > mobile/ios/sentry.properties <<EOF
-          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=$SENTRY_ORG
-          defaults.project=$SENTRY_PROJECT_MOBILE
-          defaults.url=$SENTRY_URL
-          EOF
-          sed -i '' "s/^[[:space:]]*//" mobile/ios/sentry.properties
-
-          echo "✅ Created iOS Sentry properties file"
-
       # Auto-increment build number with timestamp
       - name: Increment build number
         run: |
@@ -349,14 +335,22 @@ jobs:
             exit 1
           fi
 
-      # Upload debug symbols to Sentry after successful build
-      - name: Upload debug symbols to Sentry
+      # Upload debug symbols to GlitchTip after successful build
+      - name: Install glitchtip-cli
+        if: success()
+        run: |
+          curl -fsSL "https://gitlab.com/glitchtip/glitchtip-cli/-/jobs/artifacts/v0.1.0/raw/artifacts/glitchtip-cli-macos-arm64?job=build-macos-arm64" \
+            -o /usr/local/bin/glitchtip-cli
+          chmod +x /usr/local/bin/glitchtip-cli
+
+      - name: Upload debug symbols to GlitchTip
         if: success()
         continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           cd mobile/ios
 
-          # Extract dSYM from archive
           DSYM_PATH="./build/guidr.xcarchive/dSYMs/guidr.app.dSYM"
 
           if [ ! -d "$DSYM_PATH" ]; then
@@ -364,18 +358,16 @@ jobs:
             exit 0
           fi
 
-          echo "📤 Uploading debug symbols to Sentry..."
+          echo "📤 Uploading debug symbols to GlitchTip..."
 
           source "$GITHUB_WORKSPACE/.sentry/config.env"
+          export SENTRY_URL="$SENTRY_URL"
 
-          # Upload using sentry-cli
-          npx @sentry/cli debug-files upload \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+          glitchtip-cli debug-files upload "$DSYM_PATH" \
             --org "$SENTRY_ORG" \
-            --project "$SENTRY_PROJECT_MOBILE" \
-            "$DSYM_PATH"
+            --project "$SENTRY_PROJECT_MOBILE"
 
-          echo "✅ Debug symbols uploaded to Sentry"
+          echo "✅ Debug symbols uploaded to GlitchTip"
 
       # Upload JS source maps to Sentry for readable stack traces
       - name: Upload JS source maps to Sentry
@@ -401,8 +393,8 @@ jobs:
             exit 0
           fi
 
+          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli sourcemaps upload \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE" \
             --release "$RELEASE_NAME" \
@@ -424,18 +416,18 @@ jobs:
 
           source "$GITHUB_WORKSPACE/.sentry/config.env"
 
+          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases new "$RELEASE_NAME" \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
+          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
+          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases finalize "$RELEASE_NAME" \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 

@@ -56,6 +56,14 @@ spec:
           value: "HS256"
         - name: JWT_EXPIRATION_MINUTES
           value: "10080"
+        # Sentry / GlitchTip error tracking
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: guidr-sentry-secret
+              key: sentry-dsn
+        - name: SENTRY_ENVIRONMENT
+          value: "production"
         # Deployment Coordination (prevents duplicate startup notifications)
         - name: DEPLOYMENT_ID
           valueFrom:
