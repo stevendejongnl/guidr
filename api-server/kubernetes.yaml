@@ -28,6 +28,8 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
       - name: api-server
         image: ghcr.io/stevendejongnl/guidr-api-server:latest
@@ -62,6 +64,11 @@ spec:
             secretKeyRef:
               name: guidr-sentry-secret
               key: sentry-dsn
+        - name: WEB_SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: guidr-sentry-secret
+              key: web-sentry-dsn
         - name: SENTRY_ENVIRONMENT
           value: "production"
         # Deployment Coordination (prevents duplicate startup notifications)

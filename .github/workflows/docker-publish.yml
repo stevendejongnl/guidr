@@ -66,10 +66,8 @@ jobs:
         if: steps.version.outputs.VERSION != ''
         run: npm ci --workspaces --include=dev
 
-      - name: Build web app with Sentry DSN
+      - name: Build web app
         if: steps.version.outputs.VERSION != ''
-        env:
-          VITE_SENTRY_DSN: ${{ secrets.WEB_SENTRY_DSN }}
         run: npm run web:build
 
       - name: Install glitchtip-cli

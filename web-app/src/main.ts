@@ -16,6 +16,13 @@ import './components/pages/admin-users-page.js'
 import './components/pages/admin-user-detail-page.js'
 import './components/pages/admin-audit-logs-page.js'
 
-if (import.meta.env.VITE_SENTRY_DSN) {
-  Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN })
-}
+fetch('/api/v1/config')
+  .then(r => r.json())
+  .then((config: { sentryDsn?: string }) => {
+    if (config.sentryDsn) {
+      Sentry.init({ dsn: config.sentryDsn })
+    }
+  })
+  .catch(() => {
+    // Config fetch failed — Sentry remains uninitialised
+  })
