@@ -207,8 +207,11 @@ jobs:
       - name: Create Sentry release with commits
         if: success()
         continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           source .sentry/config.env
+          export SENTRY_URL="$SENTRY_URL"
 
           VERSION="${{ steps.version.outputs.VERSION }}"
           BUILD_CODE=$(grep 'versionCode' mobile/android/app/build.gradle | head -1 | sed 's/.*versionCode //' | tr -d '[:space:]')
@@ -216,17 +219,14 @@ jobs:
 
           echo "📤 Creating Sentry release: $RELEASE_NAME"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases new "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases finalize "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"

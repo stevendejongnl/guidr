@@ -382,6 +382,7 @@ jobs:
           echo "📤 Uploading JS source maps for release: $RELEASE_NAME"
 
           source "$GITHUB_WORKSPACE/.sentry/config.env"
+          export SENTRY_URL="$SENTRY_URL"
 
           # Find the JS bundle and source map from the archive
           BUNDLE_PATH="ios/build/guidr.xcarchive/Products/Applications/guidr.app/main.jsbundle"
@@ -400,12 +401,14 @@ jobs:
             --release "$RELEASE_NAME" \
             "$BUNDLE_PATH" ${MAP_PATH:+"$MAP_PATH"}
 
-          echo "✅ JS source maps uploaded to Sentry"
+          echo "✅ JS source maps uploaded to GlitchTip"
 
       # Create Sentry release linked to commits for suspect commits
       - name: Create Sentry release with commits
         if: success()
         continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           cd mobile
 
@@ -415,18 +418,16 @@ jobs:
           echo "📤 Creating Sentry release: $RELEASE_NAME"
 
           source "$GITHUB_WORKSPACE/.sentry/config.env"
+          export SENTRY_URL="$SENTRY_URL"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases new "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
           npx @sentry/cli releases finalize "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"

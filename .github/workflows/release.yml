@@ -229,26 +229,26 @@ jobs:
       - name: Create Sentry release for API
         if: env.SHOULD_RELEASE == 'true'
         continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           source .sentry/config.env
+          export SENTRY_URL="$SENTRY_URL"
 
           VERSION=$(node -p "require('./mobile/package.json').version")
           RELEASE_NAME="guidr-api@${VERSION}"
 
           echo "📤 Creating Sentry release for API: $RELEASE_NAME"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
-          npx @sentry/cli releases new "$RELEASE_NAME" \
+          ./mobile/node_modules/.bin/sentry-cli releases new "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
-          npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
+          ./mobile/node_modules/.bin/sentry-cli releases set-commits "$RELEASE_NAME" --auto \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
-          SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
-          npx @sentry/cli releases finalize "$RELEASE_NAME" \
+          ./mobile/node_modules/.bin/sentry-cli releases finalize "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
