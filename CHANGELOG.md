@@ -1,3 +1,9 @@
+## [1.91.0](https://github.com/stevendejongnl/guidr/compare/v1.90.4...v1.91.0) (2026-03-25)
+
+### Features
+
+* **monitoring:** serve web Sentry DSN at runtime via /api/v1/config ([b6b005d](https://github.com/stevendejongnl/guidr/commit/b6b005d727facbe85a095d3aedbae9b5f3f53736))
+
 ## [1.90.4](https://github.com/stevendejongnl/guidr/compare/v1.90.3...v1.90.4) (2026-03-25)
 
 ### Bug Fixes
