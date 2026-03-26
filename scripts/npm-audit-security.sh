@@ -37,6 +37,7 @@
 # - GHSA-phc3-fgpg-7m6h: undici DeduplicationHandler unbounded memory DoS (HIGH, @semantic-release/github dev dep only, not runtime)
 # - GHSA-jp2q-39xq-3w4g: fast-xml-parser entity expansion bypass via DOCTYPE (CRITICAL, @react-native-community/cli dev tool only, same root cause as GHSA-jmr7-xgp7-cmfj)
 # - GHSA-rf6f-7fwh-wjgh: flatted Prototype Pollution via parse() (HIGH, mobile devDependency only, not runtime)
+# - GHSA-48c2-rrv3-qjmp: yaml stack overflow via deeply nested YAML collections (MODERATE, yaml is a devDependency/build tool, not runtime)
 
 set -e
 
@@ -77,6 +78,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-phc3-fgpg-7m6h"
   "GHSA-jp2q-39xq-3w4g"
   "GHSA-rf6f-7fwh-wjgh"
+  "GHSA-48c2-rrv3-qjmp"
 )
 
 # Run npm audit and capture output
