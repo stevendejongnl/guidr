@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o"
     openai_max_tokens: int = 4096
 
+    # Web App Sentry / GlitchTip DSN (served to browser at runtime)
+    web_sentry_dsn: str | None = None
+
     # Deployment Configuration
     deployment_id: str | None = None
     pod_name: str | None = None

@@ -1,3 +1,39 @@
+## [1.91.0](https://github.com/stevendejongnl/guidr/compare/v1.90.4...v1.91.0) (2026-03-25)
+
+### Features
+
+* **monitoring:** serve web Sentry DSN at runtime via /api/v1/config ([b6b005d](https://github.com/stevendejongnl/guidr/commit/b6b005d727facbe85a095d3aedbae9b5f3f53736))
+
+## [1.90.4](https://github.com/stevendejongnl/guidr/compare/v1.90.3...v1.90.4) (2026-03-25)
+
+### Bug Fixes
+
+* **android:** disable sentry.gradle auto-upload during build ([6ac835e](https://github.com/stevendejongnl/guidr/commit/6ac835ef4813447917acc6b5da0305e0fc99aca1))
+
+## [1.90.3](https://github.com/stevendejongnl/guidr/compare/v1.90.2...v1.90.3) (2026-03-25)
+
+### Bug Fixes
+
+* **ios:** resolve sentry-xcode.sh from mobile/node_modules instead of root ([fe413f6](https://github.com/stevendejongnl/guidr/commit/fe413f6838a0506b5ab41bbace2d262e3b4cfb5c))
+
+## [1.90.2](https://github.com/stevendejongnl/guidr/compare/v1.90.1...v1.90.2) (2026-03-25)
+
+### Bug Fixes
+
+* **android:** resolve sentry.gradle from mobile/node_modules instead of root ([36a6a62](https://github.com/stevendejongnl/guidr/commit/36a6a6229dbfebeaf5ec10e849bf4d7763380d0f))
+
+## [1.90.1](https://github.com/stevendejongnl/guidr/compare/v1.90.0...v1.90.1) (2026-03-25)
+
+### Bug Fixes
+
+* **ci:** point sentry-cli release tracking to GlitchTip ([3c8fce7](https://github.com/stevendejongnl/guidr/commit/3c8fce7e30bf0cf2721aef1e9c63ec2453076504))
+
+## [1.90.0](https://github.com/stevendejongnl/guidr/compare/v1.89.0...v1.90.0) (2026-03-25)
+
+### Features
+
+* **monitoring:** migrate from Sentry.io to self-hosted GlitchTip ([d3b7f4c](https://github.com/stevendejongnl/guidr/commit/d3b7f4c511137402cac3e4d6f967b3a02595b751))
+
 ## [1.89.0](https://github.com/stevendejongnl/guidr/compare/v1.88.0...v1.89.0) (2026-03-23)
 
 ### Features

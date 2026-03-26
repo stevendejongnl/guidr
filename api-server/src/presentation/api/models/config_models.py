@@ -10,3 +10,4 @@ class ConfigResponse(BaseModel):
 
     min_app_version: str | None = Field(None, alias="minAppVersion")
     max_app_version: str | None = Field(None, alias="maxAppVersion")
+    sentry_dsn: str | None = Field(None, alias="sentryDsn")

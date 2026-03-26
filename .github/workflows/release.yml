@@ -65,28 +65,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --include=dev
 
-      - name: Create Sentry properties files
-        run: |
-          source .sentry/config.env
-
-          cat > mobile/android/sentry.properties <<EOF
-          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=$SENTRY_ORG
-          defaults.project=$SENTRY_PROJECT_MOBILE
-          defaults.url=$SENTRY_URL
-          EOF
-          sed -i "s/^[[:space:]]*//" mobile/android/sentry.properties
-
-          cat > mobile/ios/sentry.properties <<EOF
-          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=$SENTRY_ORG
-          defaults.project=$SENTRY_PROJECT_MOBILE
-          defaults.url=$SENTRY_URL
-          EOF
-          sed -i "s/^[[:space:]]*//" mobile/ios/sentry.properties
-
-          echo "✅ Created Sentry properties files for Android and iOS"
-
       - name: Setup Java for Android builds
         uses: actions/setup-java@v4
         with:
@@ -251,26 +229,26 @@ jobs:
       - name: Create Sentry release for API
         if: env.SHOULD_RELEASE == 'true'
         continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           source .sentry/config.env
+          export SENTRY_URL="$SENTRY_URL"
 
           VERSION=$(node -p "require('./mobile/package.json').version")
           RELEASE_NAME="guidr-api@${VERSION}"
 
           echo "📤 Creating Sentry release for API: $RELEASE_NAME"
 
-          npx @sentry/cli releases new "$RELEASE_NAME" \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+          ./mobile/node_modules/.bin/sentry-cli releases new "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
-          npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+          ./mobile/node_modules/.bin/sentry-cli releases set-commits "$RELEASE_NAME" --auto \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
-          npx @sentry/cli releases finalize "$RELEASE_NAME" \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
+          ./mobile/node_modules/.bin/sentry-cli releases finalize "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 

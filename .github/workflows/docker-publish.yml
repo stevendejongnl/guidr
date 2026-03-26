@@ -54,6 +54,45 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION"
 
+      - name: Setup Node.js
+        if: steps.version.outputs.VERSION != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        if: steps.version.outputs.VERSION != ''
+        run: npm ci --workspaces --include=dev
+
+      - name: Build web app
+        if: steps.version.outputs.VERSION != ''
+        run: npm run web:build
+
+      - name: Install glitchtip-cli
+        if: steps.version.outputs.VERSION != ''
+        run: |
+          curl -fsSL "https://gitlab.com/glitchtip/glitchtip-cli/-/jobs/artifacts/v0.1.0/raw/artifacts/glitchtip-cli-linux-x86_64?job=build-linux-x86_64" \
+            -o /usr/local/bin/glitchtip-cli
+          chmod +x /usr/local/bin/glitchtip-cli
+
+      - name: Inject and upload web source maps
+        if: steps.version.outputs.VERSION != ''
+        continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          source .sentry/config.env
+          export SENTRY_URL="$SENTRY_URL"
+
+          glitchtip-cli sourcemaps inject ./web-app/dist
+          glitchtip-cli sourcemaps upload ./web-app/dist \
+            --org "$SENTRY_ORG" \
+            --project web
+
+          echo "✅ Web source maps injected and uploaded to GlitchTip"
+
       - name: Set up Docker Buildx
         if: steps.version.outputs.VERSION != ''
         uses: docker/setup-buildx-action@v3
@@ -89,6 +128,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             GUIDR_VERSION=${{ steps.version.outputs.VERSION }}
+            SKIP_WEB_BUILD=true
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
