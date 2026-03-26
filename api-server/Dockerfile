@@ -22,7 +22,9 @@ COPY web-app ./web-app
 RUN npm install --workspaces
 
 # Build web app
-RUN npm run web:build
+# Set SKIP_WEB_BUILD=true in CI when dist is pre-built and injected with source map debug IDs
+ARG SKIP_WEB_BUILD=false
+RUN if [ "$SKIP_WEB_BUILD" != "true" ]; then npm run web:build; fi
 
 # Stage 2: Build Python Dependencies
 FROM python:3.12-slim AS python-builder

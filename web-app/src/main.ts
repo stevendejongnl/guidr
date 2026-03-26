@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser'
 import './components/app-root.js'
 import './components/pages/home-page.js'
 import './components/pages/landing-page.js'
@@ -14,3 +15,14 @@ import './components/pages/admin-guide-detail-page.js'
 import './components/pages/admin-users-page.js'
 import './components/pages/admin-user-detail-page.js'
 import './components/pages/admin-audit-logs-page.js'
+
+fetch('/api/v1/config')
+  .then(r => r.json())
+  .then((config: { sentryDsn?: string }) => {
+    if (config.sentryDsn) {
+      Sentry.init({ dsn: config.sentryDsn })
+    }
+  })
+  .catch(() => {
+    // Config fetch failed — Sentry remains uninitialised
+  })
