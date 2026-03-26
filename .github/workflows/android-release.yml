@@ -81,20 +81,6 @@ jobs:
 
           echo "✅ Created mobile .env file with Sentry configuration"
 
-      - name: Create Sentry properties file
-        run: |
-          source .sentry/config.env
-
-          cat > mobile/android/sentry.properties <<EOF
-          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
-          defaults.org=$SENTRY_ORG
-          defaults.project=$SENTRY_PROJECT_MOBILE
-          defaults.url=$SENTRY_URL
-          EOF
-          sed -i "s/^[[:space:]]*//" mobile/android/sentry.properties
-
-          echo "✅ Created Android Sentry properties file"
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
@@ -146,6 +132,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: guidr-release
           KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          SENTRY_DISABLE_AUTO_UPLOAD: "true"
         run: |
           cd mobile
           chmod +x android/gradlew
@@ -187,11 +174,45 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install glitchtip-cli
+        if: success()
+        run: |
+          curl -fsSL "https://gitlab.com/glitchtip/glitchtip-cli/-/jobs/artifacts/v0.1.0/raw/artifacts/glitchtip-cli-linux-x86_64?job=build-linux-x86_64" \
+            -o /usr/local/bin/glitchtip-cli
+          chmod +x /usr/local/bin/glitchtip-cli
+
+      - name: Upload ProGuard mappings to GlitchTip
+        if: success()
+        continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          source .sentry/config.env
+          export SENTRY_URL="$SENTRY_URL"
+
+          MAPPING_PATH="mobile/android/app/build/outputs/mapping/release/mapping.txt"
+
+          if [ ! -f "$MAPPING_PATH" ]; then
+            echo "⚠️ ProGuard mapping not found at $MAPPING_PATH"
+            exit 0
+          fi
+
+          echo "📤 Uploading ProGuard mappings to GlitchTip..."
+
+          glitchtip-cli debug-files upload "$MAPPING_PATH" \
+            --org "$SENTRY_ORG" \
+            --project "$SENTRY_PROJECT_MOBILE"
+
+          echo "✅ ProGuard mappings uploaded to GlitchTip"
+
       - name: Create Sentry release with commits
         if: success()
         continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           source .sentry/config.env
+          export SENTRY_URL="$SENTRY_URL"
 
           VERSION="${{ steps.version.outputs.VERSION }}"
           BUILD_CODE=$(grep 'versionCode' mobile/android/app/build.gradle | head -1 | sed 's/.*versionCode //' | tr -d '[:space:]')
@@ -200,17 +221,14 @@ jobs:
           echo "📤 Creating Sentry release: $RELEASE_NAME"
 
           npx @sentry/cli releases new "$RELEASE_NAME" \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
           npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
           npx @sentry/cli releases finalize "$RELEASE_NAME" \
-            --auth-token "${{ secrets.SENTRY_AUTH_TOKEN }}" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 

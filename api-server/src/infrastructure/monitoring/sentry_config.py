@@ -28,14 +28,6 @@ def init_sentry() -> None:
     sentry_sdk.init(
         dsn=sentry_dsn,
         environment=environment,
-        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring
-        # Adjust this in production to reduce costs (e.g., 0.1 for 10% sampling)
-        traces_sample_rate=0.1,
-        # Set profiles_sample_rate to profile 10% of sampled transactions
-        profiles_sample_rate=0.1,
-        # Enable performance monitoring
-        enable_tracing=True,
-        # Integrations
         integrations=[
             FastApiIntegration(transaction_style="endpoint"),
             LoggingIntegration(
@@ -48,6 +40,6 @@ def init_sentry() -> None:
     )
 
     logger.info(
-        "Sentry initialized for environment: %s (sampling: traces=10%%, profiles=10%%)",
+        "Sentry initialized for environment: %s",
         environment,
     )
