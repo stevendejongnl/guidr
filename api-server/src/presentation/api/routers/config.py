@@ -19,4 +19,5 @@ async def get_config(settings: Settings = Depends(get_settings)) -> ConfigRespon
     return ConfigResponse(
         minAppVersion=settings.min_app_version,
         maxAppVersion=settings.max_app_version,
+        sentryDsn=settings.web_sentry_dsn,
     )
