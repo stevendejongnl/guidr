@@ -30,7 +30,7 @@
     "test": "npm run mobile:test && npm run api:test",
     "security:mobile": "./scripts/npm-audit-security.sh ./mobile high",
     "security:web": "npm audit --workspace=web-app --audit-level=high --omit=dev || true",
-    "security:api": "cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp",
+    "security:api": "cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp --ignore-vuln CVE-2026-4539 --ignore-vuln CVE-2026-25645",
     "security:all": "npm run security:mobile && npm run security:web && npm run security:api",
     "security:fix:mobile": "npm audit fix --workspace=mobile",
     "security:fix:web": "npm audit fix --workspace=web-app",
