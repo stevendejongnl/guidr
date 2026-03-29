@@ -1,6 +1,6 @@
 {
   "name": "guidr-monorepo",
-  "version": "1.91.0",
+  "version": "1.91.1",
   "private": true,
   "description": "Guidr monorepo - mobile app, API server, and web app",
   "workspaces": [

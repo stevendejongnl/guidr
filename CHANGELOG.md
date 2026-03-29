@@ -1,3 +1,9 @@
+## [1.91.1](https://github.com/stevendejongnl/guidr/compare/v1.91.0...v1.91.1) (2026-03-29)
+
+### Bug Fixes
+
+* **mongodb:** add connection resilience settings for Atlas intermittent drops ([77be4f7](https://github.com/stevendejongnl/guidr/commit/77be4f749dc7999869ee532cb379741318533a79))
+
 ## [1.91.0](https://github.com/stevendejongnl/guidr/compare/v1.90.4...v1.91.0) (2026-03-25)
 
 ### Features
