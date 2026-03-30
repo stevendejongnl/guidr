@@ -21,7 +21,14 @@ class Database:
 
     async def connect(self) -> None:
         """Connect to MongoDB."""
-        self._client = AsyncIOMotorClient(self._settings.mongodb_url)
+        self._client = AsyncIOMotorClient(
+            self._settings.mongodb_url,
+            serverSelectionTimeoutMS=10000,
+            connectTimeoutMS=10000,
+            socketTimeoutMS=30000,
+            retryWrites=True,
+            retryReads=True,
+        )
         self._database = self._client[self._settings.mongodb_database]
 
         # Create indexes
