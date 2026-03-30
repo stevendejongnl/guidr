@@ -38,6 +38,18 @@
 # - GHSA-jp2q-39xq-3w4g: fast-xml-parser entity expansion bypass via DOCTYPE (CRITICAL, @react-native-community/cli dev tool only, same root cause as GHSA-jmr7-xgp7-cmfj)
 # - GHSA-rf6f-7fwh-wjgh: flatted Prototype Pollution via parse() (HIGH, mobile devDependency only, not runtime)
 # - GHSA-48c2-rrv3-qjmp: yaml stack overflow via deeply nested YAML collections (MODERATE, yaml is a devDependency/build tool, not runtime)
+# - GHSA-f886-m6hf-6m8v: brace-expansion Zero-step sequence DoS (MODERATE, eslint/jest devDeps only, not runtime)
+# - GHSA-xjpj-3mr7-gcpf: Handlebars.js JS injection in CLI Precompiler (CRITICAL, semantic-release devDep chain only, not runtime)
+# - GHSA-xhpv-hc6g-r9c6: Handlebars.js JS injection via AST Type Confusion partial (CRITICAL, semantic-release devDep chain only)
+# - GHSA-9cx6-37pm-9jff: Handlebars.js DoS via malformed decorator syntax (HIGH, semantic-release devDep chain only)
+# - GHSA-3mfm-83xf-c92r: Handlebars.js JS injection via @partial-block AST (HIGH, semantic-release devDep chain only)
+# - GHSA-2w6w-674q-4c4q: Handlebars.js JS injection via AST Type Confusion (HIGH, semantic-release devDep chain only)
+# - GHSA-2qvq-rjwj-gvw9: Handlebars.js Prototype Pollution via partial template (HIGH, semantic-release devDep chain only)
+# - GHSA-7rx3-28cr-v5wh: Handlebars.js Prototype Method access control gap (HIGH, semantic-release devDep chain only)
+# - GHSA-442j-39wm-28r2: Handlebars.js property access validation bypass (HIGH, semantic-release devDep chain only)
+# - GHSA-3v7f-55p6-f55p: picomatch method injection in POSIX char classes (HIGH, jest/rollup devDeps only, not runtime)
+# - GHSA-c2c7-rcm5-vvqj: picomatch ReDoS via extglob quantifiers (HIGH, jest/rollup devDeps only, not runtime)
+# - GHSA-v3rj-xjv7-4jmq: smol-toml DoS via consecutive commented lines (MODERATE, mobile devDependency only, not runtime)
 
 set -e
 
@@ -79,6 +91,18 @@ ACCEPTED_ADVISORIES=(
   "GHSA-jp2q-39xq-3w4g"
   "GHSA-rf6f-7fwh-wjgh"
   "GHSA-48c2-rrv3-qjmp"
+  "GHSA-f886-m6hf-6m8v"
+  "GHSA-xjpj-3mr7-gcpf"
+  "GHSA-xhpv-hc6g-r9c6"
+  "GHSA-9cx6-37pm-9jff"
+  "GHSA-3mfm-83xf-c92r"
+  "GHSA-2w6w-674q-4c4q"
+  "GHSA-2qvq-rjwj-gvw9"
+  "GHSA-7rx3-28cr-v5wh"
+  "GHSA-442j-39wm-28r2"
+  "GHSA-3v7f-55p6-f55p"
+  "GHSA-c2c7-rcm5-vvqj"
+  "GHSA-v3rj-xjv7-4jmq"
 )
 
 # Run npm audit and capture output
