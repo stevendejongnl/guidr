@@ -50,6 +50,11 @@
 # - GHSA-3v7f-55p6-f55p: picomatch method injection in POSIX char classes (HIGH, jest/rollup devDeps only, not runtime)
 # - GHSA-c2c7-rcm5-vvqj: picomatch ReDoS via extglob quantifiers (HIGH, jest/rollup devDeps only, not runtime)
 # - GHSA-v3rj-xjv7-4jmq: smol-toml DoS via consecutive commented lines (MODERATE, mobile devDependency only, not runtime)
+# - GHSA-737v-mqg7-c878: defu Prototype Pollution via __proto__ key (HIGH, @ryoppippi/unplugin-typia devDep chain only, not runtime)
+# - GHSA-r5fr-rjxr-66jc: lodash Prototype Pollution via special key names (HIGH, semantic-release/typia devDep chain only, not runtime)
+# - GHSA-f23m-r3pf-42rh: lodash Prototype Pollution via _.unset/_.omit (HIGH, semantic-release/typia devDep chain only, not runtime)
+# - GHSA-chqc-8p9q-pq6q: basic-ftp FTP Command Injection via CRLF (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
+# - GHSA-6v7q-wjvx-w8wg: basic-ftp incomplete CRLF injection protection (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
 
 set -e
 
@@ -103,6 +108,11 @@ ACCEPTED_ADVISORIES=(
   "GHSA-3v7f-55p6-f55p"
   "GHSA-c2c7-rcm5-vvqj"
   "GHSA-v3rj-xjv7-4jmq"
+  "GHSA-737v-mqg7-c878"
+  "GHSA-r5fr-rjxr-66jc"
+  "GHSA-f23m-r3pf-42rh"
+  "GHSA-chqc-8p9q-pq6q"
+  "GHSA-6v7q-wjvx-w8wg"
 )
 
 # Run npm audit and capture output
