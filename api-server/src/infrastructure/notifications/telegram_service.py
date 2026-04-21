@@ -19,7 +19,15 @@ class TelegramNotificationService:
         """
         self._bot_token = settings.telegram_bot_token
         self._chat_id = settings.telegram_chat_id
+        self._app_name = settings.app_name
         self._logger = logging.getLogger(__name__)
+
+    def _app_and_pod_lines(self, pod_name: str | None) -> str:
+        """Render the App (always) and Pod (when set) identification lines."""
+        lines = "<b>App:</b> <code>" + self._escape_html(self._app_name) + "</code>"
+        if pod_name:
+            lines += "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
+        return lines
 
     async def send_startup_notification(
         self,
@@ -47,14 +55,9 @@ class TelegramNotificationService:
                 "<b>🚀 API Server Started</b>\n\n"
                 "<b>Status:</b> ✅ Running\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp
-            )
-
-            if pod_name:
-                message += "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
-
-            message += (
-                '\n\n<a href="https://guidr.madebysteven.nl/api/docs">API Documentation</a>'
+                "<b>Timestamp:</b> " + timestamp + "\n"
+                + self._app_and_pod_lines(pod_name)
+                + '\n\n<a href="https://guidr.madebysteven.nl/api/docs">API Documentation</a>'
             )
 
             async with httpx.AsyncClient() as client:
@@ -109,19 +112,16 @@ class TelegramNotificationService:
             error_type = type(error).__name__
             error_message = str(error)[:500]  # Limit traceback to 500 chars
 
+            api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
                 "<b>❌ API Server Crashed</b>\n\n"
                 "<b>Error Type:</b> " + error_type + "\n"
                 "<b>Message:</b> <code>" + self._escape_html(error_message) + "</code>\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp
+                "<b>Timestamp:</b> " + timestamp + "\n"
+                + self._app_and_pod_lines(pod_name)
+                + f'\n\n<a href="{api_docs_url}">API Documentation</a>'
             )
-
-            if pod_name:
-                message += "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
-
-            api_docs_url = "https://guidr.madebysteven.nl/api/docs"
-            message += f"\n\n<a href=\"{api_docs_url}\">API Documentation</a>"
 
             await self._send_message(message)
         except httpx.TimeoutException:
@@ -155,18 +155,15 @@ class TelegramNotificationService:
         try:
             timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
 
+            api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
                 "<b>🔄 API Server Shutdown</b>\n\n"
                 "<b>Reason:</b> " + reason + "\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp
+                "<b>Timestamp:</b> " + timestamp + "\n"
+                + self._app_and_pod_lines(pod_name)
+                + f'\n\n<a href="{api_docs_url}">API Documentation</a>'
             )
-
-            if pod_name:
-                message += "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
-
-            api_docs_url = "https://guidr.madebysteven.nl/api/docs"
-            message += f"\n\n<a href=\"{api_docs_url}\">API Documentation</a>"
 
             await self._send_message(message, disable_notification=True)
         except httpx.TimeoutException:
@@ -200,18 +197,15 @@ class TelegramNotificationService:
         try:
             timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
 
+            api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
                 "<b>⚠️ API Server Unhealthy</b>\n\n"
                 "<b>Reason:</b> " + self._escape_html(reason) + "\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp
+                "<b>Timestamp:</b> " + timestamp + "\n"
+                + self._app_and_pod_lines(pod_name)
+                + f'\n\n<a href="{api_docs_url}">API Documentation</a>'
             )
-
-            if pod_name:
-                message += "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
-
-            api_docs_url = "https://guidr.madebysteven.nl/api/docs"
-            message += f"\n\n<a href=\"{api_docs_url}\">API Documentation</a>"
 
             await self._send_message(message, disable_notification=True)
         except httpx.TimeoutException:

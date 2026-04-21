@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     web_sentry_dsn: str | None = None
 
     # Deployment Configuration
+    app_name: str = "Guidr"
     deployment_id: str | None = None
     pod_name: str | None = None
 
