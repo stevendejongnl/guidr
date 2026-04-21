@@ -379,3 +379,69 @@ async def test_send_health_failure_notification_html_escaping(
         assert "&lt;message&gt;" in json_payload["text"]
         assert "&amp;" in json_payload["text"]
         assert "pod&lt;name&gt;" in json_payload["text"]
+
+
+@pytest.mark.asyncio
+async def test_send_startup_notification_includes_pod_name(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """Test that startup notification includes pod name when provided."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_startup_notification(
+            "1.0.0", pod_name="guidr-api-server-ghi789"
+        )
+
+        mock_post.assert_called_once()
+        call_args = mock_post.call_args
+        json_payload = call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "1.0.0" in json_payload["text"]
+        assert "🚀" in json_payload["text"]
+        assert "<b>Pod:</b>" in json_payload["text"]
+        assert "guidr-api-server-ghi789" in json_payload["text"]
+        assert json_payload["parse_mode"] == "HTML"
+
+
+@pytest.mark.asyncio
+async def test_send_startup_notification_without_pod_name(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """Test that startup notification omits pod name when not provided."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_startup_notification("1.0.0")
+
+        call_args = mock_post.call_args
+        json_payload = call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "<b>Pod:</b>" not in json_payload["text"]
+
+
+@pytest.mark.asyncio
+async def test_send_startup_notification_html_escaping(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """Test that startup notification properly escapes HTML in pod name."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_startup_notification(
+            "1.0.0", pod_name="pod<name>"
+        )
+
+        call_args = mock_post.call_args
+        json_payload = call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "pod&lt;name&gt;" in json_payload["text"]

@@ -21,11 +21,16 @@ class TelegramNotificationService:
         self._chat_id = settings.telegram_chat_id
         self._logger = logging.getLogger(__name__)
 
-    async def send_startup_notification(self, version: str) -> None:
+    async def send_startup_notification(
+        self,
+        version: str,
+        pod_name: str | None = None,
+    ) -> None:
         """Send startup notification to Telegram.
 
         Args:
             version: Application version string
+            pod_name: Kubernetes pod name (optional)
 
         Gracefully handles missing credentials or network failures without raising exceptions.
         """
@@ -42,8 +47,14 @@ class TelegramNotificationService:
                 "<b>🚀 API Server Started</b>\n\n"
                 "<b>Status:</b> ✅ Running\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp + "\n\n"
-                '<a href="https://guidr.madebysteven.nl/api/docs">API Documentation</a>'
+                "<b>Timestamp:</b> " + timestamp
+            )
+
+            if pod_name:
+                message += "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
+
+            message += (
+                '\n\n<a href="https://guidr.madebysteven.nl/api/docs">API Documentation</a>'
             )
 
             async with httpx.AsyncClient() as client:
