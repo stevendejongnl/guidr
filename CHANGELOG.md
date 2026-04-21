@@ -1,3 +1,9 @@
+## [1.93.0](https://github.com/stevendejongnl/guidr/compare/v1.92.0...v1.93.0) (2026-04-21)
+
+### Features
+
+* **api:** always include app name in Telegram notifications, pod name when available ([eb97562](https://github.com/stevendejongnl/guidr/commit/eb97562e6f50ebe3974f7e6f185412a89ebb3320))
+
 ## [1.92.0](https://github.com/stevendejongnl/guidr/compare/v1.91.1...v1.92.0) (2026-04-21)
 
 ### Features
