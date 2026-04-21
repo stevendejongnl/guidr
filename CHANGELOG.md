@@ -1,3 +1,9 @@
+## [1.94.0](https://github.com/stevendejongnl/guidr/compare/v1.93.0...v1.94.0) (2026-04-21)
+
+### Features
+
+* **notifications:** embed app name in title for all Telegram messages ([5950b5e](https://github.com/stevendejongnl/guidr/commit/5950b5edb91cb3cc7680594be17e968e57ecf7bc))
+
 ## [1.93.0](https://github.com/stevendejongnl/guidr/compare/v1.92.0...v1.93.0) (2026-04-21)
 
 ### Features
