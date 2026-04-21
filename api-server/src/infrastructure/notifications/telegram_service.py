@@ -22,12 +22,11 @@ class TelegramNotificationService:
         self._app_name = settings.app_name
         self._logger = logging.getLogger(__name__)
 
-    def _app_and_pod_lines(self, pod_name: str | None) -> str:
-        """Render the App (always) and Pod (when set) identification lines."""
-        lines = "<b>App:</b> <code>" + self._escape_html(self._app_name) + "</code>"
-        if pod_name:
-            lines += "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
-        return lines
+    def _pod_line(self, pod_name: str | None) -> str:
+        """Render the Pod identification line when a pod name is available, else empty."""
+        if not pod_name:
+            return ""
+        return "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
 
     async def send_startup_notification(
         self,
@@ -52,11 +51,11 @@ class TelegramNotificationService:
         try:
             timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
             message = (
-                "<b>🚀 API Server Started</b>\n\n"
+                f"<b>🚀 {self._escape_html(self._app_name)} API Server Started</b>\n\n"
                 "<b>Status:</b> ✅ Running\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp + "\n"
-                + self._app_and_pod_lines(pod_name)
+                "<b>Timestamp:</b> " + timestamp
+                + self._pod_line(pod_name)
                 + '\n\n<a href="https://guidr.madebysteven.nl/api/docs">API Documentation</a>'
             )
 
@@ -114,12 +113,12 @@ class TelegramNotificationService:
 
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
-                "<b>❌ API Server Crashed</b>\n\n"
+                f"<b>❌ {self._escape_html(self._app_name)} API Server Crashed</b>\n\n"
                 "<b>Error Type:</b> " + error_type + "\n"
                 "<b>Message:</b> <code>" + self._escape_html(error_message) + "</code>\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp + "\n"
-                + self._app_and_pod_lines(pod_name)
+                "<b>Timestamp:</b> " + timestamp
+                + self._pod_line(pod_name)
                 + f'\n\n<a href="{api_docs_url}">API Documentation</a>'
             )
 
@@ -157,11 +156,11 @@ class TelegramNotificationService:
 
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
-                "<b>🔄 API Server Shutdown</b>\n\n"
+                f"<b>🔄 {self._escape_html(self._app_name)} API Server Shutdown</b>\n\n"
                 "<b>Reason:</b> " + reason + "\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp + "\n"
-                + self._app_and_pod_lines(pod_name)
+                "<b>Timestamp:</b> " + timestamp
+                + self._pod_line(pod_name)
                 + f'\n\n<a href="{api_docs_url}">API Documentation</a>'
             )
 
@@ -199,11 +198,11 @@ class TelegramNotificationService:
 
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
-                "<b>⚠️ API Server Unhealthy</b>\n\n"
+                f"<b>⚠️ {self._escape_html(self._app_name)} API Server Unhealthy</b>\n\n"
                 "<b>Reason:</b> " + self._escape_html(reason) + "\n"
                 "<b>Version:</b> " + version + "\n"
-                "<b>Timestamp:</b> " + timestamp + "\n"
-                + self._app_and_pod_lines(pod_name)
+                "<b>Timestamp:</b> " + timestamp
+                + self._pod_line(pod_name)
                 + f'\n\n<a href="{api_docs_url}">API Documentation</a>'
             )
 

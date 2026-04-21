@@ -384,10 +384,10 @@ async def test_send_health_failure_notification_html_escaping(
 
 
 @pytest.mark.asyncio
-async def test_send_startup_notification_includes_app_and_pod(
+async def test_startup_notification_title_contains_app_name_and_pod_line(
     service_with_credentials: TelegramNotificationService,
 ) -> None:
-    """Test that startup notification includes app name always + pod name when provided."""
+    """App name lives in the title; pod line appears when pod_name provided."""
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -398,24 +398,21 @@ async def test_send_startup_notification_includes_app_and_pod(
         )
 
         mock_post.assert_called_once()
-        call_args = mock_post.call_args
-        json_payload = call_args.kwargs.get("json")
+        json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "1.0.0" in json_payload["text"]
-        assert "🚀" in json_payload["text"]
-        assert "<b>App:</b>" in json_payload["text"]
-        assert "Guidr" in json_payload["text"]
+        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["text"]
+        assert "<b>App:</b>" not in json_payload["text"]
         assert "<b>Pod:</b>" in json_payload["text"]
         assert "guidr-api-server-ghi789" in json_payload["text"]
         assert json_payload["parse_mode"] == "HTML"
 
 
 @pytest.mark.asyncio
-async def test_send_startup_notification_without_pod_still_shows_app(
+async def test_startup_notification_without_pod_still_shows_app_in_title(
     service_with_credentials: TelegramNotificationService,
 ) -> None:
-    """App name is always present; pod line is omitted when pod_name is absent."""
+    """App name is always in the title; pod line is omitted when pod_name absent."""
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -423,17 +420,15 @@ async def test_send_startup_notification_without_pod_still_shows_app(
 
         await service_with_credentials.send_startup_notification("1.0.0")
 
-        call_args = mock_post.call_args
-        json_payload = call_args.kwargs.get("json")
+        json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>App:</b>" in json_payload["text"]
-        assert "Guidr" in json_payload["text"]
+        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["text"]
         assert "<b>Pod:</b>" not in json_payload["text"]
 
 
 @pytest.mark.asyncio
-async def test_send_startup_notification_html_escaping(
+async def test_startup_notification_html_escapes_pod_name(
     service_with_credentials: TelegramNotificationService,
 ) -> None:
     """Test that startup notification properly escapes HTML in pod name."""
@@ -446,18 +441,17 @@ async def test_send_startup_notification_html_escaping(
             "1.0.0", pod_name="pod<name>"
         )
 
-        call_args = mock_post.call_args
-        json_payload = call_args.kwargs.get("json")
+        json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
         assert "pod&lt;name&gt;" in json_payload["text"]
 
 
 @pytest.mark.asyncio
-async def test_shutdown_notification_always_includes_app_name(
+async def test_shutdown_notification_title_contains_app_name(
     service_with_credentials: TelegramNotificationService,
 ) -> None:
-    """Shutdown messages must always carry the app name, with or without a pod."""
+    """Shutdown title must carry the app name."""
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -465,20 +459,19 @@ async def test_shutdown_notification_always_includes_app_name(
 
         await service_with_credentials.send_shutdown_notification(version="1.0.0")
 
-        call_args = mock_post.call_args
-        json_payload = call_args.kwargs.get("json")
+        json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>App:</b>" in json_payload["text"]
-        assert "Guidr" in json_payload["text"]
+        assert "<b>🔄 Guidr API Server Shutdown</b>" in json_payload["text"]
+        assert "<b>App:</b>" not in json_payload["text"]
         assert "<b>Pod:</b>" not in json_payload["text"]
 
 
 @pytest.mark.asyncio
-async def test_crash_notification_always_includes_app_name(
+async def test_crash_notification_title_contains_app_name(
     service_with_credentials: TelegramNotificationService,
 ) -> None:
-    """Crash messages must always carry the app name."""
+    """Crash title must carry the app name."""
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -488,19 +481,17 @@ async def test_crash_notification_always_includes_app_name(
             error=RuntimeError("boom"), version="1.0.0"
         )
 
-        call_args = mock_post.call_args
-        json_payload = call_args.kwargs.get("json")
+        json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>App:</b>" in json_payload["text"]
-        assert "Guidr" in json_payload["text"]
+        assert "<b>❌ Guidr API Server Crashed</b>" in json_payload["text"]
 
 
 @pytest.mark.asyncio
-async def test_health_failure_notification_always_includes_app_name(
+async def test_health_failure_notification_title_contains_app_name(
     service_with_credentials: TelegramNotificationService,
 ) -> None:
-    """Health-failure messages must always carry the app name."""
+    """Health-failure title must carry the app name."""
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -510,9 +501,7 @@ async def test_health_failure_notification_always_includes_app_name(
             reason="db down", version="1.0.0"
         )
 
-        call_args = mock_post.call_args
-        json_payload = call_args.kwargs.get("json")
+        json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>App:</b>" in json_payload["text"]
-        assert "Guidr" in json_payload["text"]
+        assert "<b>⚠️ Guidr API Server Unhealthy</b>" in json_payload["text"]
