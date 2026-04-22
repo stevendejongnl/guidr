@@ -44,6 +44,10 @@ parse_arguments() {
         METADATA="$2"
         shift 2
         ;;
+      --app)
+        APP_NAME="$2"
+        shift 2
+        ;;
       --dry-run)
         DRY_RUN=true
         shift
@@ -370,6 +374,11 @@ main() {
 
   # Format the notification message
   MESSAGE=$(format_message "$NOTIFICATION_TYPE")
+
+  # Inject app name into the title line (after the emoji, before the rest of the title).
+  # Title structure: "<b>EMOJI rest-of-title</b>" → "<b>EMOJI APP_NAME rest-of-title</b>"
+  local app_escaped=$(escape_html "${APP_NAME:-Guidr}")
+  MESSAGE=$(echo "$MESSAGE" | awk -v app="$app_escaped" 'NR==1 { sub(/ /, " " app " "); } 1')
 
   if [ "$DRY_RUN" = true ]; then
     echo "==== DRY RUN: Telegram Notification ===="
