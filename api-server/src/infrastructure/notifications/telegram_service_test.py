@@ -16,6 +16,7 @@ def settings_with_telegram() -> Settings:
     settings = MagicMock(spec=Settings)
     settings.telegram_bot_token = "test_bot_token"
     settings.telegram_chat_id = "test_chat_id"
+    settings.app_name = "Guidr"
     return settings
 
 
@@ -25,6 +26,7 @@ def settings_without_telegram() -> Settings:
     settings = MagicMock(spec=Settings)
     settings.telegram_bot_token = None
     settings.telegram_chat_id = None
+    settings.app_name = "Guidr"
     return settings
 
 
@@ -379,3 +381,127 @@ async def test_send_health_failure_notification_html_escaping(
         assert "&lt;message&gt;" in json_payload["text"]
         assert "&amp;" in json_payload["text"]
         assert "pod&lt;name&gt;" in json_payload["text"]
+
+
+@pytest.mark.asyncio
+async def test_startup_notification_title_contains_app_name_and_pod_line(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """App name lives in the title; pod line appears when pod_name provided."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_startup_notification(
+            "1.0.0", pod_name="guidr-api-server-ghi789"
+        )
+
+        mock_post.assert_called_once()
+        json_payload = mock_post.call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["text"]
+        assert "<b>App:</b>" not in json_payload["text"]
+        assert "<b>Pod:</b>" in json_payload["text"]
+        assert "guidr-api-server-ghi789" in json_payload["text"]
+        assert json_payload["parse_mode"] == "HTML"
+
+
+@pytest.mark.asyncio
+async def test_startup_notification_without_pod_still_shows_app_in_title(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """App name is always in the title; pod line is omitted when pod_name absent."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_startup_notification("1.0.0")
+
+        json_payload = mock_post.call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["text"]
+        assert "<b>Pod:</b>" not in json_payload["text"]
+
+
+@pytest.mark.asyncio
+async def test_startup_notification_html_escapes_pod_name(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """Test that startup notification properly escapes HTML in pod name."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_startup_notification(
+            "1.0.0", pod_name="pod<name>"
+        )
+
+        json_payload = mock_post.call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "pod&lt;name&gt;" in json_payload["text"]
+
+
+@pytest.mark.asyncio
+async def test_shutdown_notification_title_contains_app_name(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """Shutdown title must carry the app name."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_shutdown_notification(version="1.0.0")
+
+        json_payload = mock_post.call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "<b>🔄 Guidr API Server Shutdown</b>" in json_payload["text"]
+        assert "<b>App:</b>" not in json_payload["text"]
+        assert "<b>Pod:</b>" not in json_payload["text"]
+
+
+@pytest.mark.asyncio
+async def test_crash_notification_title_contains_app_name(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """Crash title must carry the app name."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_crash_notification(
+            error=RuntimeError("boom"), version="1.0.0"
+        )
+
+        json_payload = mock_post.call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "<b>❌ Guidr API Server Crashed</b>" in json_payload["text"]
+
+
+@pytest.mark.asyncio
+async def test_health_failure_notification_title_contains_app_name(
+    service_with_credentials: TelegramNotificationService,
+) -> None:
+    """Health-failure title must carry the app name."""
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        await service_with_credentials.send_health_failure_notification(
+            reason="db down", version="1.0.0"
+        )
+
+        json_payload = mock_post.call_args.kwargs.get("json")
+
+        assert json_payload is not None
+        assert "<b>⚠️ Guidr API Server Unhealthy</b>" in json_payload["text"]

@@ -1,3 +1,25 @@
+## [1.94.0](https://github.com/stevendejongnl/guidr/compare/v1.93.0...v1.94.0) (2026-04-21)
+
+### Features
+
+* **notifications:** embed app name in title for all Telegram messages ([5950b5e](https://github.com/stevendejongnl/guidr/commit/5950b5edb91cb3cc7680594be17e968e57ecf7bc))
+
+## [1.93.0](https://github.com/stevendejongnl/guidr/compare/v1.92.0...v1.93.0) (2026-04-21)
+
+### Features
+
+* **api:** always include app name in Telegram notifications, pod name when available ([eb97562](https://github.com/stevendejongnl/guidr/commit/eb97562e6f50ebe3974f7e6f185412a89ebb3320))
+
+## [1.92.0](https://github.com/stevendejongnl/guidr/compare/v1.91.1...v1.92.0) (2026-04-21)
+
+### Features
+
+* **api:** include pod name in startup Telegram notification ([fcb04d0](https://github.com/stevendejongnl/guidr/commit/fcb04d0c26c15042a8a35f907392e6d33f803e0e))
+
+### Documentation
+
+* add dependency-cruiser visualization graphs ([fe33190](https://github.com/stevendejongnl/guidr/commit/fe331907f39801fff7e04d78b4214961e166e55a))
+
 ## [1.91.1](https://github.com/stevendejongnl/guidr/compare/v1.91.0...v1.91.1) (2026-03-29)
 
 ### Bug Fixes
