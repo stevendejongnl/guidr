@@ -76,7 +76,7 @@ async def lifespan(app: FastAPI):
 
     if should_notify:
         telegram_service = container.telegram_notification_service()
-        await telegram_service.send_startup_notification(app.version)
+        await telegram_service.send_startup_notification(app.version, pod_name=pod_name)
     else:
         logger.info(
             f"Skipping startup notification (already sent by another pod for "

@@ -55,6 +55,7 @@
 # - GHSA-f23m-r3pf-42rh: lodash Prototype Pollution via _.unset/_.omit (HIGH, semantic-release/typia devDep chain only, not runtime)
 # - GHSA-chqc-8p9q-pq6q: basic-ftp FTP Command Injection via CRLF (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
 # - GHSA-6v7q-wjvx-w8wg: basic-ftp incomplete CRLF injection protection (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
+# - GHSA-rp42-5vxx-qpwr: basic-ftp unbounded memory DoS in Client.list() (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
 
 set -e
 
@@ -113,6 +114,7 @@ ACCEPTED_ADVISORIES=(
   "GHSA-f23m-r3pf-42rh"
   "GHSA-chqc-8p9q-pq6q"
   "GHSA-6v7q-wjvx-w8wg"
+  "GHSA-rp42-5vxx-qpwr"
 )
 
 # Run npm audit and capture output
