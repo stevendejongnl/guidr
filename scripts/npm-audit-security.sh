@@ -58,6 +58,8 @@
 # - GHSA-rp42-5vxx-qpwr: basic-ftp unbounded memory DoS in Client.list() (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
 # - GHSA-gh4j-gqv2-49f6: fast-xml-parser XML Comment and CDATA injection via unescaped delimiters (MODERATE, @react-native-community/cli dev tool only, not runtime)
 # - GHSA-qx2v-qp2m-jg93: postcss XSS via unescaped </style> in CSS stringify output (MODERATE, vite/web build tool dev-time only, not runtime)
+# - GHSA-rpmf-866q-6p89: basic-ftp DoS via unbounded multiline control response buffering (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
+# - GHSA-v2v4-37r5-5v8g: vite 7.0.0-7.3.1 esbuild CORS bypass in dev server (MODERATE, web build tool dev-time only, not runtime)
 
 set -e
 
@@ -119,6 +121,8 @@ ACCEPTED_ADVISORIES=(
   "GHSA-rp42-5vxx-qpwr"
   "GHSA-gh4j-gqv2-49f6"
   "GHSA-qx2v-qp2m-jg93"
+  "GHSA-rpmf-866q-6p89"
+  "GHSA-v2v4-37r5-5v8g"
 )
 
 # Run npm audit and capture output
