@@ -56,6 +56,8 @@
 # - GHSA-chqc-8p9q-pq6q: basic-ftp FTP Command Injection via CRLF (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
 # - GHSA-6v7q-wjvx-w8wg: basic-ftp incomplete CRLF injection protection (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
 # - GHSA-rp42-5vxx-qpwr: basic-ftp unbounded memory DoS in Client.list() (HIGH, puppeteer/proxy-agent devDep chain only, not runtime)
+# - GHSA-gh4j-gqv2-49f6: fast-xml-parser XML Comment and CDATA injection via unescaped delimiters (MODERATE, @react-native-community/cli dev tool only, not runtime)
+# - GHSA-qx2v-qp2m-jg93: postcss XSS via unescaped </style> in CSS stringify output (MODERATE, vite/web build tool dev-time only, not runtime)
 
 set -e
 
@@ -115,6 +117,8 @@ ACCEPTED_ADVISORIES=(
   "GHSA-chqc-8p9q-pq6q"
   "GHSA-6v7q-wjvx-w8wg"
   "GHSA-rp42-5vxx-qpwr"
+  "GHSA-gh4j-gqv2-49f6"
+  "GHSA-qx2v-qp2m-jg93"
 )
 
 # Run npm audit and capture output
