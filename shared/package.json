@@ -38,13 +38,17 @@
   },
   "scripts": {
     "build": "vite build",
-    "build:watch": "vite build --watch"
+    "build:watch": "vite build --watch",
+    "declarations": "tsc --project tsconfig.declarations.json",
+    "api:update": "npm run declarations && api-extractor run --local --verbose",
+    "api:check": "npm run declarations && api-extractor run"
   },
   "files": [
     "dist",
     "src"
   ],
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.58.7",
     "@ryoppippi/unplugin-typia": "^2.6.5",
     "@types/react-native": "^0.71",
     "react-native": "^0.83.1",
