@@ -1,3 +1,9 @@
+## [1.94.2](https://github.com/stevendejongnl/guidr/compare/v1.94.1...v1.94.2) (2026-05-11)
+
+### Bug Fixes
+
+* **ci:** upgrade iOS runners to macos-26 for iOS 26 SDK requirement ([41c4a37](https://github.com/stevendejongnl/guidr/commit/41c4a374035281de585d53dd7d8784126cc71e6d))
+
 ## [1.94.1](https://github.com/stevendejongnl/guidr/compare/v1.94.0...v1.94.1) (2026-05-11)
 
 ### Bug Fixes
