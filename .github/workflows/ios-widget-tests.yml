@@ -12,7 +12,7 @@ concurrency:
 jobs:
   ios-widget-tests:
     name: iOS Widget Tests
-    runs-on: macos-15
+    runs-on: macos-26
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@v4
