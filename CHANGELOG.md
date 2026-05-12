@@ -1,3 +1,17 @@
+## [1.94.2](https://github.com/stevendejongnl/guidr/compare/v1.94.1...v1.94.2) (2026-05-11)
+
+### Bug Fixes
+
+* **ci:** upgrade iOS runners to macos-26 for iOS 26 SDK requirement ([41c4a37](https://github.com/stevendejongnl/guidr/commit/41c4a374035281de585d53dd7d8784126cc71e6d))
+
+## [1.94.1](https://github.com/stevendejongnl/guidr/compare/v1.94.0...v1.94.1) (2026-05-11)
+
+### Bug Fixes
+
+* **security:** auto-upgrade pip before pip-audit to fix CVE-2026-6357 ([afee774](https://github.com/stevendejongnl/guidr/commit/afee774d290018e315c289f247d6e8857c7cf852))
+* **security:** fix all HIGH/CRITICAL npm vulnerabilities, rebuild whitelist ([03b07bc](https://github.com/stevendejongnl/guidr/commit/03b07bc9f8571a76c25b33e31445b2d7a002e2e6))
+* **security:** update python-multipart and accept new dev-tool CVEs ([149855b](https://github.com/stevendejongnl/guidr/commit/149855b9d3af37fa6aeaa6b19814211c5ad08670))
+
 ## [1.94.0](https://github.com/stevendejongnl/guidr/compare/v1.93.0...v1.94.0) (2026-04-21)
 
 ### Features

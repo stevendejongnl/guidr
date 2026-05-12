@@ -25,7 +25,7 @@ concurrency:
 jobs:
   testflight-build:
     name: Build and Deploy to TestFlight
-    runs-on: macos-15
+    runs-on: macos-26
     # Only run if manual trigger or release-created event
     if: |
       github.event_name == 'workflow_dispatch' ||
