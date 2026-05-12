@@ -85,5 +85,9 @@ mobile/ios/sentry.properties
 mobile/.env
 api-server/.env
 
+# api-extractor
+shared/dist-types/
+shared/temp/
+
 # Misc
 .idea/
