@@ -200,3 +200,19 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+  deploy:
+    name: Deploy to k8s
+    runs-on: [self-hosted, k8s]
+    steps:
+      - name: Restart deployment
+        run: |
+          RESTART_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+          CA=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          curl -sf -X PATCH \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/strategic-merge-patch+json" \
+            --cacert "$CA" \
+            "https://kubernetes.default.svc/apis/apps/v1/namespaces/guidr/deployments/guidr-api-server" \
+            -d "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"kubectl.kubernetes.io/restartedAt\":\"$RESTART_AT\"}}}}}"
