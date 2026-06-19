@@ -1,3 +1,9 @@
+## [1.94.3](https://github.com/stevendejongnl/guidr/compare/v1.94.2...v1.94.3) (2026-06-19)
+
+### Bug Fixes
+
+* **security:** upgrade vite/esbuild, document accepted moderate CVEs ([e26b651](https://github.com/stevendejongnl/guidr/commit/e26b651a1a676c3278688a3eb891807de4e032cf))
+
 ## [1.94.2](https://github.com/stevendejongnl/guidr/compare/v1.94.1...v1.94.2) (2026-05-11)
 
 ### Bug Fixes
