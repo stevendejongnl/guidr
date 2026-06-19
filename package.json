@@ -42,6 +42,7 @@
     "rollup": ">=4.59.0"
   },
   "devDependencies": {
+    "esbuild": "^0.28.1",
     "@babel/core": "^7.24.0",
     "@babel/runtime": "^7.24.0",
     "@react-native/metro-config": "^0.83.1",
