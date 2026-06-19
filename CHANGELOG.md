@@ -1,3 +1,9 @@
+## [1.94.7](https://github.com/stevendejongnl/guidr/compare/v1.94.6...v1.94.7) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** add [@sentry](https://github.com/sentry) symlink for Android and clear stale CocoaPods specs ([50855af](https://github.com/stevendejongnl/guidr/commit/50855af1bcbb63996181eb3644808ef6335c7bab))
+
 ## [1.94.6](https://github.com/stevendejongnl/guidr/compare/v1.94.5...v1.94.6) (2026-06-19)
 
 ### Bug Fixes
