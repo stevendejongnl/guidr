@@ -1,3 +1,9 @@
+## [1.94.6](https://github.com/stevendejongnl/guidr/compare/v1.94.5...v1.94.6) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** remove --workspaces from npm ci to include root devDeps ([aa728a9](https://github.com/stevendejongnl/guidr/commit/aa728a91c1e869f12d25e1867db42afb75caf726))
+
 ## [1.94.5](https://github.com/stevendejongnl/guidr/compare/v1.94.4...v1.94.5) (2026-06-19)
 
 ### Bug Fixes
