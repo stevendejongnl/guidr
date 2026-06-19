@@ -59,6 +59,16 @@ if (fs.existsSync(rootNodeModulesReactNative)) {
   createSymlink(rootNodeModulesReactNative, mobileNodeModulesReactNative, 'react-native');
 }
 
+// 2b. Create symlink for @sentry from root to mobile node_modules
+// (Android build.gradle references mobile/node_modules/@sentry/react-native/sentry.gradle)
+// Only needed when npm hoists @sentry to root (no --workspaces); skipped when it's already
+// a real directory in mobile/node_modules (the --workspaces case).
+const rootNodeModulesSentryScope = path.join(rootNodeModulesDir, '@sentry');
+const mobileNodeModulesSentryScope = path.join(mobileNodeModulesDir, '@sentry');
+if (fs.existsSync(rootNodeModulesSentryScope)) {
+  createSymlink(rootNodeModulesSentryScope, mobileNodeModulesSentryScope, '@sentry');
+}
+
 // 3. Create symlink for @react-native/codegen from root to mobile node_modules
 // (React Native gradle plugin needs this too)
 const rootNodeModulesCodegen = path.join(rootNodeModulesDir, '@react-native/codegen');

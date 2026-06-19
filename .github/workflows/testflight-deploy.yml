@@ -131,7 +131,8 @@ jobs:
       - name: Install CocoaPods dependencies
         run: |
           cd mobile/ios
-          # Install dependencies from cache (skip repo update to avoid 10-20min delay)
+          # Remove stale Local Podspecs to prevent version mismatch errors (e.g. fmt)
+          rm -rf Pods/Local\ Podspecs
           pod install
 
       - name: Check for Vendored Frameworks
