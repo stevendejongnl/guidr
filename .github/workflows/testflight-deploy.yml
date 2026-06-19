@@ -131,8 +131,8 @@ jobs:
       - name: Install CocoaPods dependencies
         run: |
           cd mobile/ios
-          # Remove stale Local Podspecs to prevent version mismatch errors (e.g. fmt)
-          rm -rf Pods/Local\ Podspecs
+          # Update fmt to match current react-native vendored version (avoids version mismatch error)
+          pod update fmt --no-repo-update || true
           pod install
 
       - name: Check for Vendored Frameworks
