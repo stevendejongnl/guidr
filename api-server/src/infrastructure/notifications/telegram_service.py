@@ -2,6 +2,7 @@
 
 import logging
 from datetime import UTC, datetime
+from html import escape
 
 import httpx
 
@@ -26,7 +27,7 @@ class TelegramNotificationService:
         """Render the Pod identification line when a pod name is available, else empty."""
         if not pod_name:
             return ""
-        return "\n<b>Pod:</b> <code>" + self._escape_html(pod_name) + "</code>"
+        return "\n<b>Pod:</b> <code>" + escape(pod_name) + "</code>"
 
     async def send_startup_notification(
         self,
@@ -51,7 +52,7 @@ class TelegramNotificationService:
         try:
             timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
             message = (
-                f"<b>🚀 {self._escape_html(self._app_name)} API Server Started</b>\n\n"
+                f"<b>🚀 {escape(self._app_name)} API Server Started</b>\n\n"
                 "<b>Status:</b> ✅ Running\n"
                 "<b>Version:</b> " + version + "\n"
                 "<b>Timestamp:</b> " + timestamp
@@ -113,9 +114,9 @@ class TelegramNotificationService:
 
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
-                f"<b>❌ {self._escape_html(self._app_name)} API Server Crashed</b>\n\n"
+                f"<b>❌ {escape(self._app_name)} API Server Crashed</b>\n\n"
                 "<b>Error Type:</b> " + error_type + "\n"
-                "<b>Message:</b> <code>" + self._escape_html(error_message) + "</code>\n"
+                "<b>Message:</b> <code>" + escape(error_message) + "</code>\n"
                 "<b>Version:</b> " + version + "\n"
                 "<b>Timestamp:</b> " + timestamp
                 + self._pod_line(pod_name)
@@ -156,7 +157,7 @@ class TelegramNotificationService:
 
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
-                f"<b>🔄 {self._escape_html(self._app_name)} API Server Shutdown</b>\n\n"
+                f"<b>🔄 {escape(self._app_name)} API Server Shutdown</b>\n\n"
                 "<b>Reason:</b> " + reason + "\n"
                 "<b>Version:</b> " + version + "\n"
                 "<b>Timestamp:</b> " + timestamp
@@ -198,8 +199,8 @@ class TelegramNotificationService:
 
             api_docs_url = "https://guidr.madebysteven.nl/api/docs"
             message = (
-                f"<b>⚠️ {self._escape_html(self._app_name)} API Server Unhealthy</b>\n\n"
-                "<b>Reason:</b> " + self._escape_html(reason) + "\n"
+                f"<b>⚠️ {escape(self._app_name)} API Server Unhealthy</b>\n\n"
+                "<b>Reason:</b> " + escape(reason) + "\n"
                 "<b>Version:</b> " + version + "\n"
                 "<b>Timestamp:</b> " + timestamp
                 + self._pod_line(pod_name)
@@ -245,20 +246,3 @@ class TelegramNotificationService:
                     f"Failed to send notification: HTTP {response.status_code}"
                 )
 
-    @staticmethod
-    def _escape_html(text: str) -> str:
-        """Escape HTML special characters.
-
-        Args:
-            text: Text to escape
-
-        Returns:
-            HTML-escaped text
-        """
-        return (
-            text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&#39;")
-        )

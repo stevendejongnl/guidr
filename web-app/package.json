@@ -15,7 +15,6 @@
     "lint:fix": "eslint src --ext .ts --fix"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.7.4",
     "@guidr/shared": "*",
     "@lit/context": "^1.1.6",
     "@sentry/browser": "^9.0.0",
