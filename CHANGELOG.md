@@ -1,3 +1,9 @@
+## [1.94.4](https://github.com/stevendejongnl/guidr/compare/v1.94.3...v1.94.4) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** move unplugin-typia to root to prevent vite@8 in shared workspace ([00057b9](https://github.com/stevendejongnl/guidr/commit/00057b9f104c585c6812eebf2c3125cf177401fd))
+
 ## [1.94.3](https://github.com/stevendejongnl/guidr/compare/v1.94.2...v1.94.3) (2026-06-19)
 
 ### Bug Fixes
