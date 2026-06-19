@@ -1,3 +1,9 @@
+## [1.94.5](https://github.com/stevendejongnl/guidr/compare/v1.94.4...v1.94.5) (2026-06-19)
+
+### Bug Fixes
+
+* **deps:** update fastlane gems to fix HIGH rubygems CVEs ([930fe25](https://github.com/stevendejongnl/guidr/commit/930fe256ebd2c0c9b127933e66cbb558da1c6eb0))
+
 ## [1.94.4](https://github.com/stevendejongnl/guidr/compare/v1.94.3...v1.94.4) (2026-06-19)
 
 ### Bug Fixes
