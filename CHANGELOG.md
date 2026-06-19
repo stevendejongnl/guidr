@@ -1,3 +1,9 @@
+## [1.94.8](https://github.com/stevendejongnl/guidr/compare/v1.94.7...v1.94.8) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** update fmt pod before install to fix CocoaPods version mismatch ([1d7c720](https://github.com/stevendejongnl/guidr/commit/1d7c7202cdaaa416388a5899ed54d15079cbdc1b))
+
 ## [1.94.7](https://github.com/stevendejongnl/guidr/compare/v1.94.6...v1.94.7) (2026-06-19)
 
 ### Bug Fixes
