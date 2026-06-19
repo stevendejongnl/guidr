@@ -63,11 +63,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: npm ci --workspaces --include=dev
-        # IMPORTANT: --workspaces flag installs all workspace packages including mobile's devDependencies
-        # Without this, Metro bundler fails with "Cannot resolve @react-native/metro-config"
-        # This is required for the npm workspace restructuring to work correctly
-        # See: docs/CI_CD_TROUBLESHOOTING.md#issue-android-release-build-fails
+        run: npm ci --include=dev
 
       - name: Build shared package
         run: npm run build:shared
