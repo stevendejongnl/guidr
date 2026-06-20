@@ -34,43 +34,4 @@ export class ValidatedServerStorage {
     return validationResult
   }
 
-  /**
-   * Get the stored server URL
-   * Delegates to underlying storage
-   */
-  async getServerUrl(): Promise<string | null> {
-    return this.storage.getServerUrl()
-  }
-
-  /**
-   * Check if a server URL is stored
-   * Delegates to underlying storage
-   */
-  async hasServerUrl(): Promise<boolean> {
-    return this.storage.hasServerUrl()
-  }
-
-  /**
-   * Clear the stored server URL
-   * Delegates to underlying storage
-   */
-  async clearServerUrl(): Promise<void> {
-    return this.storage.clearServerUrl()
-  }
-
-  /**
-   * Initialize default server URL if none is stored
-   * Delegates to underlying storage
-   */
-  async initializeDefaultServerUrl(): Promise<void> {
-    return this.storage.initializeDefaultServerUrl()
-  }
-
-  /**
-   * Get the default server URL from config
-   * Delegates to underlying storage
-   */
-  async getDefaultServerUrl(): Promise<string> {
-    return this.storage.getDefaultServerUrl()
-  }
 }

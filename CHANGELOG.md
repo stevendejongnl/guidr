@@ -1,3 +1,39 @@
+## [1.94.8](https://github.com/stevendejongnl/guidr/compare/v1.94.7...v1.94.8) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** update fmt pod before install to fix CocoaPods version mismatch ([1d7c720](https://github.com/stevendejongnl/guidr/commit/1d7c7202cdaaa416388a5899ed54d15079cbdc1b))
+
+## [1.94.7](https://github.com/stevendejongnl/guidr/compare/v1.94.6...v1.94.7) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** add [@sentry](https://github.com/sentry) symlink for Android and clear stale CocoaPods specs ([50855af](https://github.com/stevendejongnl/guidr/commit/50855af1bcbb63996181eb3644808ef6335c7bab))
+
+## [1.94.6](https://github.com/stevendejongnl/guidr/compare/v1.94.5...v1.94.6) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** remove --workspaces from npm ci to include root devDeps ([aa728a9](https://github.com/stevendejongnl/guidr/commit/aa728a91c1e869f12d25e1867db42afb75caf726))
+
+## [1.94.5](https://github.com/stevendejongnl/guidr/compare/v1.94.4...v1.94.5) (2026-06-19)
+
+### Bug Fixes
+
+* **deps:** update fastlane gems to fix HIGH rubygems CVEs ([930fe25](https://github.com/stevendejongnl/guidr/commit/930fe256ebd2c0c9b127933e66cbb558da1c6eb0))
+
+## [1.94.4](https://github.com/stevendejongnl/guidr/compare/v1.94.3...v1.94.4) (2026-06-19)
+
+### Bug Fixes
+
+* **ci:** move unplugin-typia to root to prevent vite@8 in shared workspace ([00057b9](https://github.com/stevendejongnl/guidr/commit/00057b9f104c585c6812eebf2c3125cf177401fd))
+
+## [1.94.3](https://github.com/stevendejongnl/guidr/compare/v1.94.2...v1.94.3) (2026-06-19)
+
+### Bug Fixes
+
+* **security:** upgrade vite/esbuild, document accepted moderate CVEs ([e26b651](https://github.com/stevendejongnl/guidr/commit/e26b651a1a676c3278688a3eb891807de4e032cf))
+
 ## [1.94.2](https://github.com/stevendejongnl/guidr/compare/v1.94.1...v1.94.2) (2026-05-11)
 
 ### Bug Fixes

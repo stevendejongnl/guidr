@@ -105,11 +105,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --workspaces --include=dev
-        # IMPORTANT: --workspaces flag installs all workspace packages (@guidr/shared, mobile, web-app)
-        # --include=dev ensures devDependencies like @react-native/metro-config are installed
-        # Without this, Metro bundler cannot resolve @guidr/shared or @react-native/metro-config during xcodebuild,
-        # causing "main.jsbundle.map not found" or "Cannot resolve @react-native/metro-config" errors
+        run: npm ci --include=dev
         # See: docs/CI_CD_TROUBLESHOOTING.md#issue-testflight-build-fails-with-missing-source-map
 
       - name: Build shared package
@@ -135,7 +131,8 @@ jobs:
       - name: Install CocoaPods dependencies
         run: |
           cd mobile/ios
-          # Install dependencies from cache (skip repo update to avoid 10-20min delay)
+          # Update fmt to match current react-native vendored version (avoids version mismatch error)
+          pod update fmt --no-repo-update || true
           pod install
 
       - name: Check for Vendored Frameworks

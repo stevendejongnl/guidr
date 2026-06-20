@@ -14,6 +14,3 @@ class StepTimerStatus(StrEnum):
     RUNNING = "running"
     PAUSED = "paused"
 
-    def __str__(self) -> str:
-        """Return string representation."""
-        return self.value

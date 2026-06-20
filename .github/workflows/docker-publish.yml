@@ -64,7 +64,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.version.outputs.VERSION != ''
-        run: npm ci --workspaces --include=dev
+        run: npm ci --include=dev
 
       - name: Build web app
         if: steps.version.outputs.VERSION != ''

@@ -24,7 +24,6 @@ import { UpdateCheckResult } from '../../domain/services/UpdateService'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { DiagnosticLogService } from '../../infrastructure/native/DiagnosticLogService'
-import { DebugModeStorage } from '../../infrastructure/storage/DebugModeStorage'
 import { Logger } from '../../infrastructure/logging/Logger'
 
 interface AdminScreenProps {
@@ -193,7 +192,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   const handleDebugModeToggle = async (enabled: boolean) => {
     setDebugMode(enabled)
     Logger.setDebugMode(enabled)
-    await new DebugModeStorage().setDebugMode(enabled)
+    await AsyncStorage.setItem('Guidr_DebugMode', String(enabled))
     Logger.info('AdminScreen', `Debug mode ${enabled ? 'enabled' : 'disabled'}`)
   }
 

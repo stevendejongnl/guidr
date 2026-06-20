@@ -16,6 +16,3 @@ class SessionStatus(StrEnum):
     COMPLETED = "Completed"
     CANCELLED = "Cancelled"
 
-    def __str__(self) -> str:
-        """Return string representation."""
-        return self.value

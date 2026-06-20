@@ -137,7 +137,6 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
 
   useEffect(() => {
     loadGuides(filterTab)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterTab, loadGuides])
 
   const handleRefresh = async () => {

@@ -1,6 +1,6 @@
 {
   "name": "guidr-monorepo",
-  "version": "1.94.2",
+  "version": "1.94.8",
   "private": true,
   "description": "Guidr monorepo - mobile app, API server, and web app",
   "workspaces": [
@@ -42,6 +42,9 @@
     "rollup": ">=4.59.0"
   },
   "devDependencies": {
+    "@ryoppippi/unplugin-typia": "^2.6.5",
+    "esbuild": "^0.28.1",
+    "vite": "^7.0.0",
     "@babel/core": "^7.24.0",
     "@babel/runtime": "^7.24.0",
     "@react-native/metro-config": "^0.83.1",

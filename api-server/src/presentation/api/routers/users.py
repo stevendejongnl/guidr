@@ -1,5 +1,7 @@
 """User/Auth API router."""
 
+import hashlib
+
 from fastapi import APIRouter, Depends, Form, HTTPException, status
 from fastapi.responses import JSONResponse
 
@@ -26,7 +28,6 @@ from src.container import Container
 from src.domain.entities import User
 from src.domain.exceptions import EntityNotFoundException, ValidationException
 from src.domain.value_objects import EntityId
-from src.infrastructure.auth.token_hasher import hash_token, verify_token_hash
 
 from ..dependencies.auth import get_current_admin_user, get_current_user
 from ..models import (
@@ -40,6 +41,8 @@ from ..models import (
     UserRegister,
     UserResponse,
 )
+
+_hash_token = lambda t: hashlib.sha256(t.encode()).hexdigest()  # noqa: E731
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -140,7 +143,7 @@ async def register(
         # Store refresh token hash on user
         user_entity = await user_repository.find_by_id(EntityId(result.id))
         if user_entity:
-            user_entity.update_refresh_token_hash(hash_token(refresh_token))
+            user_entity.update_refresh_token_hash(_hash_token(refresh_token))
             await user_repository.save(user_entity)
 
         # Return response with both OAuth2 format and client format
@@ -208,7 +211,7 @@ async def login(
         # Store refresh token hash on user
         user_entity = await user_repository.find_by_id(EntityId(result.id))
         if user_entity:
-            user_entity.update_refresh_token_hash(hash_token(refresh_token))
+            user_entity.update_refresh_token_hash(_hash_token(refresh_token))
             await user_repository.save(user_entity)
 
         # Return response with both OAuth2 format and client format
@@ -278,9 +281,9 @@ async def refresh(
         )
 
     # Verify refresh token hash matches (rotation check)
-    if user.refresh_token_hash is None or not verify_token_hash(
-        request.refresh_token, user.refresh_token_hash
-    ):
+    expected = user.refresh_token_hash
+    token_valid = expected and _hash_token(request.refresh_token) == expected
+    if not token_valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token has been revoked",
@@ -292,7 +295,7 @@ async def refresh(
     new_refresh_token = jwt_service.create_refresh_token(data=token_data)
 
     # Store new refresh token hash
-    user.update_refresh_token_hash(hash_token(new_refresh_token))
+    user.update_refresh_token_hash(_hash_token(new_refresh_token))
     await user_repository.save(user)
 
     user_response = UserResponse(
@@ -400,7 +403,7 @@ async def change_email(
         refresh_token = jwt_service.create_refresh_token(data=token_data)
 
         # Store new refresh token hash
-        current_user.update_refresh_token_hash(hash_token(refresh_token))
+        current_user.update_refresh_token_hash(_hash_token(refresh_token))
         await user_repository.save(current_user)
 
         user_response = UserResponse(

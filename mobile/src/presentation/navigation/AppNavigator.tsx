@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, View, Platform } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
@@ -30,7 +31,6 @@ import { GitHubReleaseClient } from '../../infrastructure/api/GitHubReleaseClien
 import { UpdateCheckStorage } from '../../infrastructure/storage/UpdateCheckStorage'
 import { UpdateService, UpdateCheckResult } from '../../domain/services/UpdateService'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
-import { DebugModeStorage } from '../../infrastructure/storage/DebugModeStorage'
 import { Logger } from '../../infrastructure/logging/Logger'
 import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
@@ -109,7 +109,7 @@ export const AppNavigator: React.FC = () => {
   useEffect(() => {
     const checkConfiguration = async () => {
       try {
-        const debugMode = await new DebugModeStorage().getDebugMode()
+        const debugMode = await AsyncStorage.getItem('Guidr_DebugMode').then(v => v === 'true')
         Logger.setDebugMode(debugMode)
         Logger.info('AppNavigator', 'App starting', { debugMode })
 
