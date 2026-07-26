@@ -6,7 +6,9 @@
 # Runs npm audit at the given severity level (default: high) and filters out
 # any advisories that have been explicitly accepted below.
 #
-# Accepted GHSA advisories (all MODERATE — no HIGH/CRITICAL are accepted):
+# Accepted GHSA advisories (all MODERATE unless noted — HIGH entries below are
+# dev-toolchain-only, transitive, and confirmed to have no fix upstream as of
+# the date added; re-run `npm audit fix` periodically to see if any clear):
 # - GHSA-67mh-4wv8-2f99: esbuild <=0.24.2 CORS bypass (dev server, MODERATE)
 #     Fixed by vite@8 upgrade — GHSA-g7r4-m6w7-qqqr (0.27.x) is from @web/dev-server-esbuild, Windows-only
 # - GHSA-g7r4-m6w7-qqqr: esbuild 0.27.3-0.28.0 file read (Windows dev server only, MODERATE)
@@ -18,6 +20,18 @@
 #     Content comes from app/server only, not arbitrary user input. Self-DoS only.
 # - GHSA-6v5v-wf23-fmfq: markdown-it <=14.1.1 quadratic DoS (MODERATE)
 #     Same as above.
+# - GHSA-22p9-wv53-3rq4 / GHSA-v245-v573-v5vm: linkify-it <=5.0.1 quadratic DoS (HIGH)
+#     Transitive via markdown-it (see above) -> react-native-markdown-display@7.0.2 (latest).
+#     Same unfixable chain as the markdown-it entries — no newer markdown-it/linkify-it
+#     available through this dependency. Content is app/server-controlled, not user input.
+# - GHSA-mh99-v99m-4gvg: brace-expansion <=5.0.7 DoS (HIGH)
+#     Multiple transitive copies via jest@30.4.2's glob@^10.5.0 (minimatch@9.x ->
+#     brace-expansion@2.1.2) and babel-plugin-module-resolver@5.0.3's glob@^9.3.3
+#     (same chain), and eslint-plugin-react@7.37.5's minimatch@3.x (brace-expansion@1.1.16).
+#     All three packages are on their latest release; the fix requires upstream jest/
+#     babel-plugin-module-resolver/eslint-plugin-react releases, or a major downgrade
+#     of eslint-plugin-react (npm's suggested "fix" is 7.22.0, older than current — not
+#     a real fix). Dev-toolchain only (test runner, build script, linter) — no prod path.
 #
 # To fix a vulnerability instead of accepting it: fix the dep chain and remove from this list.
 
@@ -33,6 +47,9 @@ ACCEPTED_ADVISORIES=(
   "GHSA-h67p-54hq-rp68"  # js-yaml DoS, @istanbuljs test toolchain, no fix (^3.x dep)
   "GHSA-6vfc-qv3f-vr6c"  # markdown-it DoS, react-native-markdown-display, no fix available
   "GHSA-6v5v-wf23-fmfq"  # markdown-it DoS, same as above
+  "GHSA-22p9-wv53-3rq4"  # linkify-it DoS, same markdown-it chain, no fix available
+  "GHSA-v245-v573-v5vm"  # linkify-it DoS, same markdown-it chain, no fix available
+  "GHSA-mh99-v99m-4gvg"  # brace-expansion DoS, dev-toolchain only (jest/babel/eslint), no fix available
 )
 
 # Run npm audit and capture output
