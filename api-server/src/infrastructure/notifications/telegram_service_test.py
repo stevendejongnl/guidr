@@ -11,35 +11,33 @@ from .telegram_service import TelegramNotificationService
 
 
 @pytest.fixture
-def settings_with_telegram() -> Settings:
-    """Create settings with Telegram credentials."""
+def settings_with_apprise() -> Settings:
+    """Create settings with Apprise configured."""
     settings = MagicMock(spec=Settings)
-    settings.telegram_bot_token = "test_bot_token"
-    settings.telegram_chat_id = "test_chat_id"
+    settings.apprise_url = "http://apprise.apprise.svc.cluster.local:8000/notify/app-reports"
     settings.app_name = "Guidr"
     return settings
 
 
 @pytest.fixture
-def settings_without_telegram() -> Settings:
-    """Create settings without Telegram credentials."""
+def settings_without_apprise() -> Settings:
+    """Create settings without Apprise configured."""
     settings = MagicMock(spec=Settings)
-    settings.telegram_bot_token = None
-    settings.telegram_chat_id = None
+    settings.apprise_url = None
     settings.app_name = "Guidr"
     return settings
 
 
 @pytest.fixture
-def service_with_credentials(settings_with_telegram: Settings) -> TelegramNotificationService:
-    """Create service with Telegram credentials."""
-    return TelegramNotificationService(settings_with_telegram)
+def service_with_credentials(settings_with_apprise: Settings) -> TelegramNotificationService:
+    """Create service with Apprise configured."""
+    return TelegramNotificationService(settings_with_apprise)
 
 
 @pytest.fixture
-def service_without_credentials(settings_without_telegram: Settings) -> TelegramNotificationService:
-    """Create service without Telegram credentials."""
-    return TelegramNotificationService(settings_without_telegram)
+def service_without_credentials(settings_without_apprise: Settings) -> TelegramNotificationService:
+    """Create service without Apprise configured."""
+    return TelegramNotificationService(settings_without_apprise)
 
 
 @pytest.mark.asyncio
@@ -47,7 +45,7 @@ async def test_send_startup_notification_success(
     service_with_credentials: TelegramNotificationService, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test successful startup notification."""
-    with patch("httpx.AsyncClient.post") as mock_post:
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response
@@ -55,18 +53,18 @@ async def test_send_startup_notification_success(
         with caplog.at_level(logging.INFO):
             await service_with_credentials.send_startup_notification("1.0.0")
 
-        assert "Startup notification sent successfully" in caplog.text
+        assert "Notification sent successfully" in caplog.text
 
 
 @pytest.mark.asyncio
 async def test_send_startup_notification_missing_credentials(
     service_without_credentials: TelegramNotificationService, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Test notification skipped when credentials are missing."""
+    """Test notification skipped when Apprise URL is missing."""
     with caplog.at_level(logging.INFO):
         await service_without_credentials.send_startup_notification("1.0.0")
 
-    assert "Telegram credentials not configured" in caplog.text
+    assert "Apprise URL not configured" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -74,7 +72,7 @@ async def test_send_startup_notification_http_error(
     service_with_credentials: TelegramNotificationService, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test handling of HTTP errors."""
-    with patch("httpx.AsyncClient.post") as mock_post:
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 401
         mock_post.return_value = mock_response
@@ -82,7 +80,7 @@ async def test_send_startup_notification_http_error(
         with caplog.at_level(logging.WARNING):
             await service_with_credentials.send_startup_notification("1.0.0")
 
-        assert "Failed to send startup notification: HTTP 401" in caplog.text
+        assert "Failed to send notification: HTTP 401" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -96,7 +94,7 @@ async def test_send_startup_notification_timeout(
         with caplog.at_level(logging.WARNING):
             await service_with_credentials.send_startup_notification("1.0.0")
 
-        assert "Telegram notification timeout" in caplog.text
+        assert "Apprise notification timeout" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -110,7 +108,7 @@ async def test_send_startup_notification_network_error(
         with caplog.at_level(logging.WARNING):
             await service_with_credentials.send_startup_notification("1.0.0")
 
-        assert "Failed to send Telegram notification" in caplog.text
+        assert "Failed to send Apprise notification" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -134,12 +132,12 @@ async def test_send_startup_notification_message_format(
 
         # Verify message contains required elements
         assert json_payload is not None
-        assert json_payload["chat_id"] == "test_chat_id"
-        assert "1.23.2" in json_payload["text"]
-        assert "API Documentation" in json_payload["text"]
-        assert json_payload["parse_mode"] == "HTML"
-        assert "<b>" in json_payload["text"]
-        assert "🚀" in json_payload["text"]
+        assert json_payload["title"] == "Guidr"
+        assert "1.23.2" in json_payload["body"]
+        assert "API Documentation" in json_payload["body"]
+        assert json_payload["format"] == "html"
+        assert "<b>" in json_payload["body"]
+        assert "🚀" in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -153,7 +151,7 @@ async def test_send_startup_notification_generic_exception(
         with caplog.at_level(logging.WARNING):
             await service_with_credentials.send_startup_notification("1.0.0")
 
-        assert "Unexpected error sending Telegram notification" in caplog.text
+        assert "Unexpected error sending Apprise notification" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -183,26 +181,26 @@ async def test_send_crash_notification_success(
 
         # Verify message contains required elements
         assert json_payload is not None
-        assert "1.0.0" in json_payload["text"]
-        assert "ValueError" in json_payload["text"]
-        assert "Database connection failed" in json_payload["text"]
-        assert "guidr-api-server-abc123" in json_payload["text"]
-        assert "❌" in json_payload["text"]
-        assert json_payload["parse_mode"] == "HTML"
+        assert "1.0.0" in json_payload["body"]
+        assert "ValueError" in json_payload["body"]
+        assert "Database connection failed" in json_payload["body"]
+        assert "guidr-api-server-abc123" in json_payload["body"]
+        assert "❌" in json_payload["body"]
+        assert json_payload["format"] == "html"
 
 
 @pytest.mark.asyncio
 async def test_send_crash_notification_missing_credentials(
     service_without_credentials: TelegramNotificationService, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Test crash notification skipped when credentials are missing."""
+    """Test crash notification skipped when Apprise URL is missing."""
     with caplog.at_level(logging.INFO):
         error = ValueError("Test error")
         await service_without_credentials.send_crash_notification(
             error=error, version="1.0.0"
         )
 
-    assert "Telegram credentials not configured" in caplog.text
+    assert "Apprise URL not configured" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -219,7 +217,7 @@ async def test_send_crash_notification_timeout(
                 error=error, version="1.0.0"
             )
 
-        assert "Telegram crash notification timeout" in caplog.text
+        assert "Apprise crash notification timeout" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -248,11 +246,11 @@ async def test_send_shutdown_notification_success(
 
         # Verify message contains required elements
         assert json_payload is not None
-        assert "1.0.0" in json_payload["text"]
-        assert "graceful" in json_payload["text"]
-        assert "guidr-api-server-xyz789" in json_payload["text"]
-        assert "🔄" in json_payload["text"]
-        assert json_payload["parse_mode"] == "HTML"
+        assert "1.0.0" in json_payload["body"]
+        assert "graceful" in json_payload["body"]
+        assert "guidr-api-server-xyz789" in json_payload["body"]
+        assert "🔄" in json_payload["body"]
+        assert json_payload["format"] == "html"
 
 
 @pytest.mark.asyncio
@@ -278,7 +276,7 @@ async def test_send_shutdown_notification_with_error_reason(
 
         # Verify error reason is in message
         assert json_payload is not None
-        assert "error: KeyboardInterrupt" in json_payload["text"]
+        assert "error: KeyboardInterrupt" in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -309,24 +307,24 @@ async def test_send_health_failure_notification_success(
 
         # Verify message contains required elements
         assert json_payload is not None
-        assert "1.0.0" in json_payload["text"]
-        assert "Database connection failed: ConnectionError" in json_payload["text"]
-        assert "guidr-api-server-def456" in json_payload["text"]
-        assert "⚠️" in json_payload["text"]
-        assert json_payload["parse_mode"] == "HTML"
+        assert "1.0.0" in json_payload["body"]
+        assert "Database connection failed: ConnectionError" in json_payload["body"]
+        assert "guidr-api-server-def456" in json_payload["body"]
+        assert "⚠️" in json_payload["body"]
+        assert json_payload["format"] == "html"
 
 
 @pytest.mark.asyncio
 async def test_send_health_failure_notification_missing_credentials(
     service_without_credentials: TelegramNotificationService, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Test health failure notification skipped when credentials are missing."""
+    """Test health failure notification skipped when Apprise URL is missing."""
     with caplog.at_level(logging.INFO):
         await service_without_credentials.send_health_failure_notification(
             reason="Database error", version="1.0.0"
         )
 
-    assert "Telegram credentials not configured" in caplog.text
+    assert "Apprise URL not configured" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -350,10 +348,10 @@ async def test_send_crash_notification_html_escaping(
 
         # Verify HTML is escaped
         assert json_payload is not None
-        assert "&lt;tag&gt;" in json_payload["text"]
-        assert "&amp;" in json_payload["text"]
-        assert "&quot;" in json_payload["text"]
-        assert "pod&lt;name&gt;" in json_payload["text"]
+        assert "&lt;tag&gt;" in json_payload["body"]
+        assert "&amp;" in json_payload["body"]
+        assert "&quot;" in json_payload["body"]
+        assert "pod&lt;name&gt;" in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -378,9 +376,9 @@ async def test_send_health_failure_notification_html_escaping(
 
         # Verify HTML is escaped
         assert json_payload is not None
-        assert "&lt;message&gt;" in json_payload["text"]
-        assert "&amp;" in json_payload["text"]
-        assert "pod&lt;name&gt;" in json_payload["text"]
+        assert "&lt;message&gt;" in json_payload["body"]
+        assert "&amp;" in json_payload["body"]
+        assert "pod&lt;name&gt;" in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -401,11 +399,11 @@ async def test_startup_notification_title_contains_app_name_and_pod_line(
         json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["text"]
-        assert "<b>App:</b>" not in json_payload["text"]
-        assert "<b>Pod:</b>" in json_payload["text"]
-        assert "guidr-api-server-ghi789" in json_payload["text"]
-        assert json_payload["parse_mode"] == "HTML"
+        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["body"]
+        assert "<b>App:</b>" not in json_payload["body"]
+        assert "<b>Pod:</b>" in json_payload["body"]
+        assert "guidr-api-server-ghi789" in json_payload["body"]
+        assert json_payload["format"] == "html"
 
 
 @pytest.mark.asyncio
@@ -423,8 +421,8 @@ async def test_startup_notification_without_pod_still_shows_app_in_title(
         json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["text"]
-        assert "<b>Pod:</b>" not in json_payload["text"]
+        assert "<b>🚀 Guidr API Server Started</b>" in json_payload["body"]
+        assert "<b>Pod:</b>" not in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -444,7 +442,7 @@ async def test_startup_notification_html_escapes_pod_name(
         json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "pod&lt;name&gt;" in json_payload["text"]
+        assert "pod&lt;name&gt;" in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -462,9 +460,9 @@ async def test_shutdown_notification_title_contains_app_name(
         json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>🔄 Guidr API Server Shutdown</b>" in json_payload["text"]
-        assert "<b>App:</b>" not in json_payload["text"]
-        assert "<b>Pod:</b>" not in json_payload["text"]
+        assert "<b>🔄 Guidr API Server Shutdown</b>" in json_payload["body"]
+        assert "<b>App:</b>" not in json_payload["body"]
+        assert "<b>Pod:</b>" not in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -484,7 +482,7 @@ async def test_crash_notification_title_contains_app_name(
         json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>❌ Guidr API Server Crashed</b>" in json_payload["text"]
+        assert "<b>❌ Guidr API Server Crashed</b>" in json_payload["body"]
 
 
 @pytest.mark.asyncio
@@ -504,4 +502,4 @@ async def test_health_failure_notification_title_contains_app_name(
         json_payload = mock_post.call_args.kwargs.get("json")
 
         assert json_payload is not None
-        assert "<b>⚠️ Guidr API Server Unhealthy</b>" in json_payload["text"]
+        assert "<b>⚠️ Guidr API Server Unhealthy</b>" in json_payload["body"]

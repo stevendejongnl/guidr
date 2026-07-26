@@ -1,12 +1,11 @@
 #!/bin/bash
-# Send Telegram notification for CI/CD events
+# Send Telegram notification for CI/CD events, via Apprise
 # Usage: ./send-telegram-notification.sh --type <type> --branch <branch> --run-url <url> --commit <sha> [options]
 
 set -e
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-TELEGRAM_API="https://api.telegram.org/bot"
 
 # Parse command-line arguments
 parse_arguments() {
@@ -323,13 +322,12 @@ validate_parameters() {
   esac
 }
 
-# Send notification to Telegram
+# Send notification via Apprise
 send_telegram() {
   local message="$1"
 
-  # Check for required secrets
-  if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-    echo "⚠️ Telegram secrets not configured, skipping notification"
+  if [ -z "$APPRISE_URL" ]; then
+    echo "⚠️ APPRISE_URL not configured, skipping notification"
     return 0
   fi
 
@@ -338,33 +336,26 @@ send_telegram() {
     message="${message:0:4000}...truncated"
   fi
 
-  # Send via Telegram API
+  local payload
+  payload=$(python3 -c 'import json,sys; print(json.dumps({"title":"guidr","body":sys.argv[1],"format":"html"}))' "$message" 2>/dev/null)
+  if [ -z "$payload" ]; then
+    echo "⚠️ failed to build notification payload, skipping"
+    return 0
+  fi
+
   set +e
-  local response=$(curl -s -X POST \
-    "${TELEGRAM_API}${TELEGRAM_BOT_TOKEN}/sendMessage" \
-    -H 'Content-Type: application/x-www-form-urlencoded' \
-    -d "chat_id=${TELEGRAM_CHAT_ID}" \
-    -d "text=${message}" \
-    -d "parse_mode=HTML" \
-    -d "disable_web_page_preview=false" \
-    -d "disable_notification=false")
+  local response=$(curl -sf -X POST "$APPRISE_URL" -H 'Content-Type: application/json' -d "$payload")
   local curl_exit_code=$?
   set -e
 
   if [ $curl_exit_code -ne 0 ]; then
-    echo "⚠️ Failed to send Telegram notification (curl exit code: $curl_exit_code)"
+    echo "⚠️ Failed to send Apprise notification (curl exit code: $curl_exit_code)"
     echo "Response: $response"
     return 0  # Don't fail CI
   fi
 
-  # Check if API returned success
-  if echo "$response" | grep -q '"ok":true'; then
-    echo "✓ Telegram notification sent successfully"
-    return 0
-  else
-    echo "⚠️ Telegram API error: $response"
-    return 0  # Don't fail CI even if notification fails
-  fi
+  echo "✓ Apprise notification sent successfully"
+  return 0
 }
 
 # Main execution
@@ -385,7 +376,7 @@ main() {
     echo ""
     echo "$MESSAGE"
     echo ""
-    echo "==== Would send to chat ID: $TELEGRAM_CHAT_ID ===="
+    echo "==== Would send via: $APPRISE_URL ===="
     return 0
   fi
 

@@ -10,16 +10,15 @@ from ..config.settings import Settings
 
 
 class TelegramNotificationService:
-    """Service for sending notifications via Telegram."""
+    """Service for sending notifications via Apprise (fans out to Telegram + history log)."""
 
     def __init__(self, settings: Settings):
-        """Initialize Telegram notification service.
+        """Initialize notification service.
 
         Args:
-            settings: Application settings containing Telegram configuration
+            settings: Application settings containing Apprise configuration
         """
-        self._bot_token = settings.telegram_bot_token
-        self._chat_id = settings.telegram_chat_id
+        self._apprise_url = settings.apprise_url
         self._app_name = settings.app_name
         self._logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ class TelegramNotificationService:
         version: str,
         pod_name: str | None = None,
     ) -> None:
-        """Send startup notification to Telegram.
+        """Send startup notification.
 
         Args:
             version: Application version string
@@ -42,10 +41,9 @@ class TelegramNotificationService:
 
         Gracefully handles missing credentials or network failures without raising exceptions.
         """
-        # Skip if credentials are not configured
-        if not self._bot_token or not self._chat_id:
+        if not self._apprise_url:
             self._logger.info(
-                "Telegram credentials not configured, skipping startup notification"
+                "Apprise URL not configured, skipping startup notification"
             )
             return
 
@@ -60,31 +58,13 @@ class TelegramNotificationService:
                 + '\n\n<a href="https://guidr.madebysteven.nl/api/docs">API Documentation</a>'
             )
 
-            async with httpx.AsyncClient() as client:
-                url = f"https://api.telegram.org/bot{self._bot_token}/sendMessage"
-                response = await client.post(
-                    url,
-                    json={
-                        "chat_id": self._chat_id,
-                        "text": message,
-                        "parse_mode": "HTML",
-                        "disable_notification": True,
-                    },
-                    timeout=10.0,
-                )
-
-                if response.status_code == 200:
-                    self._logger.info("Startup notification sent successfully")
-                else:
-                    self._logger.warning(
-                        f"Failed to send startup notification: HTTP {response.status_code}"
-                    )
+            await self._send_message(message, disable_notification=True)
         except httpx.TimeoutException:
-            self._logger.warning("Telegram notification timeout, continuing startup")
+            self._logger.warning("Apprise notification timeout, continuing startup")
         except httpx.RequestError as e:
-            self._logger.warning(f"Failed to send Telegram notification: {e}")
+            self._logger.warning(f"Failed to send Apprise notification: {e}")
         except Exception as e:
-            self._logger.warning(f"Unexpected error sending Telegram notification: {e}")
+            self._logger.warning(f"Unexpected error sending Apprise notification: {e}")
 
     async def send_crash_notification(
         self,
@@ -101,9 +81,9 @@ class TelegramNotificationService:
 
         Gracefully handles missing credentials or network failures without raising exceptions.
         """
-        if not self._bot_token or not self._chat_id:
+        if not self._apprise_url:
             self._logger.info(
-                "Telegram credentials not configured, skipping crash notification"
+                "Apprise URL not configured, skipping crash notification"
             )
             return
 
@@ -125,7 +105,7 @@ class TelegramNotificationService:
 
             await self._send_message(message)
         except httpx.TimeoutException:
-            self._logger.warning("Telegram crash notification timeout")
+            self._logger.warning("Apprise crash notification timeout")
         except httpx.RequestError as e:
             self._logger.warning(f"Failed to send crash notification: {e}")
         except Exception as e:
@@ -146,9 +126,9 @@ class TelegramNotificationService:
 
         Gracefully handles missing credentials or network failures without raising exceptions.
         """
-        if not self._bot_token or not self._chat_id:
+        if not self._apprise_url:
             self._logger.info(
-                "Telegram credentials not configured, skipping shutdown notification"
+                "Apprise URL not configured, skipping shutdown notification"
             )
             return
 
@@ -167,7 +147,7 @@ class TelegramNotificationService:
 
             await self._send_message(message, disable_notification=True)
         except httpx.TimeoutException:
-            self._logger.warning("Telegram shutdown notification timeout")
+            self._logger.warning("Apprise shutdown notification timeout")
         except httpx.RequestError as e:
             self._logger.warning(f"Failed to send shutdown notification: {e}")
         except Exception as e:
@@ -188,9 +168,9 @@ class TelegramNotificationService:
 
         Gracefully handles missing credentials or network failures without raising exceptions.
         """
-        if not self._bot_token or not self._chat_id:
+        if not self._apprise_url:
             self._logger.info(
-                "Telegram credentials not configured, skipping health failure notification"
+                "Apprise URL not configured, skipping health failure notification"
             )
             return
 
@@ -209,33 +189,30 @@ class TelegramNotificationService:
 
             await self._send_message(message, disable_notification=True)
         except httpx.TimeoutException:
-            self._logger.warning("Telegram health failure notification timeout")
+            self._logger.warning("Apprise health failure notification timeout")
         except httpx.RequestError as e:
             self._logger.warning(f"Failed to send health failure notification: {e}")
         except Exception as e:
             self._logger.warning(f"Unexpected error sending health failure notification: {e}")
 
     async def _send_message(self, message: str, disable_notification: bool = False) -> None:
-        """Send a message to Telegram.
+        """Send a message via Apprise.
 
         Args:
             message: Message text with HTML formatting
-            disable_notification: If True, send silently without vibration/sound
+            disable_notification: Unused — Apprise's generic /notify API has no
+                per-call silent-delivery flag; kept for call-site compatibility.
 
         Raises:
             httpx.TimeoutException: If request times out
             httpx.RequestError: If request fails
         """
+        # callers already guard with `if not self._apprise_url: return`
+        assert self._apprise_url is not None
         async with httpx.AsyncClient() as client:
-            url = f"https://api.telegram.org/bot{self._bot_token}/sendMessage"
             response = await client.post(
-                url,
-                json={
-                    "chat_id": self._chat_id,
-                    "text": message,
-                    "parse_mode": "HTML",
-                    "disable_notification": disable_notification,
-                },
+                self._apprise_url,
+                json={"title": self._app_name, "body": message, "format": "html"},
                 timeout=10.0,
             )
 
@@ -245,4 +222,3 @@ class TelegramNotificationService:
                 self._logger.warning(
                     f"Failed to send notification: HTTP {response.status_code}"
                 )
-

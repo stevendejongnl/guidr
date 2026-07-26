@@ -346,5 +346,4 @@ jobs:
             --step "${{ steps.error_details.outputs.FAILED_STEP || 'PR Checks' }}" \
             --error "${{ steps.error_details.outputs.ERROR_MSG || 'Check logs for details' }}"
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          APPRISE_URL: ${{ secrets.APPRISE_URL }}
