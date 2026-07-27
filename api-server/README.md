@@ -675,38 +675,25 @@ docker-compose up -d
 | `JWT_EXPIRATION_MINUTES` | `10080` | JWT token expiration (7 days) |
 | `GUIDR_VERSION` | `1.29.0` | Server version (set automatically in Docker image, must match mobile app version) |
 | `ROOT_PATH` | `` | FastAPI root path for reverse proxy deployments |
-| `TELEGRAM_BOT_TOKEN` | `` | (Optional) Telegram bot authentication token for startup notifications |
-| `TELEGRAM_CHAT_ID` | `` | (Optional) Telegram chat/channel ID to receive startup notifications |
+| `APPRISE_URL` | `` | (Optional) Apprise `/notify/<key>` endpoint for startup notifications |
 
-### Telegram Startup Notifications (Optional)
+### Startup Notifications via Apprise (Optional)
 
-The API server can send startup notifications to Telegram when the service successfully starts. This is useful for monitoring deployments and receiving instant alerts when the server is up and running.
+The API server can send startup notifications via [Apprise](https://github.com/caronc/apprise) when the service successfully starts. Apprise fans a single notification out to Telegram (and any other configured target) — this is useful for monitoring deployments and receiving instant alerts when the server is up and running.
 
 #### Setup
 
-1. **Create a Telegram Bot**:
-   - Open Telegram and chat with [@BotFather](https://t.me/botfather)
-   - Send `/newbot` and follow instructions
-   - Copy your bot token (format: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
-
-2. **Get Your Chat ID**:
-   - Chat with your bot
-   - Open: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-   - Send a message to your bot
-   - Your chat ID will appear in the response (e.g., `123456789`)
-
-3. **Set Environment Variables**:
+1. Configure an Apprise instance (or use a shared one) with a notification key set up for Telegram delivery.
+2. **Set Environment Variable**:
    ```bash
-   export TELEGRAM_BOT_TOKEN="your_bot_token_here"
-   export TELEGRAM_CHAT_ID="your_chat_id_here"
+   export APPRISE_URL="https://apprise.example.com/notify/your-key"
    ```
 
 #### Using with Docker
 
 ```bash
 docker run -p 8000:8000 \
-  -e TELEGRAM_BOT_TOKEN="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" \
-  -e TELEGRAM_CHAT_ID="123456789" \
+  -e APPRISE_URL="https://apprise.example.com/notify/your-key" \
   ghcr.io/stevendejongnl/guidr-api-server:latest
 ```
 
@@ -723,8 +710,7 @@ services:
       - "8000:8000"
     restart: unless-stopped
     environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - APPRISE_URL=${APPRISE_URL}
       - MONGODB_URL=mongodb://mongo:27017
       - MONGODB_DATABASE=guidr
   mongo:
@@ -736,8 +722,7 @@ services:
 
 Then create `.env`:
 ```bash
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-TELEGRAM_CHAT_ID=your_chat_id_here
+APPRISE_URL=https://apprise.example.com/notify/your-key
 ```
 
 Run with: `docker-compose up`
@@ -747,31 +732,25 @@ Run with: `docker-compose up`
 Add to your Kubernetes secret:
 
 ```bash
-kubectl create secret generic guidr-telegram-secret \
-  --from-literal=telegram-bot-token='123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11' \
-  --from-literal=telegram-chat-id='123456789' \
+kubectl create secret generic guidr-apprise-secret \
+  --from-literal=apprise-url='https://apprise.example.com/notify/your-key' \
   -n guidr
 ```
 
 Then reference in your deployment manifest:
 ```yaml
 env:
-  - name: TELEGRAM_BOT_TOKEN
+  - name: APPRISE_URL
     valueFrom:
       secretKeyRef:
-        name: guidr-telegram-secret
-        key: telegram-bot-token
-  - name: TELEGRAM_CHAT_ID
-    valueFrom:
-      secretKeyRef:
-        name: guidr-telegram-secret
-        key: telegram-chat-id
+        name: guidr-apprise-secret
+        key: apprise-url
 ```
 
 #### Features
 
 - **Automatic**: Sends notification automatically when server starts successfully
-- **Optional**: Completely optional - server works perfectly without Telegram configured
+- **Optional**: Completely optional - server works perfectly without Apprise configured
 - **Safe**: Gracefully handles network failures without affecting server startup
 - **Formatted**: Messages include version, timestamp, and link to API documentation
 - **Reliable**: Never prevents server from starting if notification fails

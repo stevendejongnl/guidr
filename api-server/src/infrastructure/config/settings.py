@@ -43,9 +43,8 @@ class Settings(BaseSettings):
     min_app_version: str | None = None
     max_app_version: str | None = None
 
-    # Telegram Notifications (optional)
-    telegram_bot_token: str | None = None
-    telegram_chat_id: str | None = None
+    # Notifications via Apprise (optional)
+    apprise_url: str | None = None
 
     # OpenAI (optional - AI guide generation)
     openai_api_key: str | None = None

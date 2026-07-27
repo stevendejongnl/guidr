@@ -159,8 +159,7 @@ jobs:
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --commit "${{ github.sha }}"
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          APPRISE_URL: ${{ secrets.APPRISE_URL }}
 
       - name: Get failure details
         if: failure()
@@ -198,8 +197,7 @@ jobs:
             --step "${{ steps.error_details.outputs.FAILED_STEP || 'Build and Push Docker Image' }}" \
             --error "${{ steps.error_details.outputs.ERROR_MSG || 'Check logs for details' }}"
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          APPRISE_URL: ${{ secrets.APPRISE_URL }}
 
   deploy:
     name: Deploy to k8s

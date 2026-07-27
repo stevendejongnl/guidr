@@ -1,3 +1,11 @@
+## [1.94.9](https://github.com/stevendejongnl/guidr/compare/v1.94.8...v1.94.9) (2026-07-26)
+
+### Bug Fixes
+
+* **deps:** bump msgpack, pyasn1, pydantic-settings to patch known CVEs ([b07875b](https://github.com/stevendejongnl/guidr/commit/b07875b022a154debc3e3c5ee21efa2c63d4ae23))
+* **notifications:** route Telegram alerts through Apprise instead of direct API ([08fda42](https://github.com/stevendejongnl/guidr/commit/08fda42d588bb0286cde6889d96e7ba4143d7c18))
+* **security:** upgrade sharp to patch libvips CVEs, accept unfixable dev-toolchain findings ([97b70e8](https://github.com/stevendejongnl/guidr/commit/97b70e8fdf5f9e6bb7cea0c8ca62749bd292fd45))
+
 ## [1.94.8](https://github.com/stevendejongnl/guidr/compare/v1.94.7...v1.94.8) (2026-06-19)
 
 ### Bug Fixes

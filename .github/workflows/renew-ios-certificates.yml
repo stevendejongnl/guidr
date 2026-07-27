@@ -107,8 +107,7 @@ jobs:
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --commit "${{ github.sha }}"
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          APPRISE_URL: ${{ secrets.APPRISE_URL }}
         continue-on-error: true
 
       - name: Notify certificate renewal failure
@@ -124,6 +123,5 @@ jobs:
             --step "Renew iOS Certificates" \
             --error "Certificate renewal failed. Check logs for details."
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          APPRISE_URL: ${{ secrets.APPRISE_URL }}
         continue-on-error: true
