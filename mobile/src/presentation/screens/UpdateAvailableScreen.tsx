@@ -55,9 +55,9 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
           {changelog && (
             <View style={styles.changelogContainer}>
               <Text style={styles.changelogTitle}>{'What\'s New:'}</Text>
-              <ScrollView style={styles.changelogScroll} nestedScrollEnabled>
+              <View style={styles.changelogBox}>
                 <MarkdownText>{changelog}</MarkdownText>
-              </ScrollView>
+              </View>
             </View>
           )}
 
@@ -121,7 +121,6 @@ const styles = StyleSheet.create({
   changelogContainer: {
     width: '100%',
     marginBottom: spacing.xl,
-    maxHeight: 250,
   },
   changelogTitle: {
     fontSize: typography.sizeMd,
@@ -129,11 +128,10 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  changelogScroll: {
+  changelogBox: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
     padding: spacing.md,
-    maxHeight: 200,
   },
   buttonContainer: {
     width: '100%',
