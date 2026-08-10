@@ -1,3 +1,9 @@
+## [1.94.11](https://github.com/stevendejongnl/guidr/compare/v1.94.10...v1.94.11) (2026-08-10)
+
+### Bug Fixes
+
+* restore Platform.OS narrowing for Platform.Version comparison ([18f4ff3](https://github.com/stevendejongnl/guidr/commit/18f4ff39ceec7359a839b6497ff3ac57c1924ec1))
+
 ## [1.94.10](https://github.com/stevendejongnl/guidr/compare/v1.94.9...v1.94.10) (2026-08-10)
 
 ### Bug Fixes
