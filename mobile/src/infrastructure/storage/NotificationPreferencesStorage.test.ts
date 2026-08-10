@@ -51,12 +51,12 @@ describe('NotificationPreferencesStorage', () => {
   })
 
   describe('getCriticalNotificationsEnabled', () => {
-    it('should return false when no value stored (default)', async () => {
+    it('should return true when no value stored (default)', async () => {
       mockAsyncStorage.getItem.mockResolvedValue(null)
 
       const result = await storage.getCriticalNotificationsEnabled()
 
-      expect(result).toBe(false)
+      expect(result).toBe(true)
       expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('Guidr_CriticalNotificationsEnabled')
     })
 

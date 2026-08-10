@@ -16,8 +16,9 @@ export class NotificationPreferencesStorage {
 
   async getCriticalNotificationsEnabled(): Promise<boolean> {
     const value = await AsyncStorage.getItem(CRITICAL_NOTIFICATIONS_KEY)
-    // Default to false
-    return value === 'true'
+    // Default to true — a completed step timer is time-sensitive by definition;
+    // users who want quieter notifications can opt out via Settings.
+    return value !== 'false'
   }
 
   async setCriticalNotificationsEnabled(enabled: boolean): Promise<void> {
