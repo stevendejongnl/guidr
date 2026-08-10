@@ -42,7 +42,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 }) => {
   const [serverVersion, setServerVersion] = useState<string | null>(null)
   const [timerNotificationsEnabled, setTimerNotificationsEnabled] = useState(false)
-  const [criticalNotificationsEnabled, setCriticalNotificationsEnabled] = useState(false)
+  const [criticalNotificationsEnabled, setCriticalNotificationsEnabled] = useState(true)
   const [savingPrefs, setSavingPrefs] = useState(false)
 
   const prefsStorage = injectedPrefsStorage || new NotificationPreferencesStorage()
