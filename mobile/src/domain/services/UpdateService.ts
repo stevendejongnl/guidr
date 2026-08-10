@@ -42,11 +42,14 @@ export class UpdateService {
         }
       }
 
-      // If not forced and last check was < 24h ago, return no update
+      // If not forced and last check was < 24h ago, return the cached result.
+      // The in-memory cache doesn't survive app restarts, so if it's empty
+      // here (e.g. cold start), fall through to a fresh check instead of
+      // silently reporting "no update" — the persisted timestamp only tells
+      // us we don't *need* to hit the API, not that it's safe to lie.
       if (!forceCheck) {
         const shouldCheck = await this.updateStorage.shouldCheckForUpdates()
         if (!shouldCheck) {
-          // Return cached result or no update
           const cachedResult = UpdateCheckCache.getCache()
           if (cachedResult) {
             return {
@@ -56,14 +59,6 @@ export class UpdateService {
               latestVersion: cachedResult.latestVersion,
               release: cachedResult.release,
             }
-          }
-
-          return {
-            updateAvailable: false,
-            isMandatory: false,
-            currentVersion,
-            latestVersion: currentVersion,
-            release: null,
           }
         }
       }
