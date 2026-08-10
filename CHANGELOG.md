@@ -1,3 +1,44 @@
+## [1.95.1](https://github.com/stevendejongnl/guidr/compare/v1.95.0...v1.95.1) (2026-08-10)
+
+### Bug Fixes
+
+* critical timer notifications now play sound in vibrate-only mode ([94fdeac](https://github.com/stevendejongnl/guidr/commit/94fdeac9afe9581073e1f79a9383c14a92a6b89b))
+* request notification permission on live login, not just cold start ([b8abdf0](https://github.com/stevendejongnl/guidr/commit/b8abdf0b1d28dd6f0110bb248c135e220545e820))
+
+### Documentation
+
+* add ADR-030 for manual Android device testing strategy ([1e6b7b6](https://github.com/stevendejongnl/guidr/commit/1e6b7b6f52f8d7e97097cfdb3cb6d31c49509aae))
+
+## [1.95.0](https://github.com/stevendejongnl/guidr/compare/v1.94.12...v1.95.0) (2026-08-10)
+
+### Features
+
+* add Reset Settings to Defaults button ([340be00](https://github.com/stevendejongnl/guidr/commit/340be00c15685faf15a0eebdb980ca5191c263d6))
+
+### Bug Fixes
+
+* default timer notifications to time-sensitive importance ([1afb705](https://github.com/stevendejongnl/guidr/commit/1afb705ef2eb88d334fecb93060cfa3c36380707))
+* request notification permission on sign-in, not buried in Settings ([6fd7a49](https://github.com/stevendejongnl/guidr/commit/6fd7a49eb5f639146b9f636d6b0bb91e043d47be))
+
+## [1.94.12](https://github.com/stevendejongnl/guidr/compare/v1.94.11...v1.94.12) (2026-08-10)
+
+### Bug Fixes
+
+* make .husky/pre-push POSIX-sh compatible ([ea33d25](https://github.com/stevendejongnl/guidr/commit/ea33d25af8536ee0b12c917bb01196a2f605129f))
+* perform fresh update check when cold-start cache is empty ([55754c2](https://github.com/stevendejongnl/guidr/commit/55754c2ec3b6f0af6afd346517c5bbdcd7810bc9))
+
+## [1.94.11](https://github.com/stevendejongnl/guidr/compare/v1.94.10...v1.94.11) (2026-08-10)
+
+### Bug Fixes
+
+* restore Platform.OS narrowing for Platform.Version comparison ([18f4ff3](https://github.com/stevendejongnl/guidr/commit/18f4ff39ceec7359a839b6497ff3ac57c1924ec1))
+
+## [1.94.10](https://github.com/stevendejongnl/guidr/compare/v1.94.9...v1.94.10) (2026-08-10)
+
+### Bug Fixes
+
+* **health:** retry once before alerting on transient DB ping failure ([152a3fc](https://github.com/stevendejongnl/guidr/commit/152a3fcddeb9ae2c0df88ee3c7ca0e5deba0f76c))
+
 ## [1.94.9](https://github.com/stevendejongnl/guidr/compare/v1.94.8...v1.94.9) (2026-07-26)
 
 ### Bug Fixes

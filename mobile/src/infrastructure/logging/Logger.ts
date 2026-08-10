@@ -1,5 +1,3 @@
-import { DiagnosticLogService } from '../native/DiagnosticLogService'
-
 type LogData = unknown
 
 function safeSerialize(data: LogData): string {
@@ -13,7 +11,6 @@ function safeSerialize(data: LogData): string {
 
 class AppLogger {
   private debugEnabled = false
-  private readonly service = new DiagnosticLogService()
 
   setDebugMode(enabled: boolean): void {
     this.debugEnabled = enabled
@@ -23,36 +20,30 @@ class AppLogger {
     return this.debugEnabled
   }
 
-  /** Only emitted when debug mode is on. Goes to console + native log. */
+  /** Only emitted when debug mode is on. */
   debug(tag: string, message: string, data?: LogData): void {
     if (!this.debugEnabled) return
     const formatted = `[DEBUG][${tag}] ${message}${safeSerialize(data)}`
     console.log(formatted)
-    this.service.log(formatted).catch(() => {})
   }
 
-  /** Always emitted to console; goes to native log only when debug mode is on. */
+  /** Always emitted to console. */
   info(tag: string, message: string, data?: LogData): void {
     const formatted = `[INFO][${tag}] ${message}${safeSerialize(data)}`
     console.log(formatted)
-    if (this.debugEnabled) {
-      this.service.log(formatted).catch(() => {})
-    }
   }
 
-  /** Always emitted to console and native log regardless of debug mode. */
+  /** Always emitted to console. */
   warn(tag: string, message: string, data?: LogData): void {
     const formatted = `[WARN][${tag}] ${message}${safeSerialize(data)}`
     console.warn(formatted)
-    this.service.log(formatted).catch(() => {})
   }
 
-  /** Always emitted to console and native log regardless of debug mode. */
+  /** Always emitted to console. */
   error(tag: string, message: string, err?: unknown): void {
     const errStr = err instanceof Error ? err.message : err !== undefined ? String(err) : ''
     const formatted = `[ERROR][${tag}] ${message}${errStr ? ' ' + errStr : ''}`
     console.error(formatted)
-    this.service.log(formatted).catch(() => {})
   }
 }
 

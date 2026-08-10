@@ -1,9 +1,11 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Alert } from 'react-native'
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { SettingsScreen } from './SettingsScreen'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
 import { NotificationService } from '../../infrastructure/native/NotificationService'
+import { AppSettingsStorage } from '../../infrastructure/storage/AppSettingsStorage'
 
 // Mock react-native-device-info
 jest.mock('react-native-device-info', () => ({
@@ -31,6 +33,10 @@ describe('SettingsScreen', () => {
     showImmediateNotification: jest.fn(),
   } as unknown as jest.Mocked<NotificationService>
 
+  const mockAppSettingsStorage: jest.Mocked<AppSettingsStorage> = {
+    resetToDefaults: jest.fn(),
+  } as unknown as jest.Mocked<AppSettingsStorage>
+
   const defaultProps = {
     onBack: jest.fn(),
     onChangeServer: jest.fn(),
@@ -42,6 +48,7 @@ describe('SettingsScreen', () => {
     healthCheckService: mockHealthCheckService,
     notificationPreferencesStorage: mockPrefsStorage,
     notificationService: mockNotifService,
+    appSettingsStorage: mockAppSettingsStorage,
   }
 
   beforeEach(() => {
@@ -51,6 +58,7 @@ describe('SettingsScreen', () => {
     mockPrefsStorage.setTimerNotificationsEnabled.mockResolvedValue(undefined)
     mockPrefsStorage.setCriticalNotificationsEnabled.mockResolvedValue(undefined)
     mockNotifService.requestPermission.mockResolvedValue(true)
+    mockAppSettingsStorage.resetToDefaults.mockResolvedValue(undefined)
   })
 
   it('renders settings screen with header', () => {
@@ -368,6 +376,81 @@ describe('SettingsScreen', () => {
 
       await waitFor(() => {
         expect(getByText('Break through Focus and Do Not Disturb modes')).toBeTruthy()
+      })
+    })
+  })
+
+  describe('reset settings', () => {
+    it('should show a confirmation alert when Reset Settings is pressed', () => {
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      fireEvent.press(getByTestId('reset-settings-button'))
+
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Reset Settings to Defaults',
+        expect.stringContaining('account, server connection, and data are not affected'),
+        expect.any(Array),
+      )
+    })
+
+    it('should NOT reset when the alert is cancelled', () => {
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      fireEvent.press(getByTestId('reset-settings-button'))
+
+      expect(Alert.alert).toHaveBeenCalled()
+      expect(mockAppSettingsStorage.resetToDefaults).not.toHaveBeenCalled()
+    })
+
+    it('should reset settings, reload defaults, and request permission when confirmed', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(true)
+      mockPrefsStorage.getCriticalNotificationsEnabled.mockResolvedValue(true)
+
+      const { getByTestId, getByText } = render(<SettingsScreen {...defaultProps} />)
+
+      fireEvent.press(getByTestId('reset-settings-button'))
+
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
+      })
+
+      expect(mockAppSettingsStorage.resetToDefaults).toHaveBeenCalledTimes(1)
+      expect(mockNotifService.requestPermission).toHaveBeenCalled()
+      await waitFor(() => {
+        expect(getByText('Settings reset to defaults')).toBeTruthy()
+      })
+    })
+
+    it('should not request permission when timer notifications are off after reset', async () => {
+      mockPrefsStorage.getTimerNotificationsEnabled.mockResolvedValue(false)
+
+      const { getByTestId } = render(<SettingsScreen {...defaultProps} />)
+
+      fireEvent.press(getByTestId('reset-settings-button'))
+
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
+      })
+
+      expect(mockNotifService.requestPermission).not.toHaveBeenCalled()
+    })
+
+    it('should show an error message when reset fails', async () => {
+      mockAppSettingsStorage.resetToDefaults.mockRejectedValue(new Error('Reset failed'))
+
+      const { getByTestId, getByText } = render(<SettingsScreen {...defaultProps} />)
+
+      fireEvent.press(getByTestId('reset-settings-button'))
+
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2]
+      await act(async () => {
+        await buttons[1].onPress()
+      })
+
+      await waitFor(() => {
+        expect(getByText('Reset failed')).toBeTruthy()
       })
     })
   })

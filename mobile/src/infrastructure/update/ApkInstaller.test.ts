@@ -230,8 +230,8 @@ describe('ApkInstaller', () => {
       ).rejects.toThrow('Downloaded file is empty')
     })
 
-    it('should throw error on iOS platform', async () => {
-      Platform.OS = 'ios'
+    it('should throw error on non-Android platform', async () => {
+      Platform.OS = 'web'
 
       await expect(
         installer.downloadApk(
@@ -273,8 +273,8 @@ describe('ApkInstaller', () => {
       ).rejects.toThrow('Native module error')
     })
 
-    it('should throw error on iOS platform', async () => {
-      Platform.OS = 'ios'
+    it('should throw error on non-Android platform', async () => {
+      Platform.OS = 'web'
 
       await expect(
         installer.installApk('/cache/guidr-update.apk')

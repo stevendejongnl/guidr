@@ -32,6 +32,26 @@
 #     babel-plugin-module-resolver/eslint-plugin-react releases, or a major downgrade
 #     of eslint-plugin-react (npm's suggested "fix" is 7.22.0, older than current — not
 #     a real fix). Dev-toolchain only (test runner, build script, linter) — no prod path.
+# - GHSA-rgw5-rvv9-x895: brace-expansion DoS, bypass of the GHSA-mh99-v99m-4gvg mitigation (HIGH)
+#     Same transitive copies/chain as GHSA-mh99-v99m-4gvg above — same root cause, same
+#     dev-toolchain-only exposure, same "no fix available" status.
+# - GHSA-5p4m-2wfm-xmqj: js-yaml quadratic CPU DoS via !!omap resolution (HIGH)
+#     Covers both the already-accepted 3.x path (@istanbuljs/load-nyc-config, see
+#     GHSA-h67p-54hq-rp68) and js-yaml@4.3.0 via eslint's @eslint/eslintrc and
+#     semantic-release's cosmiconfig. Both 4.x paths only parse local config files at
+#     CI/build time, never attacker-controlled YAML. Dev/CI-toolchain only.
+# - GHSA-7p8r-x3mc-p8w7: fast-uri host confusion via backslash authority introducer (HIGH)
+#     Transitive via @microsoft/api-extractor (TypeScript declaration bundler for shared/)
+#     -> ajv@8.18.0/8.20.0 -> fast-uri@3.1.4. Build-time only, never processes untrusted
+#     URIs. Attempted an override to fast-uri@^3.1.5 (including npm's nested
+#     `"ajv": {"fast-uri": "..."}` override syntax) — npm's resolver does not propagate
+#     either through this specific nested chain. Revisit when @microsoft/api-extractor
+#     bumps its ajv dependency.
+# - GHSA-w3rx-r6r6-pgpr / GHSA-5p2g-fcmc-qvqq: image-size ICNS/JXL/HEIF parser DoS (HIGH)
+#     Transitive via metro -> @react-native/community-cli-plugin -> react-native. Only
+#     fixable via `npm audit fix --force`, which downgrades react-native to 0.72.17 — a
+#     major breaking change, not worth it for a build-tool DoS with no prod exposure
+#     (image-size runs on bundler-local assets at build time, not user-supplied files).
 #
 # To fix a vulnerability instead of accepting it: fix the dep chain and remove from this list.
 
@@ -50,6 +70,11 @@ ACCEPTED_ADVISORIES=(
   "GHSA-22p9-wv53-3rq4"  # linkify-it DoS, same markdown-it chain, no fix available
   "GHSA-v245-v573-v5vm"  # linkify-it DoS, same markdown-it chain, no fix available
   "GHSA-mh99-v99m-4gvg"  # brace-expansion DoS, dev-toolchain only (jest/babel/eslint), no fix available
+  "GHSA-rgw5-rvv9-x895"  # brace-expansion DoS, bypass of GHSA-mh99-v99m-4gvg mitigation, same chain
+  "GHSA-5p4m-2wfm-xmqj"  # js-yaml quadratic DoS, @istanbuljs 3.x + eslint/semantic-release 4.x, CI-toolchain only
+  "GHSA-7p8r-x3mc-p8w7"  # fast-uri host confusion, @microsoft/api-extractor->ajv, build-time only, override attempted
+  "GHSA-w3rx-r6r6-pgpr"  # image-size ICNS DoS, metro/react-native, only fixable via breaking react-native downgrade
+  "GHSA-5p2g-fcmc-qvqq"  # image-size JXL/HEIF DoS, same chain as GHSA-w3rx-r6r6-pgpr
 )
 
 # Run npm audit and capture output

@@ -178,22 +178,39 @@ describe('UpdateService', () => {
       expect(mockGitHubClient.getLatestRelease).not.toHaveBeenCalled()
     })
 
-    it('should skip check when last check was < 24h ago', async () => {
-      UpdateCheckCache.clearCache() // No in-memory cache
+    it('should skip check and return cached result when last check was < 24h ago and cache is present', async () => {
+      UpdateCheckCache.setCache({
+        latestVersion: '1.15.0',
+        currentVersion: '1.14.0',
+        updateAvailable: true,
+        isMandatory: false,
+        release: mockRelease,
+        checkedAt: new Date(),
+      })
       mockStorage.shouldCheckForUpdates.mockResolvedValue(false)
 
       const result = await service.checkForUpdates('1.14.0', false)
 
-      expect(result).toEqual({
-        updateAvailable: false,
-        isMandatory: false,
-        currentVersion: '1.14.0',
-        latestVersion: '1.14.0',
-        release: null,
-      })
+      expect(result.updateAvailable).toBe(true)
+      expect(result.latestVersion).toBe('1.15.0')
 
       // Should not call GitHub API
       expect(mockGitHubClient.getLatestRelease).not.toHaveBeenCalled()
+    })
+
+    it('should perform a fresh check when last check was < 24h ago but no in-memory cache exists (cold start)', async () => {
+      // The persisted "last checked" timestamp survives app restarts, but the
+      // in-memory UpdateCheckCache does not — this is the cold-start case
+      // that used to silently report "no update available".
+      UpdateCheckCache.clearCache()
+      mockStorage.shouldCheckForUpdates.mockResolvedValue(false)
+      mockGitHubClient.getLatestRelease.mockResolvedValue(mockRelease)
+
+      const result = await service.checkForUpdates('1.14.0', false)
+
+      expect(mockGitHubClient.getLatestRelease).toHaveBeenCalled()
+      expect(result.updateAvailable).toBe(true)
+      expect(result.latestVersion).toBe('1.15.0')
     })
 
     it('should update cache and timestamp after successful check', async () => {

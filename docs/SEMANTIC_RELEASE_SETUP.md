@@ -64,7 +64,7 @@ When successful, the workflow should:
 - Determine the next version via semantic-release
 - Push version bump commits to main (bypassing branch protection)
 - Create a GitHub release
-- Trigger downstream workflows (Android, iOS, Docker)
+- Trigger downstream workflows (Docker)
 
 ## Troubleshooting
 

@@ -43,15 +43,7 @@ function createSymlink(srcPath, destPath, linkName) {
   }
 }
 
-// 1. Create symlink for @sentry from mobile to root node_modules
-// (iOS build scripts expect @sentry/react-native at root/node_modules/@sentry)
-const mobileNodeModulesSentry = path.join(rootDir, 'mobile/node_modules/@sentry');
-const rootNodeModulesSentry = path.join(rootNodeModulesDir, '@sentry');
-if (fs.existsSync(mobileNodeModulesSentry)) {
-  createSymlink(mobileNodeModulesSentry, rootNodeModulesSentry, '@sentry');
-}
-
-// 2. Create symlink for react-native from root to mobile node_modules
+// 1. Create symlink for react-native from root to mobile node_modules
 // (Android gradle plugin expects react-native in mobile/node_modules)
 const rootNodeModulesReactNative = path.join(rootNodeModulesDir, 'react-native');
 const mobileNodeModulesReactNative = path.join(mobileNodeModulesDir, 'react-native');
@@ -59,7 +51,7 @@ if (fs.existsSync(rootNodeModulesReactNative)) {
   createSymlink(rootNodeModulesReactNative, mobileNodeModulesReactNative, 'react-native');
 }
 
-// 2b. Create symlink for @sentry from root to mobile node_modules
+// 2. Create symlink for @sentry from root to mobile node_modules
 // (Android build.gradle references mobile/node_modules/@sentry/react-native/sentry.gradle)
 // Only needed when npm hoists @sentry to root (no --workspaces); skipped when it's already
 // a real directory in mobile/node_modules (the --workspaces case).

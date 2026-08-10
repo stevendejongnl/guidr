@@ -34,23 +34,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - name: Wait for iOS Widget Tests
-        if: github.event_name == 'push'
-        uses: fountainhead/action-wait-for-check@v1.2.0
-        id: widget-tests
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'iOS Widget Tests'
-          ref: ${{ github.sha }}
-          timeoutSeconds: 600
-          intervalSeconds: 15
-
-      - name: Fail if widget tests failed
-        if: github.event_name == 'push' && steps.widget-tests.outputs.conclusion != 'success'
-        run: |
-          echo "::error::iOS Widget Tests did not pass (status: ${{ steps.widget-tests.outputs.conclusion }})"
-          exit 1
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -269,7 +252,7 @@ jobs:
           VERSION=$(node -p "require('./mobile/package.json').version")
           TAG="v${VERSION}"
 
-          # Dispatch repository event that will trigger both Docker and TestFlight workflows
+          # Dispatch repository event that will trigger the Docker workflow
           # Use the correct commit SHA from the release commit that was just pushed
           gh api repos/${{ github.repository }}/dispatches \
             --method POST \

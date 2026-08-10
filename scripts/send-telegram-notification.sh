@@ -164,52 +164,6 @@ EOF
 EOF
       fi
       ;;
-    testflight_success)
-      cat <<EOF
-<b>✈️ TestFlight v${VERSION} Deployed</b>
-
-<b>Status:</b> ✅ Success
-<b>Branch:</b> ${escaped_branch}
-<b>Commit:</b> <code>${commit_short}</code>
-
-<a href="${RUN_URL}">View Build</a>
-EOF
-      ;;
-    testflight_failure)
-      if [ -n "${FAILED_STEP}" ] || [ -n "${ERROR_MSG}" ]; then
-        cat <<EOF
-<b>✈️ TestFlight Deployment Failed</b>
-
-<b>Status:</b> ❌ Failure
-<b>Branch:</b> ${escaped_branch}
-<b>Commit:</b> <code>${commit_short}</code>
-EOF
-        if [ -n "${FAILED_STEP}" ]; then
-          echo "<b>Failed Step:</b> ${FAILED_STEP}"
-        fi
-        if [ -n "${ERROR_MSG}" ]; then
-          local error_truncated=$(truncate_string "$ERROR_MSG" 500)
-          local escaped_error_msg=$(escape_html "$error_truncated")
-          echo ""
-          echo "<b>Error:</b>"
-          echo "<pre>${escaped_error_msg}</pre>"
-        fi
-        cat <<EOF
-
-<a href="${RUN_URL}">View Build Logs</a>
-EOF
-      else
-        cat <<EOF
-<b>✈️ TestFlight Deployment Failed</b>
-
-<b>Status:</b> ❌ Failure
-<b>Branch:</b> ${escaped_branch}
-<b>Commit:</b> <code>${commit_short}</code>
-
-<a href="${RUN_URL}">View Build Logs</a>
-EOF
-      fi
-      ;;
     docker_success)
       cat <<EOF
 <b>🐳 Docker v${VERSION} Deployed</b>
@@ -313,7 +267,7 @@ validate_parameters() {
 
   # Type-specific validations
   case "$NOTIFICATION_TYPE" in
-    release_success|android_success|testflight_success|docker_success)
+    release_success|android_success|docker_success)
       if [ -z "$VERSION" ]; then
         echo "Error: --version is required for $NOTIFICATION_TYPE"
         exit 1

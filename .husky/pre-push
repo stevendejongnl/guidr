@@ -10,7 +10,7 @@ echo "🔒 Security: Scanning dependencies..."
 ./scripts/npm-audit-security.sh . high || true
 if [ -f api-server/.venv/bin/pip-audit ]; then
   (cd api-server && .venv/bin/pip install --upgrade pip --quiet)
-  PIP_AUDIT_OUTPUT=$((cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp --ignore-vuln CVE-2026-4539 --ignore-vuln CVE-2026-25645) 2>&1) || {
+  PIP_AUDIT_OUTPUT=$( (cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp --ignore-vuln CVE-2026-4539 --ignore-vuln CVE-2026-25645) 2>&1 ) || {
     echo "$PIP_AUDIT_OUTPUT"
     echo "❌ API security scan failed"
     exit 1
@@ -39,19 +39,5 @@ API_OUTPUT=$(npm run api:test 2>&1) || {
 echo "$API_OUTPUT" | grep -E "passed|failed" | tail -1
 echo "✓ API tests passed"
 echo ""
-
-if command -v xcodebuild &> /dev/null; then
-  echo "🍎 Running iOS Widget Tests..."
-  cd mobile/ios
-  xcodebuild test \
-    -project guidr.xcodeproj \
-    -scheme GuidrWidgetTests \
-    -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-    -configuration Debug \
-    -quiet
-  cd ../..
-  echo "✓ iOS widget tests passed"
-  echo ""
-fi
 
 echo "✓ All pre-push checks passed!"

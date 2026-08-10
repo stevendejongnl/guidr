@@ -487,7 +487,6 @@ When the app prompts for a server URL on first launch:
 | Environment | Server URL |
 |------------|------------|
 | Android emulator | `http://10.0.2.2:8000` |
-| iOS simulator | `http://localhost:8000` |
 | Physical device (same network) | `http://<your-computer-ip>:8000` |
 | Docker container on same machine | `http://localhost:8000` |
 
@@ -813,7 +812,7 @@ The api-server version is automatically updated when the main Guidr app is relea
    ```
 3. Semantic-release automatically:
    - Determines new version based on commits
-   - Updates `package.json`, iOS, Android, and `api-server/pyproject.toml`
+   - Updates `package.json`, Android, and `api-server/pyproject.toml`
    - Creates git tag (e.g., `v1.2.3`)
    - Publishes GitHub Release
 4. Docker workflow automatically triggers:

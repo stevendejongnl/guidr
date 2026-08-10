@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sync version from package.json to Android build.gradle and iOS project.pbxproj
+# Sync version from package.json to Android build.gradle
 # Usage: ./sync-version.sh [version]
 # If version is not provided, it reads from package.json
 
@@ -40,16 +40,6 @@ if [ -f "$BUILD_GRADLE" ]; then
   echo "✓ Android versionName updated to $VERSION"
 else
   echo "⚠ Android build.gradle not found at $BUILD_GRADLE"
-fi
-
-# Update iOS project.pbxproj (MARKETING_VERSION)
-PROJECT_FILE="$MOBILE_DIR/ios/guidr.xcodeproj/project.pbxproj"
-if [ -f "$PROJECT_FILE" ]; then
-  sed "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = $VERSION/" "$PROJECT_FILE" > "$PROJECT_FILE.tmp"
-  mv "$PROJECT_FILE.tmp" "$PROJECT_FILE"
-  echo "✓ iOS MARKETING_VERSION updated to $VERSION"
-else
-  echo "⚠ iOS project.pbxproj not found at $PROJECT_FILE"
 fi
 
 echo "✓ Version sync complete: $VERSION"

@@ -1,13 +1,6 @@
 /**
  * Logger tests.
  *
- * DiagnosticLogService calls NativeModules.DiagnosticLogModule.log which is
- * mocked in __mocks__/react-native.js (NativeModules is provided).
- * Platform.OS is set to 'ios' in that same mock, so the service will attempt
- * to call the native module. Since DiagnosticLogModule is undefined in that
- * mock, all native calls will throw internally and be swallowed — this is
- * the correct best-effort behaviour.
- *
  * We test the Logger singleton's public API in isolation. Because jest.setup.js
  * suppresses all console.log output, we spy on the originals at the module level.
  */

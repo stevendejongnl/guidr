@@ -58,14 +58,6 @@ Executes Ruff on the FastAPI server to check code style and quality according to
 
 ## Mobile App Commands
 
-### Mobile iOS
-```bash
-npm run mobile:ios
-```
-Builds the React Native application and runs it on the iOS simulator.
-
-**Requirements**: Xcode and an iOS simulator must be set up.
-
 ### Mobile Android
 ```bash
 npm run mobile:android

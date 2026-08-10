@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { IHealthCheckService, HealthCheckResult } from '../../domain/services/IHealthCheckService'
@@ -82,7 +81,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
     <SafeScreen>
       <KeyboardAvoidingView
         style={commonStyles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="height"
       >
         <View style={commonStyles.content}>
           <Text style={commonStyles.title}>Server Configuration</Text>
