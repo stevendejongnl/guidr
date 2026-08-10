@@ -20,7 +20,7 @@ dependencies = [
     "httpx>=0.28.1",
     "sentry-sdk[fastapi]>=2.0.0",
     "openai>=1.40.0",
-    "cryptography>=46.0.6",
+    "cryptography>=50.0.0",
     "ecdsa>=0.19.2",
     "pyasn1>=0.6.3",
 ]
