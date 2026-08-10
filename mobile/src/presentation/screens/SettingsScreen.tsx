@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
+  Alert,
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
@@ -14,6 +15,8 @@ import { commonStyles } from '@guidr/shared/styles/react-native'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
 import { NotificationService } from '../../infrastructure/native/NotificationService'
+import { AppSettingsStorage } from '../../infrastructure/storage/AppSettingsStorage'
+import { Logger } from '../../infrastructure/logging/Logger'
 
 interface SettingsScreenProps {
   onBack: () => void
@@ -26,6 +29,7 @@ interface SettingsScreenProps {
   healthCheckService: IHealthCheckService
   notificationPreferencesStorage?: NotificationPreferencesStorage
   notificationService?: NotificationService
+  appSettingsStorage?: AppSettingsStorage
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -39,14 +43,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   healthCheckService,
   notificationPreferencesStorage: injectedPrefsStorage,
   notificationService: injectedNotifService,
+  appSettingsStorage: injectedAppSettingsStorage,
 }) => {
   const [serverVersion, setServerVersion] = useState<string | null>(null)
   const [timerNotificationsEnabled, setTimerNotificationsEnabled] = useState(false)
   const [criticalNotificationsEnabled, setCriticalNotificationsEnabled] = useState(false)
   const [savingPrefs, setSavingPrefs] = useState(false)
+  const [resettingSettings, setResettingSettings] = useState(false)
+  const [resetMessage, setResetMessage] = useState<string | null>(null)
 
   const prefsStorage = injectedPrefsStorage || new NotificationPreferencesStorage()
   const notifService = injectedNotifService || new NotificationService()
+  const appSettingsStorage = injectedAppSettingsStorage || new AppSettingsStorage()
 
   useEffect(() => {
     const fetchServerVersion = async () => {
@@ -102,6 +110,49 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     } finally {
       setSavingPrefs(false)
     }
+  }
+
+  const performReset = async () => {
+    setResettingSettings(true)
+    setResetMessage(null)
+    try {
+      await appSettingsStorage.resetToDefaults()
+      Logger.setDebugMode(false)
+
+      const [timerEnabled, criticalEnabled] = await Promise.all([
+        prefsStorage.getTimerNotificationsEnabled(),
+        prefsStorage.getCriticalNotificationsEnabled(),
+      ])
+      setTimerNotificationsEnabled(timerEnabled)
+      setCriticalNotificationsEnabled(criticalEnabled)
+
+      if (timerEnabled) {
+        await notifService.requestPermission()
+      }
+
+      setResetMessage('Settings reset to defaults')
+    } catch (err) {
+      setResetMessage(
+        err instanceof Error ? err.message : 'Failed to reset settings',
+      )
+    } finally {
+      setResettingSettings(false)
+    }
+  }
+
+  const handleResetSettings = () => {
+    Alert.alert(
+      'Reset Settings to Defaults',
+      'This resets notification, debug, and other device-local settings on this device. Your account, server connection, and data are not affected.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: performReset,
+        },
+      ],
+    )
   }
 
   return (
@@ -175,6 +226,28 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   Break through Focus and Do Not Disturb modes
                 </Text>
               </>
+            )}
+          </View>
+
+          {/* Device Settings Section */}
+          <View style={commonStyles.section}>
+            <Text style={commonStyles.sectionTitle}>Device Settings</Text>
+            <Text style={styles.settingHint}>
+              Reset notification, debug, and other settings stored on this
+              device back to defaults. Your account, server connection, and
+              data are not affected.
+            </Text>
+            <TouchableOpacity
+              style={[styles.dangerButton, resettingSettings ? styles.buttonDisabled : null]}
+              onPress={handleResetSettings}
+              disabled={resettingSettings}
+              accessibilityLabel="Reset settings to defaults"
+              testID="reset-settings-button"
+            >
+              <Text style={commonStyles.buttonText}>Reset Settings to Defaults</Text>
+            </TouchableOpacity>
+            {resetMessage && (
+              <Text style={commonStyles.successText}>{resetMessage}</Text>
             )}
           </View>
 
@@ -271,5 +344,16 @@ const styles = StyleSheet.create({
   },
   sectionButton: {
     marginTop: spacing.md,
+  },
+  dangerButton: {
+    backgroundColor: colors.danger,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    marginTop: spacing.sm,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 })
