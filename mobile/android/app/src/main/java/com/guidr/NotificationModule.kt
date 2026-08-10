@@ -6,8 +6,10 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
 import android.os.Build
 import android.os.SystemClock
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -19,7 +21,13 @@ class NotificationModule(reactContext: ReactApplicationContext) :
 
     companion object {
         private const val CHANNEL_DEFAULT = "guidr_timer"
-        private const val CHANNEL_CRITICAL = "guidr_timer_critical"
+        // v2: the original channel was created with no explicit sound/AudioAttributes,
+        // so its default IMPORTANCE_HIGH sound was silenced by ringer=Vibrate mode.
+        // NotificationChannel settings are immutable after first creation on a device,
+        // so fixing this requires a new channel ID — old devices get a fresh channel,
+        // the old one is deleted below so it doesn't linger as a dead duplicate.
+        private const val CHANNEL_CRITICAL_LEGACY = "guidr_timer_critical"
+        private const val CHANNEL_CRITICAL = "guidr_timer_critical_v2"
         private var notificationId = 1000
     }
 
@@ -35,6 +43,8 @@ class NotificationModule(reactContext: ReactApplicationContext) :
                 Context.NOTIFICATION_SERVICE
             ) as NotificationManager
 
+            manager.deleteNotificationChannel(CHANNEL_CRITICAL_LEGACY)
+
             val defaultChannel = NotificationChannel(
                 CHANNEL_DEFAULT,
                 "Timer Notifications",
@@ -44,12 +54,25 @@ class NotificationModule(reactContext: ReactApplicationContext) :
             }
             manager.createNotificationChannel(defaultChannel)
 
+            // Route the sound through the alarm stream, not the notification stream.
+            // Android mutes the notification stream when the ringer is set to Vibrate
+            // or Silent, but deliberately never mutes the alarm stream (so alarm clocks
+            // still work) — this is the standard mechanism apps use to guarantee a
+            // time-sensitive notification is actually heard.
+            val criticalAudioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+
             val criticalChannel = NotificationChannel(
                 CHANNEL_CRITICAL,
                 "Critical Timer Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "High-priority notifications that break through Do Not Disturb"
+                description = "High-priority notifications that break through Do Not " +
+                    "Disturb and vibrate-only mode"
+                setSound(Settings.System.DEFAULT_NOTIFICATION_URI, criticalAudioAttributes)
+                enableVibration(true)
             }
             manager.createNotificationChannel(criticalChannel)
         }
