@@ -1,3 +1,14 @@
+## [1.95.1](https://github.com/stevendejongnl/guidr/compare/v1.95.0...v1.95.1) (2026-08-10)
+
+### Bug Fixes
+
+* critical timer notifications now play sound in vibrate-only mode ([94fdeac](https://github.com/stevendejongnl/guidr/commit/94fdeac9afe9581073e1f79a9383c14a92a6b89b))
+* request notification permission on live login, not just cold start ([b8abdf0](https://github.com/stevendejongnl/guidr/commit/b8abdf0b1d28dd6f0110bb248c135e220545e820))
+
+### Documentation
+
+* add ADR-030 for manual Android device testing strategy ([1e6b7b6](https://github.com/stevendejongnl/guidr/commit/1e6b7b6f52f8d7e97097cfdb3cb6d31c49509aae))
+
 ## [1.95.0](https://github.com/stevendejongnl/guidr/compare/v1.94.12...v1.95.0) (2026-08-10)
 
 ### Features
