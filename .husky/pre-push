@@ -10,7 +10,7 @@ echo "🔒 Security: Scanning dependencies..."
 ./scripts/npm-audit-security.sh . high || true
 if [ -f api-server/.venv/bin/pip-audit ]; then
   (cd api-server && .venv/bin/pip install --upgrade pip --quiet)
-  PIP_AUDIT_OUTPUT=$((cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp --ignore-vuln CVE-2026-4539 --ignore-vuln CVE-2026-25645) 2>&1) || {
+  PIP_AUDIT_OUTPUT=$( (cd api-server && .venv/bin/pip-audit --desc --skip-editable --ignore-vuln GHSA-wj6h-64fc-37mp --ignore-vuln CVE-2026-4539 --ignore-vuln CVE-2026-25645) 2>&1 ) || {
     echo "$PIP_AUDIT_OUTPUT"
     echo "❌ API security scan failed"
     exit 1
