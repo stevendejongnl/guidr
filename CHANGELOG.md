@@ -1,3 +1,14 @@
+## [1.95.0](https://github.com/stevendejongnl/guidr/compare/v1.94.12...v1.95.0) (2026-08-10)
+
+### Features
+
+* add Reset Settings to Defaults button ([340be00](https://github.com/stevendejongnl/guidr/commit/340be00c15685faf15a0eebdb980ca5191c263d6))
+
+### Bug Fixes
+
+* default timer notifications to time-sensitive importance ([1afb705](https://github.com/stevendejongnl/guidr/commit/1afb705ef2eb88d334fecb93060cfa3c36380707))
+* request notification permission on sign-in, not buried in Settings ([6fd7a49](https://github.com/stevendejongnl/guidr/commit/6fd7a49eb5f639146b9f636d6b0bb91e043d47be))
+
 ## [1.94.12](https://github.com/stevendejongnl/guidr/compare/v1.94.11...v1.94.12) (2026-08-10)
 
 ### Bug Fixes
