@@ -1,3 +1,9 @@
+## [1.94.10](https://github.com/stevendejongnl/guidr/compare/v1.94.9...v1.94.10) (2026-08-10)
+
+### Bug Fixes
+
+* **health:** retry once before alerting on transient DB ping failure ([152a3fc](https://github.com/stevendejongnl/guidr/commit/152a3fcddeb9ae2c0df88ee3c7ca0e5deba0f76c))
+
 ## [1.94.9](https://github.com/stevendejongnl/guidr/compare/v1.94.8...v1.94.9) (2026-07-26)
 
 ### Bug Fixes
