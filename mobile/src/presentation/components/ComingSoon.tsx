@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(11, 15, 20, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
