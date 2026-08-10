@@ -108,6 +108,29 @@ export const AppNavigator: React.FC = () => {
 
   const tokenRefreshServiceRef = useRef<TokenRefreshService | null>(null)
 
+  // Request notification permission on Android once the user is signed
+  // in — covers both a cold start while already authenticated and a
+  // fresh login/registration in the current session — instead of waiting
+  // for a Settings toggle (which defaults to already-on and so never
+  // fires) or the first timer.
+  const requestNotificationPermissionIfEnabled = async () => {
+    if (Platform.OS !== 'android') return
+    try {
+      const notifPrefsStorage = new NotificationPreferencesStorage()
+      const timerNotificationsEnabled =
+        await notifPrefsStorage.getTimerNotificationsEnabled()
+      if (timerNotificationsEnabled) {
+        await new NotificationService().requestPermission()
+      }
+    } catch (error) {
+      ErrorReporter.capture(error, {
+        component: 'AppNavigator',
+        action: 'requestNotificationPermission',
+      })
+      console.error('Failed to request notification permission:', error)
+    }
+  }
+
   useEffect(() => {
     const checkConfiguration = async () => {
       try {
@@ -172,26 +195,7 @@ export const AppNavigator: React.FC = () => {
           const adminStatus = await authStorage.getUserIsAdmin()
           setIsAdmin(adminStatus)
           Logger.debug('AppNavigator', 'Auth state loaded', { hasToken, isAdmin: adminStatus })
-
-          // Request notification permission on Android once the user is
-          // signed in, instead of waiting for a Settings toggle (which
-          // defaults to already-on and so never fires) or the first timer.
-          if (Platform.OS === 'android') {
-            try {
-              const notifPrefsStorage = new NotificationPreferencesStorage()
-              const timerNotificationsEnabled =
-                await notifPrefsStorage.getTimerNotificationsEnabled()
-              if (timerNotificationsEnabled) {
-                await new NotificationService().requestPermission()
-              }
-            } catch (error) {
-              ErrorReporter.capture(error, {
-                component: 'AppNavigator',
-                action: 'requestNotificationPermission',
-              })
-              console.error('Failed to request notification permission:', error)
-            }
-          }
+          await requestNotificationPermissionIfEnabled()
         }
 
         // Check for updates on Android
@@ -302,6 +306,7 @@ export const AppNavigator: React.FC = () => {
 
     const adminStatus = await authStorage.getUserIsAdmin()
     setIsAdmin(adminStatus)
+    await requestNotificationPermissionIfEnabled()
   }
 
   const handleLogout = async () => {
@@ -345,6 +350,7 @@ export const AppNavigator: React.FC = () => {
 
     const adminStatus = await authStorage.getUserIsAdmin()
     setIsAdmin(adminStatus)
+    await requestNotificationPermissionIfEnabled()
   }
 
   const handleViewSessionDetail = (sessionId: string) => {

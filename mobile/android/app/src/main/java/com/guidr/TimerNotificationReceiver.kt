@@ -14,7 +14,10 @@ class TimerNotificationReceiver : BroadcastReceiver() {
         val critical = intent.getBooleanExtra("critical", false)
         val notificationId = intent.getIntExtra("notificationId", 0)
 
-        val channelId = if (critical) "guidr_timer_critical" else "guidr_timer"
+        // Must match NotificationModule.CHANNEL_CRITICAL / CHANNEL_DEFAULT — the sound
+        // and AudioAttributes that make critical notifications audible in vibrate-only
+        // mode are configured once on the channel itself, not per-notification here.
+        val channelId = if (critical) "guidr_timer_critical_v2" else "guidr_timer"
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setContentTitle("Timer Complete")
