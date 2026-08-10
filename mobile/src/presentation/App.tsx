@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/react-native'
 import { SENTRY_DSN } from '@env'
 
 // Only initialize Sentry in production builds (not in tests or local development)
-// This ensures Sentry is only active for release APKs and TestFlight builds
+// This ensures Sentry is only active for release APKs
 if (process.env['JEST_WORKER_ID'] === undefined && !__DEV__ && SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN,

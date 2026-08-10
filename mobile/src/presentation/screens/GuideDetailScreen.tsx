@@ -25,8 +25,6 @@ import { StepListItem } from '../components/StepListItem'
 import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { useStepTimers } from '../hooks/useStepTimers'
-import { useLiveActivity } from '../hooks/useLiveActivity'
-import { LiveActivityService } from '../../infrastructure/native/LiveActivityService'
 import { NotificationService } from '../../infrastructure/native/NotificationService'
 import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
 
@@ -51,7 +49,6 @@ interface GuideDetailScreenProps {
   stepService?: StepService
   guideService?: GuideService
   stepTimerClient?: StepTimerClient
-  liveActivityService?: LiveActivityService
   notificationService?: NotificationService
   notificationPreferencesStorage?: NotificationPreferencesStorage
   authStorage?: AuthStorage
@@ -67,7 +64,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   stepService: injectedStepService,
   guideService: injectedGuideService,
   stepTimerClient: injectedStepTimerClient,
-  liveActivityService: injectedLiveActivityService,
   notificationService: injectedNotificationService,
   notificationPreferencesStorage: injectedNotifPrefsStorage,
   authStorage: injectedAuthStorage,
@@ -99,60 +95,29 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   // Step timers hook
   const stepTimers = useStepTimers(guideId, authToken, timerClient)
 
-  // Live Activity hook
-  const liveActivity = useLiveActivity(injectedLiveActivityService)
   const prevCompletedRef = useRef<Set<string>>(new Set())
-  const prevRunningRef = useRef<Set<string>>(new Set())
   const completedAtRef = useRef<Record<string, number>>({})
   const resetTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
   const resetCompletedTimer = useCallback((stepId: string) => {
     stepTimers.resetTimer(stepId)
-    liveActivity.removeTimer(stepId)
     notificationService.cancelTimerNotification(stepId)
     delete completedAtRef.current[stepId]
     delete resetTimeoutsRef.current[stepId]
-  }, [stepTimers, liveActivity, notificationService])
+  }, [stepTimers, notificationService])
 
-  // Sync SSE-driven timer starts to Live Activity
-  useEffect(() => {
-    const prevRunning = prevRunningRef.current
-    const nextRunning = new Set<string>()
-
-    for (const [stepId, display] of Object.entries(stepTimers.timers)) {
-      if (display.isRunning) {
-        nextRunning.add(stepId)
-        if (!prevRunning.has(stepId)) {
-          const step = steps.find(s => s.id === stepId)
-          if (step && guide) {
-            liveActivity.addTimer({
-              stepId,
-              guideTitle: guide.title,
-              stepTitle: step.title,
-              totalDurationSeconds: step.duration,
-              remainingSeconds: display.displaySeconds,
-            })
-          }
-        }
-      }
-    }
-    prevRunningRef.current = nextRunning
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepTimers.timers])
-
-  // Detect timer completion: update Live Activity + fire Android notification
+  // Detect timer completion: fire Android notification
   useEffect(() => {
     const prevCompleted = prevCompletedRef.current
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
       if (display.isComplete && !prevCompleted.has(stepId)) {
-        liveActivity.updateTimer(stepId, 0, false, true)
         // Track completion time and schedule auto-reset
         completedAtRef.current[stepId] = Date.now()
         resetTimeoutsRef.current[stepId] = setTimeout(
           () => resetCompletedTimer(stepId),
           TIMER_RESET_DELAY_MS,
         )
-        // Fire Android notification on completion (iOS handled natively)
+        // Fire Android notification on completion
         const step = steps.find(s => s.id === stepId)
         if (step && guide) {
           notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
@@ -181,7 +146,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
         .map(([id]) => id),
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepTimers.timers, liveActivity, resetCompletedTimer])
+  }, [stepTimers.timers, resetCompletedTimer])
 
   // Reset stale completed timers on app foreground
   useEffect(() => {
@@ -522,7 +487,6 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                                 ? timerDisplay.displaySeconds
                                 : initialSeconds
                               await stepTimers.startTimer(step.id, step.duration)
-                              // Live Activity is started by the SSE effect when stepTimers.timers updates
                               if (step.duration > 0) {
                                 notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
                                   if (!enabled) return
@@ -537,17 +501,9 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             onPause: async () => {
                               await stepTimers.pauseTimer(step.id)
                               notificationService.cancelTimerNotification(step.id)
-                              const display = stepTimers.timers[step.id]
-                              liveActivity.updateTimer(
-                                step.id,
-                                display?.displaySeconds ?? 0,
-                                true,
-                                false,
-                              )
                             },
                             onReset: async () => {
                               await stepTimers.resetTimer(step.id)
-                              liveActivity.removeTimer(step.id)
                               notificationService.cancelTimerNotification(step.id)
                             },
                           }}

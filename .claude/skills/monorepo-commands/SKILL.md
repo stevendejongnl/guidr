@@ -36,7 +36,6 @@ FastAPI backend commands:
 
 React Native commands:
 
-- `npm run mobile:ios` - Build and run on iOS simulator (requires Xcode)
 - `npm run mobile:android` - Build and run on Android emulator (requires Android SDK)
 - `npm run mobile:test` - Run Jest tests
 - `npm run mobile:typecheck` - Run TypeScript type checking
@@ -58,7 +57,7 @@ For complete details on each command including descriptions and usage notes, see
 
 When working with this monorepo:
 
-1. **Starting development**: Use `npm run web:dev` for web or `npm run mobile:ios`/`mobile:android` for mobile
+1. **Starting development**: Use `npm run web:dev` for web or `npm run mobile:android` for mobile
 2. **Before committing**: Run `npm run lint` and `npm run typecheck` to catch issues
 3. **Running tests**: Use `npm run test` for all tests or specific commands for targeted testing
 4. **Building for production**: Use `npm run web:build` for web deployment

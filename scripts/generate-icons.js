@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate app icons for iOS and Android from SVG source
+ * Generate app icons for Android from SVG source
  * Requires: npm install sharp
  */
 
@@ -9,18 +9,6 @@ const fs = require('fs');
 const path = require('path');
 
 const SVG_PATH = path.join(__dirname, '..', 'icon.svg');
-
-// iOS icon sizes
-const IOS_ICONS = [
-  { size: 40, filename: 'icon_40.png' },
-  { size: 58, filename: 'icon_58.png' },
-  { size: 60, filename: 'icon_60.png' },
-  { size: 80, filename: 'icon_80.png' },
-  { size: 87, filename: 'icon_87.png' },
-  { size: 120, filename: 'icon_120.png' },
-  { size: 180, filename: 'icon_180.png' },
-  { size: 1024, filename: 'icon_1024.png' },
-];
 
 // Android icon sizes (density buckets)
 const ANDROID_ICONS = [
@@ -40,7 +28,6 @@ const ANDROID_FOREGROUND_ICONS = [
   { size: 432, folder: 'mipmap-xxxhdpi' },
 ];
 
-const IOS_OUTPUT_DIR = path.join(__dirname, '..', 'ios', 'guidr', 'Images.xcassets', 'AppIcon.appiconset');
 const ANDROID_RES_DIR = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'res');
 
 // Background color for adaptive icons (from icon.svg)
@@ -52,15 +39,6 @@ async function generateIcon(svgBuffer, size, outputPath) {
     .png()
     .toFile(outputPath);
   console.log(`Generated: ${outputPath} (${size}x${size})`);
-}
-
-async function generateIconWithoutAlpha(svgBuffer, size, outputPath, backgroundColor = '#A7F3D0') {
-  await sharp(svgBuffer)
-    .resize(size, size)
-    .flatten({ background: backgroundColor })  // Flatten alpha channel with background color
-    .png({ compressionLevel: 9, palette: false })  // Force RGB (no alpha)
-    .toFile(outputPath);
-  console.log(`Generated (no alpha): ${outputPath} (${size}x${size})`);
 }
 
 async function generateRoundIcon(svgBuffer, size, outputPath) {
@@ -147,19 +125,6 @@ function generateAdaptiveIconXml() {
 async function main() {
   console.log('Reading SVG source...');
   const svgBuffer = fs.readFileSync(SVG_PATH);
-
-  // Generate iOS icons
-  console.log('\n--- Generating iOS Icons ---');
-  for (const icon of IOS_ICONS) {
-    const outputPath = path.join(IOS_OUTPUT_DIR, icon.filename);
-
-    // Use opaque version for 1024x1024 (App Store requirement)
-    if (icon.size === 1024) {
-      await generateIconWithoutAlpha(svgBuffer, icon.size, outputPath);
-    } else {
-      await generateIcon(svgBuffer, icon.size, outputPath);
-    }
-  }
 
   // Generate Android launcher icons (legacy)
   console.log('\n--- Generating Android Launcher Icons ---');

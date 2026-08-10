@@ -44,6 +44,7 @@ What becomes easier or harder as a result of this change?
 - [ADR-014: iOS 26 SDK Upgrade](./014-ios-26-sdk-upgrade.md) - Accepted
 - [ADR-015: ECDSA Timing Attack Mitigation](./015-ecdsa-timing-attack-mitigation.md) - Accepted
 - [ADR-016: iOS Password AutoFill Support for Authentication Screens](./016-ios-password-autofill-support.md) - Accepted
+- [ADR-029: Remove iOS Platform Support](./029-remove-ios-platform-support.md) - Accepted
 
 ## Updating ADRs
 

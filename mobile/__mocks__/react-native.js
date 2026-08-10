@@ -20,8 +20,8 @@ module.exports = {
     addEventListener: jest.fn(() => ({ remove: jest.fn() })),
   },
   Platform: {
-    OS: 'ios',
-    select: (obj) => obj.ios,
+    OS: 'android',
+    select: (obj) => obj.android,
   },
   StyleSheet: {
     create: (styles) => styles,
@@ -35,20 +35,11 @@ module.exports = {
     ApkInstallerModule: {
       installApk: jest.fn(() => Promise.resolve()),
     },
-    LiveActivityModule: {
-      isAvailable: jest.fn(() => Promise.resolve(false)),
-      startActivity: jest.fn(() => Promise.resolve(null)),
-      updateActivity: jest.fn(() => Promise.resolve()),
-      removeTimer: jest.fn(() => Promise.resolve()),
-      endActivity: jest.fn(() => Promise.resolve()),
-    },
     NotificationModule: {
       scheduleNotification: jest.fn(() => Promise.resolve()),
       cancelNotification: jest.fn(() => Promise.resolve()),
       cancelAllNotifications: jest.fn(() => Promise.resolve()),
       showNotification: jest.fn(() => Promise.resolve()),
-      requestPermission: jest.fn(() => Promise.resolve(true)),
-      syncPreferences: jest.fn(() => Promise.resolve()),
     },
   },
   PermissionsAndroid: {

@@ -1,12 +1,14 @@
 # Guidr
 
-Step-by-step guide execution app for Android/iOS with timed procedures, automatic notifications, and progress tracking.
+Step-by-step guide execution app for Android with timed procedures, automatic notifications, and progress tracking.
+
+> **Platform note**: Guidr previously also shipped an iOS app. iOS support was removed on 2026-08-10 — the team no longer develops for iOS, only Android and Web. See [ADR-029](./docs/adr/029-remove-ios-platform-support.md) for the full rationale; the iOS-era feature ADRs (011, 013, 014, 016, 024, 025) remain in [`docs/adr/`](./docs/adr/) as historical record.
 
 ## What is Guidr?
 
 Multi-step process execution with precise timing: cooking recipes, workout routines, lab protocols, study sessions, maintenance tasks, beauty routines.
 
-**Features**: Hierarchical organization | Step-by-step execution with timers | Smart notifications | Pause/resume | Offline-first | Cross-platform (Android/iOS, no store deployment)
+**Features**: Hierarchical organization | Step-by-step execution with timers | Smart notifications | Pause/resume | Offline-first | Android, no store deployment
 
 ## Tech Stack
 
@@ -23,7 +25,7 @@ Multi-step process execution with precise timing: cooking recipes, workout routi
 
 ```
 guidr/
-├── mobile/              # React Native (Android/iOS)
+├── mobile/              # React Native (Android)
 ├── api-server/         # FastAPI backend
 ├── web-app/            # React web app
 ├── docs/adr/           # Architectural decisions
@@ -34,7 +36,6 @@ guidr/
 
 - **Node.js**: 24.11.0+ LTS | **npm**: 11.6.0+
 - **Android**: Java 17, Android SDK
-- **iOS**: macOS + Xcode 26+, minimum iOS 26.0
 - **API**: Python 3.12+, uv
 
 ## Quick Start
@@ -44,7 +45,6 @@ guidr/
 npm install && npm test           # Install and test
 npm start                         # Start Metro
 npm run android                   # Run on Android
-npm run ios                       # Run on iOS
 ./build-android.sh               # Build APK
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: build
-description: Build and run the Guidr React Native application on Metro, Android, and iOS platforms. Includes development commands, debug/release builds, common troubleshooting, and CI/CD workflows.
+description: Build and run the Guidr React Native application on Metro and Android. Includes development commands, debug/release builds, common troubleshooting, and CI/CD workflows.
 ---
 
 # Build Skill
@@ -26,17 +26,6 @@ Builds and runs the app on connected Android device or emulator.
 - OR Android emulator running
 - Android SDK installed
 - JDK 17 installed
-
-### Run on iOS (macOS only)
-```bash
-npm run ios
-```
-Builds and runs the app on iOS simulator or device.
-
-**Requirements**:
-- macOS
-- Xcode installed
-- iOS simulator or device
 
 ## Build Commands
 
@@ -111,19 +100,12 @@ Workflow file: `.github/workflows/ci-cd.yml`
 - **Target SDK**: Latest (configured in android/build.gradle)
 - **Architecture**: ARM64, ARMv7, x86, x86_64
 
-### iOS
-- **Minimum iOS**: 13.0 (configured in ios/Podfile)
-- **Architecture**: ARM64 (device), x86_64 (simulator)
-
 ## Development Setup
 
 First time setup:
 ```bash
 # Install dependencies
 npm install
-
-# For iOS (macOS only)
-cd ios && pod install && cd ..
 ```
 
 ## Build Artifacts

@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-Guidr monorepo: Mobile (React Native) + API (FastAPI) + Web (React). DDD/TDD architecture.
+Guidr monorepo: Mobile (React Native, **Android only**) + API (FastAPI) + Web (React). DDD/TDD architecture.
+iOS support was removed — see [ADR-029](./docs/adr/029-remove-ios-platform-support.md).
 
 ## Critical
 **Sandbox**: Placeholder files in `.git/info/exclude` (local-only, not committed)
@@ -62,20 +63,20 @@ shared/src/
 - New platforms: `import { buttonDefinitions, formDefinitions } from '@guidr/shared/styles/definitions'` → create adapter
 
 ## Commands
-**Mobile** (`mobile/`): `npm start`, `npm test`, `npm run lint`, `npm run typecheck`, `npm run android`, `npm run ios`, `./build-android.sh`
+**Mobile** (`mobile/`): `npm start`, `npm test`, `npm run lint`, `npm run typecheck`, `npm run android`, `./build-android.sh`
 **API**: `docker pull ghcr.io/stevendejongnl/guidr-api-server:latest && docker run -p 8000:8000 ...`
 **Web** (`web-app/`): `npm install && npm run dev`, `npm run build`
 **API Docs**: https://guidr.madebysteven.nl/api/docs (FastAPI Swagger UI)
 
 ## Claude Skills (.claude/skills/)
 Custom Claude Code skills for workflow acceleration:
-- **build.md**: Mobile build/run commands (Metro, Android, iOS, APK generation)
+- **build.md**: Mobile build/run commands (Metro, Android, APK generation)
 - **test.md**: Test running (Jest, coverage, watch mode, patterns)
 - **tdd.md**: Test-Driven Development workflow (RED-GREEN-REFACTOR-VERIFY)
 - **monorepo-commands**: Comprehensive npm script reference
   - **Global**: `npm run test`, `npm run lint`, `npm run typecheck` (all packages)
   - **API**: `npm run api:test`, `npm run api:lint`, `npm run api:typecheck` (FastAPI)
-  - **Mobile**: `npm run mobile:test`, `npm run mobile:lint`, `npm run mobile:typecheck`, `npm run mobile:ios`, `npm run mobile:android` (React Native)
+  - **Mobile**: `npm run mobile:test`, `npm run mobile:lint`, `npm run mobile:typecheck`, `npm run mobile:android` (React Native)
   - **Web**: `npm run web:dev`, `npm run web:build` (React Vite)
   - Use when: working with monorepo npm scripts across packages
 
@@ -84,7 +85,7 @@ Custom Claude Code skills for workflow acceleration:
 <!-- handoff:project=Guidr monorepo -->
 
 ## Scout Rule
-**Always leave the codebase cleaner than you found it.** If tests are failing — even if unrelated to the current task — investigate and fix them before pushing. Never push with known test failures. This applies to all test suites: mobile (Jest), API (pytest), iOS widget (XCTest), and security scans.
+**Always leave the codebase cleaner than you found it.** If tests are failing — even if unrelated to the current task — investigate and fix them before pushing. Never push with known test failures. This applies to all test suites: mobile (Jest), API (pytest), and security scans.
 
 ## Code Patterns
 **Entities**: Private fields with getters (`private _name`, `get name()`)
@@ -98,8 +99,8 @@ Custom Claude Code skills for workflow acceleration:
 
 ## Build & Deploy
 **Android**: Gradle 8.13, Java 17 (NOT 25+), NDK 27.1, SDK 36, Package: com.guidr
-**iOS**: Xcode 16.2, minimum deployment target iOS 16.2, Bundle ID: com.guidr, TestFlight internal testing
-**CI**: Lint/test/typecheck → Android APK → iOS simulator | Semantic-release on merge
+**CI**: Lint/test/typecheck → Android APK | Semantic-release on merge
+**iOS**: Removed (ADR-029) — do not reintroduce `mobile/ios/`, iOS npm scripts, or `Platform.OS === 'ios'` branches without a new ADR
 
 ## Conventional Commits
 - `feat:` → Minor | `fix:/perf:/refactor:` → Patch | `BREAKING CHANGE:` → Major | `docs:/test:/chore:/style:` → No release
@@ -132,7 +133,6 @@ Custom Claude Code skills for workflow acceleration:
 
 ## Common Issues
 **Android**: JAVA_HOME=/usr/lib/jvm/java-17-openjdk | `npx react-native doctor`
-**TestFlight**: Create group in App Store Connect, check secrets format, wait 10-15min
 **Tests**: Mock RN modules in `mobile/__mocks__/`, use bracket notation for props
 
 ## Security
@@ -141,7 +141,7 @@ Custom Claude Code skills for workflow acceleration:
 - CVE-2024-23342 (ecdsa timing attack) - API, accepted with mitigation
 - See [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md) for details & monitoring plan
 
-**References**: [ADR-006](./docs/adr/006-admin-user-authorization.md), [ADR-007](./docs/adr/007-user-based-admin-mode-mobile.md), [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md)
+**References**: [ADR-006](./docs/adr/006-admin-user-authorization.md), [ADR-007](./docs/adr/007-user-based-admin-mode-mobile.md), [ADR-015](./docs/adr/015-ecdsa-timing-attack-mitigation.md), [ADR-029](./docs/adr/029-remove-ios-platform-support.md)
 
 ---
 **Condensed from 919 to 489 tokens**

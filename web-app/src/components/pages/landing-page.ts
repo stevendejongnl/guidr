@@ -576,7 +576,6 @@ export class LandingPage extends LitElement {
         </div>
 
         <div class="app-badges">
-          <div class="app-badge"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> iOS App</div>
           <div class="app-badge"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> Android App</div>
         </div>
       </div>
@@ -592,8 +591,8 @@ export class LandingPage extends LitElement {
           <div class="stat-label">Guides you can create</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">iOS + Android</div>
-          <div class="stat-label">Mobile apps</div>
+          <div class="stat-value">Android</div>
+          <div class="stat-label">Mobile app</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">Open source</div>
@@ -665,7 +664,7 @@ export class LandingPage extends LitElement {
           <div class="feature-tile">
             <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
             <h4>Mobile-first</h4>
-            <p>Native iOS and Android apps built with React Native for a smooth, responsive experience on any device.</p>
+            <p>A native Android app built with React Native for a smooth, responsive experience on the go.</p>
           </div>
           <div class="feature-tile">
             <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
@@ -711,7 +710,6 @@ export class LandingPage extends LitElement {
           <h2>Take your guides anywhere</h2>
           <p>The Guidr mobile app puts all your guides in your pocket. Cook, work out, or work through any project — hands-free.</p>
           <div class="platform-pills">
-            <div class="platform-pill"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> iOS</div>
             <div class="platform-pill"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg> Android</div>
           </div>
         </section>

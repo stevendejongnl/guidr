@@ -246,69 +246,11 @@ jobs:
           path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
 
-  ios-widget-tests:
-    name: iOS Widget Tests (${{ matrix.device }})
-    runs-on: macos-26
-    strategy:
-      matrix:
-        device: ['iPhone 16 Pro', 'iPhone 16', 'iPad Air 13-inch (M3)']
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run widget unit tests
-        run: |
-          cd mobile/ios
-          xcodebuild test \
-            -project guidr.xcodeproj \
-            -scheme GuidrWidgetTests \
-            -destination "platform=iOS Simulator,name=${{ matrix.device }}" \
-            -configuration Debug
-
-  ios-build:
-    name: iOS Build
-    runs-on: macos-26
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci --include=dev
-
-      - name: Install CocoaPods dependencies
-        run: |
-          cd mobile/ios
-          pod install
-
-      - name: Build iOS app for simulator
-        run: |
-          cd mobile/ios
-          xcodebuild \
-            -workspace guidr.xcworkspace \
-            -scheme guidr \
-            -sdk iphonesimulator \
-            -configuration Debug \
-            -destination generic/platform=iOS\ Simulator \
-            -derivedDataPath ./build \
-            build \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Upload iOS build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-ios
-          path: mobile/ios/build/Build/Products/Debug-iphonesimulator/guidr.app
-          retention-days: 7
-
   notify-pr-failure:
     name: Notify PR Check Failure
     runs-on: ubuntu-latest
     if: failure()
-    needs: [lint, test, typecheck, api-server-test, api-server-lint, web-app-lint, web-app-test, android-build, ios-build, ios-widget-tests]
+    needs: [lint, test, typecheck, api-server-test, api-server-lint, web-app-lint, web-app-test, android-build]
 
     steps:
       - uses: actions/checkout@v4
