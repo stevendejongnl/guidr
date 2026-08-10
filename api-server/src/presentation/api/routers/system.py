@@ -1,5 +1,6 @@
 """System API router."""
 
+import asyncio
 import logging
 import os
 
@@ -10,6 +11,11 @@ from src.container import Container
 
 router = APIRouter(tags=["system"])
 logger = logging.getLogger(__name__)
+
+# MongoDB Atlas (esp. shared/free tiers) can briefly drop a connection to one
+# replica-set node during routine maintenance; the driver typically recovers
+# within ~1s. Keep this well under the readiness probe's timeoutSeconds (3s).
+_HEALTH_CHECK_RETRY_DELAY_SECONDS = 1.0
 
 
 # Container (injected at app startup)
@@ -48,8 +54,17 @@ async def health_check(request: Request):
     try:
         db = di_container.database().db
 
-        # Simple ping to verify connection
-        await db.command("ping")
+        # Simple ping to verify connection. Retry once after a short delay
+        # before treating a failure as a real outage — avoids alerting (and
+        # potentially restarting the pod) on transient blips that never
+        # actually affect availability, e.g. a single dropped connection to
+        # one Atlas replica-set node that self-resolves within a second.
+        try:
+            await db.command("ping")
+        except Exception as first_error:
+            logger.warning(f"Health check ping failed, retrying once: {first_error}")
+            await asyncio.sleep(_HEALTH_CHECK_RETRY_DELAY_SECONDS)
+            await db.command("ping")
 
         return {"status": "healthy", "version": version, "database": "connected"}
     except Exception as e:
