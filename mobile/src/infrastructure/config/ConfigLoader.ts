@@ -2,7 +2,7 @@ import { Platform } from 'react-native'
 import RNFS from 'react-native-fs'
 import { parse } from 'smol-toml'
 import { ErrorReporter } from '../monitoring/ErrorReporter'
-import { DEFAULT_CONFIG, AppConfig } from './DefaultConfig'
+import { AppConfig } from './DefaultConfig'
 
 export class ConfigLoader {
   private static config: AppConfig | null = null
@@ -14,33 +14,7 @@ export class ConfigLoader {
     }
 
     try {
-      let configContent: string
-
-      if (Platform.OS === 'android') {
-        // Android: read from assets folder
-        configContent = await RNFS.readFileAssets(this.CONFIG_FILE, 'utf8')
-      } else {
-        // iOS: Try to read from bundle, fall back to default config
-        const configPath = `${RNFS.MainBundlePath}/${this.CONFIG_FILE}`
-        console.log('[ConfigLoader] Attempting to load config from:', configPath)
-
-        try {
-          configContent = await RNFS.readFile(configPath, 'utf8')
-        } catch (fileError) {
-          console.warn(
-            '[ConfigLoader] Failed to load config file, using embedded default:',
-            fileError
-          )
-          ErrorReporter.capture(fileError, {
-            component: 'ConfigLoader',
-            action: 'loadConfigFile',
-            platform: Platform.OS,
-          })
-          // Use embedded default config on iOS
-          this.config = DEFAULT_CONFIG
-          return this.config
-        }
-      }
+      const configContent = await RNFS.readFileAssets(this.CONFIG_FILE, 'utf8')
 
       const parsed = parse(configContent)
       this.config = parsed as unknown as AppConfig

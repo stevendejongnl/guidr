@@ -152,11 +152,6 @@ console.warn = (...args) => {
     return
   }
 
-  // Suppress expected LiveActivityService failure warnings in tests
-  if (fullMessage.includes('[LiveActivityService] Failed to')) {
-    return
-  }
-
   // Pass through all other warnings
   originalWarn(...args)
 }

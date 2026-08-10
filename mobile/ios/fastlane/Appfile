@@ -1,4 +1,0 @@
-app_identifier("com.guidr")
-apple_id(ENV['APPLE_ID'])
-team_id(ENV['APPLE_TEAM_ID'])
-itc_team_id(ENV['APPLE_TEAM_ID'])

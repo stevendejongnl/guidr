@@ -119,11 +119,6 @@ cd mobile
 npm run mobile:android -- --release
 # Upload to Play Store Console
 # Use staged rollout: 10% → 50% → 100%
-
-# iOS
-npm run mobile:ios -- --configuration Release
-# Upload to TestFlight / App Store
-# Wait for review (24-48 hours)
 ```
 
 ## Post-Deployment (10 min)
@@ -146,13 +141,9 @@ npm run mobile:ios -- --configuration Release
 ```
 
 ### Mobile App Tests
-- [ ] iOS: Category create disabled for non-admins
 - [ ] Android: Category create disabled for non-admins
-- [ ] iOS: Guide visibility toggle visible
 - [ ] Android: Guide visibility toggle visible
-- [ ] iOS: Guide filter tabs (All/My/Public)
 - [ ] Android: Guide filter tabs (All/My/Public)
-- [ ] iOS: Featured guides section on home
 - [ ] Android: Featured guides section on home
 
 ## Rollback (2 min)
@@ -172,7 +163,6 @@ docker-compose up -d guidr-api-server
 
 # Mobile rollback
 # - Android: Remove new version from Play Store
-# - iOS: Reject TestFlight version
 ```
 
 ## Success Checklist
@@ -195,10 +185,9 @@ docker-compose up -d guidr-api-server
 | API verification | T+10 | Pending |
 | Database migration | T+15 | Pending |
 | Android release | T+20 | Pending |
-| iOS TestFlight | T+25 | Pending |
-| Monitoring | T+30 → T+48 hours | Pending |
+| Monitoring | T+25 → T+48 hours | Pending |
 
-**Total Time**: ~2 hours (plus 24-48 hours for app store reviews)
+**Total Time**: ~2 hours (plus 24-48 hours for the Play Store review)
 
 ## Monitoring
 

@@ -1,7 +1,0 @@
-#import <React/RCTBridgeModule.h>
-
-@interface RCT_EXTERN_MODULE(DiagnosticLogModule, NSObject)
-RCT_EXTERN_METHOD(getEntries:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(log:(NSString *)message resolve:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(clear:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
-@end

@@ -1,6 +1,5 @@
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react-native'
-import { Platform } from 'react-native'
 import { AppOutdatedScreen } from './AppOutdatedScreen'
 describe('AppOutdatedScreen', () => {
   const mockOnChangeServer = jest.fn()
@@ -59,8 +58,7 @@ describe('AppOutdatedScreen', () => {
     fireEvent.press(getByText('Change Server'))
     expect(mockOnChangeServer).toHaveBeenCalledTimes(1)
   })
-  it('should show Download Update button on Android', () => {
-    Platform.OS = 'android'
+  it('should show Download Update button', () => {
     const { getByText } = render(
       <AppOutdatedScreen
         currentVersion="1.0.0"
@@ -69,17 +67,6 @@ describe('AppOutdatedScreen', () => {
       />
     )
     expect(getByText('Download Update')).toBeTruthy()
-  })
-  it('should show Open TestFlight button on iOS', () => {
-    Platform.OS = 'ios'
-    const { getByText } = render(
-      <AppOutdatedScreen
-        currentVersion="1.0.0"
-        minVersion="2.0.0"
-        onChangeServer={mockOnChangeServer}
-      />
-    )
-    expect(getByText('Open TestFlight')).toBeTruthy()
   })
   it('should render update button that can be pressed', () => {
     const { getByLabelText } = render(
@@ -90,7 +77,7 @@ describe('AppOutdatedScreen', () => {
       />
     )
     // Just verify the button exists and is pressable
-    const updateButton = getByLabelText(/TestFlight|Download Update/)
+    const updateButton = getByLabelText('Download Update')
     expect(updateButton).toBeTruthy()
   })
 })

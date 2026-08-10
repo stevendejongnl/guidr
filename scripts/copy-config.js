@@ -2,7 +2,7 @@
 
 /**
  * Copy configuration file to platform-specific locations
- * This script ensures the config file is available for both Android and iOS builds
+ * This script ensures the config file is available for Android builds
  */
 
 const fs = require('fs')
@@ -19,7 +19,6 @@ const mobileDir = fs.existsSync(path.join(projectRoot, 'mobile', 'package.json')
 
 // Target locations
 const androidAssetsDir = path.join(mobileDir, 'android', 'app', 'src', 'main', 'assets')
-const iosGuidrDir = path.join(mobileDir, 'ios', 'guidr')
 
 function ensureDirectoryExists(dir) {
   if (!fs.existsSync(dir)) {
@@ -50,10 +49,6 @@ console.log('Copying configuration file to platform directories...')
 // Copy to Android assets
 ensureDirectoryExists(androidAssetsDir)
 copyFile(sourcePath, androidAssetsDir, configFile)
-
-// Copy to iOS guidr directory
-ensureDirectoryExists(iosGuidrDir)
-copyFile(sourcePath, iosGuidrDir, configFile)
 
 console.log('Configuration file copied successfully!')
 

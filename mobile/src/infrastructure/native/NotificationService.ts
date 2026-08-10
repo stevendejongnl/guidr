@@ -5,10 +5,7 @@ const { NotificationModule } = NativeModules
 export class NotificationService {
   async requestPermission(): Promise<boolean> {
     try {
-      if (Platform.OS === 'ios') {
-        return await NotificationModule.requestPermission()
-      }
-      if (Platform.OS === 'android' && Platform.Version >= 33) {
+      if (Platform.Version >= 33) {
         const result = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         )

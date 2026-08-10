@@ -43,7 +43,6 @@ Scopes help categorize commits:
 - `domain` - Domain layer changes
 - `ui` - UI/presentation changes
 - `infra` - Infrastructure changes
-- `ios` - iOS-specific changes
 - `android` - Android-specific changes
 - `ci` - CI/CD changes
 
@@ -80,7 +79,7 @@ instead of Step[]. Update all calls to use async/await."
 
 ### Documentation (No Release)
 ```bash
-git commit -m "docs: add TestFlight installation guide"
+git commit -m "docs: add Android installation guide"
 ```
 
 ## Automated Release Process
@@ -95,8 +94,7 @@ When you push to `main`:
 3. **Generates CHANGELOG.md** from commit messages
 4. **Builds Android APK** for distribution
 5. **Creates GitHub Release** with APK
-6. **Triggers TestFlight workflow** for iOS distribution
-7. **Commits version changes** back to repo
+6. **Commits version changes** back to repo
 
 ## Pre-commit Checklist
 
@@ -196,7 +194,7 @@ feat: add dark mode support
 fix: resolve memory leak in session service
 perf: optimize guide loading performance
 refactor: extract timer logic to separate service
-docs: update iOS build instructions
+docs: update Android build instructions
 ```
 
 ### ❌ Bad Commit Messages

@@ -7,22 +7,11 @@ describe('NotificationService', () => {
   beforeEach(() => {
     service = new NotificationService()
     jest.clearAllMocks()
-    Platform.OS = 'ios'
+    Platform.OS = 'android'
   })
 
   describe('requestPermission', () => {
-    it('should call native module on iOS', async () => {
-      const mock = NativeModules['NotificationModule'].requestPermission as jest.Mock
-      mock.mockResolvedValue(true)
-
-      const result = await service.requestPermission()
-
-      expect(result).toBe(true)
-      expect(mock).toHaveBeenCalled()
-    })
-
     it('should request POST_NOTIFICATIONS on Android 33+', async () => {
-      Platform.OS = 'android'
       Platform.Version = 33
       const mock = PermissionsAndroid.request as jest.Mock
       mock.mockResolvedValue('granted')
@@ -34,7 +23,6 @@ describe('NotificationService', () => {
     })
 
     it('should return true on Android < 33 without requesting', async () => {
-      Platform.OS = 'android'
       Platform.Version = 32
 
       const result = await service.requestPermission()
@@ -43,8 +31,7 @@ describe('NotificationService', () => {
       expect(PermissionsAndroid.request).not.toHaveBeenCalled()
     })
 
-    it('should return false when permission denied on Android', async () => {
-      Platform.OS = 'android'
+    it('should return false when permission denied', async () => {
       Platform.Version = 33
       const mock = PermissionsAndroid.request as jest.Mock
       mock.mockResolvedValue('denied')
@@ -54,8 +41,9 @@ describe('NotificationService', () => {
       expect(result).toBe(false)
     })
 
-    it('should return false when native module throws', async () => {
-      const mock = NativeModules['NotificationModule'].requestPermission as jest.Mock
+    it('should return false when the permission request throws', async () => {
+      Platform.Version = 33
+      const mock = PermissionsAndroid.request as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 
       const result = await service.requestPermission()
@@ -65,7 +53,7 @@ describe('NotificationService', () => {
   })
 
   describe('scheduleTimerNotification', () => {
-    it('should call native module on iOS', async () => {
+    it('should call native module', async () => {
       const mock = NativeModules['NotificationModule'].scheduleNotification as jest.Mock
       mock.mockResolvedValue(undefined)
 
@@ -81,16 +69,6 @@ describe('NotificationService', () => {
       await service.scheduleTimerNotification('step-1', 'Boil water', 'Pasta', 300, true)
 
       expect(mock).toHaveBeenCalledWith('step-1', 'Boil water', 'Pasta', 300, true)
-    })
-
-    it('should call native module on Android', async () => {
-      Platform.OS = 'android'
-      const mock = NativeModules['NotificationModule'].scheduleNotification as jest.Mock
-      mock.mockResolvedValue(undefined)
-
-      await service.scheduleTimerNotification('step-1', 'Boil water', 'Pasta', 300, false)
-
-      expect(mock).toHaveBeenCalledWith('step-1', 'Boil water', 'Pasta', 300, false)
     })
 
     it('should silently catch errors', async () => {
@@ -141,7 +119,6 @@ describe('NotificationService', () => {
 
   describe('showImmediateNotification', () => {
     it('should call native module on Android', async () => {
-      Platform.OS = 'android'
       const mock = NativeModules['NotificationModule'].showNotification as jest.Mock
       mock.mockResolvedValue(undefined)
 
@@ -150,14 +127,15 @@ describe('NotificationService', () => {
       expect(mock).toHaveBeenCalledWith('step-1', 'Boil water', 'Pasta', false)
     })
 
-    it('should not call native module on iOS', async () => {
+    it('should not call native module on non-Android platforms', async () => {
+      Platform.OS = 'web'
+
       await service.showImmediateNotification('step-1', 'Boil water', 'Pasta', false)
 
       expect(NativeModules['NotificationModule'].showNotification).not.toHaveBeenCalled()
     })
 
     it('should silently catch errors on Android', async () => {
-      Platform.OS = 'android'
       const mock = NativeModules['NotificationModule'].showNotification as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 

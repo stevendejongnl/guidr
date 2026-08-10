@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
   Linking,
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
@@ -20,7 +19,6 @@ interface AppOutdatedScreenProps {
 }
 
 const ANDROID_RELEASES_URL = 'https://github.com/stevendejongnl/guidr/releases/latest'
-const IOS_TESTFLIGHT_URL = 'itms-beta://'
 
 export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
   currentVersion,
@@ -29,10 +27,9 @@ export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
   onChangeServer,
 }) => {
   const handleUpdatePress = async () => {
-    const url = Platform.OS === 'ios' ? IOS_TESTFLIGHT_URL : ANDROID_RELEASES_URL
-    const canOpen = await Linking.canOpenURL(url)
+    const canOpen = await Linking.canOpenURL(ANDROID_RELEASES_URL)
     if (canOpen) {
-      await Linking.openURL(url)
+      await Linking.openURL(ANDROID_RELEASES_URL)
     }
   }
 
@@ -45,10 +42,6 @@ export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
       return `This server requires app version ${maxVersion} or lower.`
     }
     return 'Your app version is not supported by this server.'
-  }
-
-  const getUpdateButtonText = () => {
-    return Platform.OS === 'ios' ? 'Open TestFlight' : 'Download Update'
   }
 
   return (
@@ -65,9 +58,9 @@ export const AppOutdatedScreen: React.FC<AppOutdatedScreenProps> = ({
           <TouchableOpacity
             style={styles.updateButton}
             onPress={handleUpdatePress}
-            accessibilityLabel={getUpdateButtonText()}
+            accessibilityLabel="Download Update"
           >
-            <Text style={commonStyles.buttonText}>{getUpdateButtonText()}</Text>
+            <Text style={commonStyles.buttonText}>Download Update</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
