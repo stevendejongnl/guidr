@@ -1,3 +1,10 @@
+## [1.94.12](https://github.com/stevendejongnl/guidr/compare/v1.94.11...v1.94.12) (2026-08-10)
+
+### Bug Fixes
+
+* make .husky/pre-push POSIX-sh compatible ([ea33d25](https://github.com/stevendejongnl/guidr/commit/ea33d25af8536ee0b12c917bb01196a2f605129f))
+* perform fresh update check when cold-start cache is empty ([55754c2](https://github.com/stevendejongnl/guidr/commit/55754c2ec3b6f0af6afd346517c5bbdcd7810bc9))
+
 ## [1.94.11](https://github.com/stevendejongnl/guidr/compare/v1.94.10...v1.94.11) (2026-08-10)
 
 ### Bug Fixes
