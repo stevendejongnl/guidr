@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
+import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
+import { NotificationService } from '../../infrastructure/native/NotificationService'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { ServerConfigClient } from '../../infrastructure/api/ServerConfigClient'
 import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
@@ -170,6 +172,26 @@ export const AppNavigator: React.FC = () => {
           const adminStatus = await authStorage.getUserIsAdmin()
           setIsAdmin(adminStatus)
           Logger.debug('AppNavigator', 'Auth state loaded', { hasToken, isAdmin: adminStatus })
+
+          // Request notification permission on Android once the user is
+          // signed in, instead of waiting for a Settings toggle (which
+          // defaults to already-on and so never fires) or the first timer.
+          if (Platform.OS === 'android') {
+            try {
+              const notifPrefsStorage = new NotificationPreferencesStorage()
+              const timerNotificationsEnabled =
+                await notifPrefsStorage.getTimerNotificationsEnabled()
+              if (timerNotificationsEnabled) {
+                await new NotificationService().requestPermission()
+              }
+            } catch (error) {
+              ErrorReporter.capture(error, {
+                component: 'AppNavigator',
+                action: 'requestNotificationPermission',
+              })
+              console.error('Failed to request notification permission:', error)
+            }
+          }
         }
 
         // Check for updates on Android
