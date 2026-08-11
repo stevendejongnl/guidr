@@ -1,3 +1,9 @@
+## [1.96.0](https://github.com/stevendejongnl/guidr/compare/v1.95.4...v1.96.0) (2026-08-11)
+
+### Features
+
+* add Android home screen widget for timer countdown ([0180b72](https://github.com/stevendejongnl/guidr/commit/0180b72c10ba125696e7276a03f8b03e4d9349c4))
+
 ## [1.95.4](https://github.com/stevendejongnl/guidr/compare/v1.95.3...v1.95.4) (2026-08-11)
 
 ### Bug Fixes
