@@ -1,3 +1,9 @@
+## [1.97.3](https://github.com/stevendejongnl/guidr/compare/v1.97.2...v1.97.3) (2026-08-11)
+
+### Bug Fixes
+
+* **mobile:** update screen content overlaps buttons on long changelog ([236dd60](https://github.com/stevendejongnl/guidr/commit/236dd60980f44750b26f4d817e8f03017c4d3808))
+
 ## [1.97.2](https://github.com/stevendejongnl/guidr/compare/v1.97.1...v1.97.2) (2026-08-11)
 
 ### Bug Fixes
