@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  KeyboardAvoidingView,
 } from 'react-native'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { IHealthCheckService, HealthCheckResult } from '../../domain/services/IHealthCheckService'
@@ -79,10 +78,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
 
   return (
     <SafeScreen>
-      <KeyboardAvoidingView
-        style={commonStyles.container}
-        behavior="height"
-      >
+      <View style={commonStyles.container}>
         <View style={commonStyles.content}>
           <Text style={commonStyles.title}>Server Configuration</Text>
           <Text style={commonStyles.description}>Enter your Guidr server URL to get started.</Text>
@@ -124,7 +120,7 @@ export const ServerSetupScreen: React.FC<ServerSetupScreenProps> = ({
           </TouchableOpacity>
         </View>
         <VersionDisplay isVisible={false} />
-      </KeyboardAvoidingView>
+      </View>
     </SafeScreen>
   )
 }

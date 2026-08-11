@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  KeyboardAvoidingView,
   ScrollView,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
@@ -98,86 +97,81 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   return (
     <SafeScreen>
-      <KeyboardAvoidingView
-        behavior="height"
-        style={{ flex: 1 }}
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={commonStyles.container}>
-            <View style={commonStyles.content}>
-              <Text style={commonStyles.title}>Welcome to Guidr</Text>
-              <Text style={commonStyles.description}>Sign in to continue</Text>
+        <View style={commonStyles.container}>
+          <View style={commonStyles.content}>
+            <Text style={commonStyles.title}>Welcome to Guidr</Text>
+            <Text style={commonStyles.description}>Sign in to continue</Text>
 
-              <TextInput
-                style={[commonStyles.input, error ? commonStyles.inputError : null]}
-                placeholder="email@example.com"
-                placeholderTextColor={colors.textMuted}
-                value={email}
-                onChangeText={handleEmailChange}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                autoComplete="email"
-                editable={!loading}
-                returnKeyType="next"
-                onSubmitEditing={() => passwordInputRef.current?.focus()}
-              />
+            <TextInput
+              style={[commonStyles.input, error ? commonStyles.inputError : null]}
+              placeholder="email@example.com"
+              placeholderTextColor={colors.textMuted}
+              value={email}
+              onChangeText={handleEmailChange}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
+              editable={!loading}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordInputRef.current?.focus()}
+            />
 
-              <TextInput
-                ref={passwordInputRef}
-                style={[commonStyles.input, error ? commonStyles.inputError : null]}
-                placeholder="Password"
-                placeholderTextColor={colors.textMuted}
-                value={password}
-                onChangeText={handlePasswordChange}
-                secureTextEntry
-                textContentType="password"
-                autoComplete="current-password"
-                editable={!loading}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
+            <TextInput
+              ref={passwordInputRef}
+              style={[commonStyles.input, error ? commonStyles.inputError : null]}
+              placeholder="Password"
+              placeholderTextColor={colors.textMuted}
+              value={password}
+              onChangeText={handlePasswordChange}
+              secureTextEntry
+              textContentType="password"
+              autoComplete="current-password"
+              editable={!loading}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
 
-              {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
+            {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
 
-              <TouchableOpacity
-                style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
-                onPress={handleLogin}
-                disabled={loading}
-                accessibilityState={{ disabled: loading }}
-              >
-                {loading ? (
-                  <>
-                    <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
-                    <Text style={commonStyles.buttonText}>Logging in...</Text>
-                  </>
-                ) : (
-                  <Text style={commonStyles.buttonText}>Login</Text>
-                )}
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={[commonStyles.button, loading ? commonStyles.buttonDisabled : null]}
+              onPress={handleLogin}
+              disabled={loading}
+              accessibilityState={{ disabled: loading }}
+            >
+              {loading ? (
+                <>
+                  <ActivityIndicator color={colors.textPrimary} size="small" style={commonStyles.activityIndicator} />
+                  <Text style={commonStyles.buttonText}>Logging in...</Text>
+                </>
+              ) : (
+                <Text style={commonStyles.buttonText}>Login</Text>
+              )}
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={commonStyles.link}
-                onPress={handleChangeServer}
-              >
-                <Text style={commonStyles.linkText}>Change Server</Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={commonStyles.link}
+              onPress={handleChangeServer}
+            >
+              <Text style={commonStyles.linkText}>Change Server</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={commonStyles.link}
-                onPress={onRegister}
-              >
-                <Text style={commonStyles.linkText}>Don&apos;t have an account? Register</Text>
-              </TouchableOpacity>
-            </View>
-            <VersionDisplay isVisible={false} />
+            <TouchableOpacity
+              style={commonStyles.link}
+              onPress={onRegister}
+            >
+              <Text style={commonStyles.linkText}>Don&apos;t have an account? Register</Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          <VersionDisplay isVisible={false} />
+        </View>
+      </ScrollView>
     </SafeScreen>
   )
 }
