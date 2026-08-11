@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#A7F3D0</color>
+
+    <!-- Widget colors, matching shared/src/tokens/colors.ts -->
+    <color name="widget_background">#121923</color>
+    <color name="widget_primary">#9AF5CF</color>
+    <color name="widget_text_primary">#E6EDF3</color>
+    <color name="widget_text_secondary">#9AA4B2</color>
+    <color name="widget_border">#2A3A4D</color>
 </resources>

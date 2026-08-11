@@ -41,6 +41,10 @@ module.exports = {
       cancelAllNotifications: jest.fn(() => Promise.resolve()),
       showNotification: jest.fn(() => Promise.resolve()),
     },
+    WidgetModule: {
+      updateWidget: jest.fn(() => Promise.resolve()),
+      clearWidget: jest.fn(() => Promise.resolve()),
+    },
   },
   PermissionsAndroid: {
     request: jest.fn(() => Promise.resolve('granted')),
