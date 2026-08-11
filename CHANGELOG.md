@@ -1,3 +1,9 @@
+## [1.96.1](https://github.com/stevendejongnl/guidr/compare/v1.96.0...v1.96.1) (2026-08-11)
+
+### Bug Fixes
+
+* **mobile:** use full screen width on update available screen ([5e4e5ba](https://github.com/stevendejongnl/guidr/commit/5e4e5ba8465d74809f8cc9e3b6aab8ae24b5ff4a))
+
 ## [1.96.0](https://github.com/stevendejongnl/guidr/compare/v1.95.4...v1.96.0) (2026-08-11)
 
 ### Features
