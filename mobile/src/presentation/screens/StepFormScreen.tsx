@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  KeyboardAvoidingView,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { StepService } from '../../domain/services/StepService'
@@ -310,147 +309,145 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 
   return (
     <SafeScreen testID="step-form-screen">
-      <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
-        <ScrollView
-          style={formStyles.scrollView}
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={formStyles.container}>
-            <InfoBanner
-              message="You are editing content created by another user"
-              visible={mode === 'edit' && isAdmin && isEditingOthersContent}
-              testID="editing-others-content-banner"
+      <ScrollView
+        style={formStyles.scrollView}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={formStyles.container}>
+          <InfoBanner
+            message="You are editing content created by another user"
+            visible={mode === 'edit' && isAdmin && isEditingOthersContent}
+            testID="editing-others-content-banner"
+          />
+
+          {/* Header */}
+          <Text style={commonStyles.titleLarge}>
+            {mode === 'create' ? 'New Step' : 'Edit Step'}
+          </Text>
+
+          {error && <Text style={commonStyles.errorText}>{error}</Text>}
+
+          {/* Title Input */}
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Step Title</Text>
+            <TextInput
+              style={[commonStyles.input, validationError && commonStyles.inputError]}
+              placeholder="Enter step title"
+              placeholderTextColor={colors.textMuted}
+              value={title}
+              onChangeText={setTitle}
+              editable={!saving}
+              testID="step-title-input"
             />
-
-            {/* Header */}
-            <Text style={commonStyles.titleLarge}>
-              {mode === 'create' ? 'New Step' : 'Edit Step'}
-            </Text>
-
-            {error && <Text style={commonStyles.errorText}>{error}</Text>}
-
-            {/* Title Input */}
-            <View style={formStyles.formGroup}>
-              <Text style={formStyles.label}>Step Title</Text>
-              <TextInput
-                style={[commonStyles.input, validationError && commonStyles.inputError]}
-                placeholder="Enter step title"
-                placeholderTextColor={colors.textMuted}
-                value={title}
-                onChangeText={setTitle}
-                editable={!saving}
-                testID="step-title-input"
-              />
-              {validationError && (
-                <Text style={commonStyles.errorText}>{validationError}</Text>
-              )}
-            </View>
-
-            {/* Duration Input */}
-            <View style={formStyles.formGroup}>
-              <Text style={formStyles.label}>Duration</Text>
-              <View style={styles.durationRow}>
-                <View style={styles.durationField}>
-                  <TextInput
-                    style={[commonStyles.input, validationError && commonStyles.inputError]}
-                    placeholder="0"
-                    placeholderTextColor={colors.textMuted}
-                    value={hoursStr}
-                    onChangeText={setHoursStr}
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    editable={!saving}
-                    testID="step-duration-hours-input"
-                  />
-                  <Text style={styles.durationUnit}>hours</Text>
-                </View>
-                <View style={styles.durationField}>
-                  <TextInput
-                    style={[commonStyles.input, validationError && commonStyles.inputError]}
-                    placeholder="0"
-                    placeholderTextColor={colors.textMuted}
-                    value={minutesStr}
-                    onChangeText={setMinutesStr}
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    editable={!saving}
-                    testID="step-duration-minutes-input"
-                  />
-                  <Text style={styles.durationUnit}>minutes</Text>
-                </View>
-                <View style={styles.durationField}>
-                  <TextInput
-                    style={[commonStyles.input, validationError && commonStyles.inputError]}
-                    placeholder="0"
-                    placeholderTextColor={colors.textMuted}
-                    value={secondsStr}
-                    onChangeText={setSecondsStr}
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    editable={!saving}
-                    testID="step-duration-seconds-input"
-                  />
-                  <Text style={styles.durationUnit}>seconds</Text>
-                </View>
-              </View>
-              <Text style={styles.helperText}>
-              Leave empty for no timer. Maximum {MAX_DURATION / 60} minutes (24 hours)
-              </Text>
-            </View>
-
-            {/* Description Input */}
-            <View style={formStyles.formGroup}>
-              <Text style={formStyles.label}>Description</Text>
-              <TextInput
-                style={[commonStyles.input, formStyles.descriptionInput]}
-                placeholder="Enter step description (optional)"
-                placeholderTextColor={colors.textMuted}
-                value={description}
-                onChangeText={setDescription}
-                editable={!saving}
-                multiline
-                testID="step-description-input"
-              />
-            </View>
-
-            {/* Action Buttons */}
-            <View style={formStyles.buttonGroup}>
-              <TouchableOpacity
-                style={[commonStyles.button, saving && commonStyles.buttonDisabled]}
-                onPress={handleSave}
-                disabled={saving}
-                testID="step-save-button"
-              >
-                {saving ? (
-                  <ActivityIndicator color={colors.textPrimary} style={commonStyles.activityIndicator} />
-                ) : null}
-                <Text style={commonStyles.buttonText}>{saving ? 'Saving...' : 'Save'}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[commonStyles.buttonSecondary, formStyles.cancelButton]}
-                onPress={onCancel}
-                disabled={saving}
-                testID="step-cancel-button"
-              >
-                <Text style={commonStyles.buttonTextMuted}>Cancel</Text>
-              </TouchableOpacity>
-
-              {mode === 'edit' && (
-                <TouchableOpacity
-                  style={[commonStyles.buttonDanger, formStyles.deleteButton]}
-                  onPress={handleDelete}
-                  disabled={saving}
-                  testID="step-delete-button"
-                >
-                  <Text style={commonStyles.buttonText}>Delete</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            {validationError && (
+              <Text style={commonStyles.errorText}>{validationError}</Text>
+            )}
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+          {/* Duration Input */}
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Duration</Text>
+            <View style={styles.durationRow}>
+              <View style={styles.durationField}>
+                <TextInput
+                  style={[commonStyles.input, validationError && commonStyles.inputError]}
+                  placeholder="0"
+                  placeholderTextColor={colors.textMuted}
+                  value={hoursStr}
+                  onChangeText={setHoursStr}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  editable={!saving}
+                  testID="step-duration-hours-input"
+                />
+                <Text style={styles.durationUnit}>hours</Text>
+              </View>
+              <View style={styles.durationField}>
+                <TextInput
+                  style={[commonStyles.input, validationError && commonStyles.inputError]}
+                  placeholder="0"
+                  placeholderTextColor={colors.textMuted}
+                  value={minutesStr}
+                  onChangeText={setMinutesStr}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  editable={!saving}
+                  testID="step-duration-minutes-input"
+                />
+                <Text style={styles.durationUnit}>minutes</Text>
+              </View>
+              <View style={styles.durationField}>
+                <TextInput
+                  style={[commonStyles.input, validationError && commonStyles.inputError]}
+                  placeholder="0"
+                  placeholderTextColor={colors.textMuted}
+                  value={secondsStr}
+                  onChangeText={setSecondsStr}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  editable={!saving}
+                  testID="step-duration-seconds-input"
+                />
+                <Text style={styles.durationUnit}>seconds</Text>
+              </View>
+            </View>
+            <Text style={styles.helperText}>
+              Leave empty for no timer. Maximum {MAX_DURATION / 60} minutes (24 hours)
+            </Text>
+          </View>
+
+          {/* Description Input */}
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Description</Text>
+            <TextInput
+              style={[commonStyles.input, formStyles.descriptionInput]}
+              placeholder="Enter step description (optional)"
+              placeholderTextColor={colors.textMuted}
+              value={description}
+              onChangeText={setDescription}
+              editable={!saving}
+              multiline
+              testID="step-description-input"
+            />
+          </View>
+
+          {/* Action Buttons */}
+          <View style={formStyles.buttonGroup}>
+            <TouchableOpacity
+              style={[commonStyles.button, saving && commonStyles.buttonDisabled]}
+              onPress={handleSave}
+              disabled={saving}
+              testID="step-save-button"
+            >
+              {saving ? (
+                <ActivityIndicator color={colors.textPrimary} style={commonStyles.activityIndicator} />
+              ) : null}
+              <Text style={commonStyles.buttonText}>{saving ? 'Saving...' : 'Save'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[commonStyles.buttonSecondary, formStyles.cancelButton]}
+              onPress={onCancel}
+              disabled={saving}
+              testID="step-cancel-button"
+            >
+              <Text style={commonStyles.buttonTextMuted}>Cancel</Text>
+            </TouchableOpacity>
+
+            {mode === 'edit' && (
+              <TouchableOpacity
+                style={[commonStyles.buttonDanger, formStyles.deleteButton]}
+                onPress={handleDelete}
+                disabled={saving}
+                testID="step-delete-button"
+              >
+                <Text style={commonStyles.buttonText}>Delete</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </ScrollView>
     </SafeScreen>
   )
 }

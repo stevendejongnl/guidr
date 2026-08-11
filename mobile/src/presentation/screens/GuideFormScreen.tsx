@@ -9,7 +9,6 @@ import {
   Switch,
   Alert,
   StyleSheet,
-  KeyboardAvoidingView,
 } from 'react-native'
 import { GuideService } from '../../domain/services/GuideService'
 import { StepService } from '../../domain/services/StepService'
@@ -442,219 +441,217 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 
   return (
     <SafeScreen testID="guide-form-screen">
-      <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
-        <ScrollView
-          style={formStyles.scrollView}
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={formStyles.container}>
-            <InfoBanner
-              message="You are editing content created by another user"
-              visible={mode === 'edit' && isAdmin && isEditingOthersContent}
-              testID="editing-others-content-banner"
+      <ScrollView
+        style={formStyles.scrollView}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={formStyles.container}>
+          <InfoBanner
+            message="You are editing content created by another user"
+            visible={mode === 'edit' && isAdmin && isEditingOthersContent}
+            testID="editing-others-content-banner"
+          />
+
+          <Text style={commonStyles.titleLarge}>
+            {mode === 'create' ? 'New Guide' : 'Edit Guide'}
+          </Text>
+
+          {error && <Text style={commonStyles.errorText}>{error}</Text>}
+          {validationError && <Text style={commonStyles.errorText}>{validationError}</Text>}
+
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Guide Title *</Text>
+            <TextInput
+              style={commonStyles.input}
+              placeholder="Enter guide title"
+              placeholderTextColor={colors.textMuted}
+              value={title}
+              onChangeText={setTitle}
+              testID="guide-title-input"
+              editable={!saving}
             />
+          </View>
 
-            <Text style={commonStyles.titleLarge}>
-              {mode === 'create' ? 'New Guide' : 'Edit Guide'}
-            </Text>
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Description</Text>
+            <TextInput
+              style={[commonStyles.input, formStyles.descriptionInput]}
+              placeholder="Enter guide description"
+              placeholderTextColor={colors.textMuted}
+              value={description}
+              onChangeText={setDescription}
+              testID="guide-description-input"
+              multiline
+              numberOfLines={4}
+              editable={!saving}
+            />
+          </View>
 
-            {error && <Text style={commonStyles.errorText}>{error}</Text>}
-            {validationError && <Text style={commonStyles.errorText}>{validationError}</Text>}
-
-            <View style={formStyles.formGroup}>
-              <Text style={formStyles.label}>Guide Title *</Text>
-              <TextInput
-                style={commonStyles.input}
-                placeholder="Enter guide title"
-                placeholderTextColor={colors.textMuted}
-                value={title}
-                onChangeText={setTitle}
-                testID="guide-title-input"
-                editable={!saving}
-              />
-            </View>
-
-            <View style={formStyles.formGroup}>
-              <Text style={formStyles.label}>Description</Text>
-              <TextInput
-                style={[commonStyles.input, formStyles.descriptionInput]}
-                placeholder="Enter guide description"
-                placeholderTextColor={colors.textMuted}
-                value={description}
-                onChangeText={setDescription}
-                testID="guide-description-input"
-                multiline
-                numberOfLines={4}
-                editable={!saving}
-              />
-            </View>
-
-            <View style={formStyles.formGroup}>
-              <Text style={formStyles.label}>Guide Type *</Text>
-              {mode === 'create' ? (
-                <GuideTypeSelector
-                  selectedType={selectedGuideType}
-                  onSelectType={setSelectedGuideType}
-                  disabled={saving}
-                  testID="guide-type-selector"
-                />
-              ) : (
-                <View style={formStyles.typeReadOnly}>
-                  <Text style={formStyles.typeReadOnlyText}>
-                    {selectedGuideType
-                      ? GUIDE_TYPE_LABELS[selectedGuideType]
-                      : 'No type selected'}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            <View style={formStyles.formGroup}>
-              <Text style={formStyles.label}>Language</Text>
-              <LanguageSelector
-                selectedLanguage={selectedLanguage}
-                onSelectLanguage={setSelectedLanguage}
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Guide Type *</Text>
+            {mode === 'create' ? (
+              <GuideTypeSelector
+                selectedType={selectedGuideType}
+                onSelectType={setSelectedGuideType}
                 disabled={saving}
-                testID="language-selector"
+                testID="guide-type-selector"
               />
-            </View>
-
-            {selectedGuideType === GUIDE_TYPES.COOKING && (
-              <IngredientsEditor
-                ingredients={ingredients}
-                onChange={setIngredients}
-                disabled={saving}
-                testID="ingredients-editor"
-              />
+            ) : (
+              <View style={formStyles.typeReadOnly}>
+                <Text style={formStyles.typeReadOnlyText}>
+                  {selectedGuideType
+                    ? GUIDE_TYPE_LABELS[selectedGuideType]
+                    : 'No type selected'}
+                </Text>
+              </View>
             )}
+          </View>
 
-            {selectedGuideType === GUIDE_TYPES.WORKOUT && (
-              <WorkoutEditor
-                targetMuscles={targetMuscles}
-                equipment={equipment}
-                onChangeTargetMuscles={setTargetMuscles}
-                onChangeEquipment={setEquipment}
-                disabled={saving}
-                testID="workout-editor"
-              />
-            )}
+          <View style={formStyles.formGroup}>
+            <Text style={formStyles.label}>Language</Text>
+            <LanguageSelector
+              selectedLanguage={selectedLanguage}
+              onSelectLanguage={setSelectedLanguage}
+              disabled={saving}
+              testID="language-selector"
+            />
+          </View>
 
-            {selectedGuideType === GUIDE_TYPES.GENERAL && (
-              <NotesEditor
-                notes={notes}
-                onChange={setNotes}
-                disabled={saving}
-                testID="notes-editor"
-              />
-            )}
+          {selectedGuideType === GUIDE_TYPES.COOKING && (
+            <IngredientsEditor
+              ingredients={ingredients}
+              onChange={setIngredients}
+              disabled={saving}
+              testID="ingredients-editor"
+            />
+          )}
 
-            {mode === 'edit' && guideId && (
-              <View style={formStyles.formGroup} testID="steps-section">
-                <View style={styles.stepsHeader}>
-                  <Text style={formStyles.label}>Steps</Text>
-                  {onAddStep && (
-                    <TouchableOpacity
-                      style={styles.addStepButton}
-                      onPress={handleAddStep}
-                      testID="add-step-button"
-                    >
-                      <Text style={styles.addStepButtonText}>+ Add Step</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
+          {selectedGuideType === GUIDE_TYPES.WORKOUT && (
+            <WorkoutEditor
+              targetMuscles={targetMuscles}
+              equipment={equipment}
+              onChangeTargetMuscles={setTargetMuscles}
+              onChangeEquipment={setEquipment}
+              disabled={saving}
+              testID="workout-editor"
+            />
+          )}
 
-                {loadingSteps ? (
-                  <View style={commonStyles.loadingContainer}>
-                    <ActivityIndicator size="small" color={colors.primary} />
-                  </View>
-                ) : steps.length > 0 ? (
-                  <View>
-                    {[...steps]
-                      .sort((a, b) => a.order - b.order)
-                      .map((step, index) => (
-                        <StepListItem
-                          key={step.id}
-                          step={step}
-                          stepNumber={index + 1}
-                          isFirst={index === 0}
-                          isLast={index === steps.length - 1}
-                          onMoveUp={handleMoveStepUp}
-                          onMoveDown={handleMoveStepDown}
-                          onEdit={handleEditStep}
-                          onDelete={handleDeleteStep}
-                          canEdit={true}
-                          testID={`step-${index}`}
-                        />
-                      ))}
-                  </View>
-                ) : (
-                  <Text style={styles.emptyStepsText}>No steps yet.</Text>
+          {selectedGuideType === GUIDE_TYPES.GENERAL && (
+            <NotesEditor
+              notes={notes}
+              onChange={setNotes}
+              disabled={saving}
+              testID="notes-editor"
+            />
+          )}
+
+          {mode === 'edit' && guideId && (
+            <View style={formStyles.formGroup} testID="steps-section">
+              <View style={styles.stepsHeader}>
+                <Text style={formStyles.label}>Steps</Text>
+                {onAddStep && (
+                  <TouchableOpacity
+                    style={styles.addStepButton}
+                    onPress={handleAddStep}
+                    testID="add-step-button"
+                  >
+                    <Text style={styles.addStepButtonText}>+ Add Step</Text>
+                  </TouchableOpacity>
                 )}
               </View>
-            )}
 
+              {loadingSteps ? (
+                <View style={commonStyles.loadingContainer}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              ) : steps.length > 0 ? (
+                <View>
+                  {[...steps]
+                    .sort((a, b) => a.order - b.order)
+                    .map((step, index) => (
+                      <StepListItem
+                        key={step.id}
+                        step={step}
+                        stepNumber={index + 1}
+                        isFirst={index === 0}
+                        isLast={index === steps.length - 1}
+                        onMoveUp={handleMoveStepUp}
+                        onMoveDown={handleMoveStepDown}
+                        onEdit={handleEditStep}
+                        onDelete={handleDeleteStep}
+                        canEdit={true}
+                        testID={`step-${index}`}
+                      />
+                    ))}
+                </View>
+              ) : (
+                <Text style={styles.emptyStepsText}>No steps yet.</Text>
+              )}
+            </View>
+          )}
+
+          <View style={formStyles.toggleGroup}>
+            <View style={formStyles.toggleContainer}>
+              <Text style={formStyles.toggleLabel}>Public Guide</Text>
+              <Text style={formStyles.toggleHint}>Make this guide visible to all users</Text>
+              <Switch
+                value={isPublic}
+                onValueChange={setIsPublic}
+                disabled={saving}
+                testID="public-toggle"
+              />
+            </View>
+          </View>
+
+          {isAdmin && (
             <View style={formStyles.toggleGroup}>
               <View style={formStyles.toggleContainer}>
-                <Text style={formStyles.toggleLabel}>Public Guide</Text>
-                <Text style={formStyles.toggleHint}>Make this guide visible to all users</Text>
+                <Text style={formStyles.toggleLabel}>Highlight Guide</Text>
+                <Text style={formStyles.toggleHint}>Featured on home screen (admin only)</Text>
                 <Switch
-                  value={isPublic}
-                  onValueChange={setIsPublic}
+                  value={isHighlighted}
+                  onValueChange={setIsHighlighted}
                   disabled={saving}
-                  testID="public-toggle"
+                  testID="highlight-toggle"
                 />
               </View>
             </View>
+          )}
 
-            {isAdmin && (
-              <View style={formStyles.toggleGroup}>
-                <View style={formStyles.toggleContainer}>
-                  <Text style={formStyles.toggleLabel}>Highlight Guide</Text>
-                  <Text style={formStyles.toggleHint}>Featured on home screen (admin only)</Text>
-                  <Switch
-                    value={isHighlighted}
-                    onValueChange={setIsHighlighted}
-                    disabled={saving}
-                    testID="highlight-toggle"
-                  />
-                </View>
-              </View>
+          <View style={formStyles.buttonGroup}>
+            <TouchableOpacity
+              style={commonStyles.button}
+              onPress={handleSave}
+              disabled={saving}
+              testID="save-button"
+            >
+              <Text style={commonStyles.buttonText}>{saving ? 'Saving...' : 'Save'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[commonStyles.buttonSecondary, formStyles.cancelButton]}
+              onPress={onCancel}
+              disabled={saving}
+              testID="cancel-button"
+            >
+              <Text style={commonStyles.buttonTextMuted}>Cancel</Text>
+            </TouchableOpacity>
+
+            {mode === 'edit' && (
+              <TouchableOpacity
+                style={[commonStyles.buttonDanger, formStyles.deleteButton]}
+                onPress={handleDelete}
+                disabled={saving}
+                testID="delete-button"
+              >
+                <Text style={commonStyles.buttonText}>Delete</Text>
+              </TouchableOpacity>
             )}
-
-            <View style={formStyles.buttonGroup}>
-              <TouchableOpacity
-                style={commonStyles.button}
-                onPress={handleSave}
-                disabled={saving}
-                testID="save-button"
-              >
-                <Text style={commonStyles.buttonText}>{saving ? 'Saving...' : 'Save'}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[commonStyles.buttonSecondary, formStyles.cancelButton]}
-                onPress={onCancel}
-                disabled={saving}
-                testID="cancel-button"
-              >
-                <Text style={commonStyles.buttonTextMuted}>Cancel</Text>
-              </TouchableOpacity>
-
-              {mode === 'edit' && (
-                <TouchableOpacity
-                  style={[commonStyles.buttonDanger, formStyles.deleteButton]}
-                  onPress={handleDelete}
-                  disabled={saving}
-                  testID="delete-button"
-                >
-                  <Text style={commonStyles.buttonText}>Delete</Text>
-                </TouchableOpacity>
-              )}
-            </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </ScrollView>
     </SafeScreen>
   )
 }

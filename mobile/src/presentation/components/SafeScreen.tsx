@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { colors } from '@guidr/shared/tokens'
 import { useNetworkStatus } from '../hooks/useNetworkStatus'
@@ -10,6 +10,9 @@ interface SafeScreenProps {
   testID?: string
 }
 
+// Wraps every screen's content in a KeyboardAvoidingView so a focused input near the
+// bottom of a scrollable form never ends up hidden behind the keyboard with no way to
+// scroll to it — screens don't each need to remember to add this themselves.
 export const SafeScreen: React.FC<SafeScreenProps> = ({ children, testID }) => {
   const { isOnline } = useNetworkStatus()
 
@@ -21,7 +24,9 @@ export const SafeScreen: React.FC<SafeScreenProps> = ({ children, testID }) => {
         variant="warning"
         testID="offline-banner"
       />
-      {children}
+      <KeyboardAvoidingView behavior="height" style={styles.container}>
+        {children}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
