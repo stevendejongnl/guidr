@@ -135,23 +135,10 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     delete resetTimeoutsRef.current[stepId]
   }, [stepTimers, notificationService, widgetService])
 
-  // True until stepTimers.timers has been populated with real data for the first time.
-  // Used below to avoid re-firing the completion notification for a timer that was
-  // *already* complete when the screen mounted (e.g. it finished while the app was
-  // backgrounded — the alarm-based notification already fired for that, opening the
-  // app shouldn't repeat it). Deliberately keyed on timers actually having entries
-  // rather than stepTimers.loading, since that flag can flip to false before an auth
-  // token is even available (see useStepTimers), well before real data arrives.
-  const hasLoadedInitialTimersRef = useRef(false)
-
-  // Detect timer completion: fire Android notification, update widget
+  // Detect timer completion: update the widget, schedule the auto-reset. Notifications
+  // are handled entirely by the alarm scheduled in onStart (see the comment below).
   useEffect(() => {
     const prevCompleted = prevCompletedRef.current
-    const hasTimerData = Object.keys(stepTimers.timers).length > 0
-    const isInitialLoad = hasTimerData && !hasLoadedInitialTimersRef.current
-    if (hasTimerData) {
-      hasLoadedInitialTimersRef.current = true
-    }
 
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
       if (display.isComplete && !prevCompleted.has(stepId)) {
@@ -175,21 +162,11 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
               isComplete: true,
             })
           }
-          // Fire Android notification on completion — but not for a timer that was
-          // already complete on this screen's very first load (see isInitialLoad above).
-          if (!isInitialLoad) {
-            notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
-              if (!enabled) return
-              notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
-                notificationService.showImmediateNotification(
-                  stepId,
-                  step.title,
-                  guide.title,
-                  critical,
-                )
-              })
-            })
-          }
+          // No notification fired here: the scheduled alarm set up in onStart already
+          // reliably fires "Timer Complete" via TimerNotificationReceiver, independent of
+          // whether this JS effect is even running (backgrounded/killed app included).
+          // Firing a second one here raced the alarm and produced duplicate notifications
+          // whenever the app was open at the moment of completion.
         }
       }
       // Clear tracking when timer is manually reset

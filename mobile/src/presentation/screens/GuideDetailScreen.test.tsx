@@ -633,7 +633,7 @@ describe('GuideDetailScreen', () => {
       })
     })
 
-    it('does not re-notify for a timer that was already complete when the screen loaded', async () => {
+    it('never fires a live notification for a timer already complete when the screen loaded', async () => {
       const mockStepTimerClient = createMockStepTimerClient()
       const mockWidgetService = createMockWidgetService()
       const mockNotificationService = createMockNotificationService()
@@ -659,6 +659,38 @@ describe('GuideDetailScreen', () => {
         expect.objectContaining({ isComplete: true })
       )
       // ...but no duplicate system notification for a completion the user already saw.
+      expect(mockNotificationService.showImmediateNotification).not.toHaveBeenCalled()
+    })
+
+    it('never fires a live notification when a timer completes naturally while the screen is open', async () => {
+      const mockStepTimerClient = createMockStepTimerClient()
+      const mockWidgetService = createMockWidgetService()
+      const mockNotificationService = createMockNotificationService()
+
+      // Timer that's already complete the moment startTimer resolves — simulates the
+      // live completion transition (as opposed to loading an already-complete timer).
+      // The scheduled alarm from onStart is the only thing that should ever notify;
+      // firing a second one here is exactly the bug this test guards against.
+      mockStepTimerClient.startTimer.mockResolvedValue(
+        makeTimerDto({ status: 'idle', startedAt: null, accumulatedSeconds: 600 })
+      )
+
+      const { getByTestId } = renderSingleStepTimer({
+        stepTimerClient: mockStepTimerClient,
+        widgetService: mockWidgetService,
+        notificationService: mockNotificationService,
+      })
+
+      await waitFor(() => {
+        expect(mockStepTimerClient.getTimersByGuide).toHaveBeenCalled()
+      })
+
+      fireEvent.press(getByTestId('detail:step-0:timer-start'))
+
+      await waitFor(() => {
+        expect(getByTestId('detail:step-0:timer-complete')).toBeTruthy()
+      })
+
       expect(mockNotificationService.showImmediateNotification).not.toHaveBeenCalled()
     })
   })
