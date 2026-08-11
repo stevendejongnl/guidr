@@ -44,10 +44,10 @@ Remove the iOS platform end-to-end in a single PR:
 
 ## Manual follow-ups (outside this repo / not achievable via a PR)
 
-- Delete the iOS-only GitHub repo secrets: `APPLE_ID`, `APPLE_TEAM_ID`, `APP_STORE_CONNECT_API_KEY_CONTENT`, `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `MATCH_PASSWORD`
-- Check GitHub branch protection rules for a required "iOS Widget Tests" or "iOS Build" status check — if present, it will block merges forever since that check can no longer report
-- Rotate the Sentry auth token that was committed in plaintext in the now-deleted `mobile/ios/sentry.properties`
-- Archive or delete the external fastlane match certificate repo (`guidr-certificates`), which lives outside this monorepo
+- [x] Delete the iOS-only GitHub repo secrets: `APPLE_ID`, `APPLE_TEAM_ID`, `APP_STORE_CONNECT_API_KEY_CONTENT`, `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `MATCH_PASSWORD` — done 2026-08-11
+- [x] Check GitHub branch protection rules for a required "iOS Widget Tests" or "iOS Build" status check — removed from the ruleset during this ADR's PR
+- [ ] Rotate the Sentry auth token that was committed in plaintext in the now-deleted `mobile/ios/sentry.properties`
+- [x] Archive or delete the external fastlane match certificate repo (`guidr-certificates`) — already private, no further action needed
 
 ## References
 
