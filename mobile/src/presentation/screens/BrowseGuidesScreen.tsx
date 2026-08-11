@@ -5,12 +5,13 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native'
 import { colors, spacing, typography, borderRadius, componentDefaults } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
+import { SafeScreen } from '../components/SafeScreen'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { SearchBar } from '../components/SearchBar'
 import { GuideCard } from '../components/GuideCard'
 import { EmptyState } from '../components/EmptyState'
@@ -203,31 +204,26 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
   // Show loading state
   if (isLoading && !refreshing) {
     return (
-      <SafeAreaView style={styles.container} testID={testID}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onBack} testID={`${testID}:back`}>
-            <Text style={styles.backButton}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>Discover Guides</Text>
-          <View style={{ width: 50 }} />
-        </View>
+      <SafeScreen {...(testID && { testID })}>
+        <ScreenHeader
+          onBack={onBack}
+          title="Discover Guides"
+          backTestID={`${testID}:back`}
+        />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      </SafeAreaView>
+      </SafeScreen>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container} testID={testID}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} testID={`${testID}:back`}>
-          <Text style={styles.backButton}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Discover Guides</Text>
-        <View style={{ width: 50 }} />
-      </View>
+    <SafeScreen {...(testID && { testID })}>
+      <ScreenHeader
+        onBack={onBack}
+        title="Discover Guides"
+        backTestID={`${testID}:back`}
+      />
 
       {/* Node Progress Indicator - visual flourish */}
       <View style={styles.progressIndicatorContainer}>
@@ -320,34 +316,11 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeScreen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    fontSize: typography.sizeMd,
-    color: colors.primary,
-    fontWeight: typography.weightSemibold,
-  },
-  title: {
-    fontSize: typography.sizeLg,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-  },
   progressIndicatorContainer: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,

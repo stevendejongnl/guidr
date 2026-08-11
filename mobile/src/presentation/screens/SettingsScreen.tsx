@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
@@ -158,18 +159,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   return (
     <SafeScreen>
       <View style={commonStyles.containerTop}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={onBack}
-            accessibilityLabel="Go back"
-            testID="settings-back-button"
-          >
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Settings</Text>
-          <View style={styles.headerSpacer} />
-        </View>
+        <ScreenHeader onBack={onBack} title="Settings" backTestID="settings-back-button" />
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           {/* Server Section */}
@@ -283,34 +273,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: {
-    fontSize: typography.sizeXl,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 80, // Match back button width for centering
-  },
-  backButton: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-  },
-  backButtonText: {
-    fontSize: typography.sizeMd,
-    color: colors.primary,
-    fontWeight: typography.weightMedium,
-  },
   content: {
     flex: 1,
   },

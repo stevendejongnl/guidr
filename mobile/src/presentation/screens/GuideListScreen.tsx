@@ -14,6 +14,7 @@ import { StepRepository } from '../../infrastructure/repositories/StepRepository
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { Guide } from '../../domain/entities/Guide'
 import { SafeScreen } from '../components/SafeScreen'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { GuideCard } from '../components/GuideCard'
 import { SearchBar } from '../components/SearchBar'
 import { EmptyState } from '../components/EmptyState'
@@ -188,15 +189,15 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onBack} testID="back-button">
-            <Text style={commonStyles.linkText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={commonStyles.titleLarge}>Guides</Text>
-          <TouchableOpacity onPress={onCreateGuide}>
-            <Text style={commonStyles.linkText}>+ New</Text>
-          </TouchableOpacity>
-        </View>
+        <ScreenHeader
+          onBack={onBack}
+          title="Guides"
+          rightElement={
+            <TouchableOpacity onPress={onCreateGuide}>
+              <Text style={commonStyles.linkText}>+ New</Text>
+            </TouchableOpacity>
+          }
+        />
 
         {error && <Text style={commonStyles.errorText}>{error}</Text>}
 
@@ -289,13 +290,6 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.xl,
-    paddingBottom: spacing.lg,
   },
   searchContainer: {
     paddingHorizontal: spacing.lg,
