@@ -52,6 +52,31 @@
 #     fixable via `npm audit fix --force`, which downgrades react-native to 0.72.17 — a
 #     major breaking change, not worth it for a build-tool DoS with no prod exposure
 #     (image-size runs on bundler-local assets at build time, not user-supplied files).
+# - GHSA-3jxr-9vmj-r5cp: brace-expansion DoS via exponential-time {} expansion (HIGH)
+#     Same transitive chains as GHSA-mh99-v99m-4gvg/GHSA-rgw5-rvv9-x895 below — jest,
+#     eslint, babel-plugin-module-resolver, typescript-transform-paths, api-extractor,
+#     and npm's own bundled minimatch. Dev-toolchain only, no fix available upstream.
+# - GHSA-mwp4-54f8-5fhr / GHSA-4xrf-jv44-h6hh / GHSA-22jq-vg5j-6vgg: ip-address SSRF /
+#     trust-boundary bypass via octal/CIDR/IPv4-mapped decoding bugs (HIGH)
+#     Transitive via @web/test-runner-chrome (puppeteer-core -> proxy-agent ->
+#     socks-proxy-agent -> socks) for web-app's local test runner, and via npm's
+#     bundled make-fetch-happen -> @npmcli/agent -> socks-proxy-agent -> socks.
+#     Both paths only resolve proxy addresses for local dev/CI tooling — never parses
+#     attacker-controlled IPs in the shipped app or API server. No fix available upstream.
+# - GHSA-r292-9mhp-454m: tar uncontrolled recursion DoS in mapHas/filesFilter (MODERATE)
+#     Bundled inside npm@11.19.0 (npm's own vendored copy), pulled in transitively via
+#     @semantic-release/npm during the release CI job. `npm audit fix --force`'s only
+#     suggested fix is downgrading @semantic-release/npm to 12.0.2 — a regression, not
+#     a fix, since we're already on the latest 13.x line. Release-pipeline-only, never
+#     processes untrusted archives. Revisit when npm ships a patched bundled tar.
+# - GHSA-8xcm-r25x-g524 / GHSA-4cwx-7wf7-3272 / GHSA-m8rv-5g2x-5cg5 / GHSA-jr45-8vmc-qm54 /
+#   GHSA-v3r7-h72x-cjcm: undici response desync / CRLF / cache / cookie handling bugs (HIGH)
+#     Transitive via @actions/http-client (used by @semantic-release/npm and
+#     @semantic-release/github for GitHub Actions annotations/API calls during the
+#     release job) and npm's bundled node-gyp. Fix requires a major undici 7.x -> 8.x
+#     bump that's outside @actions/http-client's/@semantic-release/github's allowed
+#     range (^7.0.0) — not something this repo can force. Release-pipeline-only,
+#     never touches user-facing traffic in the mobile app or API server.
 #
 # To fix a vulnerability instead of accepting it: fix the dep chain and remove from this list.
 
@@ -75,6 +100,16 @@ ACCEPTED_ADVISORIES=(
   "GHSA-7p8r-x3mc-p8w7"  # fast-uri host confusion, @microsoft/api-extractor->ajv, build-time only, override attempted
   "GHSA-w3rx-r6r6-pgpr"  # image-size ICNS DoS, metro/react-native, only fixable via breaking react-native downgrade
   "GHSA-5p2g-fcmc-qvqq"  # image-size JXL/HEIF DoS, same chain as GHSA-w3rx-r6r6-pgpr
+  "GHSA-3jxr-9vmj-r5cp"  # brace-expansion DoS, same dev-toolchain chain as GHSA-mh99-v99m-4gvg
+  "GHSA-mwp4-54f8-5fhr"  # ip-address SSRF (octal decode), web-app puppeteer test runner + npm bundled
+  "GHSA-4xrf-jv44-h6hh"  # ip-address SSRF (CIDR suffix), same chain as GHSA-mwp4-54f8-5fhr
+  "GHSA-22jq-vg5j-6vgg"  # ip-address SSRF (IPv4-mapped), same chain as GHSA-mwp4-54f8-5fhr
+  "GHSA-r292-9mhp-454m"  # tar recursion DoS, npm's bundled tar, only fixable via breaking semantic-release downgrade
+  "GHSA-8xcm-r25x-g524"  # undici response desync, @actions/http-client release-pipeline only
+  "GHSA-4cwx-7wf7-3272"  # undici cache info disclosure, same chain as GHSA-8xcm-r25x-g524
+  "GHSA-m8rv-5g2x-5cg5"  # undici CRLF injection, same chain as GHSA-8xcm-r25x-g524
+  "GHSA-jr45-8vmc-qm54"  # undici cache whitespace bypass, same chain as GHSA-8xcm-r25x-g524
+  "GHSA-v3r7-h72x-cjcm"  # undici cookie attribute injection, same chain as GHSA-8xcm-r25x-g524
 )
 
 # Run npm audit and capture output
