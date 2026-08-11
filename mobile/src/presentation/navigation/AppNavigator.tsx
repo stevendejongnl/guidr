@@ -47,7 +47,68 @@ import { MaintenanceEventEmitter } from '../../common/MaintenanceEventEmitter'
 import { colors } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
-export const AppNavigator: React.FC = () => {
+interface ServicesBundle {
+  guide: GuideService
+  session: SessionService
+  step: StepService
+  stepTimerClient: StepTimerClient
+  guideFavoriteClient: GuideFavoriteClient
+}
+
+interface AppNavigatorProps {
+  serverConfigStorage?: ServerConfigStorage
+  authStorage?: AuthStorage
+  healthCheckService?: HealthCheckService
+  notificationPreferencesStorage?: NotificationPreferencesStorage
+  notificationService?: NotificationService
+  githubReleaseClient?: GitHubReleaseClient
+  updateCheckStorage?: UpdateCheckStorage
+  createAuthClient?: (serverUrl: string) => AuthClient
+  createServerConfigClient?: (serverUrl: string) => ServerConfigClient
+  createServices?: (serverUrl: string) => ServicesBundle
+  createTokenRefreshService?: (
+    authClient: AuthClient,
+    authStorage: AuthStorage,
+    serverStorage: ServerConfigStorage,
+    onLogout: () => Promise<void>,
+  ) => TokenRefreshService
+}
+
+const defaultCreateAuthClient = (serverUrl: string) => new AuthClient(serverUrl)
+const defaultCreateServerConfigClient = (serverUrl: string) => new ServerConfigClient(serverUrl)
+const defaultCreateServices = (serverUrl: string): ServicesBundle => {
+  const guideRepository = new GuideRepository(serverUrl)
+  const sessionRepository = new SessionRepository(serverUrl)
+  const stepRepository = new StepRepository(serverUrl)
+
+  return {
+    guide: new GuideService(guideRepository, stepRepository),
+    session: new SessionService(sessionRepository, guideRepository, stepRepository),
+    step: new StepService(stepRepository),
+    stepTimerClient: new StepTimerClient(serverUrl),
+    guideFavoriteClient: new GuideFavoriteClient(serverUrl),
+  }
+}
+const defaultCreateTokenRefreshService = (
+  authClient: AuthClient,
+  authStorage: AuthStorage,
+  serverStorage: ServerConfigStorage,
+  onLogout: () => Promise<void>,
+) => new TokenRefreshService(authClient, authStorage, serverStorage, onLogout)
+
+export const AppNavigator: React.FC<AppNavigatorProps> = ({
+  serverConfigStorage = new ServerConfigStorage(),
+  authStorage = new AuthStorage(),
+  healthCheckService = new HealthCheckService(),
+  notificationPreferencesStorage = new NotificationPreferencesStorage(),
+  notificationService = new NotificationService(),
+  githubReleaseClient = new GitHubReleaseClient(),
+  updateCheckStorage = new UpdateCheckStorage(),
+  createAuthClient = defaultCreateAuthClient,
+  createServerConfigClient = defaultCreateServerConfigClient,
+  createServices = defaultCreateServices,
+  createTokenRefreshService = defaultCreateTokenRefreshService,
+}) => {
   const [loading, setLoading] = useState(true)
   const [hasAuthToken, setHasAuthToken] = useState(false)
   const [userEmail, setUserEmail] = useState<string>('')
@@ -93,9 +154,7 @@ export const AppNavigator: React.FC = () => {
     return () => MaintenanceEventEmitter.setListener(null)
   }, [])
 
-  const serverStorage = new ServerConfigStorage()
-  const authStorage = new AuthStorage()
-  const healthCheckService = new HealthCheckService()
+  const serverStorage = serverConfigStorage
 
   // Create service instances
   const servicesRef = React.useRef<{
@@ -116,11 +175,10 @@ export const AppNavigator: React.FC = () => {
   const requestNotificationPermissionIfEnabled = async () => {
     if (Platform.OS !== 'android') return
     try {
-      const notifPrefsStorage = new NotificationPreferencesStorage()
       const timerNotificationsEnabled =
-        await notifPrefsStorage.getTimerNotificationsEnabled()
+        await notificationPreferencesStorage.getTimerNotificationsEnabled()
       if (timerNotificationsEnabled) {
-        await new NotificationService().requestPermission()
+        await notificationService.requestPermission()
       }
     } catch (error) {
       ErrorReporter.capture(error, {
@@ -162,7 +220,7 @@ export const AppNavigator: React.FC = () => {
         // Fetch server config if not cached
         if (!ServerConfigCache.hasConfig() && url) {
           try {
-            const configClient = new ServerConfigClient(url)
+            const configClient = createServerConfigClient(url)
             const config = await configClient.getConfig()
             ServerConfigCache.setConfig(config)
             setServerConfig(config)
@@ -203,11 +261,9 @@ export const AppNavigator: React.FC = () => {
           const currentConfig = ServerConfigCache.getConfig()
           if (currentConfig) {
             try {
-              const githubClient = new GitHubReleaseClient()
-              const updateStorage = new UpdateCheckStorage()
               const updateService = new UpdateService(
-                githubClient,
-                updateStorage,
+                githubReleaseClient,
+                updateCheckStorage,
                 { minAppVersion: currentConfig.minAppVersion ?? null }
               )
               const updateResult = await updateService.checkForUpdates(
@@ -243,20 +299,10 @@ export const AppNavigator: React.FC = () => {
   // Initialize services if we have server URL
   useEffect(() => {
     if (serverUrl && !servicesRef.current) {
-      const guideRepository = new GuideRepository(serverUrl)
-      const sessionRepository = new SessionRepository(serverUrl)
-      const stepRepository = new StepRepository(serverUrl)
+      servicesRef.current = createServices(serverUrl)
 
-      servicesRef.current = {
-        guide: new GuideService(guideRepository, stepRepository),
-        session: new SessionService(sessionRepository, guideRepository, stepRepository),
-        step: new StepService(stepRepository),
-        stepTimerClient: new StepTimerClient(serverUrl),
-        guideFavoriteClient: new GuideFavoriteClient(serverUrl),
-      }
-
-      tokenRefreshServiceRef.current = new TokenRefreshService(
-        new AuthClient(serverUrl),
+      tokenRefreshServiceRef.current = createTokenRefreshService(
+        createAuthClient(serverUrl),
         authStorage,
         serverStorage,
         handleLogout,
@@ -274,7 +320,7 @@ export const AppNavigator: React.FC = () => {
     ServerConfigCache.clearConfig()
     if (url) {
       try {
-        const configClient = new ServerConfigClient(url)
+        const configClient = createServerConfigClient(url)
         const config = await configClient.getConfig()
         ServerConfigCache.setConfig(config)
         setServerConfig(config)
@@ -617,7 +663,7 @@ export const AppNavigator: React.FC = () => {
   }
 
   if (!hasAuthToken && serverUrl) {
-    const authClient = new AuthClient(serverUrl)
+    const authClient = createAuthClient(serverUrl)
 
     if (showRegistration) {
       return (
@@ -652,7 +698,7 @@ export const AppNavigator: React.FC = () => {
   }
 
   if (showProfileScreen && serverUrl) {
-    const authClient = new AuthClient(serverUrl)
+    const authClient = createAuthClient(serverUrl)
 
     return (
       <ProfileScreen
