@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Guidr</string>
+    <string name="widget_description">Shows the active step timer countdown</string>
+    <string name="widget_idle_title">No active timer</string>
+    <string name="widget_idle_subtitle">Open Guidr to start a step</string>
+    <string name="widget_complete_time">Done!</string>
 </resources>

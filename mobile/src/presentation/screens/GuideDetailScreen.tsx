@@ -28,6 +28,7 @@ import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { useStepTimers } from '../hooks/useStepTimers'
 import { NotificationService } from '../../infrastructure/native/NotificationService'
 import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
+import { WidgetService } from '../../infrastructure/native/WidgetService'
 
 const TIMER_RESET_DELAY_MS = 2 * 60 * 1000
 
@@ -52,6 +53,7 @@ interface GuideDetailScreenProps {
   stepTimerClient?: StepTimerClient
   notificationService?: NotificationService
   notificationPreferencesStorage?: NotificationPreferencesStorage
+  widgetService?: WidgetService
   authStorage?: AuthStorage
   serverConfigStorage?: ServerConfigStorage
   testID?: string
@@ -67,6 +69,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   stepTimerClient: injectedStepTimerClient,
   notificationService: injectedNotificationService,
   notificationPreferencesStorage: injectedNotifPrefsStorage,
+  widgetService: injectedWidgetService,
   authStorage: injectedAuthStorage,
   serverConfigStorage: injectedServerConfigStorage,
   testID,
@@ -84,6 +87,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const notificationServiceRef = useRef(injectedNotificationService || new NotificationService())
   const notificationService = notificationServiceRef.current
   const notifPrefsStorage = injectedNotifPrefsStorage || new NotificationPreferencesStorage()
+  const widgetServiceRef = useRef(injectedWidgetService || new WidgetService())
+  const widgetService = widgetServiceRef.current
 
   // Step timer client ref
   const timerClientRef = React.useRef<StepTimerClient | null>(
@@ -103,11 +108,12 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const resetCompletedTimer = useCallback((stepId: string) => {
     stepTimers.resetTimer(stepId)
     notificationService.cancelTimerNotification(stepId)
+    widgetService.clearWidget()
     delete completedAtRef.current[stepId]
     delete resetTimeoutsRef.current[stepId]
-  }, [stepTimers, notificationService])
+  }, [stepTimers, notificationService, widgetService])
 
-  // Detect timer completion: fire Android notification
+  // Detect timer completion: fire Android notification, update widget
   useEffect(() => {
     const prevCompleted = prevCompletedRef.current
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
@@ -121,6 +127,17 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
         // Fire Android notification on completion
         const step = steps.find(s => s.id === stepId)
         if (step && guide) {
+          if (step.duration > 0) {
+            widgetService.updateWidget({
+              stepId,
+              guideTitle: guide.title,
+              stepTitle: step.title,
+              totalDurationSeconds: step.duration,
+              remainingSeconds: 0,
+              isPaused: false,
+              isComplete: true,
+            })
+          }
           notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
             if (!enabled) return
             notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
@@ -486,6 +503,15 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                                 : initialSeconds
                               await stepTimers.startTimer(step.id, step.duration)
                               if (step.duration > 0) {
+                                widgetService.updateWidget({
+                                  stepId: step.id,
+                                  guideTitle: guide.title,
+                                  stepTitle: step.title,
+                                  totalDurationSeconds: step.duration,
+                                  remainingSeconds: remaining,
+                                  isPaused: false,
+                                  isComplete: false,
+                                })
                                 notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
                                   if (!enabled) return
                                   notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
@@ -499,10 +525,22 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                             onPause: async () => {
                               await stepTimers.pauseTimer(step.id)
                               notificationService.cancelTimerNotification(step.id)
+                              if (step.duration > 0) {
+                                widgetService.updateWidget({
+                                  stepId: step.id,
+                                  guideTitle: guide.title,
+                                  stepTitle: step.title,
+                                  totalDurationSeconds: step.duration,
+                                  remainingSeconds: stepTimers.timers[step.id]?.displaySeconds ?? 0,
+                                  isPaused: true,
+                                  isComplete: false,
+                                })
+                              }
                             },
                             onReset: async () => {
                               await stepTimers.resetTimer(step.id)
                               notificationService.cancelTimerNotification(step.id)
+                              widgetService.clearWidget()
                             },
                           }}
                           testID={`${testID}:step-${index}`}
