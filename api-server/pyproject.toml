@@ -1,6 +1,6 @@
 [project]
 name = "guidr-api-server"
-version = "1.95.3"
+version = "1.95.4"
 description = "API server for Guidr mobile app"
 readme = "README.md"
 requires-python = ">=3.12"

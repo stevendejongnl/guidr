@@ -1,3 +1,9 @@
+## [1.95.4](https://github.com/stevendejongnl/guidr/compare/v1.95.3...v1.95.4) (2026-08-11)
+
+### Bug Fixes
+
+* BrowseGuidesScreen status bar overlap; add shared ScreenHeader ([36a3ece](https://github.com/stevendejongnl/guidr/commit/36a3ece4886dd0b175ab14406ed3636889e2080a))
+
 ## [1.95.3](https://github.com/stevendejongnl/guidr/compare/v1.95.2...v1.95.3) (2026-08-11)
 
 ### Bug Fixes
