@@ -118,6 +118,7 @@ export const RegistrationScreen: React.FC<RegistrationScreenProps> = ({
   return (
     <SafeScreen>
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >

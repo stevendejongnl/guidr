@@ -98,6 +98,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   return (
     <SafeScreen>
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >

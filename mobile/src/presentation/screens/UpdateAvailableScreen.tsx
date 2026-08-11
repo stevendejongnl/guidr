@@ -43,7 +43,7 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
   return (
     <SafeScreen>
       <View style={commonStyles.container}>
-        <ScrollView contentContainerStyle={styles.contentContainer}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
           <Text style={styles.title}>{getTitle()}</Text>
 
           <View style={styles.versionContainer}>
@@ -102,6 +102,10 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+    alignSelf: 'stretch',
+  },
   contentContainer: {
     width: '100%',
     alignItems: 'center',
