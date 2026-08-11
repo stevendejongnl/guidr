@@ -1,3 +1,9 @@
+## [1.95.3](https://github.com/stevendejongnl/guidr/compare/v1.95.2...v1.95.3) (2026-08-11)
+
+### Bug Fixes
+
+* correct sentry-cli path in API release step ([1a787db](https://github.com/stevendejongnl/guidr/commit/1a787db920dba7d22c87fa94f27d9fc93455c010))
+
 ## [1.95.2](https://github.com/stevendejongnl/guidr/compare/v1.95.1...v1.95.2) (2026-08-11)
 
 ### Bug Fixes
