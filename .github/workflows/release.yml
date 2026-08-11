@@ -222,15 +222,15 @@ jobs:
 
           echo "📤 Creating Sentry release for API: $RELEASE_NAME"
 
-          ./mobile/node_modules/.bin/sentry-cli releases new "$RELEASE_NAME" \
+          ./node_modules/.bin/sentry-cli releases new "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
-          ./mobile/node_modules/.bin/sentry-cli releases set-commits "$RELEASE_NAME" --auto \
+          ./node_modules/.bin/sentry-cli releases set-commits "$RELEASE_NAME" --auto \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
-          ./mobile/node_modules/.bin/sentry-cli releases finalize "$RELEASE_NAME" \
+          ./node_modules/.bin/sentry-cli releases finalize "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
