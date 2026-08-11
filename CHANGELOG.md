@@ -1,3 +1,9 @@
+## [1.95.2](https://github.com/stevendejongnl/guidr/compare/v1.95.1...v1.95.2) (2026-08-11)
+
+### Bug Fixes
+
+* use StyleSheet.absoluteFill after react-native-core bump ([ff97984](https://github.com/stevendejongnl/guidr/commit/ff979847bcb1bcc4523b2805dca13b2fd46ecff0))
+
 ## [1.95.1](https://github.com/stevendejongnl/guidr/compare/v1.95.0...v1.95.1) (2026-08-10)
 
 ### Bug Fixes
