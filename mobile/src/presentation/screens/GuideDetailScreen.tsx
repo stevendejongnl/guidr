@@ -21,6 +21,7 @@ import { Step } from '../../domain/entities/Step'
 import { colors, spacing, typography } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { SafeScreen } from '../components/SafeScreen'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { StepListItem } from '../components/StepListItem'
 import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
@@ -330,20 +331,17 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     <SafeScreen {...(testID && { testID })}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity onPress={onBack} testID={`${testID}:back`}>
-              <Text style={styles.backButton}>← Back</Text>
-            </TouchableOpacity>
-            <View style={styles.headerActions}>
-              {onEdit && (
-                <TouchableOpacity onPress={() => onEdit(guideId)}>
-                  <Text style={styles.editButton}>Edit</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
+        <ScreenHeader
+          onBack={onBack}
+          backTestID={`${testID}:back`}
+          rightElement={
+            onEdit && (
+              <TouchableOpacity onPress={() => onEdit(guideId)}>
+                <Text style={styles.editButton}>Edit</Text>
+              </TouchableOpacity>
+            )
+          }
+        />
 
         {/* Admin banner for viewing other's guide */}
         <InfoBanner
@@ -528,21 +526,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
   },
   backButton: {
     fontSize: typography.sizeMd,

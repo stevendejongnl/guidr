@@ -18,6 +18,7 @@ import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCach
 import { IHealthCheckService } from '../../domain/services/IHealthCheckService'
 import { VersionDisplay } from '../components/VersionDisplay'
 import { SafeScreen } from '../components/SafeScreen'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { UpdateButton } from '../components/UpdateButton'
 import { UpdateCheckResult } from '../../domain/services/UpdateService'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
@@ -169,16 +170,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   return (
     <SafeScreen>
       <View style={commonStyles.containerTop}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={onBack}
-            style={styles.backButton}
-            accessibilityLabel="Go back"
-          >
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={commonStyles.title}>Admin Tools</Text>
-        </View>
+        <ScreenHeader onBack={onBack} title="Admin Tools" />
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           {/* Version Info Section */}
@@ -287,20 +279,6 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: colors.surface,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    marginBottom: spacing.sm,
-  },
-  backButtonText: {
-    color: colors.primary,
-    fontSize: typography.sizeMd,
-  },
   content: {
     flex: 1,
   },

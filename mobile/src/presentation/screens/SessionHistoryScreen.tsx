@@ -13,6 +13,7 @@ import { GuideService } from '../../domain/services/GuideService'
 import { SessionService } from '../../domain/services/SessionService'
 import { Session, SessionStatus } from '../../domain/entities/Session'
 import { SafeScreen } from '../components/SafeScreen'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
@@ -105,13 +106,7 @@ export const SessionHistoryScreen: React.FC<SessionHistoryScreenProps> = ({
 
   return (
     <SafeScreen>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} testID="session-history-back">
-          <Text style={commonStyles.linkText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={commonStyles.titleLarge}>Session History</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader onBack={onBack} title="Session History" backTestID="session-history-back" />
 
       {loading && (
         <ActivityIndicator
@@ -162,16 +157,6 @@ export const SessionHistoryScreen: React.FC<SessionHistoryScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.xl,
-    paddingBottom: spacing.lg,
-  },
-  headerSpacer: {
-    width: 48,
-  },
   loader: {
     marginTop: spacing.xl,
   },

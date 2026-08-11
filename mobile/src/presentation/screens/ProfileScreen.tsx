@@ -12,6 +12,7 @@ import {
 import { AuthClient } from '@infrastructure/api/AuthClient'
 import { AuthStorage } from '@infrastructure/storage/AuthStorage'
 import { SafeScreen } from '../components/SafeScreen'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { colors, spacing, typography, borderRadius } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import {
@@ -271,15 +272,7 @@ export function ProfileScreen({
     <SafeScreen>
       <View style={commonStyles.containerTop}>
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={onBack}
-            style={styles.backButton}
-            testID="back-button">
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile & Account</Text>
-        </View>
+        <ScreenHeader onBack={onBack} title="Profile & Account" />
 
         <ScrollView style={styles.content}>
           {/* Success/Error Messages */}
@@ -520,30 +513,6 @@ export function ProfileScreen({
 }
 
 const styles = StyleSheet.create({
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  backButton: {
-    paddingRight: spacing.md,
-  },
-  backButtonText: {
-    fontSize: typography.sizeMd,
-    color: colors.primary,
-    fontWeight: typography.weightMedium,
-  },
-  headerTitle: {
-    fontSize: typography.sizeXl,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    flex: 1,
-  },
 
   // Content
   content: {
