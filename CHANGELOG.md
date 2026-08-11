@@ -1,3 +1,9 @@
+## [1.97.1](https://github.com/stevendejongnl/guidr/compare/v1.97.0...v1.97.1) (2026-08-11)
+
+### Bug Fixes
+
+* **android:** resolve WidgetModule Kotlin compile error ([dbcae12](https://github.com/stevendejongnl/guidr/commit/dbcae1268f13397f4a0afdf0c2aeb19bde3310ae))
+
 ## [1.97.0](https://github.com/stevendejongnl/guidr/compare/v1.96.2...v1.97.0) (2026-08-11)
 
 ### Features
