@@ -10,6 +10,12 @@ import { StepService } from '../domain/services/StepService'
 import { Guide } from '../domain/entities/Guide'
 import { Session } from '../domain/entities/Session'
 import { Step } from '../domain/entities/Step'
+import { HealthCheckService } from '../domain/services/HealthCheckService'
+import { NotificationService } from '../infrastructure/native/NotificationService'
+import { GitHubReleaseClient, GitHubRelease } from '../infrastructure/api/GitHubReleaseClient'
+import { UpdateCheckStorage } from '../infrastructure/storage/UpdateCheckStorage'
+import { ServerConfigClient, ServerConfigResponse } from '../infrastructure/api/ServerConfigClient'
+import { TokenRefreshService } from '../infrastructure/api/TokenRefreshService'
 
 /**
  * Create a mock AuthStorage instance for testing
@@ -231,3 +237,115 @@ export const createMockNotificationPreferencesStorage = (
   setCriticalNotificationsEnabled: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 } as unknown as jest.Mocked<NotificationPreferencesStorage>)
+
+/**
+ * Create a mock HealthCheckService instance for testing
+ * @param overrides Optional method overrides
+ */
+export const createMockHealthCheckService = (
+  overrides: Partial<jest.Mocked<HealthCheckService>> = {},
+): jest.Mocked<HealthCheckService> => ({
+  validateServer: jest.fn().mockResolvedValue({ healthy: true, responseTime: 10 }),
+  ...overrides,
+} as unknown as jest.Mocked<HealthCheckService>)
+
+/**
+ * Create a mock NotificationService instance for testing
+ * @param overrides Optional method overrides
+ */
+export const createMockNotificationService = (
+  overrides: Partial<jest.Mocked<NotificationService>> = {},
+): jest.Mocked<NotificationService> => ({
+  requestPermission: jest.fn().mockResolvedValue(true),
+  scheduleTimerNotification: jest.fn().mockResolvedValue(undefined),
+  cancelTimerNotification: jest.fn().mockResolvedValue(undefined),
+  cancelAllTimerNotifications: jest.fn().mockResolvedValue(undefined),
+  showImmediateNotification: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+} as unknown as jest.Mocked<NotificationService>)
+
+/**
+ * Create GitHubRelease fixture data for testing
+ * @param overrides Optional field overrides
+ */
+export const createGitHubRelease = (overrides: Partial<GitHubRelease> = {}): GitHubRelease => ({
+  version: '1.0.0',
+  tagName: 'v1.0.0',
+  name: 'v1.0.0',
+  body: 'Changelog',
+  publishedAt: new Date().toISOString(),
+  apkUrl: 'https://example.com/guidr.apk',
+  isPrerelease: false,
+  ...overrides,
+})
+
+/**
+ * Create a mock GitHubReleaseClient instance for testing
+ * @param release Optional release fixture to resolve; defaults via createGitHubRelease()
+ * @param overrides Optional method overrides
+ */
+export const createMockGitHubReleaseClient = (
+  release: GitHubRelease = createGitHubRelease(),
+  overrides: Partial<jest.Mocked<GitHubReleaseClient>> = {},
+): jest.Mocked<GitHubReleaseClient> => ({
+  getLatestRelease: jest.fn().mockResolvedValue(release),
+  getReleaseByTag: jest.fn().mockResolvedValue(release),
+  ...overrides,
+} as unknown as jest.Mocked<GitHubReleaseClient>)
+
+/**
+ * Create a mock UpdateCheckStorage instance for testing
+ * @param overrides Optional method overrides
+ */
+export const createMockUpdateCheckStorage = (
+  overrides: Partial<jest.Mocked<UpdateCheckStorage>> = {},
+): jest.Mocked<UpdateCheckStorage> => ({
+  getLastCheckTimestamp: jest.fn().mockResolvedValue(null),
+  setLastCheckTimestamp: jest.fn().mockResolvedValue(undefined),
+  shouldCheckForUpdates: jest.fn().mockResolvedValue(true),
+  clearLastCheck: jest.fn().mockResolvedValue(undefined),
+  ...overrides,
+} as unknown as jest.Mocked<UpdateCheckStorage>)
+
+/**
+ * Create a mock ServerConfigClient instance for testing
+ * @param config Optional config fixture to resolve
+ * @param overrides Optional method overrides
+ */
+export const createMockServerConfigClient = (
+  config: ServerConfigResponse = { minAppVersion: null, maxAppVersion: null },
+  overrides: Partial<jest.Mocked<ServerConfigClient>> = {},
+): jest.Mocked<ServerConfigClient> => ({
+  getConfig: jest.fn().mockResolvedValue(config),
+  ...overrides,
+} as unknown as jest.Mocked<ServerConfigClient>)
+
+/**
+ * Create a mock TokenRefreshService instance for testing
+ * @param overrides Optional method overrides
+ */
+export const createMockTokenRefreshService = (
+  overrides: Partial<jest.Mocked<TokenRefreshService>> = {},
+): jest.Mocked<TokenRefreshService> => ({
+  refreshAndRetry: jest.fn().mockResolvedValue('new-token'),
+  ...overrides,
+} as unknown as jest.Mocked<TokenRefreshService>)
+
+/**
+ * Create a bundle of the domain services AppNavigator wires into child
+ * screens once a server URL is available.
+ * @param overrides Optional per-service overrides
+ */
+export const createMockServicesBundle = (overrides: {
+  guide?: jest.Mocked<GuideService>
+  session?: jest.Mocked<SessionService>
+  step?: jest.Mocked<StepService>
+  stepTimerClient?: jest.Mocked<StepTimerClient>
+  guideFavoriteClient?: jest.Mocked<GuideFavoriteClient>
+} = {}) => ({
+  guide: overrides.guide ?? createMockGuideService([]),
+  session: overrides.session ?? createMockSessionService([]),
+  step: overrides.step ?? createMockStepService([]),
+  stepTimerClient: overrides.stepTimerClient ?? createMockStepTimerClient(),
+  guideFavoriteClient: overrides.guideFavoriteClient ?? createMockGuideFavoriteClient(),
+})
