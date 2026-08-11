@@ -43,7 +43,7 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
   return (
     <SafeScreen>
       <View style={commonStyles.container}>
-        <ScrollView contentContainerStyle={commonStyles.contentCentered}>
+        <ScrollView contentContainerStyle={styles.contentContainer}>
           <Text style={styles.title}>{getTitle()}</Text>
 
           <View style={styles.versionContainer}>
@@ -102,6 +102,11 @@ export const UpdateAvailableScreen: React.FC<UpdateAvailableScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
+  contentContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+  },
   title: {
     fontSize: typography.sizeXxl,
     fontWeight: typography.weightBold,
