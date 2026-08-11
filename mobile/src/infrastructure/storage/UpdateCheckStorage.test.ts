@@ -139,6 +139,55 @@ describe('UpdateCheckStorage', () => {
       )
     })
   })
+
+  describe('getLastNotifiedVersion', () => {
+    it('should return null when no version is stored', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null)
+
+      const result = await storage.getLastNotifiedVersion()
+      expect(result).toBeNull()
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('Guidr_LastNotifiedUpdateVersion')
+    })
+
+    it('should return the stored version', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue('1.15.0')
+
+      const result = await storage.getLastNotifiedVersion()
+      expect(result).toBe('1.15.0')
+    })
+
+    it('should return null on AsyncStorage error', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockRejectedValue(
+        new Error('Storage error')
+      )
+
+      const result = await storage.getLastNotifiedVersion()
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('setLastNotifiedVersion', () => {
+    it('should store the version in AsyncStorage', async () => {
+      (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined)
+
+      await storage.setLastNotifiedVersion('1.15.0')
+
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        'Guidr_LastNotifiedUpdateVersion',
+        '1.15.0'
+      )
+    })
+
+    it('should throw error on AsyncStorage failure', async () => {
+      (AsyncStorage.setItem as jest.Mock).mockRejectedValue(
+        new Error('Storage error')
+      )
+
+      await expect(storage.setLastNotifiedVersion('1.15.0')).rejects.toThrow(
+        'Failed to save last notified update version'
+      )
+    })
+  })
 })
 
 describe('UpdateCheckCache', () => {

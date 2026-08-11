@@ -1,5 +1,6 @@
 package com.guidr
 
+import android.content.Intent
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -19,4 +20,13 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  // singleTask launch mode reuses this Activity instance instead of creating a new one, so a
+  // widget tap while the app is already running arrives here rather than a fresh onCreate.
+  // Without this, WidgetModule.getAndClearWidgetLaunchTarget() would keep reading the stale
+  // intent from when the app first launched.
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+  }
 }

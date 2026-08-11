@@ -6,12 +6,15 @@ import { Step } from '../../domain/entities/Step'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { StepTimerDto } from '../../infrastructure/api/dtos/StepTimerDto'
 import { WidgetService } from '../../infrastructure/native/WidgetService'
+import { NotificationService } from '../../infrastructure/native/NotificationService'
 import {
   createMockAuthStorage,
   createMockServerConfigStorage,
   createMockGuideService,
   createMockStepService,
   createMockNotificationPreferencesStorage,
+  createMockWidgetService,
+  createMockNotificationService,
 } from '../testUtils'
 
 // Mock only ErrorReporter (static utility)
@@ -385,12 +388,6 @@ describe('GuideDetailScreen', () => {
         resetTimer: jest.fn(),
       }) as unknown as jest.Mocked<StepTimerClient>
 
-    const createMockWidgetService = (): jest.Mocked<WidgetService> =>
-      ({
-        updateWidget: jest.fn().mockResolvedValue(undefined),
-        clearWidget: jest.fn().mockResolvedValue(undefined),
-      }) as unknown as jest.Mocked<WidgetService>
-
     const singleStepGuide = new Guide(
       'guide-1',
       'cooking',
@@ -418,6 +415,7 @@ describe('GuideDetailScreen', () => {
     const renderSingleStepTimer = (options: {
       stepTimerClient: jest.Mocked<StepTimerClient>
       widgetService?: jest.Mocked<WidgetService>
+      notificationService?: jest.Mocked<NotificationService>
     }) => {
       mockGuideService.getGuideById.mockResolvedValue(singleStepGuide)
       const mockStepService = createMockStepService([
@@ -436,6 +434,7 @@ describe('GuideDetailScreen', () => {
           serverConfigStorage={mockServerConfigStorage}
           notificationPreferencesStorage={createMockNotificationPreferencesStorage()}
           {...(options.widgetService && { widgetService: options.widgetService })}
+          {...(options.notificationService && { notificationService: options.notificationService })}
         />
       )
     }
@@ -523,6 +522,7 @@ describe('GuideDetailScreen', () => {
 
       await waitFor(() => {
         expect(mockWidgetService.updateWidget).toHaveBeenCalledWith({
+          guideId: 'guide-1',
           stepId: 'step-1',
           guideTitle: 'Test Guide',
           stepTitle: 'Step One',
@@ -567,6 +567,7 @@ describe('GuideDetailScreen', () => {
       await waitFor(() => {
         expect(mockWidgetService.updateWidget).toHaveBeenCalledWith(
           expect.objectContaining({
+            guideId: 'guide-1',
             stepId: 'step-1',
             guideTitle: 'Test Guide',
             stepTitle: 'Step One',
@@ -620,6 +621,7 @@ describe('GuideDetailScreen', () => {
 
       await waitFor(() => {
         expect(mockWidgetService.updateWidget).toHaveBeenCalledWith({
+          guideId: 'guide-1',
           stepId: 'step-1',
           guideTitle: 'Test Guide',
           stepTitle: 'Step One',
@@ -629,6 +631,35 @@ describe('GuideDetailScreen', () => {
           isComplete: true,
         })
       })
+    })
+
+    it('does not re-notify for a timer that was already complete when the screen loaded', async () => {
+      const mockStepTimerClient = createMockStepTimerClient()
+      const mockWidgetService = createMockWidgetService()
+      const mockNotificationService = createMockNotificationService()
+
+      // Timer already finished before this screen ever mounted — e.g. it completed
+      // while the app was backgrounded and the alarm-based notification already fired.
+      mockStepTimerClient.getTimersByGuide.mockResolvedValue([
+        makeTimerDto({ status: 'idle', startedAt: null, accumulatedSeconds: 600 }),
+      ])
+
+      const { getByTestId } = renderSingleStepTimer({
+        stepTimerClient: mockStepTimerClient,
+        widgetService: mockWidgetService,
+        notificationService: mockNotificationService,
+      })
+
+      await waitFor(() => {
+        expect(getByTestId('detail:step-0:timer-complete')).toBeTruthy()
+      })
+
+      // Widget still syncs to the current (complete) state...
+      expect(mockWidgetService.updateWidget).toHaveBeenCalledWith(
+        expect.objectContaining({ isComplete: true })
+      )
+      // ...but no duplicate system notification for a completion the user already saw.
+      expect(mockNotificationService.showImmediateNotification).not.toHaveBeenCalled()
     })
   })
 })

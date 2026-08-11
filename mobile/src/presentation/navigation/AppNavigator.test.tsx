@@ -1,13 +1,15 @@
 import React from 'react'
 import { render, waitFor, fireEvent, act } from '@testing-library/react-native'
-import { Platform, Alert } from 'react-native'
-import AsyncStorageMock from '@react-native-async-storage/async-storage/jest/async-storage-mock'
+import { Platform, Alert, AppState } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { AppNavigator } from './AppNavigator'
 import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
 import { UpdateCheckCache } from '../../infrastructure/storage/UpdateCheckCache'
 import { MaintenanceEventEmitter } from '../../common/MaintenanceEventEmitter'
 import { GitHubRelease } from '../../infrastructure/api/GitHubReleaseClient'
 import { ServerConfigResponse } from '../../infrastructure/api/ServerConfigClient'
+import { WidgetLaunchTarget } from '../../infrastructure/native/WidgetService'
+import { Guide } from '../../domain/entities/Guide'
 import {
   createMockAuthStorage,
   createMockServerConfigStorage,
@@ -21,6 +23,8 @@ import {
   createMockServerConfigClient,
   createMockTokenRefreshService,
   createMockServicesBundle,
+  createMockWidgetService,
+  createMockGuideService,
 } from '../testUtils'
 
 // ErrorReporter is a thin static wrapper around Sentry; not worth faking through props.
@@ -28,7 +32,13 @@ jest.mock('../../infrastructure/monitoring/ErrorReporter')
 // AsyncStorage is a native module leaf dependency (used inline for the debug-mode
 // flag, not wrapped in an injectable storage class) — automocked the same way every
 // other test file in this codebase that touches it does.
-jest.mock('@react-native-async-storage/async-storage', () => AsyncStorageMock)
+jest.mock('@react-native-async-storage/async-storage', () =>
+  // jest.mock factories are hoisted above imports, so referencing an imported binding
+  // here hits a TDZ; require() is lazily evaluated and is the standard pattern Jest
+  // itself documents for this case.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+)
 
 interface RenderOptions {
   hasAuthToken?: boolean
@@ -36,6 +46,8 @@ interface RenderOptions {
   serverConfig?: ServerConfigResponse
   release?: GitHubRelease
   platform?: 'android' | 'ios' | 'web'
+  widgetLaunchTarget?: WidgetLaunchTarget | null
+  guide?: Guide
 }
 
 const renderAppNavigator = (options: RenderOptions = {}) => {
@@ -45,6 +57,8 @@ const renderAppNavigator = (options: RenderOptions = {}) => {
     serverConfig = { minAppVersion: null, maxAppVersion: null },
     release = createGitHubRelease({ version: '1.0.0' }),
     platform = 'android',
+    widgetLaunchTarget = null,
+    guide,
   } = options
 
   Platform.OS = platform
@@ -59,11 +73,18 @@ const renderAppNavigator = (options: RenderOptions = {}) => {
       getTimerNotificationsEnabled: jest.fn().mockResolvedValue(timerNotificationsEnabled),
     }),
     notificationService: createMockNotificationService(),
+    widgetService: createMockWidgetService({
+      getAndClearLaunchTarget: jest.fn().mockResolvedValue(widgetLaunchTarget),
+    }),
     githubReleaseClient: createMockGitHubReleaseClient(release),
     updateCheckStorage: createMockUpdateCheckStorage(),
     createAuthClient: jest.fn(() => createMockAuthClient()),
     createServerConfigClient: jest.fn(() => createMockServerConfigClient(serverConfig)),
-    createServices: jest.fn(() => createMockServicesBundle()),
+    createServices: jest.fn(() =>
+      createMockServicesBundle(
+        guide ? { guide: createMockGuideService([guide], { getGuideById: jest.fn().mockResolvedValue(guide) }) } : {}
+      )
+    ),
     createTokenRefreshService: jest.fn(() => createMockTokenRefreshService()),
   }
 
@@ -74,6 +95,7 @@ const renderAppNavigator = (options: RenderOptions = {}) => {
       healthCheckService={mocks.healthCheckService}
       notificationPreferencesStorage={mocks.notificationPreferencesStorage}
       notificationService={mocks.notificationService}
+      widgetService={mocks.widgetService}
       githubReleaseClient={mocks.githubReleaseClient}
       updateCheckStorage={mocks.updateCheckStorage}
       createAuthClient={mocks.createAuthClient}
@@ -90,12 +112,13 @@ const REGISTER_LINK_TEXT = 'Don\'t have an account? Register'
 const SIGN_IN_LINK_TEXT = 'Already have an account? Sign in'
 
 describe('AppNavigator', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks()
     ServerConfigCache.clearConfig()
     UpdateCheckCache.clearCache()
     MaintenanceEventEmitter.setListener(null)
     Platform.OS = 'android'
+    await AsyncStorage.clear()
   })
 
   it('shows a loading spinner before configuration finishes loading', () => {
@@ -299,6 +322,82 @@ describe('AppNavigator', () => {
     expect(mocks.authStorage.clearAll).toHaveBeenCalled()
   })
 
+  describe('update notifications', () => {
+    it('shows a notification when a new update is first detected', async () => {
+      const { getByText, mocks } = renderAppNavigator({
+        hasAuthToken: true,
+        release: createGitHubRelease({ version: '9.9.9' }),
+      })
+
+      await waitFor(() => {
+        expect(getByText('Update Available')).toBeTruthy()
+      })
+
+      expect(mocks.notificationService.showUpdateAvailableNotification)
+        .toHaveBeenCalledWith('9.9.9', false)
+      expect(mocks.updateCheckStorage.setLastNotifiedVersion).toHaveBeenCalledWith('9.9.9')
+    })
+
+    it('does not re-notify for a version already notified about', async () => {
+      const { getByText, mocks } = renderAppNavigator({
+        hasAuthToken: true,
+        release: createGitHubRelease({ version: '9.9.9' }),
+      })
+      mocks.updateCheckStorage.getLastNotifiedVersion.mockResolvedValue('9.9.9')
+
+      await waitFor(() => {
+        expect(getByText('Update Available')).toBeTruthy()
+      })
+
+      expect(mocks.notificationService.showUpdateAvailableNotification).not.toHaveBeenCalled()
+    })
+
+    it('does not notify when no update is available', async () => {
+      const { getByTestId, mocks } = renderAppNavigator({
+        hasAuthToken: true,
+        release: createGitHubRelease({ version: '1.0.0' }),
+      })
+
+      await waitFor(() => {
+        expect(getByTestId('home-menu')).toBeTruthy()
+      })
+
+      expect(mocks.notificationService.showUpdateAvailableNotification).not.toHaveBeenCalled()
+    })
+
+    it('re-checks and notifies when the app returns to the foreground', async () => {
+      const { getByTestId, mocks } = renderAppNavigator({
+        hasAuthToken: true,
+        release: createGitHubRelease({ version: '1.0.0' }),
+      })
+
+      await waitFor(() => {
+        expect(getByTestId('home-menu')).toBeTruthy()
+      })
+
+      expect(mocks.notificationService.showUpdateAvailableNotification).not.toHaveBeenCalled()
+
+      // A newer release appeared while the app was in the background. checkForUpdates
+      // respects a 24h in-memory cache regardless of caller, so this also simulates
+      // that cache having expired — otherwise the foreground check would just return
+      // the same cached "no update" result again.
+      UpdateCheckCache.clearCache()
+      mocks.githubReleaseClient.getLatestRelease.mockResolvedValue(
+        createGitHubRelease({ version: '9.9.9' })
+      )
+
+      const calls = (AppState.addEventListener as jest.Mock).mock.calls
+      await act(async () => {
+        await Promise.all(calls.map(([, handler]) => handler('active')))
+      })
+
+      await waitFor(() => {
+        expect(mocks.notificationService.showUpdateAvailableNotification)
+          .toHaveBeenCalledWith('9.9.9', false)
+      })
+    })
+  })
+
   describe('Android update flow', () => {
     it('shows an optional update screen that can be dismissed', async () => {
       const { getByText, queryByText } = renderAppNavigator({
@@ -331,6 +430,84 @@ describe('AppNavigator', () => {
 
       await waitFor(() => {
         expect(getByText('Downloading Update...')).toBeTruthy()
+      })
+    })
+  })
+
+  describe('widget launch target', () => {
+    const targetGuide = new Guide(
+      'guide-1',
+      'cooking',
+      'Pizza Dough',
+      'Make it at home',
+      'user-123',
+      true,
+      false
+    )
+
+    it('jumps straight to the guide detail screen on cold start when a widget launch target is pending', async () => {
+      // GuideDetailScreen isn't given AppNavigator's injected authStorage — it manages
+      // its own token lookup, so it needs one seeded directly in the real AsyncStorage.
+      await AsyncStorage.setItem('Guidr_AuthToken', 'test-token')
+      await AsyncStorage.setItem('Guidr_ServerUrl', 'http://localhost:8000')
+
+      const { getByText, mocks } = renderAppNavigator({
+        hasAuthToken: true,
+        widgetLaunchTarget: { guideId: 'guide-1', stepId: 'step-1' },
+        guide: targetGuide,
+      })
+
+      await waitFor(() => {
+        expect(getByText('Pizza Dough')).toBeTruthy()
+      })
+
+      expect(mocks.widgetService.getAndClearLaunchTarget).toHaveBeenCalled()
+    })
+
+    it('stays on the home screen when there is no pending widget launch target', async () => {
+      const { getByTestId, queryByText } = renderAppNavigator({
+        hasAuthToken: true,
+        widgetLaunchTarget: null,
+      })
+
+      await waitFor(() => {
+        expect(getByTestId('home-menu')).toBeTruthy()
+      })
+
+      expect(queryByText('Pizza Dough')).toBeNull()
+    })
+
+    it('checks again and navigates when the app returns to the foreground', async () => {
+      await AsyncStorage.setItem('Guidr_AuthToken', 'test-token')
+      await AsyncStorage.setItem('Guidr_ServerUrl', 'http://localhost:8000')
+
+      // servicesRef is populated once from whatever createServices returns on the first
+      // call and never recreated, so the guide needs to be configured up front even
+      // though the launch target itself only appears on the later foreground check.
+      const { getByTestId, getByText, mocks } = renderAppNavigator({
+        hasAuthToken: true,
+        widgetLaunchTarget: null,
+        guide: targetGuide,
+      })
+
+      await waitFor(() => {
+        expect(getByTestId('home-menu')).toBeTruthy()
+      })
+
+      mocks.widgetService.getAndClearLaunchTarget.mockResolvedValue({
+        guideId: 'guide-1',
+        stepId: 'step-1',
+      })
+
+      // HomeScreen's own useSyncConnection hook also registers an AppState listener,
+      // so trigger every registered handler rather than assuming AppNavigator's is last.
+      const calls = (AppState.addEventListener as jest.Mock).mock.calls
+      await act(async () => {
+        await Promise.all(calls.map(([, handler]) => handler('active')))
+      })
+
+      await waitFor(() => {
+        expect(getByText('Pizza Dough')).toBeTruthy()
       })
     })
   })

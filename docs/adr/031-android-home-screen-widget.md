@@ -23,6 +23,8 @@ Add a home screen widget (`GuidrTimerWidgetProvider`) showing the active countdo
 - **`WidgetService.ts`** (mirrors the deleted `LiveActivityService.ts`): platform-gated (`Platform.OS === 'android'`), silent-fail wrapper around the native module.
 - **Integration**: wired into `GuideDetailScreen`'s existing `onStart`/`onPause`/`onReset` timer callbacks and the timer-completion effect — the same call sites `useLiveActivity` used before it was removed.
 - **Sizes**: small (title + countdown) and medium (adds guide title + progress bar) layouts, selected via the size-aware `RemoteViews(Map<SizeF, RemoteViews>)` constructor (API 31+). Both of the devices used for manual testing (ADR-030) are API 31+; pre-31 devices fall back to the medium layout unconditionally.
+- **Widget picker preview**: `android:previewLayout` (API 31+) renders the actual medium layout — with its idle-state default text ("No active timer" / "Open Guidr to start a step") — as the picker preview, instead of the app's launcher icon. `android:previewImage` is kept as the pre-31 fallback.
+- **Tap to open**: the widget's root view carries a `PendingIntent` (explicit `Intent` to `MainActivity`, rebuilt on every widget refresh so its extras stay current). With an active (running/paused/complete) timer, it carries `guide_id`/`step_id` extras; idle/stale, it carries none. `MainActivity.onNewIntent` keeps the stored intent fresh for a warm app (singleTask launch mode), and `WidgetModule.getAndClearWidgetLaunchTarget()` reads-and-clears those extras once, consumed from JS on cold start and on every `AppState` 'active' transition. `AppNavigator` routes straight to `GuideDetailScreen` for that guide, which scrolls (via `measureLayout` against the screen's `ScrollView`) to the specific step's timer. Tapping an idle widget just opens the app normally.
 
 ### Scope (matching ADR-024's iOS constraints)
 - **Countdown mode only** — steps with `duration > 0`. Stopwatch-mode steps (count up, no target end) don't populate the widget, same as iOS.
@@ -38,9 +40,8 @@ Add a home screen widget (`GuidrTimerWidgetProvider`) showing the active countdo
 - No additional runtime permission required (home screen widgets don't need a user grant beyond placing the widget itself).
 
 ### Negative
-- Cannot be automatically verified — no instrumented widget tests exist, and CI's "Android Build" job only compiles the code, it doesn't render or exercise the widget (see ADR-030). Verification is manual, on-device only.
+- Cannot be automatically verified — no instrumented widget tests exist, and CI's "Android Build" job only compiles the code, it doesn't render or exercise the widget (see ADR-030). Verification is manual, on-device only. This now also covers the tap-to-open deep link and the scroll-to-step behavior in `GuideDetailScreen`, neither of which react-test-renderer can exercise (no real layout engine, so `measureLayout` can only be typechecked, not behaviorally tested).
 - Multi-timer scenarios (pausing a step that isn't the one currently shown in the widget) will show incorrect widget state — an accepted limitation carried over from iOS, not fixed here.
-- No custom widget preview image was created; the widget picker shows the app's launcher icon instead of a rendered preview of the widget itself.
 
 ## References
 

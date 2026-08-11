@@ -67,4 +67,16 @@ export class NotificationService {
       // Non-critical
     }
   }
+
+  async showUpdateAvailableNotification(
+    latestVersion: string,
+    isMandatory: boolean,
+  ): Promise<void> {
+    if (Platform.OS !== 'android') return
+    try {
+      await NotificationModule.showUpdateNotification(latestVersion, isMandatory)
+    } catch {
+      // Non-critical
+    }
+  }
 }

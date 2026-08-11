@@ -1,9 +1,11 @@
 package com.guidr
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.SystemClock
@@ -15,6 +17,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val PREFS_NAME = "guidr_widget_prefs"
+        private const val KEY_GUIDE_ID = "guide_id"
         private const val KEY_STEP_ID = "step_id"
         private const val KEY_GUIDE_TITLE = "guide_title"
         private const val KEY_STEP_TITLE = "step_title"
@@ -23,6 +26,11 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
         private const val KEY_IS_PAUSED = "is_paused"
         private const val KEY_IS_COMPLETE = "is_complete"
         private const val KEY_UPDATED_AT = "updated_at"
+
+        // Extra keys on the launch Intent MainActivity reads to deep-link into the
+        // active timer's step. Distinct from the KEY_* SharedPreferences keys above.
+        const val EXTRA_GUIDE_ID = "guide_id"
+        const val EXTRA_STEP_ID = "step_id"
 
         // Safety net only: if a "running" timer's state hasn't been refreshed in this long,
         // assume the app was killed rather than trust a countdown that may have run past zero.
@@ -33,6 +41,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
 
         fun saveState(
             context: Context,
+            guideId: String,
             stepId: String,
             guideTitle: String,
             stepTitle: String,
@@ -42,6 +51,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             isComplete: Boolean,
         ) {
             prefs(context).edit()
+                .putString(KEY_GUIDE_ID, guideId)
                 .putString(KEY_STEP_ID, stepId)
                 .putString(KEY_GUIDE_TITLE, guideTitle)
                 .putString(KEY_STEP_TITLE, stepTitle)
@@ -91,6 +101,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             val views = RemoteViews(context.packageName, layoutRes)
             val p = prefs(context)
 
+            val guideId = p.getString(KEY_GUIDE_ID, null)
             val stepId = p.getString(KEY_STEP_ID, null)
             val isComplete = p.getBoolean(KEY_IS_COMPLETE, false)
             val isPaused = p.getBoolean(KEY_IS_PAUSED, false)
@@ -104,10 +115,12 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                 (System.currentTimeMillis() - updatedAt) > STALE_THRESHOLD_MS
 
             if (stepId == null || isStale) {
+                views.setOnClickPendingIntent(R.id.widget_root, buildLaunchIntent(context, null, null))
                 renderIdle(context, views, isSmall)
                 return views
             }
 
+            views.setOnClickPendingIntent(R.id.widget_root, buildLaunchIntent(context, guideId, stepId))
             views.setTextViewText(R.id.widget_step_title, stepTitle)
             views.setViewVisibility(R.id.widget_time, View.VISIBLE)
 
@@ -163,6 +176,25 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             views.setChronometerCountDown(R.id.widget_time, false)
             views.setChronometer(R.id.widget_time, 0L, null, false)
             views.setTextViewText(R.id.widget_time, context.getString(R.string.widget_complete_time))
+        }
+
+        // Explicit intent to MainActivity — no need to match its MAIN/LAUNCHER intent-filter.
+        // singleTask launch mode means a running instance is reused via onNewIntent() instead
+        // of creating a new one, so JS reads the fresh guide/step extras on resume too.
+        private fun buildLaunchIntent(context: Context, guideId: String?, stepId: String?): PendingIntent {
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                if (guideId != null && stepId != null) {
+                    putExtra(EXTRA_GUIDE_ID, guideId)
+                    putExtra(EXTRA_STEP_ID, stepId)
+                }
+            }
+            return PendingIntent.getActivity(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
         }
 
         private fun formatSeconds(totalSeconds: Int): String {
