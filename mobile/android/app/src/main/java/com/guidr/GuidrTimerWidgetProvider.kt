@@ -1,5 +1,6 @@
 package com.guidr
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -36,8 +37,27 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
         // assume the app was killed rather than trust a countdown that may have run past zero.
         private const val STALE_THRESHOLD_MS = 6 * 60 * 60 * 1000L
 
+        // Fired by AlarmManager at the moment a running timer is due to complete, so the
+        // widget flips itself to "Complete" even if the app's JS thread isn't running to
+        // notice (backgrounded/killed) — Chronometer has no built-in stop-at-zero, it just
+        // keeps ticking into negative time forever unless something tells it to stop.
+        private const val ACTION_TIMER_COMPLETE_CHECK = "com.guidr.ACTION_TIMER_COMPLETE_CHECK"
+        private const val COMPLETE_CHECK_REQUEST_CODE = 9001
+
         private fun prefs(context: Context): SharedPreferences =
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+        private fun completeCheckPendingIntent(context: Context): PendingIntent {
+            val intent = Intent(context, GuidrTimerWidgetProvider::class.java).apply {
+                action = ACTION_TIMER_COMPLETE_CHECK
+            }
+            return PendingIntent.getBroadcast(
+                context,
+                COMPLETE_CHECK_REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
 
         fun saveState(
             context: Context,
@@ -61,11 +81,30 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                 .putBoolean(KEY_IS_COMPLETE, isComplete)
                 .putLong(KEY_UPDATED_AT, System.currentTimeMillis())
                 .apply()
+
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!isPaused && !isComplete && remainingSeconds > 0) {
+                try {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis() + remainingSeconds * 1000L,
+                        completeCheckPendingIntent(context),
+                    )
+                } catch (e: SecurityException) {
+                    // Missing SCHEDULE_EXACT_ALARM on some OEM configurations — the widget
+                    // just won't self-correct until the app itself updates it again.
+                }
+            } else {
+                alarmManager.cancel(completeCheckPendingIntent(context))
+            }
+
             refreshAllWidgets(context)
         }
 
         fun clearState(context: Context) {
             prefs(context).edit().clear().apply()
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(completeCheckPendingIntent(context))
             refreshAllWidgets(context)
         }
 
@@ -212,6 +251,23 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
     ) {
         for (id in appWidgetIds) {
             appWidgetManager.updateAppWidget(id, buildRemoteViews(context))
+        }
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+
+        if (intent.action == ACTION_TIMER_COMPLETE_CHECK) {
+            val p = prefs(context)
+            val isPaused = p.getBoolean(KEY_IS_PAUSED, false)
+            val isComplete = p.getBoolean(KEY_IS_COMPLETE, false)
+            // Only flip to complete if the timer that scheduled this alarm is still the
+            // one running — it may have been paused, reset, or replaced by a new timer
+            // (which reschedules this same alarm) in the time since it fired.
+            if (!isPaused && !isComplete) {
+                p.edit().putBoolean(KEY_IS_COMPLETE, true).apply()
+                refreshAllWidgets(context)
+            }
         }
     }
 }
