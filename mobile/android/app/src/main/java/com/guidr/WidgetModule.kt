@@ -57,12 +57,11 @@ class WidgetModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun getAndClearWidgetLaunchTarget(promise: Promise) {
         try {
-            val activity = currentActivity
-            val intent = activity?.intent
+            val intent = reactApplicationContext.currentActivity?.intent
             val guideId = intent?.getStringExtra(GuidrTimerWidgetProvider.EXTRA_GUIDE_ID)
             val stepId = intent?.getStringExtra(GuidrTimerWidgetProvider.EXTRA_STEP_ID)
 
-            if (guideId != null && stepId != null) {
+            if (intent != null && guideId != null && stepId != null) {
                 intent.removeExtra(GuidrTimerWidgetProvider.EXTRA_GUIDE_ID)
                 intent.removeExtra(GuidrTimerWidgetProvider.EXTRA_STEP_ID)
                 val result = Arguments.createMap()
