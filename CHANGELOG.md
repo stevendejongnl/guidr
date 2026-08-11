@@ -1,3 +1,13 @@
+## [1.97.0](https://github.com/stevendejongnl/guidr/compare/v1.96.2...v1.97.0) (2026-08-11)
+
+### Features
+
+* **mobile:** widget preview/tap-to-open, update notifications, fix duplicate timer notification ([3a40674](https://github.com/stevendejongnl/guidr/commit/3a40674d2610de5177406e7f109d5518a1686d21))
+
+### Documentation
+
+* mark ADR-029 manual follow-ups as done where resolved ([0f90e20](https://github.com/stevendejongnl/guidr/commit/0f90e20529b2b63f30e3f36cf3a1801eb00a434e))
+
 ## [1.96.2](https://github.com/stevendejongnl/guidr/compare/v1.96.1...v1.96.2) (2026-08-11)
 
 ### Bug Fixes
