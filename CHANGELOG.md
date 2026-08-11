@@ -1,3 +1,9 @@
+## [1.96.2](https://github.com/stevendejongnl/guidr/compare/v1.96.1...v1.96.2) (2026-08-11)
+
+### Bug Fixes
+
+* **deps:** pin typescript back to 5.8.3, incompatible with unplugin-typia peer range ([1254644](https://github.com/stevendejongnl/guidr/commit/1254644f947de50fbd2883dbd33e409dbfa234a3))
+
 ## [1.96.1](https://github.com/stevendejongnl/guidr/compare/v1.96.0...v1.96.1) (2026-08-11)
 
 ### Bug Fixes
