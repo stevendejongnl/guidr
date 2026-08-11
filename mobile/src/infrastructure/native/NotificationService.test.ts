@@ -144,4 +144,32 @@ describe('NotificationService', () => {
       ).resolves.toBeUndefined()
     })
   })
+
+  describe('showUpdateAvailableNotification', () => {
+    it('should call native module on Android', async () => {
+      const mock = NativeModules['NotificationModule'].showUpdateNotification as jest.Mock
+      mock.mockResolvedValue(undefined)
+
+      await service.showUpdateAvailableNotification('1.15.0', false)
+
+      expect(mock).toHaveBeenCalledWith('1.15.0', false)
+    })
+
+    it('should not call native module on non-Android platforms', async () => {
+      Platform.OS = 'web'
+
+      await service.showUpdateAvailableNotification('1.15.0', false)
+
+      expect(NativeModules['NotificationModule'].showUpdateNotification).not.toHaveBeenCalled()
+    })
+
+    it('should silently catch errors on Android', async () => {
+      const mock = NativeModules['NotificationModule'].showUpdateNotification as jest.Mock
+      mock.mockRejectedValue(new Error('Failed'))
+
+      await expect(
+        service.showUpdateAvailableNotification('1.15.0', false),
+      ).resolves.toBeUndefined()
+    })
+  })
 })

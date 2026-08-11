@@ -1,5 +1,6 @@
 package com.guidr
 
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -12,6 +13,7 @@ class WidgetModule(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun updateWidget(
+        guideId: String,
         stepId: String,
         guideTitle: String,
         stepTitle: String,
@@ -24,6 +26,7 @@ class WidgetModule(reactContext: ReactApplicationContext) :
         try {
             GuidrTimerWidgetProvider.saveState(
                 reactApplicationContext,
+                guideId,
                 stepId,
                 guideTitle,
                 stepTitle,
@@ -45,6 +48,32 @@ class WidgetModule(reactContext: ReactApplicationContext) :
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("WIDGET_CLEAR_ERROR", "Failed to clear widget: ${e.message}", e)
+        }
+    }
+
+    // Reads the guide/step the widget was tapped for (set as launch Intent extras by
+    // GuidrTimerWidgetProvider's PendingIntent) and clears it so it's only consumed once —
+    // otherwise re-foregrounding the app later would keep re-navigating to a stale target.
+    @ReactMethod
+    fun getAndClearWidgetLaunchTarget(promise: Promise) {
+        try {
+            val activity = currentActivity
+            val intent = activity?.intent
+            val guideId = intent?.getStringExtra(GuidrTimerWidgetProvider.EXTRA_GUIDE_ID)
+            val stepId = intent?.getStringExtra(GuidrTimerWidgetProvider.EXTRA_STEP_ID)
+
+            if (guideId != null && stepId != null) {
+                intent.removeExtra(GuidrTimerWidgetProvider.EXTRA_GUIDE_ID)
+                intent.removeExtra(GuidrTimerWidgetProvider.EXTRA_STEP_ID)
+                val result = Arguments.createMap()
+                result.putString("guideId", guideId)
+                result.putString("stepId", stepId)
+                promise.resolve(result)
+            } else {
+                promise.resolve(null)
+            }
+        } catch (e: Exception) {
+            promise.reject("WIDGET_LAUNCH_TARGET_ERROR", "Failed to read widget launch target: ${e.message}", e)
         }
     }
 }

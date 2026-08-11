@@ -28,6 +28,8 @@ class NotificationModule(reactContext: ReactApplicationContext) :
         // the old one is deleted below so it doesn't linger as a dead duplicate.
         private const val CHANNEL_CRITICAL_LEGACY = "guidr_timer_critical"
         private const val CHANNEL_CRITICAL = "guidr_timer_critical_v2"
+        private const val CHANNEL_UPDATES = "guidr_updates"
+        private const val UPDATE_NOTIFICATION_ID = 2000
         private var notificationId = 1000
     }
 
@@ -75,6 +77,15 @@ class NotificationModule(reactContext: ReactApplicationContext) :
                 enableVibration(true)
             }
             manager.createNotificationChannel(criticalChannel)
+
+            val updatesChannel = NotificationChannel(
+                CHANNEL_UPDATES,
+                "App Updates",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Notifications when a new version of Guidr is available"
+            }
+            manager.createNotificationChannel(updatesChannel)
         }
     }
 
@@ -115,6 +126,50 @@ class NotificationModule(reactContext: ReactApplicationContext) :
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("NOTIFICATION_ERROR", "Failed to show notification: ${e.message}", e)
+        }
+    }
+
+    @ReactMethod
+    fun showUpdateNotification(
+        latestVersion: String,
+        isMandatory: Boolean,
+        promise: Promise
+    ) {
+        try {
+            val context = reactApplicationContext
+
+            val launchIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            val contentIntent = PendingIntent.getActivity(
+                context,
+                0,
+                launchIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val title = if (isMandatory) "Update Required" else "Update Available"
+            val text = "Guidr $latestVersion is ready to install"
+
+            val notification = NotificationCompat.Builder(context, CHANNEL_UPDATES)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setAutoCancel(true)
+                .setContentIntent(contentIntent)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .build()
+
+            val manager = context.getSystemService(
+                Context.NOTIFICATION_SERVICE
+            ) as NotificationManager
+            // Fixed ID: a repeat notification (e.g. from a later re-check) replaces the
+            // existing one instead of stacking duplicates for the same pending update.
+            manager.notify(UPDATE_NOTIFICATION_ID, notification)
+
+            promise.resolve(null)
+        } catch (e: Exception) {
+            promise.reject("UPDATE_NOTIFICATION_ERROR", "Failed to show update notification: ${e.message}", e)
         }
     }
 

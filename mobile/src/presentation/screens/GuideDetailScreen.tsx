@@ -48,6 +48,7 @@ interface GuideDetailScreenProps {
   onBack: () => void
   onEdit?: (guideId: string) => void
   isAdmin?: boolean
+  focusStepId?: string
   stepService?: StepService
   guideService?: GuideService
   stepTimerClient?: StepTimerClient
@@ -64,6 +65,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   onBack,
   onEdit,
   isAdmin = false,
+  focusStepId,
   stepService: injectedStepService,
   guideService: injectedGuideService,
   stepTimerClient: injectedStepTimerClient,
@@ -105,6 +107,26 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const completedAtRef = useRef<Record<string, number>>({})
   const resetTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
+  // Scroll to the step named by focusStepId (set when opened via the home-screen
+  // widget) once its layout is measured, once per mount. measureLayout (triggered
+  // from onLayout, once real layout is known) gives the position relative to the
+  // ScrollView's content regardless of how many plain Views sit in between, unlike
+  // onLayout's own y which is only relative to the immediate parent.
+  const scrollViewRef = useRef<ScrollView>(null)
+  const stepNodesRef = useRef<Record<string, View | null>>({})
+  const hasScrolledToFocusRef = useRef(false)
+  const handleStepLayout = useCallback((stepId: string) => {
+    if (focusStepId !== stepId || hasScrolledToFocusRef.current) return
+    const node = stepNodesRef.current[stepId]
+    if (!node || !scrollViewRef.current) return
+    hasScrolledToFocusRef.current = true
+    node.measureLayout(
+      scrollViewRef.current as unknown as React.ElementRef<typeof View>,
+      (_x, y) => scrollViewRef.current?.scrollTo({ y, animated: true }),
+      () => {},
+    )
+  }, [focusStepId])
+
   const resetCompletedTimer = useCallback((stepId: string) => {
     stepTimers.resetTimer(stepId)
     notificationService.cancelTimerNotification(stepId)
@@ -113,9 +135,24 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     delete resetTimeoutsRef.current[stepId]
   }, [stepTimers, notificationService, widgetService])
 
+  // True until stepTimers.timers has been populated with real data for the first time.
+  // Used below to avoid re-firing the completion notification for a timer that was
+  // *already* complete when the screen mounted (e.g. it finished while the app was
+  // backgrounded — the alarm-based notification already fired for that, opening the
+  // app shouldn't repeat it). Deliberately keyed on timers actually having entries
+  // rather than stepTimers.loading, since that flag can flip to false before an auth
+  // token is even available (see useStepTimers), well before real data arrives.
+  const hasLoadedInitialTimersRef = useRef(false)
+
   // Detect timer completion: fire Android notification, update widget
   useEffect(() => {
     const prevCompleted = prevCompletedRef.current
+    const hasTimerData = Object.keys(stepTimers.timers).length > 0
+    const isInitialLoad = hasTimerData && !hasLoadedInitialTimersRef.current
+    if (hasTimerData) {
+      hasLoadedInitialTimersRef.current = true
+    }
+
     for (const [stepId, display] of Object.entries(stepTimers.timers)) {
       if (display.isComplete && !prevCompleted.has(stepId)) {
         // Track completion time and schedule auto-reset
@@ -124,11 +161,11 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
           () => resetCompletedTimer(stepId),
           TIMER_RESET_DELAY_MS,
         )
-        // Fire Android notification on completion
         const step = steps.find(s => s.id === stepId)
         if (step && guide) {
           if (step.duration > 0) {
             widgetService.updateWidget({
+              guideId,
               stepId,
               guideTitle: guide.title,
               stepTitle: step.title,
@@ -138,17 +175,21 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
               isComplete: true,
             })
           }
-          notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
-            if (!enabled) return
-            notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
-              notificationService.showImmediateNotification(
-                stepId,
-                step.title,
-                guide.title,
-                critical,
-              )
+          // Fire Android notification on completion — but not for a timer that was
+          // already complete on this screen's very first load (see isInitialLoad above).
+          if (!isInitialLoad) {
+            notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
+              if (!enabled) return
+              notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
+                notificationService.showImmediateNotification(
+                  stepId,
+                  step.title,
+                  guide.title,
+                  critical,
+                )
+              })
             })
-          })
+          }
         }
       }
       // Clear tracking when timer is manually reset
@@ -346,7 +387,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
 
   return (
     <SafeScreen {...(testID && { testID })}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <ScreenHeader
           onBack={onBack}
@@ -479,72 +520,79 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                       const mode = step.duration > 0 ? 'countdown' : 'stopwatch'
                       const initialSeconds = step.duration > 0 ? step.duration : 0
                       return (
-                        <StepListItem
+                        <View
                           key={step.id}
-                          step={step}
-                          stepNumber={index + 1}
-                          isFirst={index === 0}
-                          isLast={index === steps.length - 1}
-                          onMoveUp={() => {}}
-                          onMoveDown={() => {}}
-                          onEdit={() => {}}
-                          onDelete={() => {}}
-                          canEdit={false}
-                          timer={{
-                            displaySeconds: timerDisplay?.displaySeconds ?? initialSeconds,
-                            isRunning: timerDisplay?.isRunning ?? false,
-                            isPaused: timerDisplay?.isPaused ?? false,
-                            isComplete: timerDisplay?.isComplete ?? false,
-                            mode,
-                            onStart: async () => {
-                              notificationService.requestPermission()
-                              const remaining = timerDisplay?.isPaused
-                                ? timerDisplay.displaySeconds
-                                : initialSeconds
-                              await stepTimers.startTimer(step.id, step.duration)
-                              if (step.duration > 0) {
-                                widgetService.updateWidget({
-                                  stepId: step.id,
-                                  guideTitle: guide.title,
-                                  stepTitle: step.title,
-                                  totalDurationSeconds: step.duration,
-                                  remainingSeconds: remaining,
-                                  isPaused: false,
-                                  isComplete: false,
-                                })
-                                notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
-                                  if (!enabled) return
-                                  notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
-                                    notificationService.scheduleTimerNotification(
-                                      step.id, step.title, guide.title, remaining, critical,
-                                    )
+                          ref={(node) => { stepNodesRef.current[step.id] = node }}
+                          onLayout={() => handleStepLayout(step.id)}
+                        >
+                          <StepListItem
+                            step={step}
+                            stepNumber={index + 1}
+                            isFirst={index === 0}
+                            isLast={index === steps.length - 1}
+                            onMoveUp={() => {}}
+                            onMoveDown={() => {}}
+                            onEdit={() => {}}
+                            onDelete={() => {}}
+                            canEdit={false}
+                            timer={{
+                              displaySeconds: timerDisplay?.displaySeconds ?? initialSeconds,
+                              isRunning: timerDisplay?.isRunning ?? false,
+                              isPaused: timerDisplay?.isPaused ?? false,
+                              isComplete: timerDisplay?.isComplete ?? false,
+                              mode,
+                              onStart: async () => {
+                                notificationService.requestPermission()
+                                const remaining = timerDisplay?.isPaused
+                                  ? timerDisplay.displaySeconds
+                                  : initialSeconds
+                                await stepTimers.startTimer(step.id, step.duration)
+                                if (step.duration > 0) {
+                                  widgetService.updateWidget({
+                                    guideId,
+                                    stepId: step.id,
+                                    guideTitle: guide.title,
+                                    stepTitle: step.title,
+                                    totalDurationSeconds: step.duration,
+                                    remainingSeconds: remaining,
+                                    isPaused: false,
+                                    isComplete: false,
                                   })
-                                })
-                              }
-                            },
-                            onPause: async () => {
-                              await stepTimers.pauseTimer(step.id)
-                              notificationService.cancelTimerNotification(step.id)
-                              if (step.duration > 0) {
-                                widgetService.updateWidget({
-                                  stepId: step.id,
-                                  guideTitle: guide.title,
-                                  stepTitle: step.title,
-                                  totalDurationSeconds: step.duration,
-                                  remainingSeconds: stepTimers.timers[step.id]?.displaySeconds ?? 0,
-                                  isPaused: true,
-                                  isComplete: false,
-                                })
-                              }
-                            },
-                            onReset: async () => {
-                              await stepTimers.resetTimer(step.id)
-                              notificationService.cancelTimerNotification(step.id)
-                              widgetService.clearWidget()
-                            },
-                          }}
-                          testID={`${testID}:step-${index}`}
-                        />
+                                  notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
+                                    if (!enabled) return
+                                    notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
+                                      notificationService.scheduleTimerNotification(
+                                        step.id, step.title, guide.title, remaining, critical,
+                                      )
+                                    })
+                                  })
+                                }
+                              },
+                              onPause: async () => {
+                                await stepTimers.pauseTimer(step.id)
+                                notificationService.cancelTimerNotification(step.id)
+                                if (step.duration > 0) {
+                                  widgetService.updateWidget({
+                                    guideId,
+                                    stepId: step.id,
+                                    guideTitle: guide.title,
+                                    stepTitle: step.title,
+                                    totalDurationSeconds: step.duration,
+                                    remainingSeconds: stepTimers.timers[step.id]?.displaySeconds ?? 0,
+                                    isPaused: true,
+                                    isComplete: false,
+                                  })
+                                }
+                              },
+                              onReset: async () => {
+                                await stepTimers.resetTimer(step.id)
+                                notificationService.cancelTimerNotification(step.id)
+                                widgetService.clearWidget()
+                              },
+                            }}
+                            testID={`${testID}:step-${index}`}
+                          />
+                        </View>
                       )
                     })}
                 </View>

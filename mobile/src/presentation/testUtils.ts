@@ -16,6 +16,7 @@ import { GitHubReleaseClient, GitHubRelease } from '../infrastructure/api/GitHub
 import { UpdateCheckStorage } from '../infrastructure/storage/UpdateCheckStorage'
 import { ServerConfigClient, ServerConfigResponse } from '../infrastructure/api/ServerConfigClient'
 import { TokenRefreshService } from '../infrastructure/api/TokenRefreshService'
+import { WidgetService, WidgetLaunchTarget } from '../infrastructure/native/WidgetService'
 
 /**
  * Create a mock AuthStorage instance for testing
@@ -261,6 +262,7 @@ export const createMockNotificationService = (
   cancelTimerNotification: jest.fn().mockResolvedValue(undefined),
   cancelAllTimerNotifications: jest.fn().mockResolvedValue(undefined),
   showImmediateNotification: jest.fn().mockResolvedValue(undefined),
+  showUpdateAvailableNotification: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 } as unknown as jest.Mocked<NotificationService>)
 
@@ -304,6 +306,8 @@ export const createMockUpdateCheckStorage = (
   setLastCheckTimestamp: jest.fn().mockResolvedValue(undefined),
   shouldCheckForUpdates: jest.fn().mockResolvedValue(true),
   clearLastCheck: jest.fn().mockResolvedValue(undefined),
+  getLastNotifiedVersion: jest.fn().mockResolvedValue(null),
+  setLastNotifiedVersion: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 } as unknown as jest.Mocked<UpdateCheckStorage>)
 
@@ -330,6 +334,19 @@ export const createMockTokenRefreshService = (
   refreshAndRetry: jest.fn().mockResolvedValue('new-token'),
   ...overrides,
 } as unknown as jest.Mocked<TokenRefreshService>)
+
+/**
+ * Create a mock WidgetService instance for testing
+ * @param overrides Optional method overrides
+ */
+export const createMockWidgetService = (
+  overrides: Partial<jest.Mocked<WidgetService>> = {},
+): jest.Mocked<WidgetService> => ({
+  updateWidget: jest.fn().mockResolvedValue(undefined),
+  clearWidget: jest.fn().mockResolvedValue(undefined),
+  getAndClearLaunchTarget: jest.fn().mockResolvedValue(null as WidgetLaunchTarget | null),
+  ...overrides,
+} as unknown as jest.Mocked<WidgetService>)
 
 /**
  * Create a bundle of the domain services AppNavigator wires into child

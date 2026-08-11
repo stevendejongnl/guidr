@@ -8,6 +8,7 @@
     android:targetCellHeight="2"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_timer_medium"
+    android:previewLayout="@layout/widget_timer_medium"
     android:previewImage="@mipmap/ic_launcher"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"

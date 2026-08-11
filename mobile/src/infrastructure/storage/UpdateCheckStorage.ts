@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export class UpdateCheckStorage {
   private static readonly LAST_CHECK_KEY = 'Guidr_LastUpdateCheck'
+  private static readonly LAST_NOTIFIED_VERSION_KEY = 'Guidr_LastNotifiedUpdateVersion'
   private static readonly CACHE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
 
   async getLastCheckTimestamp(): Promise<Date | null> {
@@ -53,6 +54,27 @@ export class UpdateCheckStorage {
     } catch (error) {
       console.error('Failed to clear last update check:', error)
       throw new Error('Failed to clear update check data')
+    }
+  }
+
+  // Tracks which version we've already fired a system notification for, so a
+  // periodic re-check (app stayed open, or came back to the foreground) doesn't
+  // notify again every time it re-confirms the same update is still available.
+  async getLastNotifiedVersion(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(UpdateCheckStorage.LAST_NOTIFIED_VERSION_KEY)
+    } catch (error) {
+      console.error('Failed to get last notified update version:', error)
+      return null
+    }
+  }
+
+  async setLastNotifiedVersion(version: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(UpdateCheckStorage.LAST_NOTIFIED_VERSION_KEY, version)
+    } catch (error) {
+      console.error('Failed to set last notified update version:', error)
+      throw new Error('Failed to save last notified update version')
     }
   }
 }

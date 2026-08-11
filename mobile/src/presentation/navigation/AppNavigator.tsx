@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, View, Platform } from 'react-native'
+import { ActivityIndicator, View, Platform, AppState } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
 import { NotificationService } from '../../infrastructure/native/NotificationService'
+import { WidgetService } from '../../infrastructure/native/WidgetService'
 import { AuthClient } from '../../infrastructure/api/AuthClient'
 import { ServerConfigClient } from '../../infrastructure/api/ServerConfigClient'
 import { ServerConfigCache } from '../../infrastructure/storage/ServerConfigCache'
@@ -61,6 +62,7 @@ interface AppNavigatorProps {
   healthCheckService?: HealthCheckService
   notificationPreferencesStorage?: NotificationPreferencesStorage
   notificationService?: NotificationService
+  widgetService?: WidgetService
   githubReleaseClient?: GitHubReleaseClient
   updateCheckStorage?: UpdateCheckStorage
   createAuthClient?: (serverUrl: string) => AuthClient
@@ -73,6 +75,11 @@ interface AppNavigatorProps {
     onLogout: () => Promise<void>,
   ) => TokenRefreshService
 }
+
+// How often to re-check for an app update while the app stays open in the foreground.
+// checkForUpdates() itself caches its result for 24h, so this just controls how soon
+// after that cache expires the app notices — not how often the network gets hit.
+const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000 // 30 minutes
 
 const defaultCreateAuthClient = (serverUrl: string) => new AuthClient(serverUrl)
 const defaultCreateServerConfigClient = (serverUrl: string) => new ServerConfigClient(serverUrl)
@@ -102,6 +109,7 @@ export const AppNavigator: React.FC<AppNavigatorProps> = ({
   healthCheckService = new HealthCheckService(),
   notificationPreferencesStorage = new NotificationPreferencesStorage(),
   notificationService = new NotificationService(),
+  widgetService = new WidgetService(),
   githubReleaseClient = new GitHubReleaseClient(),
   updateCheckStorage = new UpdateCheckStorage(),
   createAuthClient = defaultCreateAuthClient,
@@ -138,6 +146,7 @@ export const AppNavigator: React.FC<AppNavigatorProps> = ({
   const [showBrowseGuides, setShowBrowseGuides] = useState(false)
   const [showGuideDetail, setShowGuideDetail] = useState(false)
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null)
+  const [focusStepId, setFocusStepId] = useState<string | null>(null)
   const [showStepForm, setShowStepForm] = useState(false)
   const [stepFormMode, setStepFormMode] = useState<'create' | 'edit' | null>(null)
   const [editingStepId, setEditingStepId] = useState<string | null>(null)
@@ -188,6 +197,90 @@ export const AppNavigator: React.FC<AppNavigatorProps> = ({
       console.error('Failed to request notification permission:', error)
     }
   }
+
+  // Jump straight to the step that was running when the user tapped the home-screen
+  // widget. Checked on cold start (below) and whenever the app returns to the
+  // foreground (singleTask + onNewIntent means a widget tap while already running
+  // doesn't trigger a fresh mount, so AppState is the only signal we get for that case).
+  //
+  // urlOverride: on cold start this runs inside the same checkConfiguration() call that
+  // just resolved the server URL — the serverUrl *state* is still stale (this effect's
+  // closure was created at mount, before checkConfiguration set it), so the caller passes
+  // the freshly-resolved value directly rather than relying on the state variable. The
+  // AppState-triggered call omits it since serverUrl is long since settled by then.
+  const checkWidgetLaunchTarget = async (urlOverride?: string) => {
+    if (Platform.OS !== 'android') return
+    const target = await widgetService.getAndClearLaunchTarget()
+    if (target) {
+      const url = urlOverride || serverUrl
+      if (url) ensureServicesInitialized(url)
+      setSelectedGuideId(target.guideId)
+      setFocusStepId(target.stepId)
+      setShowGuideDetail(true)
+    }
+  }
+
+  // Re-checks for an app update and, when one exists and we haven't already fired a
+  // notification for that exact version, shows one. Called on cold start, whenever the
+  // app returns to the foreground, and periodically while it stays open — otherwise a
+  // long-running session would only ever reflect whatever was known at launch, and a
+  // user who never force-closes the app would never find out an update exists.
+  // checkForUpdates() itself respects UpdateCheckCache's 24h window, so calling this
+  // often is cheap — most calls just re-read the cache rather than hitting the network.
+  const checkForAppUpdate = async () => {
+    if (Platform.OS !== 'android') return
+    const currentConfig = ServerConfigCache.getConfig()
+    if (!currentConfig) return
+    try {
+      const updateService = new UpdateService(
+        githubReleaseClient,
+        updateCheckStorage,
+        { minAppVersion: currentConfig.minAppVersion ?? null }
+      )
+      const updateResult = await updateService.checkForUpdates(appVersion, false)
+      setUpdateCheckResult(updateResult)
+
+      if (updateResult.updateAvailable) {
+        const lastNotifiedVersion = await updateCheckStorage.getLastNotifiedVersion()
+        if (lastNotifiedVersion !== updateResult.latestVersion) {
+          await notificationService.showUpdateAvailableNotification(
+            updateResult.latestVersion,
+            updateResult.isMandatory,
+          )
+          await updateCheckStorage.setLastNotifiedVersion(updateResult.latestVersion)
+        }
+      }
+    } catch (error) {
+      ErrorReporter.capture(error, {
+        component: 'AppNavigator',
+        action: 'checkForUpdates',
+      })
+      console.error('Update check failed:', error)
+      // Don't block the app if update check fails
+    }
+  }
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        checkWidgetLaunchTarget()
+        checkForAppUpdate()
+      }
+    })
+    return () => subscription.remove()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Covers the session that never backgrounds: without this, a user who opens Guidr
+  // and leaves it running in the foreground for hours would only ever see whatever
+  // update state was known at launch.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return
+    const interval = setInterval(checkForAppUpdate, UPDATE_CHECK_INTERVAL_MS)
+    return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const checkConfiguration = async () => {
@@ -254,33 +347,10 @@ export const AppNavigator: React.FC<AppNavigatorProps> = ({
           setIsAdmin(adminStatus)
           Logger.debug('AppNavigator', 'Auth state loaded', { hasToken, isAdmin: adminStatus })
           await requestNotificationPermissionIfEnabled()
+          await checkWidgetLaunchTarget(url ?? undefined)
         }
 
-        // Check for updates on Android
-        if (Platform.OS === 'android') {
-          const currentConfig = ServerConfigCache.getConfig()
-          if (currentConfig) {
-            try {
-              const updateService = new UpdateService(
-                githubReleaseClient,
-                updateCheckStorage,
-                { minAppVersion: currentConfig.minAppVersion ?? null }
-              )
-              const updateResult = await updateService.checkForUpdates(
-                appVersion,
-                false
-              )
-              setUpdateCheckResult(updateResult)
-            } catch (error) {
-              ErrorReporter.capture(error, {
-                component: 'AppNavigator',
-                action: 'checkForUpdates',
-              })
-              console.error('Update check failed:', error)
-              // Don't block the app if update check fails
-            }
-          }
-        }
+        await checkForAppUpdate()
       } catch (error) {
         ErrorReporter.capture(error, {
           component: 'AppNavigator',
@@ -296,18 +366,20 @@ export const AppNavigator: React.FC<AppNavigatorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const ensureServicesInitialized = (url: string) => {
+    if (servicesRef.current) return
+    servicesRef.current = createServices(url)
+    tokenRefreshServiceRef.current = createTokenRefreshService(
+      createAuthClient(url),
+      authStorage,
+      serverStorage,
+      handleLogout,
+    )
+  }
+
   // Initialize services if we have server URL
   useEffect(() => {
-    if (serverUrl && !servicesRef.current) {
-      servicesRef.current = createServices(serverUrl)
-
-      tokenRefreshServiceRef.current = createTokenRefreshService(
-        createAuthClient(serverUrl),
-        authStorage,
-        serverStorage,
-        handleLogout,
-      )
-    }
+    if (serverUrl) ensureServicesInitialized(serverUrl)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverUrl])
 
@@ -797,9 +869,11 @@ export const AppNavigator: React.FC<AppNavigatorProps> = ({
         onBack={() => {
           setShowGuideDetail(false)
           setSelectedGuideId(null)
+          setFocusStepId(null)
         }}
         onEdit={handleGuideDetailEdit}
         isAdmin={adminModeActive}
+        {...(focusStepId && { focusStepId })}
         {...(servicesRef.current && {
           guideService: servicesRef.current.guide,
           stepService: servicesRef.current.step,

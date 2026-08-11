@@ -5,6 +5,7 @@ describe('WidgetService', () => {
   let service: WidgetService
 
   const data: WidgetTimerData = {
+    guideId: 'guide-1',
     stepId: 'step-1',
     guideTitle: 'Pasta',
     stepTitle: 'Boil water',
@@ -28,6 +29,7 @@ describe('WidgetService', () => {
       await service.updateWidget(data)
 
       expect(mock).toHaveBeenCalledWith(
+        'guide-1',
         'step-1',
         'Pasta',
         'Boil water',
@@ -77,6 +79,39 @@ describe('WidgetService', () => {
       mock.mockRejectedValue(new Error('Failed'))
 
       await expect(service.clearWidget()).resolves.toBeUndefined()
+    })
+  })
+
+  describe('getAndClearLaunchTarget', () => {
+    it('should return the launch target from the native module on Android', async () => {
+      const mock = NativeModules['WidgetModule'].getAndClearWidgetLaunchTarget as jest.Mock
+      mock.mockResolvedValue({ guideId: 'guide-1', stepId: 'step-1' })
+
+      await expect(service.getAndClearLaunchTarget()).resolves.toEqual({
+        guideId: 'guide-1',
+        stepId: 'step-1',
+      })
+    })
+
+    it('should return null when there is no pending launch target', async () => {
+      const mock = NativeModules['WidgetModule'].getAndClearWidgetLaunchTarget as jest.Mock
+      mock.mockResolvedValue(null)
+
+      await expect(service.getAndClearLaunchTarget()).resolves.toBeNull()
+    })
+
+    it('should return null on non-Android platforms', async () => {
+      Platform.OS = 'web'
+
+      await expect(service.getAndClearLaunchTarget()).resolves.toBeNull()
+      expect(NativeModules['WidgetModule'].getAndClearWidgetLaunchTarget).not.toHaveBeenCalled()
+    })
+
+    it('should silently catch errors and return null', async () => {
+      const mock = NativeModules['WidgetModule'].getAndClearWidgetLaunchTarget as jest.Mock
+      mock.mockRejectedValue(new Error('Failed'))
+
+      await expect(service.getAndClearLaunchTarget()).resolves.toBeNull()
     })
   })
 })
