@@ -1,3 +1,14 @@
+## [1.97.2](https://github.com/stevendejongnl/guidr/compare/v1.97.1...v1.97.2) (2026-08-11)
+
+### Bug Fixes
+
+* **mobile:** keyboard covers unreachable form content on 4 screens ([60f030a](https://github.com/stevendejongnl/guidr/commit/60f030aa273fde9b66c005ca0ae04f9df714f403))
+* **mobile:** widget counts into negative past zero, duplicate timer notifications ([2bb7874](https://github.com/stevendejongnl/guidr/commit/2bb7874e1b46b6e72b6520cf144b69d7b7837cd6))
+
+### Code Refactoring
+
+* **mobile:** move keyboard-avoiding into SafeScreen base layout ([e90f100](https://github.com/stevendejongnl/guidr/commit/e90f1008b7a1483c4d59bbe604d331ef9d20776b))
+
 ## [1.97.1](https://github.com/stevendejongnl/guidr/compare/v1.97.0...v1.97.1) (2026-08-11)
 
 ### Bug Fixes
