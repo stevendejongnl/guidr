@@ -34,5 +34,11 @@ class TimerNotificationReceiver : BroadcastReceiver() {
             Context.NOTIFICATION_SERVICE
         ) as NotificationManager
         manager.notify(notificationId, notification)
+
+        // The critical channel no longer carries its own sound (see NotificationModule) —
+        // play it ourselves so it survives ringer=Vibrate.
+        if (critical) {
+            CriticalSoundPlayer.play(context)
+        }
     }
 }

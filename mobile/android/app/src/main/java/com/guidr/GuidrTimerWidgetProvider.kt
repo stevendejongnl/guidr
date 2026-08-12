@@ -7,7 +7,6 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Build
 import android.os.SystemClock
 import android.util.SizeF
@@ -17,49 +16,97 @@ import android.widget.RemoteViews
 class GuidrTimerWidgetProvider : AppWidgetProvider() {
 
     companion object {
-        private const val PREFS_NAME = "guidr_widget_prefs"
-        private const val KEY_GUIDE_ID = "guide_id"
-        private const val KEY_STEP_ID = "step_id"
-        private const val KEY_GUIDE_TITLE = "guide_title"
-        private const val KEY_STEP_TITLE = "step_title"
-        private const val KEY_TOTAL_DURATION_SECONDS = "total_duration_seconds"
-        private const val KEY_REMAINING_SECONDS = "remaining_seconds"
-        private const val KEY_IS_PAUSED = "is_paused"
-        private const val KEY_IS_COMPLETE = "is_complete"
-        private const val KEY_UPDATED_AT = "updated_at"
-
         // Extra keys on the launch Intent MainActivity reads to deep-link into the
-        // active timer's step. Distinct from the KEY_* SharedPreferences keys above.
+        // active timer's step, and on the per-timer completion-check alarm below.
         const val EXTRA_GUIDE_ID = "guide_id"
         const val EXTRA_STEP_ID = "step_id"
-
-        // Safety net only: if a "running" timer's state hasn't been refreshed in this long,
-        // assume the app was killed rather than trust a countdown that may have run past zero.
-        private const val STALE_THRESHOLD_MS = 6 * 60 * 60 * 1000L
 
         // Fired by AlarmManager at the moment a running timer is due to complete, so the
         // widget flips itself to "Complete" even if the app's JS thread isn't running to
         // notice (backgrounded/killed) — Chronometer has no built-in stop-at-zero, it just
-        // keeps ticking into negative time forever unless something tells it to stop.
+        // keeps ticking into negative time forever unless something tells it to stop. One
+        // alarm per timer (keyed by stepId), since each may complete at a different time.
         private const val ACTION_TIMER_COMPLETE_CHECK = "com.guidr.ACTION_TIMER_COMPLETE_CHECK"
-        private const val COMPLETE_CHECK_REQUEST_CODE = 9001
 
-        private fun prefs(context: Context): SharedPreferences =
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        // The Chronometer text ticks on its own (system-rendered), but the progress bar(s)
+        // are plain RemoteViews values set once at update time — nothing repaints them as
+        // time passes. Self-reschedule a lightweight shared alarm while any timer is running
+        // so the bar(s) keep moving.
+        private const val ACTION_WIDGET_TICK = "com.guidr.ACTION_WIDGET_TICK"
+        private const val TICK_REQUEST_CODE = 9002
+        private const val TICK_INTERVAL_MS = 15_000L
 
-        private fun completeCheckPendingIntent(context: Context): PendingIntent {
+        private fun completeCheckPendingIntent(context: Context, stepId: String): PendingIntent {
             val intent = Intent(context, GuidrTimerWidgetProvider::class.java).apply {
                 action = ACTION_TIMER_COMPLETE_CHECK
+                putExtra(EXTRA_STEP_ID, stepId)
             }
             return PendingIntent.getBroadcast(
                 context,
-                COMPLETE_CHECK_REQUEST_CODE,
+                stepId.hashCode(),
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
         }
 
-        fun saveState(
+        private fun scheduleCompleteCheck(context: Context, stepId: String, remainingSeconds: Int) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            try {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis() + remainingSeconds * 1000L,
+                    completeCheckPendingIntent(context, stepId),
+                )
+            } catch (e: SecurityException) {
+                // Missing SCHEDULE_EXACT_ALARM on some OEM configurations — the widget
+                // just won't self-correct until the app itself updates it again.
+            }
+        }
+
+        private fun cancelCompleteCheck(context: Context, stepId: String) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(completeCheckPendingIntent(context, stepId))
+        }
+
+        private fun tickPendingIntent(context: Context): PendingIntent {
+            val intent = Intent(context, GuidrTimerWidgetProvider::class.java).apply {
+                action = ACTION_WIDGET_TICK
+            }
+            return PendingIntent.getBroadcast(
+                context,
+                TICK_REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
+
+        private fun scheduleNextTick(context: Context) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            try {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + TICK_INTERVAL_MS,
+                    tickPendingIntent(context),
+                )
+            } catch (e: SecurityException) {
+                // Missing SCHEDULE_EXACT_ALARM — the progress bar(s) just won't animate.
+            }
+        }
+
+        private fun cancelTick(context: Context) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(tickPendingIntent(context))
+        }
+
+        private fun syncTickAlarm(context: Context, timers: List<WidgetTimerRecord>) {
+            val hasRunning = timers.any { !it.isPaused && !it.isComplete }
+            if (hasRunning) scheduleNextTick(context) else cancelTick(context)
+        }
+
+        // Adds/replaces the record for this stepId — each guide screen reports only the one
+        // step it knows about, so timers started from different guides accumulate here
+        // instead of clobbering each other the way a single flat record used to.
+        fun upsertTimer(
             context: Context,
             guideId: String,
             stepId: String,
@@ -70,41 +117,34 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             isPaused: Boolean,
             isComplete: Boolean,
         ) {
-            prefs(context).edit()
-                .putString(KEY_GUIDE_ID, guideId)
-                .putString(KEY_STEP_ID, stepId)
-                .putString(KEY_GUIDE_TITLE, guideTitle)
-                .putString(KEY_STEP_TITLE, stepTitle)
-                .putInt(KEY_TOTAL_DURATION_SECONDS, totalDurationSeconds)
-                .putInt(KEY_REMAINING_SECONDS, remainingSeconds)
-                .putBoolean(KEY_IS_PAUSED, isPaused)
-                .putBoolean(KEY_IS_COMPLETE, isComplete)
-                .putLong(KEY_UPDATED_AT, System.currentTimeMillis())
-                .apply()
+            val record = WidgetTimerRecord(
+                guideId = guideId,
+                stepId = stepId,
+                guideTitle = guideTitle,
+                stepTitle = stepTitle,
+                totalDurationSeconds = totalDurationSeconds,
+                remainingSeconds = remainingSeconds,
+                isPaused = isPaused,
+                isComplete = isComplete,
+                updatedAt = System.currentTimeMillis(),
+            )
+            val timers = loadWidgetTimers(context).filterNot { it.stepId == stepId } + record
+            saveWidgetTimers(context, timers)
 
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!isPaused && !isComplete && remainingSeconds > 0) {
-                try {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        System.currentTimeMillis() + remainingSeconds * 1000L,
-                        completeCheckPendingIntent(context),
-                    )
-                } catch (e: SecurityException) {
-                    // Missing SCHEDULE_EXACT_ALARM on some OEM configurations — the widget
-                    // just won't self-correct until the app itself updates it again.
-                }
+                scheduleCompleteCheck(context, stepId, remainingSeconds)
             } else {
-                alarmManager.cancel(completeCheckPendingIntent(context))
+                cancelCompleteCheck(context, stepId)
             }
-
+            syncTickAlarm(context, timers)
             refreshAllWidgets(context)
         }
 
-        fun clearState(context: Context) {
-            prefs(context).edit().clear().apply()
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.cancel(completeCheckPendingIntent(context))
+        fun removeTimer(context: Context, stepId: String) {
+            val timers = loadWidgetTimers(context).filterNot { it.stepId == stepId }
+            saveWidgetTimers(context, timers)
+            cancelCompleteCheck(context, stepId)
+            syncTickAlarm(context, timers)
             refreshAllWidgets(context)
         }
 
@@ -113,9 +153,22 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             val ids = manager.getAppWidgetIds(
                 ComponentName(context, GuidrTimerWidgetProvider::class.java)
             )
+            if (ids.isEmpty()) return
             for (id in ids) {
                 manager.updateAppWidget(id, buildRemoteViews(context))
             }
+            manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_timer_list)
+        }
+
+        // Among running timers, the one closest to completion; falls back to any paused
+        // timer, then the most recently completed one, so there's always something sensible
+        // to show as long as at least one timer is tracked.
+        private fun selectPrimary(timers: List<WidgetTimerRecord>): WidgetTimerRecord? {
+            timers.filter { !it.isPaused && !it.isComplete }
+                .minByOrNull { it.projectedRemainingSeconds }
+                ?.let { return it }
+            timers.filter { it.isPaused }.minByOrNull { it.projectedRemainingSeconds }?.let { return it }
+            return timers.maxByOrNull { it.updatedAt }
         }
 
         private fun buildRemoteViews(context: Context): RemoteViews {
@@ -125,10 +178,18 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             // Size-aware RemoteViews (API 31+) let the system pick the best-fitting layout as
             // the user resizes the widget. On older API levels, always use the medium layout.
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val large = try {
+                    buildListViews(context)
+                } catch (e: Exception) {
+                    // If the list view fails to build for any reason, fall back to medium
+                    // rather than losing the whole widget.
+                    medium
+                }
                 RemoteViews(
                     mapOf(
                         SizeF(110f, 40f) to small,
                         SizeF(250f, 100f) to medium,
+                        SizeF(250f, 180f) to large,
                     )
                 )
             } else {
@@ -138,39 +199,37 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
 
         private fun buildViews(context: Context, layoutRes: Int, isSmall: Boolean): RemoteViews {
             val views = RemoteViews(context.packageName, layoutRes)
-            val p = prefs(context)
+            val timers = loadWidgetTimers(context).filterNot { it.isStale }
+            val primary = selectPrimary(timers)
+            val otherCount = (timers.size - 1).coerceAtLeast(0)
 
-            val guideId = p.getString(KEY_GUIDE_ID, null)
-            val stepId = p.getString(KEY_STEP_ID, null)
-            val isComplete = p.getBoolean(KEY_IS_COMPLETE, false)
-            val isPaused = p.getBoolean(KEY_IS_PAUSED, false)
-            val remainingSeconds = p.getInt(KEY_REMAINING_SECONDS, 0)
-            val totalDurationSeconds = p.getInt(KEY_TOTAL_DURATION_SECONDS, 0)
-            val updatedAt = p.getLong(KEY_UPDATED_AT, 0L)
-            val guideTitle = p.getString(KEY_GUIDE_TITLE, "") ?: ""
-            val stepTitle = p.getString(KEY_STEP_TITLE, "") ?: ""
-
-            val isStale = !isPaused && !isComplete &&
-                (System.currentTimeMillis() - updatedAt) > STALE_THRESHOLD_MS
-
-            if (stepId == null || isStale) {
+            if (primary == null) {
                 views.setOnClickPendingIntent(R.id.widget_root, buildLaunchIntent(context, null, null))
                 renderIdle(context, views, isSmall)
                 return views
             }
 
-            views.setOnClickPendingIntent(R.id.widget_root, buildLaunchIntent(context, guideId, stepId))
-            views.setTextViewText(R.id.widget_step_title, stepTitle)
+            views.setOnClickPendingIntent(
+                R.id.widget_root,
+                buildLaunchIntent(context, primary.guideId, primary.stepId),
+            )
+            val countSuffix = if (otherCount > 0) "  •  +$otherCount" else ""
+            views.setTextViewText(
+                R.id.widget_step_title,
+                if (isSmall) primary.stepTitle + countSuffix else primary.stepTitle,
+            )
             views.setViewVisibility(R.id.widget_time, View.VISIBLE)
 
             if (!isSmall) {
-                views.setTextViewText(R.id.widget_guide_title, guideTitle)
+                views.setTextViewText(R.id.widget_guide_title, primary.guideTitle + countSuffix)
                 views.setViewVisibility(R.id.widget_guide_title, View.VISIBLE)
                 views.setViewVisibility(R.id.widget_idle_subtitle, View.GONE)
 
-                if (totalDurationSeconds > 0) {
+                if (primary.totalDurationSeconds > 0) {
+                    val remaining = primary.projectedRemainingSeconds
                     val progress = (
-                        (totalDurationSeconds - remainingSeconds).toFloat() / totalDurationSeconds * 1000
+                        (primary.totalDurationSeconds - remaining).toFloat() /
+                            primary.totalDurationSeconds * 1000
                     ).toInt().coerceIn(0, 1000)
                     views.setProgressBar(R.id.widget_progress, 1000, progress, false)
                     views.setViewVisibility(R.id.widget_progress, View.VISIBLE)
@@ -180,10 +239,44 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             }
 
             when {
-                isComplete -> renderComplete(context, views)
-                isPaused -> renderPaused(views, remainingSeconds)
-                else -> renderRunning(views, remainingSeconds)
+                primary.isComplete -> renderComplete(context, views)
+                primary.isPaused -> renderPaused(views, primary.projectedRemainingSeconds)
+                else -> renderRunning(views, primary.projectedRemainingSeconds)
             }
+
+            return views
+        }
+
+        // Shown when the widget is resized tall enough: every tracked timer, scrollable,
+        // backed by WidgetTimerListService/WidgetTimerListFactory reading the same storage.
+        private fun buildListViews(context: Context): RemoteViews {
+            val views = RemoteViews(context.packageName, R.layout.widget_timer_list)
+            val timers = loadWidgetTimers(context).filterNot { it.isStale }
+
+            val serviceIntent = Intent(context, WidgetTimerListService::class.java)
+            views.setRemoteAdapter(R.id.widget_timer_list, serviceIntent)
+            views.setEmptyView(R.id.widget_timer_list, R.id.widget_list_empty)
+            views.setTextViewText(
+                R.id.widget_list_empty,
+                context.getString(R.string.widget_idle_title),
+            )
+
+            val templateIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            val templatePendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                templateIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE,
+            )
+            views.setPendingIntentTemplate(R.id.widget_timer_list, templatePendingIntent)
+
+            val primary = selectPrimary(timers)
+            views.setOnClickPendingIntent(
+                R.id.widget_list_header,
+                buildLaunchIntent(context, primary?.guideId, primary?.stepId),
+            )
 
             return views
         }
@@ -208,7 +301,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
         private fun renderPaused(views: RemoteViews, remainingSeconds: Int) {
             views.setChronometerCountDown(R.id.widget_time, false)
             views.setChronometer(R.id.widget_time, 0L, null, false)
-            views.setTextViewText(R.id.widget_time, formatSeconds(remainingSeconds))
+            views.setTextViewText(R.id.widget_time, formatWidgetSeconds(remainingSeconds))
         }
 
         private fun renderComplete(context: Context, views: RemoteViews) {
@@ -235,13 +328,6 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
         }
-
-        private fun formatSeconds(totalSeconds: Int): String {
-            val safeSeconds = totalSeconds.coerceAtLeast(0)
-            val minutes = safeSeconds / 60
-            val seconds = safeSeconds % 60
-            return String.format("%d:%02d", minutes, seconds)
-        }
     }
 
     override fun onUpdate(
@@ -252,21 +338,36 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
         for (id in appWidgetIds) {
             appWidgetManager.updateAppWidget(id, buildRemoteViews(context))
         }
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_timer_list)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
 
-        if (intent.action == ACTION_TIMER_COMPLETE_CHECK) {
-            val p = prefs(context)
-            val isPaused = p.getBoolean(KEY_IS_PAUSED, false)
-            val isComplete = p.getBoolean(KEY_IS_COMPLETE, false)
-            // Only flip to complete if the timer that scheduled this alarm is still the
-            // one running — it may have been paused, reset, or replaced by a new timer
-            // (which reschedules this same alarm) in the time since it fired.
-            if (!isPaused && !isComplete) {
-                p.edit().putBoolean(KEY_IS_COMPLETE, true).apply()
+        when (intent.action) {
+            ACTION_TIMER_COMPLETE_CHECK -> {
+                val stepId = intent.getStringExtra(EXTRA_STEP_ID) ?: return
+                val timers = loadWidgetTimers(context)
+                val index = timers.indexOfFirst { it.stepId == stepId }
+                if (index == -1) return
+                val record = timers[index]
+                // Only flip to complete if this timer is still the one running — it may
+                // have been paused, reset, or restarted (which reschedules this same
+                // per-stepId alarm) in the time since it fired.
+                if (record.isPaused || record.isComplete) return
+                val updated = timers.toMutableList()
+                updated[index] = record.copy(
+                    isComplete = true,
+                    remainingSeconds = 0,
+                    updatedAt = System.currentTimeMillis(),
+                )
+                saveWidgetTimers(context, updated)
+                syncTickAlarm(context, updated)
                 refreshAllWidgets(context)
+            }
+            ACTION_WIDGET_TICK -> {
+                refreshAllWidgets(context)
+                syncTickAlarm(context, loadWidgetTimers(context))
             }
         }
     }

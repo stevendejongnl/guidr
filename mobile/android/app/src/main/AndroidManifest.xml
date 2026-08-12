@@ -44,10 +44,15 @@
         <intent-filter>
           <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
           <action android:name="com.guidr.ACTION_TIMER_COMPLETE_CHECK" />
+          <action android:name="com.guidr.ACTION_WIDGET_TICK" />
         </intent-filter>
         <meta-data
           android:name="android.appwidget.provider"
           android:resource="@xml/guidr_timer_widget_info" />
       </receiver>
+      <service
+        android:name=".WidgetTimerListService"
+        android:permission="android.permission.BIND_REMOTEVIEWS"
+        android:exported="false" />
     </application>
 </manifest>
