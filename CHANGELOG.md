@@ -1,3 +1,9 @@
+## [1.97.5](https://github.com/stevendejongnl/guidr/compare/v1.97.4...v1.97.5) (2026-08-12)
+
+### Bug Fixes
+
+* **android:** widget stops repainting if alarm scheduling throws ([359bc70](https://github.com/stevendejongnl/guidr/commit/359bc70ac712ce932f944caae5ceeca382258117))
+
 ## [1.97.4](https://github.com/stevendejongnl/guidr/compare/v1.97.3...v1.97.4) (2026-08-12)
 
 ### Bug Fixes
