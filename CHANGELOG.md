@@ -1,3 +1,9 @@
+## [1.98.2](https://github.com/stevendejongnl/guidr/compare/v1.98.1...v1.98.2) (2026-08-12)
+
+### Bug Fixes
+
+* **ci:** point Sentry release/source-map tooling at the real project ([e61530f](https://github.com/stevendejongnl/guidr/commit/e61530fd30f034334644fb0c2c2ba22665f3964e))
+
 ## [1.98.1](https://github.com/stevendejongnl/guidr/compare/v1.98.0...v1.98.1) (2026-08-12)
 
 ### Bug Fixes
