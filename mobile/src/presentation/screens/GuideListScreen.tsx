@@ -21,6 +21,8 @@ import { EmptyState } from '../components/EmptyState'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
 import { GuideFavoriteClient } from '../../infrastructure/api/GuideFavoriteClient'
 import { createGuideViewModel } from '../viewmodels/GuideViewModel'
+import { ContentLoader } from '../components/ContentLoader'
+import { SkeletonCard, SkeletonList } from '../components/Skeleton'
 import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
@@ -48,6 +50,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
 }) => {
   const [guides, setGuides] = useState<Guide[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterTab, setFilterTab] = useState<'mine' | 'public' | 'favorites'>('mine')
@@ -89,6 +92,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
   const loadGuides = useCallback(async (tab: 'mine' | 'public' | 'favorites') => {
     try {
       setError(null)
+      setLoading(true)
 
       const authToken = await authStorage.getAuthToken()
       if (!authToken) {
@@ -132,6 +136,7 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
       setError(err instanceof Error ? err.message : 'Failed to load guides')
     } finally {
       setRefreshing(false)
+      setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [injectedGuideService])
@@ -260,27 +265,36 @@ export const GuideListScreen: React.FC<GuideListScreenProps> = ({
           </TouchableOpacity>
         </View>
 
-        {filteredGuides.length === 0 ? (
-          <EmptyState
-            icon="📚"
-            message={searchQuery ? 'No guides match your search' : 'No guides yet'}
-            actionLabel={searchQuery ? 'Clear search' : 'Create Guide'}
-            onAction={searchQuery ? () => setSearchQuery('') : onCreateGuide}
-          />
-        ) : (
-          <View style={styles.listContainer}>
-            {filteredGuides.map(guideViewModel => (
-              <View key={guideViewModel.id} style={styles.cardWrapper}>
-                <GuideCard
-                  guide={guideViewModel}
-                  onPress={() => onViewGuide(guideViewModel.id)}
-                  {...(filterTab === 'favorites' && { isFavorited: true })}
-                  testID={`guide-card-${guideViewModel.id}`}
-                />
-              </View>
-            ))}
-          </View>
-        )}
+        <ContentLoader
+          isLoading={loading && !refreshing}
+          skeleton={(
+            <View style={styles.listContainer}>
+              <SkeletonList count={5} renderItem={index => <SkeletonCard key={index} />} />
+            </View>
+          )}
+        >
+          {filteredGuides.length === 0 ? (
+            <EmptyState
+              icon="📚"
+              message={searchQuery ? 'No guides match your search' : 'No guides yet'}
+              actionLabel={searchQuery ? 'Clear search' : 'Create Guide'}
+              onAction={searchQuery ? () => setSearchQuery('') : onCreateGuide}
+            />
+          ) : (
+            <View style={styles.listContainer}>
+              {filteredGuides.map(guideViewModel => (
+                <View key={guideViewModel.id} style={styles.cardWrapper}>
+                  <GuideCard
+                    guide={guideViewModel}
+                    onPress={() => onViewGuide(guideViewModel.id)}
+                    {...(filterTab === 'favorites' && { isFavorited: true })}
+                    testID={`guide-card-${guideViewModel.id}`}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
+        </ContentLoader>
       </ScrollView>
     </SafeScreen>
   )

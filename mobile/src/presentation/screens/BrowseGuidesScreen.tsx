@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
 } from 'react-native'
 import { colors, spacing, typography, borderRadius, componentDefaults } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
@@ -16,6 +15,8 @@ import { SearchBar } from '../components/SearchBar'
 import { GuideCard } from '../components/GuideCard'
 import { EmptyState } from '../components/EmptyState'
 import { NodeProgressIndicator } from '../components/NodeProgressIndicator'
+import { ContentLoader } from '../components/ContentLoader'
+import { Skeleton, SkeletonCard, SkeletonList } from '../components/Skeleton'
 import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewModel'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigStorage'
@@ -201,21 +202,26 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
     ? 'All Guides'
     : GUIDE_TYPE_LABELS[selectedType]
 
-  // Show loading state
-  if (isLoading && !refreshing) {
-    return (
-      <SafeScreen {...(testID && { testID })}>
-        <ScreenHeader
-          onBack={onBack}
-          title="Discover Guides"
-          backTestID={`${testID}:back`}
-        />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeScreen>
-    )
-  }
+  const browseSkeleton = (
+    <>
+      <View style={styles.searchSection}>
+        <Skeleton height={44} radius={borderRadius.md} />
+      </View>
+      <View style={styles.skeletonChipsRow}>
+        {[0, 1, 2, 3].map(index => (
+          <Skeleton
+            key={index}
+            width={90}
+            height={componentDefaults.chipHeight}
+            radius={borderRadius.sm}
+          />
+        ))}
+      </View>
+      <View style={styles.guidesSection}>
+        <SkeletonList count={5} renderItem={index => <SkeletonCard key={index} />} />
+      </View>
+    </>
+  )
 
   return (
     <SafeScreen {...(testID && { testID })}>
@@ -237,84 +243,86 @@ export const BrowseGuidesScreen: React.FC<BrowseGuidesScreenProps> = ({
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
-        {/* Search Bar */}
-        <View style={styles.searchSection}>
-          <SearchBar
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder="Search guides..."
-            testID={`${testID}:search`}
-          />
-        </View>
+        <ContentLoader isLoading={isLoading && !refreshing} skeleton={browseSkeleton}>
+          {/* Search Bar */}
+          <View style={styles.searchSection}>
+            <SearchBar
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder="Search guides..."
+              testID={`${testID}:search`}
+            />
+          </View>
 
-        {/* Type Filter Chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterSection}
-          contentContainerStyle={styles.filterChipsContainer}
-        >
-          <TouchableOpacity
-            style={[styles.filterChip, selectedType === 'all' && styles.filterChipSelected]}
-            onPress={() => setSelectedType('all')}
-            testID={`${testID}:chip-All Guides`}
+          {/* Type Filter Chips */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterSection}
+            contentContainerStyle={styles.filterChipsContainer}
           >
-            <Text style={[styles.filterChipLabel, selectedType === 'all' && styles.filterChipLabelSelected]}>
-              All Guides
-            </Text>
-          </TouchableOpacity>
-          {ALL_GUIDE_TYPES.map(type => (
             <TouchableOpacity
-              key={type}
-              style={[styles.filterChip, selectedType === type && styles.filterChipSelected]}
-              onPress={() => setSelectedType(type)}
-              testID={`${testID}:chip-${GUIDE_TYPE_LABELS[type]}`}
+              style={[styles.filterChip, selectedType === 'all' && styles.filterChipSelected]}
+              onPress={() => setSelectedType('all')}
+              testID={`${testID}:chip-All Guides`}
             >
-              <Text style={[styles.filterChipLabel, selectedType === type && styles.filterChipLabelSelected]}>
-                {GUIDE_TYPE_LABELS[type]}
+              <Text style={[styles.filterChipLabel, selectedType === 'all' && styles.filterChipLabelSelected]}>
+                All Guides
               </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+            {ALL_GUIDE_TYPES.map(type => (
+              <TouchableOpacity
+                key={type}
+                style={[styles.filterChip, selectedType === type && styles.filterChipSelected]}
+                onPress={() => setSelectedType(type)}
+                testID={`${testID}:chip-${GUIDE_TYPE_LABELS[type]}`}
+              >
+                <Text style={[styles.filterChipLabel, selectedType === type && styles.filterChipLabelSelected]}>
+                  {GUIDE_TYPE_LABELS[type]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-        {/* Popular Guides Section */}
-        <View style={styles.guidesSection}>
-          {filteredGuides.length > 0 ? (
-            <>
-              <Text style={styles.sectionTitle}>
-                {selectedType === 'all'
-                  ? 'Popular Guides'
-                  : `${selectedTypeLabel} Guides`}
-              </Text>
-              {filteredGuides.map(guide => {
-                const owned = Boolean(currentUserId && guide.createdByUserId === currentUserId)
-                return (
-                  <GuideCard
-                    key={guide.id}
-                    guide={guide}
-                    onPress={() => onViewGuide(guide.id)}
-                    isOwned={owned}
-                    isFavorited={favoriteIds.has(guide.id)}
-                    {...(!owned && { onToggleFavorite: () => handleToggleFavorite(guide.id) })}
-                    testID={`${testID}:card-${guide.id}`}
-                  />
-                )
-              })}
-            </>
-          ) : (
-            <View style={styles.emptyStateContainer}>
-              <EmptyState
-                icon="📭"
-                message={`No guides found for "${searchText}" in ${selectedTypeLabel}`}
-                actionLabel="Reset Filters"
-                onAction={() => {
-                  setSearchText('')
-                  setSelectedType('all')
-                }}
-              />
-            </View>
-          )}
-        </View>
+          {/* Popular Guides Section */}
+          <View style={styles.guidesSection}>
+            {filteredGuides.length > 0 ? (
+              <>
+                <Text style={styles.sectionTitle}>
+                  {selectedType === 'all'
+                    ? 'Popular Guides'
+                    : `${selectedTypeLabel} Guides`}
+                </Text>
+                {filteredGuides.map(guide => {
+                  const owned = Boolean(currentUserId && guide.createdByUserId === currentUserId)
+                  return (
+                    <GuideCard
+                      key={guide.id}
+                      guide={guide}
+                      onPress={() => onViewGuide(guide.id)}
+                      isOwned={owned}
+                      isFavorited={favoriteIds.has(guide.id)}
+                      {...(!owned && { onToggleFavorite: () => handleToggleFavorite(guide.id) })}
+                      testID={`${testID}:card-${guide.id}`}
+                    />
+                  )
+                })}
+              </>
+            ) : (
+              <View style={styles.emptyStateContainer}>
+                <EmptyState
+                  icon="📭"
+                  message={`No guides found for "${searchText}" in ${selectedTypeLabel}`}
+                  actionLabel="Reset Filters"
+                  onAction={() => {
+                    setSearchText('')
+                    setSelectedType('all')
+                  }}
+                />
+              </View>
+            )}
+          </View>
+        </ContentLoader>
       </ScrollView>
     </SafeScreen>
   )
@@ -326,10 +334,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  skeletonChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.lg,
+    marginBottom: spacing.lg,
   },
   scrollView: {
     flex: 1,

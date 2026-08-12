@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,8 @@ import { SessionService } from '../../domain/services/SessionService'
 import { Session, SessionStatus } from '../../domain/entities/Session'
 import { SafeScreen } from '../components/SafeScreen'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { ContentLoader } from '../components/ContentLoader'
+import { SkeletonCard, SkeletonList } from '../components/Skeleton'
 import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 
@@ -108,57 +109,65 @@ export const SessionHistoryScreen: React.FC<SessionHistoryScreenProps> = ({
     <SafeScreen>
       <ScreenHeader onBack={onBack} title="Session History" backTestID="session-history-back" />
 
-      {loading && (
-        <ActivityIndicator
-          testID="session-history-loading"
-          size="large"
-          color={colors.primary}
-          style={styles.loader}
-        />
-      )}
+      <ContentLoader
+        isLoading={loading}
+        testID="session-history-loading"
+        style={styles.contentLoader}
+        skeleton={(
+          <SkeletonList
+            style={styles.skeletonList}
+            count={5}
+            renderItem={index => <SkeletonCard key={index} />}
+          />
+        )}
+      >
+        {(error || deleteError) && (
+          <Text style={commonStyles.errorText}>{error ?? deleteError}</Text>
+        )}
 
-      {!loading && (error || deleteError) && (
-        <Text style={commonStyles.errorText}>{error ?? deleteError}</Text>
-      )}
+        {!error && sessions.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No sessions yet</Text>
+          </View>
+        )}
 
-      {!loading && !error && sessions.length === 0 && (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No sessions yet</Text>
-        </View>
-      )}
-
-      {!loading && sessions.length > 0 && (
-        <ScrollView style={styles.list}>
-          {sessions.map(session => (
-            <View key={session.id} style={styles.sessionItem} testID={`session-item-${session.id}`}>
-              <View style={styles.sessionInfo}>
-                {guideNames[session.guideId] ? (
-                  <Text style={styles.guideName}>{guideNames[session.guideId]}</Text>
-                ) : null}
-                <Text style={styles.statusText}>{statusLabel(session.status)}</Text>
-                <Text testID={`session-date-${session.id}`} style={styles.dateText}>
-                  {formatDate(session.createdAt)}
-                </Text>
+        {sessions.length > 0 && (
+          <ScrollView style={styles.list}>
+            {sessions.map(session => (
+              <View key={session.id} style={styles.sessionItem} testID={`session-item-${session.id}`}>
+                <View style={styles.sessionInfo}>
+                  {guideNames[session.guideId] ? (
+                    <Text style={styles.guideName}>{guideNames[session.guideId]}</Text>
+                  ) : null}
+                  <Text style={styles.statusText}>{statusLabel(session.status)}</Text>
+                  <Text testID={`session-date-${session.id}`} style={styles.dateText}>
+                    {formatDate(session.createdAt)}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  testID={`session-delete-${session.id}`}
+                  onPress={() => handleDeletePress(session.id)}
+                  style={styles.deleteButton}
+                >
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                testID={`session-delete-${session.id}`}
-                onPress={() => handleDeletePress(session.id)}
-                style={styles.deleteButton}
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      )}
+            ))}
+          </ScrollView>
+        )}
+      </ContentLoader>
 
     </SafeScreen>
   )
 }
 
 const styles = StyleSheet.create({
-  loader: {
-    marginTop: spacing.xl,
+  contentLoader: {
+    flex: 1,
+  },
+  skeletonList: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
   },
   emptyContainer: {
     flex: 1,
