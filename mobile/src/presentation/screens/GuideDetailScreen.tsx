@@ -544,6 +544,16 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                                         )
                                       })
                                     })
+                                  } else {
+                                    // Stopwatch-mode steps (no preset duration) never reach the
+                                    // widget at all -- distinguishes "widget update was never
+                                    // attempted" from "attempted but the native side rendered
+                                    // idle" when the widget doesn't show a running timer.
+                                    ErrorReporter.captureMessage(
+                                      'widget.updateSkipped: step has no duration',
+                                      'info',
+                                      { component: 'GuideDetailScreen', action: 'onStart', stepId: step.id },
+                                    )
                                   }
                                 },
                                 onPause: async () => {
