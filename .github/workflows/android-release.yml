@@ -170,14 +170,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install glitchtip-cli
-        if: success()
-        run: |
-          curl -fsSL "https://gitlab.com/glitchtip/glitchtip-cli/-/jobs/artifacts/v0.1.0/raw/artifacts/glitchtip-cli-linux-x86_64?job=build-linux-x86_64" \
-            -o /usr/local/bin/glitchtip-cli
-          chmod +x /usr/local/bin/glitchtip-cli
-
-      - name: Upload ProGuard mappings to GlitchTip
+      - name: Upload ProGuard mappings to Sentry
         if: success()
         continue-on-error: true
         env:
@@ -193,13 +186,13 @@ jobs:
             exit 0
           fi
 
-          echo "📤 Uploading ProGuard mappings to GlitchTip..."
+          echo "📤 Uploading ProGuard mappings to Sentry..."
 
-          glitchtip-cli debug-files upload "$MAPPING_PATH" \
+          npx @sentry/cli debug-files upload "$MAPPING_PATH" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
-          echo "✅ ProGuard mappings uploaded to GlitchTip"
+          echo "✅ ProGuard mappings uploaded to Sentry"
 
       - name: Create Sentry release with commits
         if: success()

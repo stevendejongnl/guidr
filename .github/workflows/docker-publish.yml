@@ -70,13 +70,6 @@ jobs:
         if: steps.version.outputs.VERSION != ''
         run: npm run web:build
 
-      - name: Install glitchtip-cli
-        if: steps.version.outputs.VERSION != ''
-        run: |
-          curl -fsSL "https://gitlab.com/glitchtip/glitchtip-cli/-/jobs/artifacts/v0.1.0/raw/artifacts/glitchtip-cli-linux-x86_64?job=build-linux-x86_64" \
-            -o /usr/local/bin/glitchtip-cli
-          chmod +x /usr/local/bin/glitchtip-cli
-
       - name: Inject and upload web source maps
         if: steps.version.outputs.VERSION != ''
         continue-on-error: true
@@ -86,12 +79,12 @@ jobs:
           source .sentry/config.env
           export SENTRY_URL="$SENTRY_URL"
 
-          glitchtip-cli sourcemaps inject ./web-app/dist
-          glitchtip-cli sourcemaps upload ./web-app/dist \
+          npx @sentry/cli sourcemaps inject ./web-app/dist
+          npx @sentry/cli sourcemaps upload ./web-app/dist \
             --org "$SENTRY_ORG" \
-            --project web
+            --project "$SENTRY_PROJECT_WEB"
 
-          echo "✅ Web source maps injected and uploaded to GlitchTip"
+          echo "✅ Web source maps injected and uploaded to Sentry"
 
       - name: Set up Docker Buildx
         if: steps.version.outputs.VERSION != ''
