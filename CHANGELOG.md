@@ -1,3 +1,9 @@
+## [1.98.0](https://github.com/stevendejongnl/guidr/compare/v1.97.5...v1.98.0) (2026-08-12)
+
+### Features
+
+* **mobile:** generic skeleton loaders + fade transitions for content-loading screens ([0ad423b](https://github.com/stevendejongnl/guidr/commit/0ad423be222b8884e674e85b35f4919d0e8aacfe))
+
 ## [1.97.5](https://github.com/stevendejongnl/guidr/compare/v1.97.4...v1.97.5) (2026-08-12)
 
 ### Bug Fixes
