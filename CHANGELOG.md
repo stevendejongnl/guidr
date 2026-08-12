@@ -1,3 +1,9 @@
+## [1.99.0](https://github.com/stevendejongnl/guidr/compare/v1.98.3...v1.99.0) (2026-08-12)
+
+### Features
+
+* **mobile:** initialize Sentry natively so widget-alarm failures aren't invisible ([fd856cd](https://github.com/stevendejongnl/guidr/commit/fd856cdf5c8789397f2aae0ac053df3f00b6dcfb))
+
 ## [1.98.3](https://github.com/stevendejongnl/guidr/compare/v1.98.2...v1.98.3) (2026-08-12)
 
 ### Bug Fixes
