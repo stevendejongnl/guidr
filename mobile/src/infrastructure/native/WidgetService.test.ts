@@ -1,5 +1,8 @@
 import { Platform, NativeModules } from 'react-native'
 import { WidgetService, WidgetTimerData } from './WidgetService'
+import { ErrorReporter } from '../monitoring/ErrorReporter'
+
+jest.mock('../monitoring/ErrorReporter')
 
 describe('WidgetService', () => {
   let service: WidgetService
@@ -48,11 +51,30 @@ describe('WidgetService', () => {
       expect(NativeModules['WidgetModule'].updateWidget).not.toHaveBeenCalled()
     })
 
-    it('should silently catch errors', async () => {
+    it('should silently catch errors and report them', async () => {
       const mock = NativeModules['WidgetModule'].updateWidget as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 
       await expect(service.updateWidget(data)).resolves.toBeUndefined()
+
+      expect(ErrorReporter.capture).toHaveBeenCalledWith(
+        expect.any(Error),
+        { component: 'WidgetService', action: 'updateWidget' },
+      )
+    })
+
+    it('should report and not throw when the native module is not linked', async () => {
+      const originalModule = NativeModules['WidgetModule']
+      NativeModules['WidgetModule'] = undefined
+
+      await expect(service.updateWidget(data)).resolves.toBeUndefined()
+
+      expect(ErrorReporter.capture).toHaveBeenCalledWith(
+        expect.any(Error),
+        { component: 'WidgetService', action: 'updateWidget' },
+      )
+
+      NativeModules['WidgetModule'] = originalModule
     })
   })
 
@@ -74,11 +96,16 @@ describe('WidgetService', () => {
       expect(NativeModules['WidgetModule'].clearWidget).not.toHaveBeenCalled()
     })
 
-    it('should silently catch errors', async () => {
+    it('should silently catch errors and report them', async () => {
       const mock = NativeModules['WidgetModule'].clearWidget as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 
       await expect(service.clearWidget('step-1')).resolves.toBeUndefined()
+
+      expect(ErrorReporter.capture).toHaveBeenCalledWith(
+        expect.any(Error),
+        { component: 'WidgetService', action: 'clearWidget' },
+      )
     })
   })
 
