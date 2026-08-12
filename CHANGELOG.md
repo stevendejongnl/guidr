@@ -1,3 +1,9 @@
+## [1.97.4](https://github.com/stevendejongnl/guidr/compare/v1.97.3...v1.97.4) (2026-08-12)
+
+### Bug Fixes
+
+* play notification sound directly in vibrate mode, animate widget progress, support multiple widget timers ([2896108](https://github.com/stevendejongnl/guidr/commit/28961080f1cb826d31e3dd5661bf21941311fcc8))
+
 ## [1.97.3](https://github.com/stevendejongnl/guidr/compare/v1.97.2...v1.97.3) (2026-08-11)
 
 ### Bug Fixes
