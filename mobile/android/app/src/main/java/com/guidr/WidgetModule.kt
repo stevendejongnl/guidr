@@ -24,7 +24,7 @@ class WidgetModule(reactContext: ReactApplicationContext) :
         promise: Promise,
     ) {
         try {
-            GuidrTimerWidgetProvider.saveState(
+            GuidrTimerWidgetProvider.upsertTimer(
                 reactApplicationContext,
                 guideId,
                 stepId,
@@ -42,9 +42,9 @@ class WidgetModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun clearWidget(promise: Promise) {
+    fun clearWidget(stepId: String, promise: Promise) {
         try {
-            GuidrTimerWidgetProvider.clearState(reactApplicationContext)
+            GuidrTimerWidgetProvider.removeTimer(reactApplicationContext, stepId)
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("WIDGET_CLEAR_ERROR", "Failed to clear widget: ${e.message}", e)

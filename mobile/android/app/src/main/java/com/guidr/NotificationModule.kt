@@ -6,10 +6,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
 import android.os.Build
 import android.os.SystemClock
-import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -56,16 +54,12 @@ class NotificationModule(reactContext: ReactApplicationContext) :
             }
             manager.createNotificationChannel(defaultChannel)
 
-            // Route the sound through the alarm stream, not the notification stream.
-            // Android mutes the notification stream when the ringer is set to Vibrate
-            // or Silent, but deliberately never mutes the alarm stream (so alarm clocks
-            // still work) — this is the standard mechanism apps use to guarantee a
-            // time-sensitive notification is actually heard.
-            val criticalAudioAttributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
-
+            // No channel-level sound: NotificationManagerService silently declines to play
+            // a channel's sound at all when the ringer is set to Vibrate, regardless of the
+            // sound's AudioAttributes usage — the AudioAttributes only pick a stream *if*
+            // the system decides to play something. CriticalSoundPlayer plays the sound
+            // directly on the alarm stream instead, bypassing that gate. Vibration is
+            // unaffected by ringer mode and stays on the channel as normal.
             val criticalChannel = NotificationChannel(
                 CHANNEL_CRITICAL,
                 "Critical Timer Notifications",
@@ -73,7 +67,7 @@ class NotificationModule(reactContext: ReactApplicationContext) :
             ).apply {
                 description = "High-priority notifications that break through Do Not " +
                     "Disturb and vibrate-only mode"
-                setSound(Settings.System.DEFAULT_NOTIFICATION_URI, criticalAudioAttributes)
+                setSound(null, null)
                 enableVibration(true)
             }
             manager.createNotificationChannel(criticalChannel)
@@ -122,6 +116,10 @@ class NotificationModule(reactContext: ReactApplicationContext) :
                 Context.NOTIFICATION_SERVICE
             ) as NotificationManager
             manager.notify(notificationId++, notification)
+
+            if (critical) {
+                CriticalSoundPlayer.play(context)
+            }
 
             promise.resolve(null)
         } catch (e: Exception) {

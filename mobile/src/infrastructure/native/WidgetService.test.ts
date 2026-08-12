@@ -57,19 +57,19 @@ describe('WidgetService', () => {
   })
 
   describe('clearWidget', () => {
-    it('should call the native module on Android', async () => {
+    it('should call the native module with the stepId on Android', async () => {
       const mock = NativeModules['WidgetModule'].clearWidget as jest.Mock
       mock.mockResolvedValue(undefined)
 
-      await service.clearWidget()
+      await service.clearWidget('step-1')
 
-      expect(mock).toHaveBeenCalled()
+      expect(mock).toHaveBeenCalledWith('step-1')
     })
 
     it('should not call the native module on non-Android platforms', async () => {
       Platform.OS = 'web'
 
-      await service.clearWidget()
+      await service.clearWidget('step-1')
 
       expect(NativeModules['WidgetModule'].clearWidget).not.toHaveBeenCalled()
     })
@@ -78,7 +78,7 @@ describe('WidgetService', () => {
       const mock = NativeModules['WidgetModule'].clearWidget as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 
-      await expect(service.clearWidget()).resolves.toBeUndefined()
+      await expect(service.clearWidget('step-1')).resolves.toBeUndefined()
     })
   })
 

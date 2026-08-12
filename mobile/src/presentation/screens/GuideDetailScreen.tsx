@@ -130,7 +130,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   const resetCompletedTimer = useCallback((stepId: string) => {
     stepTimers.resetTimer(stepId)
     notificationService.cancelTimerNotification(stepId)
-    widgetService.clearWidget()
+    widgetService.clearWidget(stepId)
     delete completedAtRef.current[stepId]
     delete resetTimeoutsRef.current[stepId]
   }, [stepTimers, notificationService, widgetService])
@@ -564,7 +564,7 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
                               onReset: async () => {
                                 await stepTimers.resetTimer(step.id)
                                 notificationService.cancelTimerNotification(step.id)
-                                widgetService.clearWidget()
+                                widgetService.clearWidget(step.id)
                               },
                             }}
                             testID={`${testID}:step-${index}`}

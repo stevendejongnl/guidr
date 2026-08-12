@@ -37,10 +37,10 @@ export class WidgetService {
     }
   }
 
-  async clearWidget(): Promise<void> {
+  async clearWidget(stepId: string): Promise<void> {
     if (Platform.OS !== 'android') return
     try {
-      await WidgetModule.clearWidget()
+      await WidgetModule.clearWidget(stepId)
     } catch (error) {
       console.warn('[WidgetService] Failed to clear widget:', error)
     }
