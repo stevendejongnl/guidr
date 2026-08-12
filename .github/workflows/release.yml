@@ -226,10 +226,6 @@ jobs:
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
 
-          ./node_modules/.bin/sentry-cli releases set-commits "$RELEASE_NAME" --auto \
-            --org "$SENTRY_ORG" \
-            --project "$SENTRY_PROJECT_API"
-
           ./node_modules/.bin/sentry-cli releases finalize "$RELEASE_NAME" \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_API"
