@@ -12,7 +12,9 @@ import android.os.SystemClock
 import android.util.SizeF
 import android.view.View
 import android.widget.RemoteViews
+import io.sentry.Breadcrumb
 import io.sentry.Sentry
+import io.sentry.SentryLevel
 
 class GuidrTimerWidgetProvider : AppWidgetProvider() {
 
@@ -141,6 +143,18 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             val timers = loadWidgetTimers(context).filterNot { it.stepId == stepId } + record
             saveWidgetTimers(context, timers)
 
+            // Not an error -- just a trail of what was actually persisted, so a later
+            // "widget rendered idle" diagnostic (see buildViews) has something to show
+            // besides the anomaly itself.
+            Sentry.addBreadcrumb(
+                Breadcrumb().apply {
+                    category = "widget.upsertTimer"
+                    level = SentryLevel.INFO
+                    message = "stepId=$stepId remaining=$remainingSeconds paused=$isPaused " +
+                        "complete=$isComplete storedCount=${timers.size}"
+                }
+            )
+
             // The record above is already persisted — the widget must repaint to reflect it
             // even if alarm scheduling (best-effort; used only for auto-complete/animation)
             // fails for some reason.
@@ -225,11 +239,31 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
 
         private fun buildViews(context: Context, layoutRes: Int, isSmall: Boolean): RemoteViews {
             val views = RemoteViews(context.packageName, layoutRes)
-            val timers = loadWidgetTimers(context).filterNot { it.isStale }
+            val allTimers = loadWidgetTimers(context)
+            val timers = allTimers.filterNot { it.isStale }
             val primary = selectPrimary(timers)
             val otherCount = (timers.size - 1).coerceAtLeast(0)
 
             if (primary == null) {
+                // Only reachable when timers is empty (selectPrimary can't return null on a
+                // non-empty list). If storage actually had entries, they were all filtered as
+                // stale -- the exact "widget stays idle despite a recent start" symptom, and
+                // not an exception anywhere, so it'd otherwise be invisible. Report it with
+                // enough state to see why, rather than guessing again next time it happens.
+                if (allTimers.isNotEmpty()) {
+                    Sentry.captureMessage("widget.idle_despite_stored_timers") { scope ->
+                        scope.setExtra("storedCount", allTimers.size.toString())
+                        scope.setExtra("afterStaleFilterCount", timers.size.toString())
+                        scope.setExtra(
+                            "storedTimers",
+                            allTimers.joinToString {
+                                "${it.stepId}:paused=${it.isPaused},complete=${it.isComplete}," +
+                                    "stale=${it.isStale},remaining=${it.remainingSeconds}," +
+                                    "updatedAt=${it.updatedAt}"
+                            },
+                        )
+                    }
+                }
                 views.setOnClickPendingIntent(R.id.widget_root, buildLaunchIntent(context, null, null))
                 renderIdle(context, views, isSmall)
                 return views
