@@ -194,7 +194,7 @@ jobs:
 
           echo "✅ ProGuard mappings uploaded to Sentry"
 
-      - name: Create Sentry release with commits
+      - name: Create Sentry release
         if: success()
         continue-on-error: true
         env:
@@ -210,10 +210,6 @@ jobs:
           echo "📤 Creating Sentry release: $RELEASE_NAME"
 
           npx @sentry/cli releases new "$RELEASE_NAME" \
-            --org "$SENTRY_ORG" \
-            --project "$SENTRY_PROJECT_MOBILE"
-
-          npx @sentry/cli releases set-commits "$RELEASE_NAME" --auto \
             --org "$SENTRY_ORG" \
             --project "$SENTRY_PROJECT_MOBILE"
 
