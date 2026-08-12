@@ -144,8 +144,14 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
         return
       }
 
+      // Deliberately doesn't touch `loading` -- it's already false by the time this runs
+      // (set by the services-init effect just before authToken becomes available, which is
+      // what triggers this effect). Flipping it true here too briefly re-shows the top-level
+      // skeleton and unmounts the just-rendered form -- including, notably, the delete
+      // button -- for the duration of this fetch, which is both a visible flash and (under
+      // load) a real race: a `waitFor` polling for the delete button can catch it in the
+      // narrow window right before this effect hides it again.
       try {
-        setLoading(true)
         const guide = await guideService.getGuideById(guideId, authToken)
         if (guide) {
           setTitle(guide.title)
@@ -171,8 +177,6 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
         const message = err instanceof Error ? err.message : 'Error loading guide'
         setError(message)
         ErrorReporter.capture(err)
-      } finally {
-        setLoading(false)
       }
     }
 
