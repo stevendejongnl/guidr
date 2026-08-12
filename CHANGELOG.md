@@ -1,3 +1,9 @@
+## [1.98.3](https://github.com/stevendejongnl/guidr/compare/v1.98.2...v1.98.3) (2026-08-12)
+
+### Bug Fixes
+
+* **ci:** drop releases set-commits --auto (403, no VCS integration) ([6bd4546](https://github.com/stevendejongnl/guidr/commit/6bd4546ff9050baf119e7f6138a9ac7ad3065b95))
+
 ## [1.98.2](https://github.com/stevendejongnl/guidr/compare/v1.98.1...v1.98.2) (2026-08-12)
 
 ### Bug Fixes
