@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.util.SizeF
 import android.view.View
 import android.widget.RemoteViews
+import io.sentry.Sentry
 
 class GuidrTimerWidgetProvider : AppWidgetProvider() {
 
@@ -64,6 +65,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                 // refreshAllWidgets() in upsertTimer, and an uncaught exception here would
                 // silently abort that whole update, leaving the widget stuck on stale data
                 // even though it was saved correctly.
+                Sentry.captureException(e)
             }
         }
 
@@ -97,6 +99,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                 // progress bar(s) just won't animate. Must not propagate: this runs before
                 // refreshAllWidgets() in upsertTimer/removeTimer, so an uncaught exception
                 // here would silently abort the widget's visual refresh entirely.
+                Sentry.captureException(e)
             }
         }
 
@@ -151,6 +154,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             } catch (e: Exception) {
                 // Best-effort alarm bookkeeping only — must never block the widget refresh
                 // below, which is what actually makes the running timer visible.
+                Sentry.captureException(e)
             }
             refreshAllWidgets(context)
         }
@@ -164,6 +168,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             } catch (e: Exception) {
                 // Best-effort alarm bookkeeping only — must never block the widget refresh
                 // below, which is what actually makes the removal visible.
+                Sentry.captureException(e)
             }
             refreshAllWidgets(context)
         }
@@ -203,6 +208,7 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                 } catch (e: Exception) {
                     // If the list view fails to build for any reason, fall back to medium
                     // rather than losing the whole widget.
+                    Sentry.captureException(e)
                     medium
                 }
                 RemoteViews(

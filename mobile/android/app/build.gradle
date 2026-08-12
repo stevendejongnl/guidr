@@ -81,6 +81,20 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+// Native (non-JS) Sentry init needs the DSN too -- read it from the same mobile/.env
+// that CI generates for the JS bundle (see mobile/src/presentation/App.tsx), since
+// react-native-dotenv only wires @env into JS, not into Gradle/Kotlin.
+def sentryDsn = ""
+def envFile = rootProject.file("../.env")
+if (envFile.exists()) {
+    envFile.eachLine { line ->
+        def match = (line =~ /^SENTRY_DSN=(.*)$/)
+        if (match.matches()) {
+            sentryDsn = match[0][1].trim()
+        }
+    }
+}
+
 apply from: new File("../../node_modules/@sentry/react-native/sentry.gradle")
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -88,12 +102,18 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.guidr"
+
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         applicationId "com.guidr"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 265
         versionName "1.98.3"
+        buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
     }
     signingConfigs {
         debug {
