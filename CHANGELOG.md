@@ -1,3 +1,9 @@
+## [1.98.1](https://github.com/stevendejongnl/guidr/compare/v1.98.0...v1.98.1) (2026-08-12)
+
+### Bug Fixes
+
+* **mobile:** report WidgetService native-call failures to Sentry ([595ab90](https://github.com/stevendejongnl/guidr/commit/595ab904cf73805b0cb5db2284dd25367e38f574))
+
 ## [1.98.0](https://github.com/stevendejongnl/guidr/compare/v1.97.5...v1.98.0) (2026-08-12)
 
 ### Features
