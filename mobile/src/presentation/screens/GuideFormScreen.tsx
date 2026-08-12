@@ -5,7 +5,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   Switch,
   Alert,
   StyleSheet,
@@ -28,6 +27,8 @@ import { NotesEditor } from '../components/NotesEditor'
 import type { Note } from '../components/NotesEditor'
 import { InfoBanner } from '../components/InfoBanner'
 import { StepListItem } from '../components/StepListItem'
+import { ContentLoader } from '../components/ContentLoader'
+import { SkeletonCard, SkeletonLines, SkeletonList } from '../components/Skeleton'
 import { colors, spacing, typography } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { formStyles } from '@guidr/shared/styles/react-native'
@@ -432,8 +433,9 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   if (loading) {
     return (
       <SafeScreen testID="guide-form-screen">
-        <View style={[formStyles.container, formStyles.centerContainer]}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={formStyles.container}>
+          <SkeletonLines count={1} lineHeight={28} lastLineWidth="50%" style={styles.skeletonTitleGap} />
+          <SkeletonLines count={2} />
         </View>
       </SafeScreen>
     )
@@ -562,33 +564,34 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
                 )}
               </View>
 
-              {loadingSteps ? (
-                <View style={commonStyles.loadingContainer}>
-                  <ActivityIndicator size="small" color={colors.primary} />
-                </View>
-              ) : steps.length > 0 ? (
-                <View>
-                  {[...steps]
-                    .sort((a, b) => a.order - b.order)
-                    .map((step, index) => (
-                      <StepListItem
-                        key={step.id}
-                        step={step}
-                        stepNumber={index + 1}
-                        isFirst={index === 0}
-                        isLast={index === steps.length - 1}
-                        onMoveUp={handleMoveStepUp}
-                        onMoveDown={handleMoveStepDown}
-                        onEdit={handleEditStep}
-                        onDelete={handleDeleteStep}
-                        canEdit={true}
-                        testID={`step-${index}`}
-                      />
-                    ))}
-                </View>
-              ) : (
-                <Text style={styles.emptyStepsText}>No steps yet.</Text>
-              )}
+              <ContentLoader
+                isLoading={loadingSteps}
+                skeleton={<SkeletonList count={4} renderItem={index => <SkeletonCard key={index} />} />}
+              >
+                {steps.length > 0 ? (
+                  <View>
+                    {[...steps]
+                      .sort((a, b) => a.order - b.order)
+                      .map((step, index) => (
+                        <StepListItem
+                          key={step.id}
+                          step={step}
+                          stepNumber={index + 1}
+                          isFirst={index === 0}
+                          isLast={index === steps.length - 1}
+                          onMoveUp={handleMoveStepUp}
+                          onMoveDown={handleMoveStepDown}
+                          onEdit={handleEditStep}
+                          onDelete={handleDeleteStep}
+                          canEdit={true}
+                          testID={`step-${index}`}
+                        />
+                      ))}
+                  </View>
+                ) : (
+                  <Text style={styles.emptyStepsText}>No steps yet.</Text>
+                )}
+              </ContentLoader>
             </View>
           )}
 
@@ -657,6 +660,9 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
+  skeletonTitleGap: {
+    marginBottom: spacing.xl,
+  },
   stepsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

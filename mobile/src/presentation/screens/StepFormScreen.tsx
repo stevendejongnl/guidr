@@ -16,6 +16,7 @@ import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigSt
 import { SafeScreen } from '../components/SafeScreen'
 import { InfoBanner } from '../components/InfoBanner'
 import { ErrorReporter } from '../../infrastructure/monitoring/ErrorReporter'
+import { Skeleton, SkeletonLines } from '../components/Skeleton'
 import { colors, spacing, typography } from '@guidr/shared/tokens'
 import { commonStyles, formStyles } from '@guidr/shared/styles/react-native'
 
@@ -282,8 +283,17 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
   if (loading) {
     return (
       <SafeScreen testID="step-form-screen">
-        <View style={commonStyles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={formStyles.container}>
+          <SkeletonLines count={1} lineHeight={16} lastLineWidth="30%" style={styles.skeletonLabelGap} />
+          <Skeleton height={44} style={styles.skeletonFieldGap} />
+          <SkeletonLines count={1} lineHeight={16} lastLineWidth="40%" style={styles.skeletonLabelGap} />
+          <View style={[styles.durationRow, styles.skeletonFieldGap]}>
+            <Skeleton height={44} style={styles.durationField} />
+            <Skeleton height={44} style={styles.durationField} />
+            <Skeleton height={44} style={styles.durationField} />
+          </View>
+          <SkeletonLines count={1} lineHeight={16} lastLineWidth="35%" style={styles.skeletonLabelGap} />
+          <Skeleton height={88} />
         </View>
       </SafeScreen>
     )
@@ -453,6 +463,12 @@ export const StepFormScreen: React.FC<StepFormScreenProps> = ({
 }
 
 const styles = StyleSheet.create({
+  skeletonLabelGap: {
+    marginBottom: spacing.sm,
+  },
+  skeletonFieldGap: {
+    marginBottom: spacing.lg,
+  },
   helperText: {
     fontSize: typography.sizeSm,
     color: colors.textMuted,

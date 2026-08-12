@@ -26,6 +26,8 @@ import { colors, spacing } from '@guidr/shared/tokens'
 import { commonStyles } from '@guidr/shared/styles/react-native'
 import { UserDto } from '../../infrastructure/api/dtos/UserDto'
 import { ActiveTimerCard } from '../components/ActiveTimerCard'
+import { ContentLoader } from '../components/ContentLoader'
+import { SkeletonCard, SkeletonList } from '../components/Skeleton'
 import { useActiveTimers } from '../hooks/useActiveTimers'
 import { useSyncConnection } from '../hooks/useSyncConnection'
 import { GuideViewModel, createGuideViewModel } from '../viewmodels/GuideViewModel'
@@ -404,68 +406,103 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </View>
 
         {/* Active Timers (hidden in admin mode) */}
-        {!isLoading && !adminModeActive && activeTimers.length > 0 && (
-          <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>Active Timers</Text>
-            {activeTimers.map(timer => (
-              <ActiveTimerCard
-                key={timer.timerId}
-                timer={timer}
-                onPress={() => handleViewGuide(timer.guideId)}
-              />
-            ))}
-          </View>
+        {!adminModeActive && (
+          <ContentLoader isLoading={isLoading} skeleton={<SkeletonCard style={commonStyles.section} />}>
+            {activeTimers.length > 0 && (
+              <View style={commonStyles.section}>
+                <Text style={commonStyles.sectionTitle}>Active Timers</Text>
+                {activeTimers.map(timer => (
+                  <ActiveTimerCard
+                    key={timer.timerId}
+                    timer={timer}
+                    onPress={() => handleViewGuide(timer.guideId)}
+                  />
+                ))}
+              </View>
+            )}
+          </ContentLoader>
         )}
 
         {/* Featured Guides (hidden in admin mode) */}
-        {!isLoading && !adminModeActive && featuredGuides.length > 0 && (
-          <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>✨ Featured Guides</Text>
-            {featuredGuides.map(guide => (
-              <GuideCard
-                key={guide.id}
-                guide={guide}
-                onPress={() => handleViewGuide(guide.id)}
-              />
-            ))}
-          </View>
+        {!adminModeActive && (
+          <ContentLoader
+            isLoading={isLoading}
+            skeleton={(
+              <View style={commonStyles.section}>
+                <SkeletonList count={3} renderItem={(index) => <SkeletonCard key={index} />} />
+              </View>
+            )}
+          >
+            {featuredGuides.length > 0 && (
+              <View style={commonStyles.section}>
+                <Text style={commonStyles.sectionTitle}>✨ Featured Guides</Text>
+                {featuredGuides.map(guide => (
+                  <GuideCard
+                    key={guide.id}
+                    guide={guide}
+                    onPress={() => handleViewGuide(guide.id)}
+                  />
+                ))}
+              </View>
+            )}
+          </ContentLoader>
         )}
 
         {/* Recent Activity */}
-        {!isLoading && recentSessions.length > 0 && (
-          <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>Recent Activity</Text>
-            {recentSessions.map(session => (
-              <ActivityItem
-                key={session.id}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                session={session as any}
-                onResume={() => handleResumeSession(session.id)}
-              />
-            ))}
-            {onViewSessionHistory && (
-              <TouchableOpacity onPress={onViewSessionHistory}>
-                <Text style={commonStyles.linkText}>View All Sessions →</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+        <ContentLoader
+          isLoading={isLoading}
+          skeleton={(
+            <View style={commonStyles.section}>
+              <SkeletonList count={5} renderItem={(index) => <SkeletonCard key={index} />} />
+            </View>
+          )}
+        >
+          {recentSessions.length > 0 && (
+            <View style={commonStyles.section}>
+              <Text style={commonStyles.sectionTitle}>Recent Activity</Text>
+              {recentSessions.map(session => (
+                <ActivityItem
+                  key={session.id}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  session={session as any}
+                  onResume={() => handleResumeSession(session.id)}
+                />
+              ))}
+              {onViewSessionHistory && (
+                <TouchableOpacity onPress={onViewSessionHistory}>
+                  <Text style={commonStyles.linkText}>View All Sessions →</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </ContentLoader>
 
         {/* Recommendations (hidden in admin mode) */}
-        {!isLoading && !adminModeActive && recommendedGuides.length > 0 && (
-          <View style={commonStyles.section}>
-            <Text style={commonStyles.sectionTitle}>Recommended for You</Text>
-            {recommendedGuides.map(guide => (
-              <GuideCard
-                key={guide.id}
-                guide={guide}
-                onPress={() => handleViewGuide(guide.id)}
-              />
-            ))}
-            <TouchableOpacity onPress={handleBrowseGuides}>
-              <Text style={commonStyles.linkText}>Browse All Guides →</Text>
-            </TouchableOpacity>
-          </View>
+        {!adminModeActive && (
+          <ContentLoader
+            isLoading={isLoading}
+            skeleton={(
+              <View style={commonStyles.section}>
+                <SkeletonList count={3} renderItem={(index) => <SkeletonCard key={index} />} />
+              </View>
+            )}
+          >
+            {recommendedGuides.length > 0 && (
+              <View style={commonStyles.section}>
+                <Text style={commonStyles.sectionTitle}>Recommended for You</Text>
+                {recommendedGuides.map(guide => (
+                  <GuideCard
+                    key={guide.id}
+                    guide={guide}
+                    onPress={() => handleViewGuide(guide.id)}
+                  />
+                ))}
+                <TouchableOpacity onPress={handleBrowseGuides}>
+                  <Text style={commonStyles.linkText}>Browse All Guides →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ContentLoader>
         )}
       </ScrollView>
       <VersionDisplay isVisible={isAdmin} />

@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   AppState,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
@@ -19,7 +18,6 @@ import { ServerConfigStorage } from '../../infrastructure/storage/ServerConfigSt
 import { Guide } from '../../domain/entities/Guide'
 import { Step } from '../../domain/entities/Step'
 import { colors, spacing, typography } from '@guidr/shared/tokens'
-import { commonStyles } from '@guidr/shared/styles/react-native'
 import { SafeScreen } from '../components/SafeScreen'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { StepListItem } from '../components/StepListItem'
@@ -29,6 +27,8 @@ import { useStepTimers } from '../hooks/useStepTimers'
 import { NotificationService } from '../../infrastructure/native/NotificationService'
 import { NotificationPreferencesStorage } from '../../infrastructure/storage/NotificationPreferencesStorage'
 import { WidgetService } from '../../infrastructure/native/WidgetService'
+import { ContentLoader } from '../components/ContentLoader'
+import { SkeletonCard, SkeletonLines, SkeletonList } from '../components/Skeleton'
 
 const TIMER_RESET_DELAY_MS = 2 * 60 * 1000
 
@@ -314,8 +314,9 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   if (loading) {
     return (
       <SafeScreen {...(testID && { testID })}>
-        <View style={commonStyles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.content}>
+          <SkeletonLines count={2} lineHeight={24} lastLineWidth="80%" style={styles.skeletonTitleGap} />
+          <SkeletonLines count={3} />
         </View>
       </SafeScreen>
     )
@@ -484,98 +485,99 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Steps</Text>
 
-              {loadingSteps ? (
-                <View style={commonStyles.loadingContainer}>
-                  <ActivityIndicator size="small" color={colors.primary} />
-                </View>
-              ) : steps.length > 0 ? (
-                <View>
-                  {steps
-                    .sort((a, b) => a.order - b.order)
-                    .map((step, index) => {
-                      const timerDisplay = stepTimers.timers[step.id]
-                      const mode = step.duration > 0 ? 'countdown' : 'stopwatch'
-                      const initialSeconds = step.duration > 0 ? step.duration : 0
-                      return (
-                        <View
-                          key={step.id}
-                          ref={(node) => { stepNodesRef.current[step.id] = node }}
-                          onLayout={() => handleStepLayout(step.id)}
-                        >
-                          <StepListItem
-                            step={step}
-                            stepNumber={index + 1}
-                            isFirst={index === 0}
-                            isLast={index === steps.length - 1}
-                            onMoveUp={() => {}}
-                            onMoveDown={() => {}}
-                            onEdit={() => {}}
-                            onDelete={() => {}}
-                            canEdit={false}
-                            timer={{
-                              displaySeconds: timerDisplay?.displaySeconds ?? initialSeconds,
-                              isRunning: timerDisplay?.isRunning ?? false,
-                              isPaused: timerDisplay?.isPaused ?? false,
-                              isComplete: timerDisplay?.isComplete ?? false,
-                              mode,
-                              onStart: async () => {
-                                notificationService.requestPermission()
-                                const remaining = timerDisplay?.isPaused
-                                  ? timerDisplay.displaySeconds
-                                  : initialSeconds
-                                await stepTimers.startTimer(step.id, step.duration)
-                                if (step.duration > 0) {
-                                  widgetService.updateWidget({
-                                    guideId,
-                                    stepId: step.id,
-                                    guideTitle: guide.title,
-                                    stepTitle: step.title,
-                                    totalDurationSeconds: step.duration,
-                                    remainingSeconds: remaining,
-                                    isPaused: false,
-                                    isComplete: false,
-                                  })
-                                  notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
-                                    if (!enabled) return
-                                    notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
-                                      notificationService.scheduleTimerNotification(
-                                        step.id, step.title, guide.title, remaining, critical,
-                                      )
+              <ContentLoader
+                isLoading={loadingSteps}
+                skeleton={<SkeletonList count={4} renderItem={index => <SkeletonCard key={index} />} />}
+              >
+                {steps.length > 0 ? (
+                  <View>
+                    {steps
+                      .sort((a, b) => a.order - b.order)
+                      .map((step, index) => {
+                        const timerDisplay = stepTimers.timers[step.id]
+                        const mode = step.duration > 0 ? 'countdown' : 'stopwatch'
+                        const initialSeconds = step.duration > 0 ? step.duration : 0
+                        return (
+                          <View
+                            key={step.id}
+                            ref={(node) => { stepNodesRef.current[step.id] = node }}
+                            onLayout={() => handleStepLayout(step.id)}
+                          >
+                            <StepListItem
+                              step={step}
+                              stepNumber={index + 1}
+                              isFirst={index === 0}
+                              isLast={index === steps.length - 1}
+                              onMoveUp={() => {}}
+                              onMoveDown={() => {}}
+                              onEdit={() => {}}
+                              onDelete={() => {}}
+                              canEdit={false}
+                              timer={{
+                                displaySeconds: timerDisplay?.displaySeconds ?? initialSeconds,
+                                isRunning: timerDisplay?.isRunning ?? false,
+                                isPaused: timerDisplay?.isPaused ?? false,
+                                isComplete: timerDisplay?.isComplete ?? false,
+                                mode,
+                                onStart: async () => {
+                                  notificationService.requestPermission()
+                                  const remaining = timerDisplay?.isPaused
+                                    ? timerDisplay.displaySeconds
+                                    : initialSeconds
+                                  await stepTimers.startTimer(step.id, step.duration)
+                                  if (step.duration > 0) {
+                                    widgetService.updateWidget({
+                                      guideId,
+                                      stepId: step.id,
+                                      guideTitle: guide.title,
+                                      stepTitle: step.title,
+                                      totalDurationSeconds: step.duration,
+                                      remainingSeconds: remaining,
+                                      isPaused: false,
+                                      isComplete: false,
                                     })
-                                  })
-                                }
-                              },
-                              onPause: async () => {
-                                await stepTimers.pauseTimer(step.id)
-                                notificationService.cancelTimerNotification(step.id)
-                                if (step.duration > 0) {
-                                  widgetService.updateWidget({
-                                    guideId,
-                                    stepId: step.id,
-                                    guideTitle: guide.title,
-                                    stepTitle: step.title,
-                                    totalDurationSeconds: step.duration,
-                                    remainingSeconds: stepTimers.timers[step.id]?.displaySeconds ?? 0,
-                                    isPaused: true,
-                                    isComplete: false,
-                                  })
-                                }
-                              },
-                              onReset: async () => {
-                                await stepTimers.resetTimer(step.id)
-                                notificationService.cancelTimerNotification(step.id)
-                                widgetService.clearWidget(step.id)
-                              },
-                            }}
-                            testID={`${testID}:step-${index}`}
-                          />
-                        </View>
-                      )
-                    })}
-                </View>
-              ) : (
-                <Text style={styles.emptyStateText}>No steps yet.</Text>
-              )}
+                                    notifPrefsStorage.getTimerNotificationsEnabled().then(enabled => {
+                                      if (!enabled) return
+                                      notifPrefsStorage.getCriticalNotificationsEnabled().then(critical => {
+                                        notificationService.scheduleTimerNotification(
+                                          step.id, step.title, guide.title, remaining, critical,
+                                        )
+                                      })
+                                    })
+                                  }
+                                },
+                                onPause: async () => {
+                                  await stepTimers.pauseTimer(step.id)
+                                  notificationService.cancelTimerNotification(step.id)
+                                  if (step.duration > 0) {
+                                    widgetService.updateWidget({
+                                      guideId,
+                                      stepId: step.id,
+                                      guideTitle: guide.title,
+                                      stepTitle: step.title,
+                                      totalDurationSeconds: step.duration,
+                                      remainingSeconds: stepTimers.timers[step.id]?.displaySeconds ?? 0,
+                                      isPaused: true,
+                                      isComplete: false,
+                                    })
+                                  }
+                                },
+                                onReset: async () => {
+                                  await stepTimers.resetTimer(step.id)
+                                  notificationService.cancelTimerNotification(step.id)
+                                  widgetService.clearWidget(step.id)
+                                },
+                              }}
+                              testID={`${testID}:step-${index}`}
+                            />
+                          </View>
+                        )
+                      })}
+                  </View>
+                ) : (
+                  <Text style={styles.emptyStateText}>No steps yet.</Text>
+                )}
+              </ContentLoader>
             </View>
           )}
         </View>
@@ -603,6 +605,9 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.xl,
+  },
+  skeletonTitleGap: {
+    marginBottom: spacing.xl,
   },
   title: {
     fontSize: typography.sizeXxxl,
