@@ -202,13 +202,13 @@ kubectl logs -n guidr deployment/guidr-api | grep -i sentry
 ## Getting Sentry DSN
 
 1. Go to [Sentry.io](https://sentry.io/)
-2. Navigate to: Settings → Projects → guidr → Client Keys (DSN)
+2. Navigate to: Settings → Projects → guidr-mobile → Client Keys (DSN)
 3. Copy the DSN value
 
 **Current Sentry Project:**
-- Organization: `madebysteven`
-- Project: `guidr`
-- DSN: `https://46265225d779c5a032c1bcf0dd9bb468@o257363.ingest.us.sentry.io/4510629687394304`
+- Organization: `madebysteven-no` (EU region, `de.sentry.io`)
+- Project: `guidr-mobile` (also `guidr-api`, `guidr-web`)
+- DSN: `https://aca1ba730e23ed885d9a0f1c2874b093@o4510963107364864.ingest.de.sentry.io/4511145164734544`
 
 ## Testing Sentry Integration
 
