@@ -1,3 +1,9 @@
+## [1.99.1](https://github.com/stevendejongnl/guidr/compare/v1.99.0...v1.99.1) (2026-08-12)
+
+### Bug Fixes
+
+* **mobile:** stop GuideFormScreen re-flashing its loading skeleton on guide fetch ([6b6f72a](https://github.com/stevendejongnl/guidr/commit/6b6f72afbca2e3f8899b61b711c24be7c9fc3fd0))
+
 ## [1.99.0](https://github.com/stevendejongnl/guidr/compare/v1.98.3...v1.99.0) (2026-08-12)
 
 ### Features

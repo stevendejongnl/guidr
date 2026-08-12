@@ -111,8 +111,8 @@ android {
         applicationId "com.guidr"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 266
-        versionName "1.99.0"
+        versionCode 267
+        versionName "1.99.1"
         buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
     }
     signingConfigs {
