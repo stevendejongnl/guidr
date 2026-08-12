@@ -103,7 +103,8 @@ Custom Claude Code skills for workflow acceleration:
 **iOS**: Removed (ADR-029) — do not reintroduce `mobile/ios/`, iOS npm scripts, or `Platform.OS === 'ios'` branches without a new ADR
 
 ## Conventional Commits
-- `feat:` → Minor | `fix:/perf:/refactor:` → Patch | `BREAKING CHANGE:` → Major | `docs:/test:/chore:/style:` → No release
+- `feat:` → Minor | `fix:/perf:/refactor:/revert:` → Patch | `BREAKING CHANGE:` → Major | `docs:/test:/chore:/style:` → No release (but still recorded in the changelog)
+- **This is the exhaustive list** — see `.releaserc.json`'s `commit-analyzer` `releaseRules`. Any other type (`diag:`, `wip:`, a typo, anything not above) is **silently treated as no release** by semantic-release: the `Release` workflow runs, exits green, and nothing gets built or shipped — no error, no warning. Confirm the merged commit's type is in this list whenever a change is meant to ship; if it's already merged with the wrong type, fix it with a new, correctly-typed commit (an empty one is fine) rather than rewriting the merged commit.
 - **Rules**: No AI attribution, rebase before push, **ALWAYS validate pre-push before pushing**
 
 ## Pre-Push Validation ⚠️
