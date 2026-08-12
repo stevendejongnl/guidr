@@ -57,9 +57,13 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                     System.currentTimeMillis() + remainingSeconds * 1000L,
                     completeCheckPendingIntent(context, stepId),
                 )
-            } catch (e: SecurityException) {
-                // Missing SCHEDULE_EXACT_ALARM on some OEM configurations — the widget
-                // just won't self-correct until the app itself updates it again.
+            } catch (e: Exception) {
+                // Missing SCHEDULE_EXACT_ALARM on some OEM configurations (or any other
+                // alarm-scheduling failure) — the widget just won't self-correct until the
+                // app itself updates it again. Must not propagate: this call happens before
+                // refreshAllWidgets() in upsertTimer, and an uncaught exception here would
+                // silently abort that whole update, leaving the widget stuck on stale data
+                // even though it was saved correctly.
             }
         }
 
@@ -88,8 +92,11 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
                     SystemClock.elapsedRealtime() + TICK_INTERVAL_MS,
                     tickPendingIntent(context),
                 )
-            } catch (e: SecurityException) {
-                // Missing SCHEDULE_EXACT_ALARM — the progress bar(s) just won't animate.
+            } catch (e: Exception) {
+                // Missing SCHEDULE_EXACT_ALARM (or any other alarm-scheduling failure) — the
+                // progress bar(s) just won't animate. Must not propagate: this runs before
+                // refreshAllWidgets() in upsertTimer/removeTimer, so an uncaught exception
+                // here would silently abort the widget's visual refresh entirely.
             }
         }
 
@@ -131,20 +138,33 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
             val timers = loadWidgetTimers(context).filterNot { it.stepId == stepId } + record
             saveWidgetTimers(context, timers)
 
-            if (!isPaused && !isComplete && remainingSeconds > 0) {
-                scheduleCompleteCheck(context, stepId, remainingSeconds)
-            } else {
-                cancelCompleteCheck(context, stepId)
+            // The record above is already persisted — the widget must repaint to reflect it
+            // even if alarm scheduling (best-effort; used only for auto-complete/animation)
+            // fails for some reason.
+            try {
+                if (!isPaused && !isComplete && remainingSeconds > 0) {
+                    scheduleCompleteCheck(context, stepId, remainingSeconds)
+                } else {
+                    cancelCompleteCheck(context, stepId)
+                }
+                syncTickAlarm(context, timers)
+            } catch (e: Exception) {
+                // Best-effort alarm bookkeeping only — must never block the widget refresh
+                // below, which is what actually makes the running timer visible.
             }
-            syncTickAlarm(context, timers)
             refreshAllWidgets(context)
         }
 
         fun removeTimer(context: Context, stepId: String) {
             val timers = loadWidgetTimers(context).filterNot { it.stepId == stepId }
             saveWidgetTimers(context, timers)
-            cancelCompleteCheck(context, stepId)
-            syncTickAlarm(context, timers)
+            try {
+                cancelCompleteCheck(context, stepId)
+                syncTickAlarm(context, timers)
+            } catch (e: Exception) {
+                // Best-effort alarm bookkeeping only — must never block the widget refresh
+                // below, which is what actually makes the removal visible.
+            }
             refreshAllWidgets(context)
         }
 
