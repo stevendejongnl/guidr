@@ -1,3 +1,15 @@
+## [1.99.2](https://github.com/stevendejongnl/guidr/compare/v1.99.1...v1.99.2) (2026-08-14)
+
+### Bug Fixes
+
+* **mobile:** close loading/timers race in useStepTimers ([bdafa28](https://github.com/stevendejongnl/guidr/commit/bdafa282e1cac06a4773ee364fae6cab51236e50))
+* **mobile:** close Save race with in-flight edit-mode guide fetch ([0d9004a](https://github.com/stevendejongnl/guidr/commit/0d9004af14014fd7c1125292f75129b4e266f3c3))
+
+### Documentation
+
+* document the empty-commit / rebase-and-merge gotcha that ate PR [#214](https://github.com/stevendejongnl/guidr/issues/214)'s release trigger ([cd3f6a5](https://github.com/stevendejongnl/guidr/commit/cd3f6a557acd6ebe3634f2e6b812e7ba580a9988))
+* document the exhaustive conventional-commit type list and its silent-no-release gap ([06aae38](https://github.com/stevendejongnl/guidr/commit/06aae38967050ec45caee741bfe9ab1e57340e10))
+
 ## [1.99.1](https://github.com/stevendejongnl/guidr/compare/v1.99.0...v1.99.1) (2026-08-12)
 
 ### Bug Fixes
