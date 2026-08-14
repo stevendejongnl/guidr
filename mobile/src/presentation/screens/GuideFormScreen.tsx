@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -94,6 +94,13 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   const [guideService, setGuideService] = useState<GuideService | null>(_guideService || null)
   const [stepService, setStepService] = useState<StepService | null>(_stepService || null)
 
+  // Resolves once the in-flight (or most recent) edit-mode guide fetch settles; starts
+  // pre-resolved so create mode / pre-fetch saves don't wait on anything. handleSave awaits
+  // this so a Save that lands before the fetch resolves validates against the *loaded* guide
+  // instead of the still-empty initial state -- see the loadGuide effect below for why that
+  // matters.
+  const guideLoadRef = useRef<Promise<void>>(Promise.resolve())
+
   // Initialize services
   useEffect(() => {
     const initializeServices = async () => {
@@ -180,7 +187,7 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
       }
     }
 
-    loadGuide()
+    guideLoadRef.current = loadGuide()
   }, [mode, guideId, guideService, authToken])
 
   // Load steps in edit mode
@@ -328,6 +335,11 @@ export const GuideFormScreen: React.FC<GuideFormScreenProps> = ({
   }
 
   const handleSave = async () => {
+    // Wait for any in-flight edit-mode guide fetch to settle before validating -- otherwise
+    // a Save that lands before the fetch resolves validates `title`/`selectedGuideType`
+    // against their still-empty initial state and silently no-ops.
+    await guideLoadRef.current
+
     if (!validateForm()) {
       return
     }
