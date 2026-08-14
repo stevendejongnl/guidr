@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { SyncEventEmitter } from '../../common/SyncEventEmitter'
 import { StepTimerClient } from '../../infrastructure/api/StepTimerClient'
 import { StepTimerDto } from '../../infrastructure/api/dtos/StepTimerDto'
@@ -66,18 +66,23 @@ export function useStepTimers(
   client: StepTimerClient | null,
 ): UseStepTimersReturn {
   const [timerDtos, setTimerDtos] = useState<Record<string, StepTimerDto>>({})
-  const [timers, setTimers] = useState<Record<string, StepTimerDisplay>>({})
   const [loading, setLoading] = useState(true)
+  const [tick, setTick] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Recalculate display values from DTOs
-  const recalculate = useCallback(() => {
+  // Derived synchronously from timerDtos (same render, no lag) so that
+  // `loading` and `timers` are never observably out of sync -- deriving
+  // this via a separate effect+state pair meant `timers` updated one
+  // render after `loading` flipped to false, a real race for any caller
+  // (including tests using waitFor) reading both together.
+  const timers = useMemo(() => {
     const updated: Record<string, StepTimerDisplay> = {}
     for (const [stepId, dto] of Object.entries(timerDtos)) {
       updated[stepId] = calculateDisplay(dto)
     }
-    setTimers(updated)
-  }, [timerDtos])
+    return updated
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `tick` forces recompute of elapsed time each second
+  }, [timerDtos, tick])
 
   // Load timers on mount
   useEffect(() => {
@@ -110,11 +115,6 @@ export function useStepTimers(
     }
   }, [guideId, authToken, client])
 
-  // Recalculate whenever DTOs change
-  useEffect(() => {
-    recalculate()
-  }, [recalculate])
-
   // Manage tick interval for running timers
   useEffect(() => {
     const hasRunning = Object.values(timerDtos).some(
@@ -123,7 +123,7 @@ export function useStepTimers(
 
     if (hasRunning) {
       intervalRef.current = setInterval(() => {
-        recalculate()
+        setTick((t) => t + 1)
       }, 1000)
     }
 
@@ -133,7 +133,7 @@ export function useStepTimers(
         intervalRef.current = null
       }
     }
-  }, [timerDtos, recalculate])
+  }, [timerDtos])
 
   const updateDto = (dto: StepTimerDto) => {
     setTimerDtos((prev) => ({ ...prev, [dto.stepId]: dto }))
