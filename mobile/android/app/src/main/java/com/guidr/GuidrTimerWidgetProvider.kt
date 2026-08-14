@@ -34,10 +34,12 @@ class GuidrTimerWidgetProvider : AppWidgetProvider() {
         // The Chronometer text ticks on its own (system-rendered), but the progress bar(s)
         // are plain RemoteViews values set once at update time — nothing repaints them as
         // time passes. Self-reschedule a lightweight shared alarm while any timer is running
-        // so the bar(s) keep moving.
+        // so the bar(s) keep moving. 2s keeps the bar looking close to smooth; the alarm
+        // self-cancels once no timer is running (see the hasRunning check below), so this
+        // doesn't cost anything while idle.
         private const val ACTION_WIDGET_TICK = "com.guidr.ACTION_WIDGET_TICK"
         private const val TICK_REQUEST_CODE = 9002
-        private const val TICK_INTERVAL_MS = 15_000L
+        private const val TICK_INTERVAL_MS = 2_000L
 
         private fun completeCheckPendingIntent(context: Context, stepId: String): PendingIntent {
             val intent = Intent(context, GuidrTimerWidgetProvider::class.java).apply {
