@@ -1,3 +1,9 @@
+## [1.99.3](https://github.com/stevendejongnl/guidr/compare/v1.99.2...v1.99.3) (2026-08-15)
+
+### Bug Fixes
+
+* **android:** tick the widget progress bar every 2s instead of 15s ([7adfb52](https://github.com/stevendejongnl/guidr/commit/7adfb5272038e81543c1602c9034fd9c3fce5eb6))
+
 ## [1.99.2](https://github.com/stevendejongnl/guidr/compare/v1.99.1...v1.99.2) (2026-08-14)
 
 ### Bug Fixes
