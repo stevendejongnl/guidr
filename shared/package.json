@@ -50,7 +50,7 @@
   "devDependencies": {
     "@microsoft/api-extractor": "^7.58.7",
     "@types/react-native": "^0.71",
-    "react-native": "^0.86.2",
+    "react-native": "^0.87.0",
     "typescript": "^5.8.3",
     "vite": "^7.0.0"
   },
