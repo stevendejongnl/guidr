@@ -1,5 +1,11 @@
 import { AuthStorage } from './storage/auth-storage'
 
+declare global {
+  interface Window {
+    _paq?: unknown[][]
+  }
+}
+
 export interface Route {
   path: string
   component: string
@@ -72,11 +78,19 @@ export class Router {
     }
 
     document.title = route.title
+    this.trackPageView(route.title)
 
     // Clear outlet and render new component
     this.outlet.innerHTML = ''
     const component = document.createElement(route.component)
     this.outlet.appendChild(component)
+  }
+
+  private trackPageView(title: string): void {
+    const _paq = (window._paq = window._paq || [])
+    _paq.push(['setCustomUrl', window.location.pathname])
+    _paq.push(['setDocumentTitle', title])
+    _paq.push(['trackPageView'])
   }
 
   private isAuthenticated(): boolean {

@@ -175,6 +175,27 @@ describe('Router', () => {
     })
   })
 
+  describe('analytics tracking', () => {
+    afterEach(() => {
+      delete window._paq
+    })
+
+    it('pushes a trackPageView on navigate', () => {
+      window._paq = []
+      const router = new Router(outlet)
+      router.navigate('/login')
+      const calls = window._paq.map(call => call[0])
+      expect(calls).to.include('trackPageView')
+      expect(calls).to.include('setDocumentTitle')
+    })
+
+    it('creates window._paq lazily if analytics script has not loaded yet', () => {
+      const router = new Router(outlet)
+      router.navigate('/login')
+      expect(window._paq).to.exist
+    })
+  })
+
   describe('popstate', () => {
     it('re-renders on popstate event', () => {
       const router = new Router(outlet)
