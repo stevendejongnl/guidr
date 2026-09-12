@@ -46,7 +46,7 @@
     "globals": "^16.0.0",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
-    "react-native-dotenv": "^3.4.11",
+    "react-native-dotenv": "^4.1.1",
     "react-test-renderer": "^19.2.4",
     "ts-jest": "^29.4.6",
     "tslib": "^2.8.1",
