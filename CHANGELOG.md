@@ -1,3 +1,13 @@
+## [1.100.0](https://github.com/stevendejongnl/guidr/compare/v1.99.3...v1.100.0) (2026-09-12)
+
+### Features
+
+* **web:** add Matomo analytics tracking ([51769bc](https://github.com/stevendejongnl/guidr/commit/51769bcbd537e4905295e7281937692a97320d9f))
+
+### Bug Fixes
+
+* **deps:** resolve fast-uri, joi, js-yaml, qs, sharp, ip-address, tar, undici, and brace-expansion CVEs ([50f9275](https://github.com/stevendejongnl/guidr/commit/50f927506a5c30e0eb402f255e8aa12d6570e11a))
+
 ## [1.99.3](https://github.com/stevendejongnl/guidr/compare/v1.99.2...v1.99.3) (2026-08-15)
 
 ### Bug Fixes
