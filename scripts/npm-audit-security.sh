@@ -77,6 +77,26 @@
 #     bump that's outside @actions/http-client's/@semantic-release/github's allowed
 #     range (^7.0.0) — not something this repo can force. Release-pipeline-only,
 #     never touches user-facing traffic in the mobile app or API server.
+# - GHSA-vcc3-ghjq-m6fr: decode-uri-component <=0.4.2 ReDoS via malformed percent-encoding
+#     (MODERATE) - transitive via query-string@7.1.3 (caret-pinned to
+#     decode-uri-component@^0.2.2) -> @react-navigation/core -> @react-navigation/native@7.
+#     A patched decode-uri-component@0.5.0 exists (same API, zero deps), but npm's
+#     override resolution doesn't propagate through this nested workspace chain (tried
+#     both a flat `"decode-uri-component"` override and a scoped
+#     `"query-string": {"decode-uri-component": ...}` override - package-lock.json kept
+#     the unpatched 0.2.2 resolution either way; same class of resolver limitation as
+#     GHSA-7p8r-x3mc-p8w7 above). The only real fix is `npm audit fix --force`, which
+#     downgrades @react-navigation/native to 3.8.4 - a major regression, not viable.
+#     Input is app-internal route/query strings, not arbitrary attacker text. Revisit
+#     when query-string bumps its decode-uri-component range, or npm's override
+#     resolution is fixed for this chain shape.
+# - GHSA-jmr9-qjv8-65gv / GHSA-7pqw-9j4j-h8q3: extract-zip <=2.0.1 symlink path
+#     traversal / arbitrary file write (HIGH) - transitive via
+#     @puppeteer/browsers -> puppeteer-core -> @web/test-runner-chrome ->
+#     @web/test-runner, used only by web-app's local Playwright/web-test-runner
+#     test suite. Only fixable via `npm audit fix --force`'s @web/test-runner@1.0.0
+#     major bump. Dev/CI-toolchain only - never runs against untrusted archives in
+#     the shipped app or API server.
 #
 # To fix a vulnerability instead of accepting it: fix the dep chain and remove from this list.
 
@@ -110,6 +130,9 @@ ACCEPTED_ADVISORIES=(
   "GHSA-m8rv-5g2x-5cg5"  # undici CRLF injection, same chain as GHSA-8xcm-r25x-g524
   "GHSA-jr45-8vmc-qm54"  # undici cache whitespace bypass, same chain as GHSA-8xcm-r25x-g524
   "GHSA-v3r7-h72x-cjcm"  # undici cookie attribute injection, same chain as GHSA-8xcm-r25x-g524
+  "GHSA-vcc3-ghjq-m6fr"  # decode-uri-component ReDoS, react-navigation query-string chain, override attempted
+  "GHSA-jmr9-qjv8-65gv"  # extract-zip symlink path traversal, @web/test-runner puppeteer chain, dev-toolchain only
+  "GHSA-7pqw-9j4j-h8q3"  # extract-zip arbitrary file write, same chain as GHSA-jmr9-qjv8-65gv
 )
 
 # Run npm audit and capture output
