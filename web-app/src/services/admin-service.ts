@@ -1,4 +1,5 @@
 import { apiClient } from './api-client.js'
+import { analyticsService } from './analytics-service.js'
 import type { Guide } from '@models/guide.js'
 import type { AuditLog, AuditLogFilters } from '@models/audit-log.js'
 
@@ -33,11 +34,14 @@ export class AdminService {
   }
 
   async updateUser(userId: string, data: AdminUpdateUserRequest): Promise<UserDto> {
-    return apiClient.patch<UserDto>(`/auth/users/${userId}`, data)
+    const user = await apiClient.patch<UserDto>(`/auth/users/${userId}`, data)
+    analyticsService.trackEvent('Admin', 'update_user')
+    return user
   }
 
   async deleteUser(userId: string): Promise<void> {
-    return apiClient.delete<void>(`/auth/users/${userId}`)
+    await apiClient.delete<void>(`/auth/users/${userId}`)
+    analyticsService.trackEvent('Admin', 'delete_user')
   }
 
   async getAllGuidesWithUsers(): Promise<GuideWithUser[]> {
