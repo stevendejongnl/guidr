@@ -1,6 +1,7 @@
 import { AuthClient, AuthResponse } from './auth-client'
 import { AuthError } from '../models/auth-error'
 import { AuthStorage } from '../storage/auth-storage'
+import { analyticsService, type TagManager } from './analytics-service.js'
 
 /**
  * Authentication service handling login, register, logout
@@ -10,6 +11,7 @@ export class AuthService {
   constructor(
     private authClient: AuthClient,
     private storage: AuthStorage,
+    private analytics: TagManager = analyticsService,
   ) {}
 
   /**
@@ -34,6 +36,7 @@ export class AuthService {
       this.storage.setUserIsAdmin(typeof response.user.isAdmin === 'boolean' ? response.user.isAdmin : false)
       this.storage.setUserIsBeta(typeof response.user.isBeta === 'boolean' ? response.user.isBeta : false)
 
+      this.analytics.trackEvent('Auth', 'login')
       return response
     } catch (error) {
       if (error instanceof AuthError) {
@@ -71,6 +74,7 @@ export class AuthService {
       this.storage.setUserIsAdmin(typeof response.user.isAdmin === 'boolean' ? response.user.isAdmin : false)
       this.storage.setUserIsBeta(typeof response.user.isBeta === 'boolean' ? response.user.isBeta : false)
 
+      this.analytics.trackEvent('Auth', 'register')
       return response
     } catch (error) {
       if (error instanceof AuthError) {
@@ -88,6 +92,7 @@ export class AuthService {
    */
   logout(): void {
     this.storage.clearAll()
+    this.analytics.trackEvent('Auth', 'logout')
   }
 
   /**
