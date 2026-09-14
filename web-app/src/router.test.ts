@@ -177,22 +177,25 @@ describe('Router', () => {
 
   describe('analytics tracking', () => {
     afterEach(() => {
-      delete window._paq
+      delete window._mtm
     })
 
-    it('pushes a trackPageView on navigate', () => {
-      window._paq = []
+    it('pushes a guidrPageView tag manager event on navigate', () => {
+      window._mtm = []
       const router = new Router(outlet)
       router.navigate('/login')
-      const calls = window._paq.map(call => call[0])
-      expect(calls).to.include('trackPageView')
-      expect(calls).to.include('setDocumentTitle')
+      const entry = window._mtm.find(e => e.event === 'guidrPageView')
+      expect(entry).to.deep.equal({
+        event: 'guidrPageView',
+        pageUrl: '/login',
+        pageTitle: 'Login - Guidr',
+      })
     })
 
-    it('creates window._paq lazily if analytics script has not loaded yet', () => {
+    it('creates window._mtm lazily if the tag manager script has not loaded yet', () => {
       const router = new Router(outlet)
       router.navigate('/login')
-      expect(window._paq).to.exist
+      expect(window._mtm).to.exist
     })
   })
 

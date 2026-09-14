@@ -1,10 +1,5 @@
 import { AuthStorage } from './storage/auth-storage'
-
-declare global {
-  interface Window {
-    _paq?: unknown[][]
-  }
-}
+import { analyticsService } from './services/analytics-service.js'
 
 export interface Route {
   path: string
@@ -87,10 +82,7 @@ export class Router {
   }
 
   private trackPageView(title: string): void {
-    const _paq = (window._paq = window._paq || [])
-    _paq.push(['setCustomUrl', window.location.pathname])
-    _paq.push(['setDocumentTitle', title])
-    _paq.push(['trackPageView'])
+    analyticsService.trackPageView(window.location.pathname, title)
   }
 
   private isAuthenticated(): boolean {
