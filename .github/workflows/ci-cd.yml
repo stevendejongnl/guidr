@@ -210,6 +210,13 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Without this the action installs its default package set, which still includes
+          # the obsolete 'tools' package. Google removed that from the SDK repository, so
+          # sdkmanager exits 1 with "Failed to find package 'tools'" and the job dies
+          # before it builds anything. The step below installs exactly what the build
+          # needs, so there is nothing to install here.
+          packages: ''
 
       - name: Cache Android SDK components
         uses: actions/cache@v4
