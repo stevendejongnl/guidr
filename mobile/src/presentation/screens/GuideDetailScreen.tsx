@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   AppState,
+  type HostInstance,
+  type ScrollViewInstance,
 } from 'react-native'
 import { AuthStorage } from '../../infrastructure/storage/AuthStorage'
 import { GuideService } from '../../domain/services/GuideService'
@@ -112,8 +114,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   // from onLayout, once real layout is known) gives the position relative to the
   // ScrollView's content regardless of how many plain Views sit in between, unlike
   // onLayout's own y which is only relative to the immediate parent.
-  const scrollViewRef = useRef<ScrollView>(null)
-  const stepNodesRef = useRef<Record<string, View | null>>({})
+  const scrollViewRef = useRef<ScrollViewInstance>(null)
+  const stepNodesRef = useRef<Record<string, HostInstance | null>>({})
   const hasScrolledToFocusRef = useRef(false)
   const handleStepLayout = useCallback((stepId: string) => {
     if (focusStepId !== stepId || hasScrolledToFocusRef.current) return
@@ -121,8 +123,8 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     if (!node || !scrollViewRef.current) return
     hasScrolledToFocusRef.current = true
     node.measureLayout(
-      scrollViewRef.current as unknown as React.ElementRef<typeof View>,
-      (_x, y) => scrollViewRef.current?.scrollTo({ y, animated: true }),
+      scrollViewRef.current,
+      (_x: number, y: number) => scrollViewRef.current?.scrollTo({ y, animated: true }),
       () => {},
     )
   }, [focusStepId])
