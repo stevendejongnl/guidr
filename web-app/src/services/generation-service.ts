@@ -1,4 +1,5 @@
 import { apiClient } from './api-client.js'
+import { analyticsService } from './analytics-service.js'
 
 export interface GenerateGuideRequest {
   prompt: string
@@ -72,15 +73,21 @@ export interface GuideWithStepsResponse {
 
 export class GenerationService {
   async generateFromPrompt(request: GenerateGuideRequest): Promise<GeneratedGuide> {
-    return apiClient.post<GeneratedGuide>('/guides/generate', request)
+    const result = await apiClient.post<GeneratedGuide>('/guides/generate', request)
+    analyticsService.trackEvent('Generation', 'generate_from_prompt', request.guideType)
+    return result
   }
 
   async generateFromUrl(request: GenerateGuideFromUrlRequest): Promise<GeneratedGuide> {
-    return apiClient.post<GeneratedGuide>('/guides/generate-from-url', request)
+    const result = await apiClient.post<GeneratedGuide>('/guides/generate-from-url', request)
+    analyticsService.trackEvent('Generation', 'generate_from_url', request.guideType)
+    return result
   }
 
   async createWithSteps(request: CreateGuideWithStepsRequest): Promise<GuideWithStepsResponse> {
-    return apiClient.post<GuideWithStepsResponse>('/guides/with-steps', request)
+    const result = await apiClient.post<GuideWithStepsResponse>('/guides/with-steps', request)
+    analyticsService.trackEvent('Generation', 'save', request.guideType)
+    return result
   }
 }
 

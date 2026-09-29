@@ -2,6 +2,17 @@ import { expect } from '@open-wc/testing'
 import { AuthService } from './auth-service.js'
 import type { AuthClient, AuthResponse } from './auth-client.js'
 import type { AuthStorage } from '../storage/auth-storage.js'
+import type { TagManager } from './analytics-service.js'
+
+function makeAnalytics(): TagManager & { calls: [string, string, string?, number?][] } {
+  const calls: [string, string, string?, number?][] = []
+  return {
+    calls,
+    init: () => {},
+    trackPageView: () => {},
+    trackEvent: (category, action, name, value) => { calls.push([category, action, name, value]) },
+  }
+}
 
 function makeUser(overrides = {}) {
   return {
@@ -105,6 +116,21 @@ describe('AuthService', () => {
       expect(storage.getRefreshToken()).to.equal('refresh-token')
     })
 
+    it('fires an Auth/login trackEvent on success', async () => {
+      const analytics = makeAnalytics()
+      const service = new AuthService(makeClient(), makeStorage(), analytics)
+      await service.login('user@example.com', 'password')
+      expect(analytics.calls).to.deep.include(['Auth', 'login', undefined, undefined])
+    })
+
+    it('does not fire a trackEvent when login fails', async () => {
+      const analytics = makeAnalytics()
+      const client = makeClient({ login: async () => { throw new Error('network down') } })
+      const service = new AuthService(client, makeStorage(), analytics)
+      await expectThrows(() => service.login('user@example.com', 'password'), 'network down')
+      expect(analytics.calls).to.be.empty
+    })
+
     it('throws when response has no accessToken', async () => {
       const client = makeClient({
         login: async () => ({ tokenType: 'bearer', user: makeUser() } as unknown as AuthResponse),
@@ -150,6 +176,20 @@ describe('AuthService', () => {
       expect(storage.getRefreshToken()).to.equal('refresh-token')
     })
 
+    it('fires an Auth/register trackEvent on success', async () => {
+      const analytics = makeAnalytics()
+      const service = new AuthService(makeClient(), makeStorage(), analytics)
+      await service.register('user@example.com', 'password123')
+      expect(analytics.calls).to.deep.include(['Auth', 'register', undefined, undefined])
+    })
+
+    it('does not fire a trackEvent when registration fails', async () => {
+      const analytics = makeAnalytics()
+      const service = new AuthService(makeClient(), makeStorage(), analytics)
+      await expectThrows(() => service.register('user@example.com', 'abc'), 'Password must be at least 6 characters')
+      expect(analytics.calls).to.be.empty
+    })
+
     it('throws when response missing accessToken', async () => {
       const client = makeClient({
         register: async () => ({ tokenType: 'bearer', user: makeUser() } as unknown as AuthResponse),
@@ -174,6 +214,13 @@ describe('AuthService', () => {
       const service = new AuthService(makeClient(), storage)
       service.logout()
       expect(storage.getAuthToken()).to.be.null
+    })
+
+    it('fires an Auth/logout trackEvent', () => {
+      const analytics = makeAnalytics()
+      const service = new AuthService(makeClient(), makeStorage(), analytics)
+      service.logout()
+      expect(analytics.calls).to.deep.include(['Auth', 'logout', undefined, undefined])
     })
   })
 

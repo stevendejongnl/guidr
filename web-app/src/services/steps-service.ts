@@ -1,4 +1,5 @@
 import { apiClient } from './api-client.js'
+import { analyticsService } from './analytics-service.js'
 import type { Step, CreateStepRequest, UpdateStepRequest } from '@models/step.js'
 
 export class StepsService {
@@ -7,15 +8,20 @@ export class StepsService {
   }
 
   async create(data: CreateStepRequest): Promise<Step> {
-    return apiClient.post<Step>('/steps', data)
+    const step = await apiClient.post<Step>('/steps', data)
+    analyticsService.trackEvent('Step', 'create')
+    return step
   }
 
   async update(id: string, data: UpdateStepRequest): Promise<Step> {
-    return apiClient.patch<Step>(`/steps/${id}`, data)
+    const step = await apiClient.patch<Step>(`/steps/${id}`, data)
+    analyticsService.trackEvent('Step', 'update')
+    return step
   }
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete<void>(`/steps/${id}`)
+    await apiClient.delete<void>(`/steps/${id}`)
+    analyticsService.trackEvent('Step', 'delete')
   }
 }
 

@@ -1,4 +1,5 @@
 import { apiClient } from './api-client.js'
+import { analyticsService } from './analytics-service.js'
 import type { Guide, CreateGuideRequest, UpdateGuideRequest } from '@models/guide.js'
 import type { GuideWithStepsResponse } from './generation-service.js'
 
@@ -12,15 +13,20 @@ export class GuidesService {
   }
 
   async create(data: CreateGuideRequest): Promise<Guide> {
-    return apiClient.post<Guide>('/guides', data)
+    const guide = await apiClient.post<Guide>('/guides', data)
+    analyticsService.trackEvent('Guide', 'create', data.guideType)
+    return guide
   }
 
   async update(id: string, data: UpdateGuideRequest): Promise<Guide> {
-    return apiClient.patch<Guide>(`/guides/${id}`, data)
+    const guide = await apiClient.patch<Guide>(`/guides/${id}`, data)
+    analyticsService.trackEvent('Guide', 'update')
+    return guide
   }
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete<void>(`/guides/${id}`)
+    await apiClient.delete<void>(`/guides/${id}`)
+    analyticsService.trackEvent('Guide', 'delete')
   }
 
   async getByType(guideType: string): Promise<Guide[]> {
@@ -28,11 +34,15 @@ export class GuidesService {
   }
 
   async copyToLanguage(guideId: string, targetLanguage: string): Promise<GuideWithStepsResponse> {
-    return apiClient.post<GuideWithStepsResponse>(`/guides/${guideId}/copy`, { targetLanguage })
+    const result = await apiClient.post<GuideWithStepsResponse>(`/guides/${guideId}/copy`, { targetLanguage })
+    analyticsService.trackEvent('Guide', 'copy', targetLanguage)
+    return result
   }
 
   async translateToLanguage(guideId: string, targetLanguage: string): Promise<GuideWithStepsResponse> {
-    return apiClient.post<GuideWithStepsResponse>(`/guides/${guideId}/translate`, { targetLanguage })
+    const result = await apiClient.post<GuideWithStepsResponse>(`/guides/${guideId}/translate`, { targetLanguage })
+    analyticsService.trackEvent('Guide', 'translate', targetLanguage)
+    return result
   }
 }
 
