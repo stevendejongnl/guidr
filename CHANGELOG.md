@@ -1,3 +1,12 @@
+## [1.101.0](https://github.com/stevendejongnl/guidr/compare/v1.100.0...v1.101.0) (2026-09-29)
+
+### Features
+
+* **web:** Matomo Tag Manager via a swappable TagManager layer ([#229](https://github.com/stevendejongnl/guidr/issues/229)) ([91b1e68](https://github.com/stevendejongnl/guidr/commit/91b1e68565f8edcfdb5a5eb67e08f8e572c60b40))
+* **web:** switch to Matomo Tag Manager via a swappable TagManager layer ([c1778f9](https://github.com/stevendejongnl/guidr/commit/c1778f9952ad7112baa2dad2e12478951688bff6))
+* **web:** track auth login/register/logout as events ([79f6f24](https://github.com/stevendejongnl/guidr/commit/79f6f24825c45753c7b53a61e98cf8fad6e26926))
+* **web:** track guide/step/admin/generation mutations as events ([e8eafe1](https://github.com/stevendejongnl/guidr/commit/e8eafe1ff3b4804a34f9437734ade82530ee62c5))
+
 ## [1.100.0](https://github.com/stevendejongnl/guidr/compare/v1.99.3...v1.100.0) (2026-09-12)
 
 ### Features
