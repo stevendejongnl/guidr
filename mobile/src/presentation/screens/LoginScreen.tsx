@@ -33,7 +33,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const passwordInputRef = useRef<TextInput>(null)
+  const passwordInputRef = useRef<React.ComponentRef<typeof TextInput>>(null)
 
   const handleEmailChange = (text: string) => {
     setEmail(text)

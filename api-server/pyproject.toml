@@ -8,7 +8,7 @@ authors = [
     {name = "Guidr Team"}
 ]
 dependencies = [
-    "fastapi==0.141.1",
+    "fastapi[standard]==0.142.2",
     "uvicorn[standard]>=0.40.0",
     "pydantic[email]==2.13.5",
     "motor>=3.6.0",
@@ -23,6 +23,7 @@ dependencies = [
     "cryptography>=50.0.0",
     "ecdsa>=0.19.2",
     "pyasn1>=0.6.3",
+    "urllib3>=2.8.0",
 ]
 
 [project.optional-dependencies]

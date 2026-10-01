@@ -152,6 +152,22 @@ describe('LoginScreen', () => {
       expect(passwordInput.props['value']).toBe('password123')
     })
 
+    it('should not throw when submitting the email field moves focus to the password input', () => {
+      const { getByPlaceholderText } = render(
+        <LoginScreen
+          authStorage={mockAuthStorage}
+          authClient={mockAuthClient}
+          onComplete={mockOnComplete}
+          onChangeServer={mockOnChangeServer}
+          onRegister={mockOnRegister}
+        />
+      )
+
+      const emailInput = getByPlaceholderText('email@example.com')
+
+      expect(() => fireEvent(emailInput, 'submitEditing')).not.toThrow()
+    })
+
     it('should clear error when user starts typing email', () => {
       const { getByPlaceholderText, getByText, queryByText } = render(
         <LoginScreen

@@ -112,19 +112,23 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
   // from onLayout, once real layout is known) gives the position relative to the
   // ScrollView's content regardless of how many plain Views sit in between, unlike
   // onLayout's own y which is only relative to the immediate parent.
-  const scrollViewRef = useRef<ScrollView>(null)
-  const stepNodesRef = useRef<Record<string, View | null>>({})
+  const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null)
+  const stepNodesRef = useRef<Record<string, React.ComponentRef<typeof View> | null>>({})
   const hasScrolledToFocusRef = useRef(false)
   const handleStepLayout = useCallback((stepId: string) => {
     if (focusStepId !== stepId || hasScrolledToFocusRef.current) return
     const node = stepNodesRef.current[stepId]
     if (!node || !scrollViewRef.current) return
-    hasScrolledToFocusRef.current = true
-    node.measureLayout(
-      scrollViewRef.current as unknown as React.ElementRef<typeof View>,
-      (_x, y) => scrollViewRef.current?.scrollTo({ y, animated: true }),
-      () => {},
-    )
+    /* istanbul ignore next -- requires a real native host-component ref;
+       RNTL's test renderer never attaches one, so this never runs in tests. */
+    {
+      hasScrolledToFocusRef.current = true
+      node.measureLayout(
+        scrollViewRef.current as unknown as React.ElementRef<typeof View>,
+        (_x: number, y: number) => scrollViewRef.current?.scrollTo({ y, animated: true }),
+        () => {},
+      )
+    }
   }, [focusStepId])
 
   const resetCompletedTimer = useCallback((stepId: string) => {

@@ -157,6 +157,55 @@ describe('GuideDetailScreen', () => {
     expect(queryByTestId('detail:step-0:move-down')).toBeNull()
   })
 
+  it('does not throw when the step matching focusStepId reports its layout', async () => {
+    const guide = new Guide(
+      'guide-1',
+      'cooking',
+      'Test Guide',
+      'A test guide',
+      'user-123',
+      true,
+      false
+    )
+
+    mockGuideService.getGuideById.mockResolvedValue(guide)
+
+    const mockSteps = [
+      new Step('step-1', 'guide-1', 0, 'Step One', 10, 'First step'),
+      new Step('step-2', 'guide-1', 1, 'Step Two', 15, 'Second step'),
+    ]
+    const mockStepService = createMockStepService(mockSteps)
+
+    const { findByText } = render(
+      <GuideDetailScreen
+        guideId="guide-1"
+        onBack={mockOnBack}
+        testID="detail"
+        guideService={mockGuideService}
+        stepService={mockStepService}
+        authStorage={mockAuthStorage}
+        serverConfigStorage={mockServerConfigStorage}
+        focusStepId="step-2"
+      />
+    )
+
+    const stepTitle = await findByText('Step Two')
+
+    // Walk up to the step's wrapping View, which carries the onLayout handler
+    // that drives scrolling to the focused step (see handleStepLayout).
+    let stepContainer = stepTitle.parent
+    while (stepContainer && !stepContainer.props['onLayout']) {
+      stepContainer = stepContainer.parent
+    }
+    expect(stepContainer?.props['onLayout']).toBeTruthy()
+
+    expect(() =>
+      fireEvent(stepContainer!, 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 100, height: 50 } },
+      })
+    ).not.toThrow()
+  })
+
   it('displays ingredients for cooking guides', async () => {
     const guide = new Guide(
       'guide-1',

@@ -71,6 +71,11 @@ spec:
               key: web-sentry-dsn
         - name: SENTRY_ENVIRONMENT
           value: "production"
+        # OpenTelemetry (native FastAPI support, fastapi>=0.142.0)
+        - name: OTEL_SERVICE_NAME
+          value: "guidr-api-server"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector.observability.svc.cluster.local:4318"
         # Deployment Coordination (prevents duplicate startup notifications)
         - name: DEPLOYMENT_ID
           valueFrom:
