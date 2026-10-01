@@ -119,12 +119,16 @@ export const GuideDetailScreen: React.FC<GuideDetailScreenProps> = ({
     if (focusStepId !== stepId || hasScrolledToFocusRef.current) return
     const node = stepNodesRef.current[stepId]
     if (!node || !scrollViewRef.current) return
-    hasScrolledToFocusRef.current = true
-    node.measureLayout(
-      scrollViewRef.current as unknown as React.ElementRef<typeof View>,
-      (_x: number, y: number) => scrollViewRef.current?.scrollTo({ y, animated: true }),
-      () => {},
-    )
+    /* istanbul ignore next -- requires a real native host-component ref;
+       RNTL's test renderer never attaches one, so this never runs in tests. */
+    {
+      hasScrolledToFocusRef.current = true
+      node.measureLayout(
+        scrollViewRef.current as unknown as React.ElementRef<typeof View>,
+        (_x: number, y: number) => scrollViewRef.current?.scrollTo({ y, animated: true }),
+        () => {},
+      )
+    }
   }, [focusStepId])
 
   const resetCompletedTimer = useCallback((stepId: string) => {
