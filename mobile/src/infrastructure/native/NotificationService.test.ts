@@ -12,7 +12,7 @@ describe('NotificationService', () => {
 
   describe('requestPermission', () => {
     it('should request POST_NOTIFICATIONS on Android 33+', async () => {
-      Platform.Version = 33
+      ;(Platform as { Version: number }).Version = 33
       const mock = PermissionsAndroid.request as jest.Mock
       mock.mockResolvedValue('granted')
 
@@ -23,7 +23,7 @@ describe('NotificationService', () => {
     })
 
     it('should return true on Android < 33 without requesting', async () => {
-      Platform.Version = 32
+      ;(Platform as { Version: number }).Version = 32
 
       const result = await service.requestPermission()
 
@@ -32,7 +32,7 @@ describe('NotificationService', () => {
     })
 
     it('should return false when permission denied', async () => {
-      Platform.Version = 33
+      ;(Platform as { Version: number }).Version = 33
       const mock = PermissionsAndroid.request as jest.Mock
       mock.mockResolvedValue('denied')
 
@@ -42,7 +42,7 @@ describe('NotificationService', () => {
     })
 
     it('should return false when the permission request throws', async () => {
-      Platform.Version = 33
+      ;(Platform as { Version: number }).Version = 33
       const mock = PermissionsAndroid.request as jest.Mock
       mock.mockRejectedValue(new Error('Failed'))
 
