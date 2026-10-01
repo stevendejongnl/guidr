@@ -97,6 +97,14 @@
 #     test suite. Only fixable via `npm audit fix --force`'s @web/test-runner@1.0.0
 #     major bump. Dev/CI-toolchain only - never runs against untrusted archives in
 #     the shipped app or API server.
+# - GHSA-q2hr-2g5m-vwhr / GHSA-qhr7-859c-m2p7 / GHSA-6j4f-fj2g-mc7p: brace-expansion
+#     DoS, new advisory IDs for the same root cause as GHSA-mh99-v99m-4gvg /
+#     GHSA-rgw5-rvv9-x895 / GHSA-3jxr-9vmj-r5cp above. Same transitive chains,
+#     confirmed still present at latest versions: jest@30.4.2 (glob@10.5.0 ->
+#     minimatch@9.0.9), babel-plugin-module-resolver@5.0.3 (glob@9.3.5 ->
+#     minimatch@8.0.7), eslint-plugin-react@7.37.5 + ts-jest's babel-plugin-istanbul
+#     (minimatch@3.1.5), eslint@10.8.1 and @microsoft/api-extractor (minimatch@10.x).
+#     All on latest release; no upstream fix. Dev-toolchain only, no prod path.
 #
 # To fix a vulnerability instead of accepting it: fix the dep chain and remove from this list.
 
@@ -133,6 +141,9 @@ ACCEPTED_ADVISORIES=(
   "GHSA-vcc3-ghjq-m6fr"  # decode-uri-component ReDoS, react-navigation query-string chain, override attempted
   "GHSA-jmr9-qjv8-65gv"  # extract-zip symlink path traversal, @web/test-runner puppeteer chain, dev-toolchain only
   "GHSA-7pqw-9j4j-h8q3"  # extract-zip arbitrary file write, same chain as GHSA-jmr9-qjv8-65gv
+  "GHSA-q2hr-2g5m-vwhr"  # brace-expansion DoS, new ID for same root cause as GHSA-mh99-v99m-4gvg, dev-toolchain only
+  "GHSA-qhr7-859c-m2p7"  # brace-expansion DoS, new ID for same root cause as GHSA-mh99-v99m-4gvg, dev-toolchain only
+  "GHSA-6j4f-fj2g-mc7p"  # brace-expansion DoS, new ID for same root cause as GHSA-mh99-v99m-4gvg, dev-toolchain only
 )
 
 # Run npm audit and capture output
