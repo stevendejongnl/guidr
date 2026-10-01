@@ -1,3 +1,15 @@
+## [1.102.0](https://github.com/stevendejongnl/guidr/compare/v1.101.0...v1.102.0) (2026-10-01)
+
+### Features
+
+* enable native OpenTelemetry instrumentation on api-server ([14f9e36](https://github.com/stevendejongnl/guidr/commit/14f9e365808e69a0b60ec6c1f46db42c14d5dbb5))
+* enable native OpenTelemetry instrumentation on api-server ([#231](https://github.com/stevendejongnl/guidr/issues/231)) ([cdb5da9](https://github.com/stevendejongnl/guidr/commit/cdb5da98496daae6c40ccf9a0f0b4ffd4939ebe8))
+
+### Bug Fixes
+
+* **mobile:** exclude unreachable measureLayout branch from coverage ([5056a10](https://github.com/stevendejongnl/guidr/commit/5056a1093bd4afce89f49b74ce31a0c50b3b5314))
+* **mobile:** update ref typings for RN 0.86 host-instance API ([862eb8c](https://github.com/stevendejongnl/guidr/commit/862eb8c052ac64286e4ea4de89b0c17a116cfe9c))
+
 ## [1.101.0](https://github.com/stevendejongnl/guidr/compare/v1.100.0...v1.101.0) (2026-09-29)
 
 ### Features
